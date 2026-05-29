@@ -3,68 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Job Finder Vaud V7.2</title>
+
+<title>Job Finder Vaud V7.3</title>
 
 <style>
 body{
-  font-family:Arial,sans-serif;
-  background:#111827;
-  color:white;
-  margin:0;
-  padding:20px;
+    background:#0f172a;
+    color:white;
+    font-family:Arial,sans-serif;
+    margin:0;
+    padding:20px;
 }
 
 h1{
-  text-align:center;
+    text-align:center;
+}
+
+#search{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    margin-bottom:15px;
+    font-size:16px;
 }
 
 .card{
-  background:#1f2937;
-  border-radius:12px;
-  padding:15px;
-  margin:10px 0;
+    background:#1e293b;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:15px;
 }
 
-.titre{
-  font-size:18px;
-  font-weight:bold;
+.fav{
+    float:right;
+    cursor:pointer;
+    font-size:24px;
 }
 
-.footer{
-  text-align:center;
-  margin-top:30px;
-  color:#9ca3af;
+.count{
+    text-align:center;
+    margin-bottom:20px;
+    color:#94a3b8;
 }
 </style>
 </head>
 
 <body>
 
-<h1>📋 Job Finder Vaud V7.2</h1>
+<h1>📋 Job Finder Vaud V7.3</h1>
+
+<input id="search" placeholder="Rechercher un emploi...">
+
+<div class="count" id="count"></div>
 
 <div id="jobs"></div>
 
-<div class="footer">
-Co-créé par François 🚀
-</div>
-
 <script>
+
+let offres=[];
+
 fetch('/offers')
 .then(r=>r.json())
 .then(data=>{
-  const jobs=document.getElementById('jobs');
-
-  data.forEach(job=>{
-    jobs.innerHTML+=`
-      <div class="card">
-        <div class="titre">${job.titre}</div>
-        <p>🏢 ${job.entreprise}</p>
-        <p>📍 ${job.lieu}</p>
-        <p>⏰ ${job.taux}</p>
-      </div>
-    `;
-  });
+    offres=data;
+    afficher(data);
 });
+
+function afficher(data){
+
+    document.getElementById("count").innerHTML=
+        data.length+" offre(s) trouvée(s)";
+
+    let html="";
+
+    data.forEach(job=>{
+
+        html+=`
+        <div class="card">
+            <span class="fav">🤍</span>
+
+            <h2>${job.titre}</h2>
+
+            <p>🏢 ${job.entreprise}</p>
+            <p>📍 ${job.lieu}</p>
+            <p>⏰ ${job.taux}</p>
+
+        </div>
+        `;
+    });
+
+    document.getElementById("jobs").innerHTML=html;
+}
+
+document.getElementById("search")
+.addEventListener("input",e=>{
+
+    let texte=e.target.value.toLowerCase();
+
+    let filtre=offres.filter(job=>
+
+        job.titre.toLowerCase().includes(texte) ||
+        job.entreprise.toLowerCase().includes(texte) ||
+        job.lieu.toLowerCase().includes(texte)
+
+    );
+
+    afficher(filtre);
+});
+
 </script>
 
 </body>
