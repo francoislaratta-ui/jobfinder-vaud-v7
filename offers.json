@@ -40,5 +40,47 @@
     "competences": "Organisation, comptabilité de base",
     "source": "Jobs.ch",
     "url": "https://www.jobs.ch"
+  },
+  {
+    "id": 4,
+    "titre": "Secrétaire médicale",
+    "entreprise": "Hôpital Riviera-Chablais",
+    "lieu": "Vevey",
+    "taux": "80%",
+    "secteur": "Santé",
+    "date": "2026-06-04",
+    "salaire": "CHF 5500 - 6500",
+    "description": "Accueil des patients et gestion des dossiers médicaux.",
+    "competences": "Secrétariat médical, organisation, accueil",
+    "source": "Jobup",
+    "url": "https://www.jobup.ch"
+  },
+  {
+    "id": 5,
+    "titre": "Technicien informatique",
+    "entreprise": "EPFL",
+    "lieu": "Lausanne",
+    "taux": "100%",
+    "secteur": "Informatique",
+    "date": "2026-06-05",
+    "salaire": "CHF 7000 - 8500",
+    "description": "Support informatique et maintenance des systèmes.",
+    "competences": "Windows, Réseau, Support utilisateurs",
+    "source": "JobScout24",
+    "url": "https://www.jobscout24.ch"
+  },
+  {
+    "id": 6,
+    "titre": "AI Dev",
+    "entreprise": "AI Innovation Lab",
+    "lieu": "Yverdon",
+    "taux": "100%",
+    "secteur": "Intelligence Artificielle",
+    "date": "2026-06-06",
+    "salaire": "CHF 9000 - 12000",
+    "description": "Développement d'applications basées sur l'intelligence artificielle.",
+    "competences": "Python, LLM, APIs, Machine Learning",
+    "source": "Indeed",
+    "url": "https://ch.indeed.com"
   }
 ]
