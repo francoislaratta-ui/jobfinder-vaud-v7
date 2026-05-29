@@ -1,20 +1,44 @@
 [
   {
+    "id": 1,
     "titre": "Gestionnaire de dossiers",
     "entreprise": "État de Vaud",
     "lieu": "Lausanne",
-    "taux": "60%"
+    "taux": "60%",
+    "secteur": "Administration publique",
+    "date": "2026-06-03",
+    "salaire": "CHF 5500 - 6500",
+    "description": "Gestion administrative complète des dossiers.",
+    "competences": "Office 365, organisation, rédaction",
+    "source": "Jobup",
+    "url": "https://www.jobup.ch"
   },
   {
+    "id": 2,
     "titre": "Employé de commerce",
     "entreprise": "Ville de Morges",
     "lieu": "Morges",
-    "taux": "70%"
+    "taux": "70%",
+    "secteur": "Administration",
+    "date": "2026-06-02",
+    "salaire": "CHF 5000 - 6000",
+    "description": "Support administratif et accueil.",
+    "competences": "Excel, Word, contact clientèle",
+    "source": "Indeed",
+    "url": "https://ch.indeed.com"
   },
   {
+    "id": 3,
     "titre": "Assistant administratif",
     "entreprise": "Fiduciaire Vaudoise",
     "lieu": "Nyon",
-    "taux": "50%"
+    "taux": "50%",
+    "secteur": "Fiduciaire",
+    "date": "2026-06-01",
+    "salaire": "CHF 4500 - 5500",
+    "description": "Gestion administrative et secrétariat.",
+    "competences": "Organisation, comptabilité de base",
+    "source": "Jobs.ch",
+    "url": "https://www.jobs.ch"
   }
 ]
