@@ -10,7 +10,10 @@ app.get("/", (req, res) => {
     version: "1.0"
   });
 });
-
+app.get("/offers", (req, res) => {
+  const data = require("./offers.json");
+  res.json(data);
+});
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
