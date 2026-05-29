@@ -1,6 +1,8 @@
+
 [
   {
     "id": 1,
+    "reference": "JOB-0001",
     "titre": "Gestionnaire de dossiers",
     "entreprise": "État de Vaud",
     "lieu": "Lausanne",
@@ -15,6 +17,7 @@
   },
   {
     "id": 2,
+    "reference": "JOB-0002",
     "titre": "Employé de commerce",
     "entreprise": "Ville de Morges",
     "lieu": "Morges",
@@ -29,6 +32,7 @@
   },
   {
     "id": 3,
+    "reference": "JOB-0003",
     "titre": "Assistant administratif",
     "entreprise": "Fiduciaire Vaudoise",
     "lieu": "Nyon",
@@ -43,20 +47,7 @@
   },
   {
     "id": 4,
-    "titre": "Secrétaire médicale",
-    "entreprise": "Hôpital Riviera-Chablais",
-    "lieu": "Vevey",
-    "taux": "80%",
-    "secteur": "Santé",
-    "date": "2026-06-04",
-    "salaire": "CHF 5500 - 6500",
-    "description": "Accueil des patients et gestion des dossiers médicaux.",
-    "competences": "Secrétariat médical, organisation, accueil",
-    "source": "Jobup",
-    "url": "https://www.jobup.ch"
-  },
-  {
-    "id": 5,
+    "reference": "JOB-0004",
     "titre": "Technicien informatique",
     "entreprise": "EPFL",
     "lieu": "Lausanne",
@@ -70,7 +61,8 @@
     "url": "https://www.jobscout24.ch"
   },
   {
-    "id": 6,
+    "id": 5,
+    "reference": "JOB-0005",
     "titre": "AI Dev",
     "entreprise": "AI Innovation Lab",
     "lieu": "Yverdon",
