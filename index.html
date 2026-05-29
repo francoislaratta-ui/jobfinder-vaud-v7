@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Finder Vaud V7.2</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  background:#111827;
+  color:white;
+  margin:0;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+.card{
+  background:#1f2937;
+  border-radius:12px;
+  padding:15px;
+  margin:10px 0;
+}
+
+.titre{
+  font-size:18px;
+  font-weight:bold;
+}
+
+.footer{
+  text-align:center;
+  margin-top:30px;
+  color:#9ca3af;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📋 Job Finder Vaud V7.2</h1>
+
+<div id="jobs"></div>
+
+<div class="footer">
+Co-créé par François 🚀
+</div>
+
+<script>
+fetch('/offers')
+.then(r=>r.json())
+.then(data=>{
+  const jobs=document.getElementById('jobs');
+
+  data.forEach(job=>{
+    jobs.innerHTML+=`
+      <div class="card">
+        <div class="titre">${job.titre}</div>
+        <p>🏢 ${job.entreprise}</p>
+        <p>📍 ${job.lieu}</p>
+        <p>⏰ ${job.taux}</p>
+      </div>
+    `;
+  });
+});
+</script>
+
+</body>
+</html>
