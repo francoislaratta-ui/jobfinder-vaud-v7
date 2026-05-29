@@ -1,0 +1,20 @@
+[
+  {
+    "titre": "Gestionnaire de dossiers",
+    "entreprise": "État de Vaud",
+    "lieu": "Lausanne",
+    "taux": "60%"
+  },
+  {
+    "titre": "Employé de commerce",
+    "entreprise": "Ville de Morges",
+    "lieu": "Morges",
+    "taux": "70%"
+  },
+  {
+    "titre": "Assistant administratif",
+    "entreprise": "Fiduciaire Vaudoise",
+    "lieu": "Nyon",
+    "taux": "50%"
+  }
+]
