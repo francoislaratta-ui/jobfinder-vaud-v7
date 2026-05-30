@@ -92,6 +92,24 @@
 {
 "id": 6,
 "reference": "VD-006",
+"titre": "Secrétaire",
+"entreprise": "Centre Administratif Vaudois",
+"lieu": "Lausanne",
+"taux": "60%",
+"secteur": "Accueil et Secrétariat",
+"publication": "24h",
+"position": "Employé",
+"contrat": "Temporaire",
+"date": "2026-06-06",
+"salaire": "CHF 4800 - 5800",
+"description": "Accueil téléphonique et gestion du secrétariat.",
+"competences": "Accueil, rédaction, organisation",
+"source": "Indeed",
+"url": "https://ch-fr.indeed.com"
+},
+{
+"id": 7,
+"reference": "VD-007",
 "titre": "Employé de commerce",
 "entreprise": "Industrie Vaudoise SA",
 "lieu": "Lausanne",
@@ -108,8 +126,8 @@
 "url": "https://ch-fr.indeed.com"
 },
 {
-"id": 7,
-"reference": "VD-007",
+"id": 8,
+"reference": "VD-008",
 "titre": "Assistant administratif",
 "entreprise": "Production Suisse SA",
 "lieu": "Yverdon-les-Bains",
