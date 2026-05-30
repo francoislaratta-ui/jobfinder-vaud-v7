@@ -4,9 +4,17 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Job Finder Vaud V8.2</title>
+<meta name="viewport"
+content="width=device-width, initial-scale=1">
+
+<title>Job Finder Vaud V8.3</title>
+
+<link rel="manifest"
+href="/manifest.json">
+
+<meta name="theme-color"
+content="#f97316">
 
 <style>
 
@@ -25,6 +33,7 @@ color:white;
 h1{
 text-align:center;
 margin-bottom:10px;
+font-size:32px;
 }
 
 .subtitle{
@@ -49,6 +58,8 @@ border:none;
 border-radius:12px;
 font-size:16px;
 margin-bottom:20px;
+background:#1f2937;
+color:white;
 }
 
 .section{
@@ -60,6 +71,7 @@ margin-bottom:15px;
 
 .section h3{
 margin-top:0;
+color:#f97316;
 }
 
 .tags{
@@ -115,6 +127,7 @@ margin-bottom:15px;
 .offre h2{
 margin-top:0;
 font-size:20px;
+color:#f97316;
 }
 
 .detail{
@@ -156,53 +169,76 @@ font-size:14px;
 
 <body>
 
-<h1>🔎 Job Finder Vaud V8.2</h1>
+<h1>🔎 Job Finder Vaud V8.3</h1>
 
 <div class="subtitle">
 Smart Job Search for Vaud
 </div>
 
-<div class="counter" id="compteur">
+<div
+class="counter"
+id="compteur">
+
 📊 0 offre(s) trouvée(s)
+
 </div>
 
 <input
 class="search"
 id="search"
-placeholder="🔍 Rechercher un emploi..."
->
+placeholder="🔍 Rechercher un emploi...">
 <div class="section">
+
 <h3>💼 Métiers</h3>
+
 <div class="tags" id="metiers"></div>
+
 </div>
 
 <div class="section">
+
 <h3>⏰ Taux</h3>
+
 <div class="tags" id="taux"></div>
+
 </div>
 
 <div class="section">
+
 <h3>📍 Régions</h3>
+
 <div class="tags" id="regions"></div>
+
 </div>
 
 <div class="section">
+
 <h3>🏢 Secteurs</h3>
+
 <div class="tags" id="secteurs"></div>
+
 </div>
 
 <div class="section">
+
 <h3>📅 Publication</h3>
+
 <div class="tags" id="publication"></div>
+
 </div>
 
 <div class="section">
+
 <h3>📄 Type de contrat</h3>
+
 <div class="tags" id="contrat"></div>
+
 </div>
 
 <div class="section">
+
 <h3>🌐 Sites</h3>
+
 <div class="tags" id="sites"></div>
 
 <div class="buttons">
@@ -210,13 +246,17 @@ placeholder="🔍 Rechercher un emploi..."
 <button
 class="btn btn-search"
 id="rechercher">
+
 🔎 Rechercher
+
 </button>
 
 <button
 class="btn btn-reset"
 id="reset">
+
 🧹 Réinitialiser
+
 </button>
 
 </div>
@@ -231,7 +271,7 @@ id="reset">
 
 <br><br>
 
-Version 8.2
+Version 8.3
 
 </div>
 
@@ -240,6 +280,7 @@ Version 8.2
 let offres = [];
 
 let filtres = {
+
 metiers: [],
 taux: [],
 regions: [],
@@ -247,10 +288,13 @@ secteurs: [],
 publication: [],
 contrat: [],
 sites: []
+
 };
 
 fetch("/offers")
+
 .then(r => r.json())
+
 .then(data => {
 
 offres = data;
@@ -452,6 +496,8 @@ filtres[type].push(valeur);
 
 }
 
+appliquerFiltres();
+
 remplirFiltres();
 
 }
@@ -571,6 +617,7 @@ document
 .value = "";
 
 filtres = {
+
 metiers: [],
 taux: [],
 regions: [],
@@ -578,6 +625,7 @@ secteurs: [],
 publication: [],
 contrat: [],
 sites: []
+
 };
 
 remplirFiltres();
