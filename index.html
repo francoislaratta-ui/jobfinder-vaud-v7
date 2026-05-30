@@ -351,21 +351,79 @@ function remplirFiltres(){
     );
 }
 
+let filtres = {
+    metiers: [],
+    taux: [],
+    regions: [],
+    secteurs: [],
+    sites: []
+};
+
 function remplirListe(id, valeurs){
 
-    const zone =
-        document.getElementById(id);
+    const zone = document.getElementById(id);
 
     zone.innerHTML = "";
 
     valeurs.forEach(v => {
 
-        zone.innerHTML +=
-        `<div class="tag">${v}</div>`;
+        const actif =
+            filtres[id].includes(v)
+            ? "active"
+            : "";
 
+        zone.innerHTML += `
+        <div class="tag ${actif}"
+             onclick="toggleFiltre('${id}','${v}')">
+             ${v}
+        </div>`;
     });
 }
 
+function toggleFiltre(type,valeur){
+
+    if(filtres[type].includes(valeur)){
+        filtres[type] =
+        filtres[type].filter(v => v !== valeur);
+    }else{
+        filtres[type].push(valeur);
+    }
+
+    appliquerFiltres();
+    remplirFiltres();
+}
+
+ function appliquerFiltres(){
+
+    let resultat = offres.filter(o =>
+
+        (filtres.metiers.length === 0 ||
+         filtres.metiers.includes(o.titre))
+
+        &&
+
+        (filtres.taux.length === 0 ||
+         filtres.taux.includes(o.taux))
+
+        &&
+
+        (filtres.regions.length === 0 ||
+         filtres.regions.includes(o.lieu))
+
+        &&
+
+        (filtres.secteurs.length === 0 ||
+         filtres.secteurs.includes(o.secteur))
+
+        &&
+
+        (filtres.sites.length === 0 ||
+         filtres.sites.includes(o.source))
+
+    );
+
+    afficherOffres(resultat);
+}
 document
 .getElementById("search")
 .addEventListener("input", e => {
@@ -408,9 +466,20 @@ document
     .getElementById("search")
     .value = "";
 
+    filtres = {
+        metiers: [],
+        taux: [],
+        regions: [],
+        secteurs: [],
+        sites: []
+    };
+
+    remplirFiltres();
     afficherOffres(offres);
 
 });
+
+
 
 document
 .getElementById("toutCocher")
