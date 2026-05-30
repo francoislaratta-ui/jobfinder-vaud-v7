@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Job Finder Vaud V8</title>
+<title>Job Finder Vaud V8.1</title>
 
 <style>
 
@@ -73,6 +72,7 @@ padding:10px 14px;
 border-radius:30px;
 cursor:pointer;
 font-size:14px;
+transition:0.2s;
 }
 
 .tag.active{
@@ -160,14 +160,14 @@ font-size:14px;
 
 <body>
 
-<h1>🔎 Job Finder Vaud V8</h1>
+<h1>🔎 Job Finder Vaud V8.1</h1>
 
 <div class="subtitle">
 Smart Job Search for Vaud
 </div>
 
 <div class="counter" id="compteur">
-0 filtre sélectionné
+📊 0 offre(s) trouvée(s)
 </div>
 
 <input
@@ -178,42 +178,33 @@ placeholder="🔍 Rechercher un emploi..."
 
 <div class="section">
 <h3>💼 Métiers</h3>
-
-<div class="tags" id="metiers">
-</div>
+<div class="tags" id="metiers"></div>
 </div>
 
 <div class="section">
 <h3>⏰ Taux</h3>
-
-<div class="tags" id="taux">
-</div>
+<div class="tags" id="taux"></div>
 </div>
 
 <div class="section">
 <h3>📍 Régions</h3>
-
-<div class="tags" id="regions">
-</div>
+<div class="tags" id="regions"></div>
 </div>
 
 <div class="section">
 <h3>🏢 Secteurs</h3>
-
-<div class="tags" id="secteurs">
-</div>
+<div class="tags" id="secteurs"></div>
 </div>
 
 <div class="section">
 <h3>🌐 Sites</h3>
 
-<div class="tags" id="sites">
-</div>
+<div class="tags" id="sites"></div>
 
 <div class="buttons">
 
 <button class="btn btn-all" id="toutCocher">
-⭐ Tout cocher
+❤️ Ajouter tous aux favoris
 </button>
 
 <button class="btn btn-reset" id="reset">
@@ -232,229 +223,325 @@ placeholder="🔍 Rechercher un emploi..."
 
 <br><br>
 
-Version 8.0
+Version 8.1
 
 </div>
 
 <script>
 
 let offres = [];
-let favoris = JSON.parse(localStorage.getItem("favoris") || "[]");
+let favoris =
+JSON.parse(
+localStorage.getItem("favoris") || "[]"
+);
+
+let filtres = {
+metiers: [],
+taux: [],
+regions: [],
+secteurs: [],
+sites: []
+};
 
 fetch('/offers')
 .then(r => r.json())
 .then(data => {
-    offres = data;
-    afficherOffres(offres);
-    remplirFiltres();
+
+offres = data;
+
+afficherOffres(offres);
+
+remplirFiltres();
+
+});
+    function afficherOffres(data){
+
+document.getElementById("compteur").innerHTML =
+"📊 " + data.length + " offre(s) trouvée(s)";
+
+let html = "";
+
+data.forEach(job => {
+
+let coeur =
+favoris.includes(job.id)
+? "❤️"
+: "🤍";
+
+html += `
+
+<div class="offre">
+
+<div class="favori"
+onclick="toggleFavori(${job.id})">
+${coeur}
+</div>
+
+<h2>${job.titre}</h2>
+
+<div class="detail">
+🏢 ${job.entreprise}
+</div>
+
+<div class="detail">
+📍 ${job.lieu}
+</div>
+
+<div class="detail">
+⏰ ${job.taux}
+</div>
+
+<div class="badge">
+${job.secteur}
+</div>
+
+<div class="detail">
+📅 ${job.date}
+</div>
+
+<div class="detail">
+💰 ${job.salaire}
+</div>
+
+<p>
+${job.description}
+</p>
+
+<div class="detail">
+🎯 ${job.competences}
+</div>
+
+<div class="detail">
+🌐 ${job.source}
+</div>
+
+<a class="postuler"
+href="${job.url}"
+target="_blank">
+
+🔗 Voir l'offre
+
+</a>
+
+</div>
+
+`;
+
 });
 
-function afficherOffres(data){
+document.getElementById("offres").innerHTML =
+html;
 
-    document.getElementById("compteur").innerHTML =
-        "📊 " + data.length + " offre(s) trouvée(s)";
-
-    let html = "";
-
-    data.forEach(job => {
-
-        let coeur = favoris.includes(job.id) ? "❤️" : "🤍";
-
-        html += `
-        <div class="offre">
-
-            <div class="favori"
-                 onclick="toggleFavori(${job.id})">
-                 ${coeur}
-            </div>
-
-            <h2>${job.titre}</h2>
-
-            <div class="detail">🏢 ${job.entreprise}</div>
-            <div class="detail">📍 ${job.lieu}</div>
-            <div class="detail">⏰ ${job.taux}</div>
-
-            <div class="badge">${job.secteur}</div>
-
-            <div class="detail">📅 ${job.date}</div>
-
-            <div class="detail">
-            💰 ${job.salaire}
-            </div>
-
-            <p>${job.description}</p>
-
-            <div class="detail">
-            🎯 ${job.competences}
-            </div>
-
-            <div class="detail">
-            🌐 ${job.source}
-            </div>
-
-            <a class="postuler"
-               href="${job.url}"
-               target="_blank">
-
-               🔗 Voir l'offre
-
-            </a>
-
-        </div>
-        `;
-    });
-
-    document.getElementById("offres").innerHTML = html;
 }
 
 function toggleFavori(id){
 
-    if(favoris.includes(id)){
-        favoris = favoris.filter(x => x !== id);
-    }else{
-        favoris.push(id);
-    }
+if(favoris.includes(id)){
 
-    localStorage.setItem(
-        "favoris",
-        JSON.stringify(favoris)
-    );
+favoris =
+favoris.filter(x => x !== id);
 
-    afficherOffres(offres);
+}else{
+
+favoris.push(id);
+
+}
+
+localStorage.setItem(
+"favoris",
+JSON.stringify(favoris)
+);
+
+afficherOffres(offres);
+
 }
 
 function remplirFiltres(){
 
-    remplirListe(
-        "regions",
-        [...new Set(offres.map(o=>o.lieu))]
-    );
+remplirListe(
+"metiers",
+[
+"Gestionnaire de dossiers",
+"Employé de commerce",
+"Assistant administratif",
+"Technicien informatique",
+"AI Dev"
+]
+);
 
-    remplirListe(
-        "secteurs",
-        [...new Set(offres.map(o=>o.secteur))]
-    );
+remplirListe(
+"taux",
+[
+"50%",
+"60%",
+"70%"
+]
+);
 
-    remplirListe(
-        "sites",
-        [...new Set(offres.map(o=>o.source))]
-    );
+remplirListe(
+"regions",
+[
+"Lausanne",
+"Morges",
+"Nyon",
+"Vevey",
+"Montreux",
+"Yverdon-les-Bains"
+]
+);
 
-    remplirListe(
-        "taux",
-        [...new Set(offres.map(o=>o.taux))]
-    );
+remplirListe(
+"secteurs",
+[
+"Administration",
+"Administration publique",
+"Informatique",
+"Intelligence Artificielle",
+"Fiduciaire"
+]
+);
 
-    remplirListe(
-        "metiers",
-        [...new Set(offres.map(o=>o.titre))]
-    );
+remplirListe(
+"sites",
+[
+"Jobup",
+"Indeed",
+"Jobs.ch",
+"JobScout24"
+]
+);
+
 }
 
-let filtres = {
-    metiers: [],
-    taux: [],
-    regions: [],
-    secteurs: [],
-    sites: []
-};
+function remplirListe(id,valeurs){
 
-function remplirListe(id, valeurs){
+const zone =
+document.getElementById(id);
 
-    const zone = document.getElementById(id);
+zone.innerHTML = "";
 
-    zone.innerHTML = "";
+valeurs.forEach(v => {
 
-    valeurs.forEach(v => {
+const actif =
+filtres[id].includes(v)
+? "active"
+: "";
 
-        const actif =
-            filtres[id].includes(v)
-            ? "active"
-            : "";
+zone.innerHTML += `
+<div class="tag ${actif}"
+onclick="toggleFiltre('${id}','${v}')">
+${v}
+</div>
+`;
 
-        zone.innerHTML += `
-        <div class="tag ${actif}"
-             onclick="toggleFiltre('${id}','${v}')">
-             ${v}
-        </div>`;
-    });
+});
+
 }
 
 function toggleFiltre(type,valeur){
 
-    if(filtres[type].includes(valeur)){
-        filtres[type] =
-        filtres[type].filter(v => v !== valeur);
-    }else{
-        filtres[type].push(valeur);
-    }
+if(filtres[type].includes(valeur)){
 
-    appliquerFiltres();
-    remplirFiltres();
+filtres[type] =
+filtres[type].filter(
+v => v !== valeur
+);
+
+}else{
+
+filtres[type].push(valeur);
+
 }
 
- function appliquerFiltres(){
+appliquerFiltres();
+remplirFiltres();
 
-    let resultat = offres.filter(o =>
-
-        (filtres.metiers.length === 0 ||
-         filtres.metiers.includes(o.titre))
-
-        &&
-
-        (filtres.taux.length === 0 ||
-         filtres.taux.includes(o.taux))
-
-        &&
-
-        (filtres.regions.length === 0 ||
-         filtres.regions.includes(o.lieu))
-
-        &&
-
-        (filtres.secteurs.length === 0 ||
-         filtres.secteurs.includes(o.secteur))
-
-        &&
-
-        (filtres.sites.length === 0 ||
-         filtres.sites.includes(o.source))
-
-    );
-
-    afficherOffres(resultat);
 }
+
+function appliquerFiltres(){
+
+let resultat = offres.filter(o => {
+
+let metierMatch =
+filtres.metiers.length === 0
+||
+filtres.metiers.includes(o.titre);
+
+return metierMatch
+
+&&
+
+(
+filtres.taux.length === 0
+||
+filtres.taux.includes(o.taux)
+)
+
+&&
+
+(
+filtres.regions.length === 0
+||
+filtres.regions.includes(o.lieu)
+)
+
+&&
+
+(
+filtres.secteurs.length === 0
+||
+filtres.secteurs.includes(o.secteur)
+)
+
+&&
+
+(
+filtres.sites.length === 0
+||
+filtres.sites.includes(o.source)
+);
+
+});
+
+afficherOffres(resultat);
+
+}
+
 document
 .getElementById("search")
 .addEventListener("input", e => {
 
-    const texte =
-    e.target.value.toLowerCase();
+const texte =
+e.target.value.toLowerCase();
 
-    const resultat =
-    offres.filter(o =>
+const resultat =
+offres.filter(o =>
 
-        o.titre.toLowerCase()
-        .includes(texte)
+o.titre
+.toLowerCase()
+.includes(texte)
 
-        ||
+||
 
-        o.entreprise.toLowerCase()
-        .includes(texte)
+o.entreprise
+.toLowerCase()
+.includes(texte)
 
-        ||
+||
 
-        o.lieu.toLowerCase()
-        .includes(texte)
+o.lieu
+.toLowerCase()
+.includes(texte)
 
-        ||
+||
 
-        o.secteur.toLowerCase()
-        .includes(texte)
+o.secteur
+.toLowerCase()
+.includes(texte)
 
-    );
+);
 
-    afficherOffres(resultat);
+afficherOffres(resultat);
 
 });
 
@@ -462,38 +549,37 @@ document
 .getElementById("reset")
 .addEventListener("click", () => {
 
-    document
-    .getElementById("search")
-    .value = "";
+document
+.getElementById("search")
+.value = "";
 
-    filtres = {
-        metiers: [],
-        taux: [],
-        regions: [],
-        secteurs: [],
-        sites: []
-    };
+filtres = {
+metiers: [],
+taux: [],
+regions: [],
+secteurs: [],
+sites: []
+};
 
-    remplirFiltres();
-    afficherOffres(offres);
+remplirFiltres();
+
+afficherOffres(offres);
 
 });
-
-
 
 document
 .getElementById("toutCocher")
 .addEventListener("click", () => {
 
-    favoris =
-    offres.map(o => o.id);
+favoris =
+offres.map(o => o.id);
 
-    localStorage.setItem(
-        "favoris",
-        JSON.stringify(favoris)
-    );
+localStorage.setItem(
+"favoris",
+JSON.stringify(favoris)
+);
 
-    afficherOffres(offres);
+afficherOffres(offres);
 
 });
 
