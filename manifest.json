@@ -1,6 +1,7 @@
 {
   "name": "Job Finder Vaud",
   "short_name": "JobFinder",
+  "description": "Application de recherche d'emploi dans le canton de Vaud avec filtres intelligents et accès direct aux offres.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
