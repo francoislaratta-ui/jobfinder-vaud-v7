@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -16,22 +18,23 @@ body{
 margin:0;
 padding:20px;
 font-family:Arial,sans-serif;
-background:linear-gradient(180deg,#0f172a,#1e293b);
+background:#000000;
 color:white;
 }
 
 h1{
 text-align:center;
+margin-bottom:10px;
 }
 
 .subtitle{
 text-align:center;
 color:#cbd5e1;
-margin-bottom:20px;
+margin-bottom:25px;
 }
 
 .counter{
-background:#1e293b;
+background:#111827;
 padding:12px;
 border-radius:12px;
 text-align:center;
@@ -49,10 +52,14 @@ margin-bottom:20px;
 }
 
 .section{
-background:#1e293b;
+background:#111827;
 padding:15px;
 border-radius:15px;
 margin-bottom:15px;
+}
+
+.section h3{
+margin-top:0;
 }
 
 .tags{
@@ -62,23 +69,16 @@ gap:8px;
 }
 
 .tag{
-background:#334155;
+background:#374151;
 padding:10px 14px;
 border-radius:30px;
 cursor:pointer;
+font-size:14px;
+transition:0.2s;
 }
 
 .tag.active{
 background:#f97316;
-}
-
-.badge{
-display:inline-block;
-background:#ea580c;
-padding:5px 10px;
-border-radius:15px;
-font-size:12px;
-margin-top:8px;
 }
 
 .buttons{
@@ -106,16 +106,29 @@ background:#ef4444;
 }
 
 .offre{
-background:#1e293b;
+background:#111827;
 padding:18px;
 border-radius:15px;
 margin-bottom:15px;
 }
 
-.favori{
-float:right;
-font-size:24px;
-cursor:pointer;
+.offre h2{
+margin-top:0;
+font-size:20px;
+}
+
+.detail{
+margin:6px 0;
+color:#e5e7eb;
+}
+
+.badge{
+display:inline-block;
+background:#ea580c;
+padding:5px 10px;
+border-radius:15px;
+font-size:12px;
+margin-top:8px;
 }
 
 .postuler{
@@ -130,7 +143,15 @@ border-radius:10px;
 font-weight:bold;
 }
 
+.footer{
+text-align:center;
+margin-top:40px;
+color:#94a3b8;
+font-size:14px;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -142,7 +163,7 @@ Smart Job Search for Vaud
 </div>
 
 <div class="counter" id="compteur">
-📊 0 offre(s)
+📊 0 offre(s) trouvée(s)
 </div>
 
 <input
@@ -150,7 +171,6 @@ class="search"
 id="search"
 placeholder="🔍 Rechercher un emploi..."
 >
-
 <div class="section">
 <h3>💼 Métiers</h3>
 <div class="tags" id="metiers"></div>
@@ -177,7 +197,7 @@ placeholder="🔍 Rechercher un emploi..."
 </div>
 
 <div class="section">
-<h3>📄 Contrat</h3>
+<h3>📄 Type de contrat</h3>
 <div class="tags" id="contrat"></div>
 </div>
 
@@ -187,11 +207,15 @@ placeholder="🔍 Rechercher un emploi..."
 
 <div class="buttons">
 
-<button class="btn btn-search" id="rechercher">
+<button
+class="btn btn-search"
+id="rechercher">
 🔎 Rechercher
 </button>
 
-<button class="btn btn-reset" id="reset">
+<button
+class="btn btn-reset"
+id="reset">
 🧹 Réinitialiser
 </button>
 
@@ -201,80 +225,103 @@ placeholder="🔍 Rechercher un emploi..."
 
 <div id="offres"></div>
 
+<div class="footer">
+
+💼 Co-créateur : François
+
+<br><br>
+
+Version 8.2
+
+</div>
+
 <script>
 
 let offres = [];
-
-let favoris = JSON.parse(
-localStorage.getItem("favoris") || "[]"
-);
 
 let filtres = {
 metiers: [],
 taux: [],
 regions: [],
 secteurs: [],
-sites: [],
 publication: [],
-contrat: []
+contrat: [],
+sites: []
 };
 
 fetch("/offers")
-.then(r=>r.json())
-.then(data=>{
-offres=data;
+.then(r => r.json())
+.then(data => {
+
+offres = data;
+
 remplirFiltres();
+
 afficherOffres(offres);
+
 });
+  function afficherOffres(data){
 
-function afficherOffres(data){
+document.getElementById("compteur").innerHTML =
+"📊 " + data.length + " offre(s) trouvée(s)";
 
-document.getElementById("compteur").innerHTML=
-"📊 "+data.length+" offre(s) trouvée(s)";
+let html = "";
 
-let html="";
+data.forEach(job => {
 
-data.forEach(job=>{
-
-const coeur=
-favoris.includes(job.id)
-? "❤️"
-: "🤍";
-
-html+=`
+html += `
 
 <div class="offre">
 
-<div class="favori"
-onclick="toggleFavori(${job.id})">
-${coeur}
-</div>
-
 <h2>${job.titre}</h2>
 
-<div>🏢 ${job.entreprise}</div>
-<div>📍 ${job.lieu}</div>
-<div>⏰ ${job.taux}</div>
-<div>📅 ${job.publication}</div>
-<div>📄 ${job.contrat}</div>
+<div class="detail">
+🏢 ${job.entreprise}
+</div>
+
+<div class="detail">
+📍 ${job.lieu}
+</div>
+
+<div class="detail">
+⏰ ${job.taux}
+</div>
+
+<div class="detail">
+📅 ${job.publication || "-"}
+</div>
+
+<div class="detail">
+📄 ${job.contrat || "-"}
+</div>
+
+<div class="detail">
+💰 ${job.salaire}
+</div>
 
 <div class="badge">
 ${job.secteur}
 </div>
 
-<div>💰 ${job.salaire}</div>
+<p>
+${job.description}
+</p>
 
-<p>${job.description}</p>
-
-<div>
+<div class="detail">
 🎯 ${job.competences}
+</div>
+
+<div class="detail">
+🌐 Source : ${job.source}
 </div>
 
 <a
 class="postuler"
 href="${job.url}"
 target="_blank">
+
 🔗 Voir l'offre
+
 </a>
 
 </div>
@@ -283,53 +330,47 @@ target="_blank">
 
 });
 
-document.getElementById("offres").innerHTML=html;
-
-}
-
-function toggleFavori(id){
-
-if(favoris.includes(id)){
-favoris=favoris.filter(x=>x!==id);
-}else{
-favoris.push(id);
-}
-
-localStorage.setItem(
-"favoris",
-JSON.stringify(favoris)
-);
-
-afficherOffres(offres);
+document.getElementById("offres").innerHTML = html;
 
 }
 
 function remplirFiltres(){
 
-remplirListe("metiers",[
+remplirListe(
+"metiers",
+[
 "Gestionnaire de dossiers",
 "Employé de commerce",
 "Assistant administratif",
 "Technicien informatique",
 "AI Dev",
 "Secrétaire"
-]);
+]
+);
 
-remplirListe("taux",[
+remplirListe(
+"taux",
+[
 "50%",
 "60%",
 "70%"
-]);
+]
+);
 
-remplirListe("regions",[
+remplirListe(
+"regions",
+[
+"VD",
 "Lausanne",
 "Morges",
 "Nyon",
-"Yverdon-les-Bains",
-"VD"
-]);
+"Yverdon-les-Bains"
+]
+);
 
-remplirListe("secteurs",[
+remplirListe(
+"secteurs",
+[
 "Administration",
 "Administration publique",
 "Accueil et Secrétariat",
@@ -338,44 +379,53 @@ remplirListe("secteurs",[
 "Intelligence Artificielle",
 "Industrie",
 "Production"
-]);
-
-remplirListe("publication",[
+]
+);
+  remplirListe(
+"publication",
+[
 "24h",
 "3 jours",
 "7 jours",
 "30 jours"
-]);
+]
+);
 
-remplirListe("contrat",[
+remplirListe(
+"contrat",
+[
 "Durée déterminée",
 "Temporaire"
-]);
+]
+);
 
-remplirListe("sites",[
+remplirListe(
+"sites",
+[
 "Indeed",
 "Jobup",
 "Jobs.ch",
 "JobScout24"
-]);
+]
+);
 
 }
 
 function remplirListe(id,valeurs){
 
-const zone=
+const zone =
 document.getElementById(id);
 
-zone.innerHTML="";
+zone.innerHTML = "";
 
-valeurs.forEach(v=>{
+valeurs.forEach(v => {
 
-const actif=
+const actif =
 filtres[id].includes(v)
 ? "active"
 : "";
 
-zone.innerHTML+=`
+zone.innerHTML += `
 <div
 class="tag ${actif}"
 onclick="toggleFiltre('${id}','${v}')">
@@ -390,60 +440,121 @@ ${v}
 function toggleFiltre(type,valeur){
 
 if(filtres[type].includes(valeur)){
-filtres[type]=
-filtres[type].filter(v=>v!==valeur);
+
+filtres[type] =
+filtres[type].filter(
+v => v !== valeur
+);
+
 }else{
+
 filtres[type].push(valeur);
+
 }
 
 remplirFiltres();
-appliquerFiltres();
 
 }
 
 function appliquerFiltres(){
 
-let resultat=offres.filter(o=>{
+let resultat =
+offres.filter(o =>
 
-return (
+(
+filtres.metiers.length === 0
+||
+filtres.metiers.includes(o.titre)
+)
 
-(filtres.metiers.length===0 || filtres.metiers.includes(o.titre))
 &&
-(filtres.taux.length===0 || filtres.taux.includes(o.taux))
+
+(
+filtres.taux.length === 0
+||
+filtres.taux.includes(o.taux)
+)
+
 &&
-(filtres.regions.length===0 || filtres.regions.includes(o.lieu))
+
+(
+filtres.regions.length === 0
+||
+filtres.regions.includes(o.lieu)
+)
+
 &&
-(filtres.secteurs.length===0 || filtres.secteurs.includes(o.secteur))
+
+(
+filtres.secteurs.length === 0
+||
+filtres.secteurs.includes(o.secteur)
+)
+
 &&
-(filtres.sites.length===0 || filtres.sites.includes(o.source))
+
+(
+filtres.publication.length === 0
+||
+filtres.publication.includes(o.publication)
+)
+
 &&
-(filtres.publication.length===0 || filtres.publication.includes(o.publication))
+
+(
+filtres.contrat.length === 0
+||
+filtres.contrat.includes(o.contrat)
+)
+
 &&
-(filtres.contrat.length===0 || filtres.contrat.includes(o.contrat))
+
+(
+filtres.sites.length === 0
+||
+filtres.sites.includes(o.source)
+)
 
 );
-
-});
 
 afficherOffres(resultat);
 
 }
+  document
+.getElementById("rechercher")
+.addEventListener("click", () => {
+
+appliquerFiltres();
+
+});
 
 document
 .getElementById("search")
-.addEventListener("input",e=>{
+.addEventListener("input", e => {
 
-const texte=
+const texte =
 e.target.value.toLowerCase();
 
-const resultat=
-offres.filter(o=>
+const resultat =
+offres.filter(o =>
 
 o.titre.toLowerCase().includes(texte)
+
 ||
+
 o.entreprise.toLowerCase().includes(texte)
+
 ||
+
 o.lieu.toLowerCase().includes(texte)
+
+||
+
+o.secteur.toLowerCase().includes(texte)
+
+||
+
+o.source.toLowerCase().includes(texte)
 
 );
 
@@ -453,21 +564,24 @@ afficherOffres(resultat);
 
 document
 .getElementById("reset")
-.addEventListener("click",()=>{
+.addEventListener("click", () => {
 
-document.getElementById("search").value="";
+document
+.getElementById("search")
+.value = "";
 
-filtres={
-metiers:[],
-taux:[],
-regions:[],
-secteurs:[],
-sites:[],
-publication:[],
-contrat:[]
+filtres = {
+metiers: [],
+taux: [],
+regions: [],
+secteurs: [],
+publication: [],
+contrat: [],
+sites: []
 };
 
 remplirFiltres();
+
 afficherOffres(offres);
 
 });
@@ -475,4 +589,5 @@ afficherOffres(offres);
 </script>
 
 </body>
+
 </html>
