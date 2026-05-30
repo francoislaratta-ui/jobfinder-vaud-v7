@@ -8,13 +8,15 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1">
 
-<title>Job Finder Vaud V8.4 Premium</title>
+<title>
+🔥 Job Finder Vaud V8.5.1 Heavy Metal Edition
+</title>
 
 <link rel="manifest"
 href="/manifest.json">
 
 <meta name="theme-color"
-content="#f97316">
+content="#ff6a00">
 
 <style>
 
@@ -25,199 +27,434 @@ padding:0;
 }
 
 :root{
---orange:#f97316;
---green:#10b981;
---red:#ef4444;
---purple:#8b5cf6;
---dark:#111827;
---dark2:#1f2937;
---text:#e5e7eb;
+
+--fire:#ff6a00;
+--fire2:#ff8c00;
+--metal:#9ca3af;
+--steel:#6b7280;
+--black:#050505;
+--card:#121212;
+--green:#22c55e;
+--red:#dc2626;
+--purple:#9333ea;
+
 }
 
 body{
-padding:20px;
+
 font-family:Arial,sans-serif;
-background:#000;
+padding:20px;
+
+background:
+linear-gradient(
+180deg,
+#050505,
+#0a0a0a,
+#111111
+);
+
 color:white;
+
+min-height:100vh;
+
 }
 
 h1{
+
 text-align:center;
+font-size:34px;
 margin-bottom:10px;
-font-size:32px;
+
+color:var(--fire);
+
+text-shadow:
+0 0 15px rgba(255,106,0,.8);
+
 }
 
 .subtitle{
+
 text-align:center;
-color:#cbd5e1;
 margin-bottom:25px;
+color:#d1d5db;
+
 }
 
 .counter{
-background:#111827;
-padding:14px;
-border-radius:16px;
+
+background:
+linear-gradient(
+135deg,
+#1f1f1f,
+#292929
+);
+
+border:
+1px solid
+rgba(255,106,0,.4);
+
+padding:15px;
+
+border-radius:18px;
+
 text-align:center;
-margin-bottom:15px;
+
+font-size:22px;
+
 font-weight:bold;
-font-size:18px;
+
+margin-bottom:15px;
+
+box-shadow:
+0 0 20px
+rgba(255,106,0,.25);
+
 }
 
-.stats{
-background:#111827;
-padding:12px;
-border-radius:12px;
-text-align:center;
+.dashboard{
+
+display:grid;
+
+grid-template-columns:
+repeat(
+2,
+1fr
+);
+
+gap:10px;
+
 margin-bottom:15px;
-font-size:14px;
-color:#cbd5e1;
+
+}
+
+.dashboard-card{
+
+background:
+var(--card);
+
+border:
+1px solid
+rgba(255,106,0,.25);
+
+padding:15px;
+
+border-radius:16px;
+
+text-align:center;
+
+}
+
+.dashboard-card strong{
+
+display:block;
+
+font-size:22px;
+
+color:var(--fire);
+
 }
 
 .search{
+
 width:100%;
-padding:14px;
+
+padding:16px;
+
 border:none;
-border-radius:12px;
-font-size:16px;
-margin-bottom:20px;
+
+border-radius:16px;
+
 background:#1f2937;
+
 color:white;
+
+font-size:16px;
+
+margin-bottom:20px;
+
 }
 
 .section{
-background:#111827;
-padding:15px;
-border-radius:15px;
+
+background:
+rgba(18,18,18,.95);
+
+padding:18px;
+
+border-radius:18px;
+
 margin-bottom:15px;
+
+border:
+1px solid
+rgba(255,106,0,.15);
+
+box-shadow:
+0 6px 25px
+rgba(0,0,0,.4);
+
 }
 
 .section h3{
-margin-bottom:10px;
-color:#f97316;
+
+margin-bottom:12px;
+
+color:var(--fire);
+
 }
 
 .tags{
+
 display:flex;
 flex-wrap:wrap;
 gap:8px;
+
 }
 
 .tag{
-background:#374151;
+
+background:#2a2a2a;
+
 padding:10px 14px;
+
 border-radius:30px;
+
 cursor:pointer;
-font-size:14px;
+
+transition:.25s;
+
+}
+
+.tag:hover{
+
+transform:scale(1.05);
+
 }
 
 .tag.active{
-background:#f97316;
+
+background:var(--fire);
+
+box-shadow:
+0 0 12px
+rgba(255,106,0,.5);
+
 }
 
 .buttons{
+
 display:flex;
 gap:10px;
 margin-top:15px;
+
 }
 
 .btn{
+
 flex:1;
+
 padding:12px;
+
 border:none;
-border-radius:10px;
+
+border-radius:12px;
+
 font-weight:bold;
+
 cursor:pointer;
+
 color:white;
+
 }
 
 .btn-search{
-background:#f97316;
+
+background:var(--fire);
+
 }
 
 .btn-reset{
-background:#ef4444;
+
+background:#dc2626;
+
 }
 
 .btn-fav{
-background:#8b5cf6;
+
+background:#9333ea;
+
 }
 
 .offre{
-background:#111827;
+
+background:var(--card);
+
+border:
+1px solid
+rgba(255,106,0,.2);
+
 padding:18px;
-border-radius:15px;
+
+border-radius:18px;
+
 margin-bottom:15px;
+
+transition:.25s;
+
+}
+
+.offre:hover{
+
+transform:translateY(-3px);
+
+box-shadow:
+0 0 25px
+rgba(255,106,0,.25);
+
 }
 
 .offre h2{
+
+color:var(--fire);
+
 margin-bottom:10px;
-font-size:20px;
-color:#f97316;
+
 }
 
 .detail{
+
 margin:6px 0;
-color:#e5e7eb;
+
+color:#d1d5db;
+
 }
 
 .badge{
+
 display:inline-block;
+
 background:#ea580c;
+
 padding:5px 10px;
+
 border-radius:15px;
+
 font-size:12px;
+
 margin-top:8px;
+
 }
 
 .badge-new{
+
 display:inline-block;
-background:#10b981;
-padding:5px 10px;
+
+background:#22c55e;
+
+padding:6px 12px;
+
 border-radius:15px;
+
 font-size:12px;
+
 font-weight:bold;
+
 margin-bottom:10px;
+
+}
+
+.badge-fav{
+
+display:inline-block;
+
+background:#9333ea;
+
+padding:6px 12px;
+
+border-radius:15px;
+
+font-size:12px;
+
+font-weight:bold;
+
+margin-bottom:10px;
+
 }
 
 .postuler{
+
 display:block;
-margin-top:15px;
+
+margin-top:10px;
+
 padding:12px;
-text-align:center;
-background:#10b981;
+
+background:#22c55e;
+
 color:white;
+
 text-decoration:none;
-border-radius:10px;
+
+text-align:center;
+
+border-radius:12px;
+
 font-weight:bold;
+
 }
 
-.share{
+.btn-offre-fav{
+
+display:block;
+
 width:100%;
+
 margin-top:10px;
+
 padding:12px;
+
 border:none;
-background:#6366f1;
+
+background:#9333ea;
+
 color:white;
-border-radius:10px;
+
+border-radius:12px;
+
 font-weight:bold;
+
 cursor:pointer;
+
 }
 
 .footer{
+
 text-align:center;
+
 margin-top:40px;
-color:#94a3b8;
+
+color:#9ca3af;
+
 font-size:14px;
+
 }
 
 select{
+
 width:100%;
+
 padding:14px;
+
 border:none;
+
 border-radius:12px;
+
 background:#1f2937;
+
 color:white;
+
 margin-top:10px;
+
 }
 
 </style>
@@ -226,11 +463,11 @@ margin-top:10px;
 <body>
 
 <h1>
-🔎 Job Finder Vaud V8.4 Premium
+🔥 JOB FINDER VAUD
 </h1>
 
 <div class="subtitle">
-Smart Job Search for Vaud
+HEAVY METAL EDITION V8.5.1
 </div>
 
 <div
@@ -241,13 +478,47 @@ id="compteur">
 
 </div>
 
-<div
-class="stats"
-id="stats">
+<div class="dashboard">
 
-📍 0 région(s)
-•
-🏢 0 secteur(s)
+<div class="dashboard-card">
+
+<strong id="statOffres">
+0
+</strong>
+
+Offres
+
+</div>
+
+<div class="dashboard-card">
+
+<strong id="statFavoris">
+0
+</strong>
+
+Favoris
+
+</div>
+
+<div class="dashboard-card">
+
+<strong id="statRegions">
+0
+</strong>
+
+Régions
+
+</div>
+
+<div class="dashboard-card">
+
+<strong id="statSecteurs">
+0
+</strong>
+
+Secteurs
+
+</div>
 
 </div>
 
@@ -303,6 +574,54 @@ onclick="supprimerFavori()">
 </button>
 
 </div>
+
+</div>
+
+<div class="section">
+
+<h3>
+🔥 Mes offres favorites
+</h3>
+
+<div
+id="offresFavorites">
+
+Aucune offre favorite
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+☁️ Sauvegarde
+</h3>
+
+<div class="buttons">
+
+<button
+class="btn btn-search"
+onclick="exporterFavoris()">
+
+📤 Exporter
+
+</button>
+
+<button
+class="btn btn-fav"
+onclick="document.getElementById('importFavoris').click()">
+
+📥 Importer
+
+</button>
+
+</div>
+
+<input
+type="file"
+id="importFavoris"
+style="display:none">
 
 </div>
 
@@ -417,10 +736,44 @@ id="reset">
 
 </div>
 
+<div class="section">
+
+<h3>
+🎯 Recommandé pour vous
+</h3>
+
+<div
+id="suggestions">
+
+Aucune recommandation disponible
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+🕒 Dernières offres consultées
+</h3>
+
+<div
+id="historique">
+
+Aucun historique
+
+</div>
+
+</div>
+
 <div id="offres"></div>
 <script>
 
 let offres = [];
+
+let offresFavorites = [];
+
+let historique = [];
 
 let filtres = {
 
@@ -437,12 +790,12 @@ sites: []
 function sauvegarderEtat(){
 
 localStorage.setItem(
-"jfv84_filtres",
+"jfv851_filtres",
 JSON.stringify(filtres)
 );
 
 localStorage.setItem(
-"jfv84_search",
+"jfv851_search",
 document.getElementById(
 "search"
 ).value
@@ -454,7 +807,7 @@ function restaurerEtat(){
 
 const f =
 localStorage.getItem(
-"jfv84_filtres"
+"jfv851_filtres"
 );
 
 if(f){
@@ -466,7 +819,7 @@ JSON.parse(f);
 
 const s =
 localStorage.getItem(
-"jfv84_search"
+"jfv851_search"
 );
 
 if(s){
@@ -479,6 +832,144 @@ document.getElementById(
 
 }
 
+function chargerFavorisOffres(){
+
+offresFavorites =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv851_offres_favorites"
+)
+
+||
+
+"[]"
+
+);
+
+afficherFavorisOffres();
+
+}
+
+function sauvegarderFavorisOffres(){
+
+localStorage.setItem(
+
+"jfv851_offres_favorites",
+
+JSON.stringify(
+offresFavorites
+)
+
+);
+
+majDashboard();
+
+}
+
+function ajouterOffreFavorite(job){
+
+const existe =
+
+offresFavorites.find(
+x => x.id === job.id
+);
+
+if(existe){
+
+return;
+
+}
+
+offresFavorites.push(job);
+
+sauvegarderFavorisOffres();
+
+afficherFavorisOffres();
+
+}
+
+function supprimerOffreFavorite(id){
+
+offresFavorites =
+
+offresFavorites.filter(
+x => x.id !== id
+);
+
+sauvegarderFavorisOffres();
+
+afficherFavorisOffres();
+
+}
+
+function afficherFavorisOffres(){
+
+let html = "";
+
+if(
+offresFavorites.length===0
+){
+
+html =
+"Aucune offre favorite";
+
+}else{
+
+offresFavorites.forEach(job => {
+
+html += `
+
+<div class="offre">
+
+<div
+class="badge-fav">
+
+⭐ FAVORI
+
+</div>
+
+<h2>
+
+${job.titre}
+
+</h2>
+
+<div class="detail">
+🏢 ${job.entreprise}
+</div>
+
+<div class="detail">
+📍 ${job.lieu}
+</div>
+
+<button
+class="btn btn-reset"
+onclick="
+supprimerOffreFavorite(
+${job.id}
+)
+">
+
+❌ Supprimer
+
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+document.getElementById(
+"offresFavorites"
+).innerHTML = html;
+
+}
+
 function sauverFavori(){
 
 let favoris =
@@ -486,7 +977,7 @@ let favoris =
 JSON.parse(
 
 localStorage.getItem(
-"jfv84_favoris"
+"jfv851_recherches"
 )
 
 ||
@@ -504,7 +995,7 @@ document.getElementById(
 if(!nom){
 
 alert(
-"Entrez un nom"
+"Nom requis"
 );
 
 return;
@@ -519,9 +1010,11 @@ JSON.stringify(filtres)
 
 localStorage.setItem(
 
-"jfv84_favoris",
+"jfv851_recherches",
 
-JSON.stringify(favoris)
+JSON.stringify(
+favoris
+)
 
 );
 
@@ -536,7 +1029,7 @@ let favoris =
 JSON.parse(
 
 localStorage.getItem(
-"jfv84_favoris"
+"jfv851_recherches"
 )
 
 ||
@@ -547,22 +1040,14 @@ localStorage.getItem(
 
 let html = "";
 
-Object.keys(
-favoris
-)
-
+Object.keys(favoris)
 .forEach(f => {
 
-html += `
+html +=
 
-<option
-value="${f}">
-
+`<option value="${f}">
 ${f}
-
-</option>
-
-`;
+</option>`;
 
 });
 
@@ -586,7 +1071,7 @@ let favoris =
 JSON.parse(
 
 localStorage.getItem(
-"jfv84_favoris"
+"jfv851_recherches"
 )
 
 ||
@@ -614,8 +1099,6 @@ remplirFiltres();
 
 appliquerFiltres();
 
-sauvegarderEtat();
-
 }
 
 function supprimerFavori(){
@@ -625,7 +1108,7 @@ let favoris =
 JSON.parse(
 
 localStorage.getItem(
-"jfv84_favoris"
+"jfv851_recherches"
 )
 
 ||
@@ -644,9 +1127,11 @@ delete favoris[nom];
 
 localStorage.setItem(
 
-"jfv84_favoris",
+"jfv851_recherches",
 
-JSON.stringify(favoris)
+JSON.stringify(
+favoris
+)
 
 );
 
@@ -666,30 +1151,211 @@ restaurerEtat();
 
 rafraichirFavoris();
 
+chargerFavorisOffres();
+
 remplirFiltres();
 
 appliquerFiltres();
 
 });
-  function majStats(data){
+  function majDashboard(){
+
+document.getElementById(
+"statOffres"
+).innerText =
+offres.length;
+
+document.getElementById(
+"statFavoris"
+).innerText =
+offresFavorites.length;
 
 const regions =
 new Set(
-data.map(x => x.lieu)
-);
-
-const secteurs =
-new Set(
-data.map(x => x.secteur)
+offres.map(
+o => o.lieu
+)
 );
 
 document.getElementById(
-"stats"
+"statRegions"
+).innerText =
+regions.size;
+
+const secteurs =
+new Set(
+offres.map(
+o => o.secteur
+)
+);
+
+document.getElementById(
+"statSecteurs"
+).innerText =
+secteurs.size;
+
+}
+
+function ajouterHistorique(job){
+
+historique =
+historique.filter(
+x => x.id !== job.id
+);
+
+historique.unshift(job);
+
+if(
+historique.length > 20
+){
+
+historique =
+historique.slice(
+0,
+20
+);
+
+}
+
+localStorage.setItem(
+"jfv851_historique",
+JSON.stringify(
+historique
+)
+);
+
+afficherHistorique();
+
+}
+
+function chargerHistorique(){
+
+historique =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv851_historique"
+)
+
+||
+
+"[]"
+
+);
+
+afficherHistorique();
+
+}
+
+function afficherHistorique(){
+
+let html = "";
+
+if(
+historique.length===0
+){
+
+html =
+"Aucun historique";
+
+}else{
+
+historique.forEach(job => {
+
+html += `
+
+<div class="detail">
+
+🕒
+${job.titre}
+
+-
+${job.entreprise}
+
+</div>
+
+`;
+
+});
+
+}
+
+document.getElementById(
+"historique"
+).innerHTML =
+html;
+
+}
+
+function genererSuggestions(){
+
+if(
+offresFavorites.length===0
+){
+
+document.getElementById(
+"suggestions"
+).innerHTML =
+"Aucune recommandation disponible";
+
+return;
+
+}
+
+const secteurPrefere =
+
+offresFavorites[0]
+.secteur;
+
+const suggestions =
+
+offres.filter(
+o =>
+
+o.secteur ===
+secteurPrefere
+
+&&
+
+!offresFavorites.find(
+f => f.id === o.id
+)
+
+)
+
+.slice(
+0,
+5
+);
+
+let html = "";
+
+suggestions.forEach(job => {
+
+html += `
+
+<div class="detail">
+
+🎯
+${job.titre}
+
+-
+${job.entreprise}
+
+</div>
+
+`;
+
+});
+
+document.getElementById(
+"suggestions"
 ).innerHTML =
 
-`📍 ${regions.size} région(s)
- •
- 🏢 ${secteurs.size} secteur(s)`;
+html ||
+
+"Aucune recommandation";
 
 }
 
@@ -848,8 +1514,7 @@ appliquerFiltres();
 remplirFiltres();
 
 }
-
-function appliquerFiltres(){
+  function appliquerFiltres(){
 
 let resultat =
 
@@ -858,12 +1523,8 @@ offres.filter(o =>
 (
 
 filtres.metiers.length===0
-
 ||
-
-filtres.metiers.includes(
-o.titre
-)
+filtres.metiers.includes(o.titre)
 
 )
 
@@ -872,12 +1533,8 @@ o.titre
 (
 
 filtres.taux.length===0
-
 ||
-
-filtres.taux.includes(
-o.taux
-)
+filtres.taux.includes(o.taux)
 
 )
 
@@ -886,12 +1543,8 @@ o.taux
 (
 
 filtres.regions.length===0
-
 ||
-
-filtres.regions.includes(
-o.lieu
-)
+filtres.regions.includes(o.lieu)
 
 )
 
@@ -900,12 +1553,8 @@ o.lieu
 (
 
 filtres.secteurs.length===0
-
 ||
-
-filtres.secteurs.includes(
-o.secteur
-)
+filtres.secteurs.includes(o.secteur)
 
 )
 
@@ -914,12 +1563,8 @@ o.secteur
 (
 
 filtres.publication.length===0
-
 ||
-
-filtres.publication.includes(
-o.publication
-)
+filtres.publication.includes(o.publication)
 
 )
 
@@ -928,12 +1573,8 @@ o.publication
 (
 
 filtres.contrat.length===0
-
 ||
-
-filtres.contrat.includes(
-o.contrat
-)
+filtres.contrat.includes(o.contrat)
 
 )
 
@@ -942,12 +1583,8 @@ o.contrat
 (
 
 filtres.sites.length===0
-
 ||
-
-filtres.sites.includes(
-o.source
-)
+filtres.sites.includes(o.source)
 
 )
 
@@ -957,24 +1594,11 @@ afficherOffres(
 resultat
 );
 
-majStats(
-resultat
-);
+majDashboard();
+
+genererSuggestions();
 
 }
-
-document
-.getElementById(
-"rechercher"
-)
-.addEventListener(
-"click",
-() => {
-
-appliquerFiltres();
-
-}
-);
 
 document
 .getElementById(
@@ -984,11 +1608,11 @@ document
 "input",
 e => {
 
-sauvegarderEtat();
-
 const texte =
 e.target.value
 .toLowerCase();
+
+sauvegarderEtat();
 
 const resultat =
 
@@ -1028,11 +1652,16 @@ afficherOffres(
 resultat
 );
 
-majStats(
-resultat
+}
 );
 
-}
+document
+.getElementById(
+"rechercher"
+)
+.addEventListener(
+"click",
+appliquerFiltres
 );
 
 document
@@ -1046,8 +1675,7 @@ document
 document
 .getElementById(
 "search"
-)
-.value = "";
+).value = "";
 
 filtres = {
 
@@ -1062,11 +1690,11 @@ sites: []
 };
 
 localStorage.removeItem(
-"jfv84_filtres"
+"jfv851_filtres"
 );
 
 localStorage.removeItem(
-"jfv84_search"
+"jfv851_search"
 );
 
 remplirFiltres();
@@ -1075,48 +1703,17 @@ afficherOffres(
 offres
 );
 
-majStats(
-offres
-);
+majDashboard();
 
 }
 );
-  function partager(url){
-
-if(navigator.share){
-
-navigator.share({
-
-title:
-"Job Finder Vaud",
-
-text:
-"Offre trouvée sur Job Finder Vaud",
-
-url:url
-
-});
-
-}else{
-
-navigator.clipboard
-.writeText(url);
-
-alert(
-"Lien copié dans le presse-papiers"
-);
-
-}
-
-}
 
 function afficherOffres(data){
 
 document
 .getElementById(
 "compteur"
-)
-.innerHTML =
+).innerHTML =
 
 "📊 "
 +
@@ -1130,23 +1727,15 @@ data.forEach(job => {
 
 const nouveau =
 
-job.publication
-=== "24h"
+job.publication === "24h"
 
 ?
 
-`
-<div
-class="badge-new">
-
-🆕 NOUVEAU
-
-</div>
-`
+'<div class="badge-new">🆕 NOUVEAU</div>'
 
 :
 
-"";
+'';
 
 html += `
 
@@ -1173,23 +1762,27 @@ ${job.titre}
 </div>
 
 <div class="detail">
-📅 ${job.publication || "-"}
+📅 ${job.publication}
 </div>
 
 <div class="detail">
-📄 ${job.contrat || "-"}
+📄 ${job.contrat}
 </div>
 
 <div class="detail">
-💰 ${job.salaire || "-"}
+💰 ${job.salaire}
 </div>
 
 <div class="badge">
+
 ${job.secteur}
+
 </div>
 
 <p>
+
 ${job.description}
+
 </p>
 
 <div class="detail">
@@ -1197,21 +1790,22 @@ ${job.description}
 </div>
 
 <div class="detail">
-🌐 Source : ${job.source}
+🌐 ${job.source}
 </div>
 
 <button
-class="share"
-onclick="partager('${job.url}')">
+class="btn-offre-fav"
+onclick='ajouterOffreFavorite(${JSON.stringify(job)})'>
 
-📤 Partager
+⭐ Ajouter aux favoris
 
 </button>
 
 <a
 class="postuler"
 href="${job.url}"
-target="_blank">
+target="_blank"
+onclick='ajouterHistorique(${JSON.stringify(job)})'>
 
 🔗 Voir l'offre
 
@@ -1223,13 +1817,108 @@ target="_blank">
 
 });
 
-document
-.getElementById(
+document.getElementById(
 "offres"
-)
-.innerHTML = html;
+).innerHTML = html;
 
 }
+
+function exporterFavoris(){
+
+const data = {
+
+favoris:
+offresFavorites,
+
+historique:
+historique
+
+};
+
+const blob =
+
+new Blob(
+
+[
+JSON.stringify(
+data,
+null,
+2
+)
+],
+
+{
+type:
+"application/json"
+}
+
+);
+
+const a =
+document.createElement(
+"a"
+);
+
+a.href =
+URL.createObjectURL(
+blob
+);
+
+a.download =
+"jobfinder-favoris.json";
+
+a.click();
+
+}
+
+document
+.getElementById(
+"importFavoris"
+)
+.addEventListener(
+"change",
+e => {
+
+const file =
+e.target.files[0];
+
+if(!file) return;
+
+const reader =
+new FileReader();
+
+reader.onload =
+evt => {
+
+const data =
+JSON.parse(
+evt.target.result
+);
+
+offresFavorites =
+data.favoris || [];
+
+historique =
+data.historique || [];
+
+sauvegarderFavorisOffres();
+
+afficherFavorisOffres();
+
+afficherHistorique();
+
+majDashboard();
+
+};
+
+reader.readAsText(
+file
+);
+
+}
+);
+
+chargerHistorique();
 
 if(
 "serviceWorker"
@@ -1248,11 +1937,16 @@ navigator
 
 <div class="footer">
 
-💼 Co-créateur : François
+🤘 Job Finder Vaud
+
+<br>
+
+HEAVY METAL EDITION V8.5.1
 
 <br><br>
 
-Version 8.4 Premium
+Co-créateur :
+François
 
 </div>
 
