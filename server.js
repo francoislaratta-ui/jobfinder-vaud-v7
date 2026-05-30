@@ -1,18 +1,12 @@
-
 const express = require("express");
-const path = require("path");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get("/offers", (req, res) => {
-  const data = require("./offers.json");
-  res.json(data);
-});
-app.use(express.static(__dirname));
-
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.send("Job Finder fonctionne");
 });
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("Serveur démarré");
 });
