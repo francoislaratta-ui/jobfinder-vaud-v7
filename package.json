@@ -1,12 +1,25 @@
 {
-  "name": "jobfinder-vaud-v7",
-  "version": "1.0.0",
-  "description": "Job Finder Vaud API",
+  "name": "jobfinder-vaud-v86",
+  "version": "8.6.0",
+  "description": "Job Finder Vaud Black Metal Ultimate",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
+  "keywords": [
+    "emploi",
+    "vaud",
+    "jobfinder",
+    "pwa",
+    "jobs",
+    "render"
+  ],
+  "author": "François",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
