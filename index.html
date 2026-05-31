@@ -9,14 +9,14 @@
 content="width=device-width, initial-scale=1">
 
 <title>
-🔥 Job Finder Vaud V8.5.2 Heavy Metal Edition
+🤘 Job Finder Vaud V8.6 Black Metal Ultimate
 </title>
 
 <link rel="manifest"
 href="/manifest.json">
 
 <meta name="theme-color"
-content="#ff6a00">
+content="#c26d12">
 
 <style>
 
@@ -28,15 +28,27 @@ padding:0;
 
 :root{
 
---fire:#ff6a00;
---fire2:#ff8c00;
---metal:#9ca3af;
---steel:#6b7280;
+--fire:#c26d12;
+--fire2:#9a5a14;
+
 --black:#050505;
---card:#121212;
+--black2:#0f0f0f;
+
+--card:#181818;
+
+--metal:#9ca3af;
+
 --green:#22c55e;
+
 --red:#dc2626;
+
 --purple:#9333ea;
+
+}
+
+html{
+
+scroll-behavior:smooth;
 
 }
 
@@ -47,10 +59,11 @@ font-family:Arial,sans-serif;
 padding:20px;
 
 background:
+
 linear-gradient(
 180deg,
 #050505,
-#0a0a0a,
+#090909,
 #111111
 );
 
@@ -71,7 +84,9 @@ margin-bottom:10px;
 color:var(--fire);
 
 text-shadow:
-0 0 15px rgba(255,106,0,.8);
+
+0 0 10px
+rgba(194,109,18,.25);
 
 }
 
@@ -88,15 +103,17 @@ color:#d1d5db;
 .counter{
 
 background:
+
 linear-gradient(
 135deg,
-#1f1f1f,
-#292929
+#1b1b1b,
+#252525
 );
 
 border:
+
 1px solid
-rgba(255,106,0,.4);
+rgba(194,109,18,.25);
 
 padding:15px;
 
@@ -111,8 +128,9 @@ font-weight:bold;
 margin-bottom:15px;
 
 box-shadow:
-0 0 20px
-rgba(255,106,0,.25);
+
+0 0 10px
+rgba(194,109,18,.15);
 
 }
 
@@ -134,18 +152,28 @@ margin-bottom:15px;
 
 .dashboard-card{
 
-background:
-var(--card);
+background:var(--card);
 
 border:
+
 1px solid
-rgba(255,106,0,.25);
+rgba(194,109,18,.20);
 
 padding:15px;
 
 border-radius:16px;
 
 text-align:center;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.dashboard-card:hover{
+
+transform:scale(1.03);
 
 }
 
@@ -159,15 +187,56 @@ color:var(--fire);
 
 }
 
+.quickbar{
+
+display:flex;
+
+gap:10px;
+
+margin-bottom:15px;
+
+}
+
+.quickbtn{
+
+flex:1;
+
+padding:12px;
+
+border:none;
+
+border-radius:14px;
+
+cursor:pointer;
+
+font-weight:bold;
+
+color:white;
+
+background:#232323;
+
+border:
+
+1px solid
+rgba(194,109,18,.20);
+
+}
+
+.quickbtn:hover{
+
+background:#2a2a2a;
+
+}
+
 .search{
 
 width:100%;
 
-padding:16px;
+padding:15px;
 
 border:none;
 
-border-radius:16px;
+border-radius:15px;
 
 background:#1f2937;
 
@@ -181,8 +250,7 @@ margin-bottom:20px;
 
 .section{
 
-background:
-rgba(18,18,18,.95);
+background:var(--card);
 
 padding:18px;
 
@@ -191,20 +259,25 @@ border-radius:18px;
 margin-bottom:15px;
 
 border:
-1px solid
-rgba(255,106,0,.15);
 
-box-shadow:
-0 6px 25px
-rgba(0,0,0,.4);
+1px solid
+rgba(194,109,18,.15);
 
 }
 
 .section h3{
 
+color:var(--fire);
+
 margin-bottom:12px;
 
-color:var(--fire);
+}
+
+.accordion{
+
+cursor:pointer;
+
+user-select:none;
 
 }
 
@@ -228,23 +301,13 @@ border-radius:30px;
 
 cursor:pointer;
 
-transition:.25s;
-
-}
-
-.tag:hover{
-
-transform:scale(1.05);
+transition:.2s;
 
 }
 
 .tag.active{
 
 background:var(--fire);
-
-box-shadow:
-0 0 12px
-rgba(255,106,0,.5);
 
 }
 
@@ -284,23 +347,19 @@ background:var(--fire);
 
 .btn-reset{
 
-background:#dc2626;
+background:var(--red);
 
 }
 
 .btn-fav{
 
-background:#9333ea;
+background:var(--purple);
 
 }
 
 .offre{
 
-background:var(--card);
-
-border:
-1px solid
-rgba(255,106,0,.2);
+background:#1b1b1b;
 
 padding:18px;
 
@@ -308,25 +367,18 @@ border-radius:18px;
 
 margin-bottom:15px;
 
-transition:.25s;
+border:
 
-}
-
-.offre:hover{
-
-transform:translateY(-3px);
-
-box-shadow:
-0 0 25px
-rgba(255,106,0,.25);
+1px solid
+rgba(194,109,18,.15);
 
 }
 
 .offre h2{
 
-color:var(--fire);
-
 margin-bottom:10px;
+
+color:var(--fire);
 
 }
 
@@ -342,11 +394,11 @@ color:#d1d5db;
 
 display:inline-block;
 
-background:#ea580c;
-
 padding:5px 10px;
 
 border-radius:15px;
+
+background:#a16207;
 
 font-size:12px;
 
@@ -358,11 +410,11 @@ margin-top:8px;
 
 display:inline-block;
 
-background:#22c55e;
-
 padding:6px 12px;
 
 border-radius:15px;
+
+background:#16a34a;
 
 font-size:12px;
 
@@ -376,11 +428,11 @@ margin-bottom:10px;
 
 display:inline-block;
 
-background:#9333ea;
-
 padding:6px 12px;
 
 border-radius:15px;
+
+background:#7e22ce;
 
 font-size:12px;
 
@@ -398,23 +450,21 @@ margin-top:10px;
 
 padding:12px;
 
-background:#22c55e;
-
-color:white;
+border-radius:12px;
 
 text-decoration:none;
 
 text-align:center;
 
-border-radius:12px;
+background:#16a34a;
+
+color:white;
 
 font-weight:bold;
 
 }
 
 .btn-offre-fav{
-
-display:block;
 
 width:100%;
 
@@ -424,15 +474,65 @@ padding:12px;
 
 border:none;
 
-background:#9333ea;
+border-radius:12px;
+
+background:#7e22ce;
 
 color:white;
-
-border-radius:12px;
 
 font-weight:bold;
 
 cursor:pointer;
+
+}
+
+.notification-badge{
+
+position:fixed;
+
+top:15px;
+
+right:15px;
+
+background:#dc2626;
+
+color:white;
+
+padding:8px 12px;
+
+border-radius:20px;
+
+font-weight:bold;
+
+z-index:9999;
+
+}
+
+.back-top{
+
+position:fixed;
+
+bottom:20px;
+
+right:20px;
+
+width:50px;
+
+height:50px;
+
+border:none;
+
+border-radius:50%;
+
+background:var(--fire);
+
+color:white;
+
+font-size:20px;
+
+cursor:pointer;
+
+z-index:9999;
 
 }
 
@@ -466,18 +566,35 @@ margin-top:10px;
 
 }
 
+.hidden{
+
+display:none;
+
+}
+
 </style>
 
 </head>
+<body>
 
-  <body>
+<div
+class="notification-badge"
+id="notificationBadge">
+
+🔔 0
+
+</div>
 
 <h1>
-🔥 JOB FINDER VAUD
+
+🤘 JOB FINDER VAUD
+
 </h1>
 
 <div class="subtitle">
-HEAVY METAL EDITION V8.5.2
+
+BLACK METAL ULTIMATE V8.6
+
 </div>
 
 <div
@@ -490,45 +607,118 @@ id="compteur">
 
 <div class="dashboard">
 
-<div class="dashboard-card">
+<div
+class="dashboard-card"
+onclick="
+document
+.getElementById('offres')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
 
-<strong id="statOffres">
+<strong
+id="statOffres">
+
 0
+
 </strong>
 
-Offres
+📋 Offres
+
+</div>
+
+<div
+class="dashboard-card"
+onclick="
+document
+.getElementById('offresFavorites')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+<strong
+id="statFavoris">
+
+0
+
+</strong>
+
+⭐ Favoris
 
 </div>
 
 <div class="dashboard-card">
 
-<strong id="statFavoris">
+<strong
+id="statRegions">
+
 0
+
 </strong>
 
-Favoris
+📍 Régions
 
 </div>
 
 <div class="dashboard-card">
 
-<strong id="statRegions">
+<strong
+id="statSecteurs">
+
 0
+
 </strong>
 
-Régions
+🏢 Secteurs
 
 </div>
 
-<div class="dashboard-card">
-
-<strong id="statSecteurs">
-0
-</strong>
-
-Secteurs
-
 </div>
+
+<div class="quickbar">
+
+<button
+class="quickbtn"
+onclick="
+document
+.getElementById('offres')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+📋 Offres
+
+</button>
+
+<button
+class="quickbtn"
+onclick="
+document
+.getElementById('offresFavorites')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+⭐ Favoris
+
+</button>
+
+<button
+class="quickbtn"
+onclick="
+window.scrollTo({
+top:0,
+behavior:'smooth'
+})
+">
+
+⬆ Haut
+
+</button>
 
 </div>
 
@@ -540,7 +730,9 @@ placeholder="🔍 Rechercher un emploi...">
 <div class="section">
 
 <h3>
+
 ⭐ Favoris de recherches
+
 </h3>
 
 <input
@@ -552,7 +744,9 @@ placeholder="Nom du favori">
 id="listeFavoris">
 
 <option>
+
 Aucun favori
+
 </option>
 
 </select>
@@ -590,7 +784,26 @@ onclick="supprimerFavori()">
 <div class="section">
 
 <h3>
+
+🔔 Notifications
+
+</h3>
+
+<div
+id="notifications">
+
+Aucune notification
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
 🔥 Mes offres favorites
+
 </h3>
 
 <div
@@ -605,7 +818,9 @@ Aucune offre favorite
 <div class="section">
 
 <h3>
-☁️ Sauvegarde Cloud Locale
+
+☁️ Sauvegarde
+
 </h3>
 
 <div class="buttons">
@@ -643,91 +858,165 @@ style="display:none">
 
 <div class="section">
 
-<h3>
-💼 Métiers
+<h3
+class="accordion"
+onclick="toggleAccordion('metiersBox')">
+
+▶ 💼 Métiers
+
 </h3>
+
+<div
+id="metiersBox">
 
 <div
 class="tags"
 id="metiers">
+
+</div>
+
 </div>
 
 </div>
 
 <div class="section">
 
-<h3>
-⏰ Taux
+<h3
+class="accordion"
+onclick="toggleAccordion('tauxBox')">
+
+▶ ⏰ Taux
+
 </h3>
+
+<div
+id="tauxBox"
+class="hidden">
 
 <div
 class="tags"
 id="taux">
+
+</div>
+
 </div>
 
 </div>
 
 <div class="section">
 
-<h3>
-📍 Régions
+<h3
+class="accordion"
+onclick="toggleAccordion('regionsBox')">
+
+▶ 📍 Régions
+
 </h3>
+
+<div
+id="regionsBox"
+class="hidden">
 
 <div
 class="tags"
 id="regions">
+
+</div>
+
 </div>
 
 </div>
 
 <div class="section">
 
-<h3>
-🏢 Secteurs
+<h3
+class="accordion"
+onclick="toggleAccordion('secteursBox')">
+
+▶ 🏢 Secteurs
+
 </h3>
+
+<div
+id="secteursBox"
+class="hidden">
 
 <div
 class="tags"
 id="secteurs">
+
+</div>
+
 </div>
 
 </div>
 
 <div class="section">
 
-<h3>
-📅 Publication
+<h3
+class="accordion"
+onclick="toggleAccordion('publicationBox')">
+
+▶ 📅 Publication
+
 </h3>
+
+<div
+id="publicationBox"
+class="hidden">
 
 <div
 class="tags"
 id="publication">
+
+</div>
+
 </div>
 
 </div>
 
 <div class="section">
 
-<h3>
-📄 Type de contrat
+<h3
+class="accordion"
+onclick="toggleAccordion('contratBox')">
+
+▶ 📄 Contrat
+
 </h3>
+
+<div
+id="contratBox"
+class="hidden">
 
 <div
 class="tags"
 id="contrat">
+
+</div>
+
 </div>
 
 </div>
 
 <div class="section">
 
-<h3>
-🌐 Sites
+<h3
+class="accordion"
+onclick="toggleAccordion('sitesBox')">
+
+▶ 🌐 Sites
+
 </h3>
+
+<div
+id="sitesBox"
+class="hidden">
 
 <div
 class="tags"
 id="sites">
+
 </div>
 
 <div class="buttons">
@@ -752,10 +1041,14 @@ id="reset">
 
 </div>
 
+</div>
+
 <div class="section">
 
 <h3>
+
 🎯 Recommandé pour vous
+
 </h3>
 
 <div
@@ -770,7 +1063,9 @@ Aucune recommandation disponible
 <div class="section">
 
 <h3>
+
 🕒 Dernières offres consultées
+
 </h3>
 
 <div
@@ -784,13 +1079,15 @@ Aucun historique
 
 <div id="offres"></div>
 
-    <script>
+  <script>
 
 let offres = [];
 
 let offresFavorites = [];
 
 let historique = [];
+
+let notifications = [];
 
 let filtres = {
 
@@ -804,15 +1101,24 @@ sites: []
 
 };
 
+function toggleAccordion(id){
+
+document
+.getElementById(id)
+.classList
+.toggle("hidden");
+
+}
+
 function sauvegarderEtat(){
 
 localStorage.setItem(
-"jfv852_filtres",
+"jfv86_filtres",
 JSON.stringify(filtres)
 );
 
 localStorage.setItem(
-"jfv852_search",
+"jfv86_search",
 document.getElementById(
 "search"
 ).value
@@ -824,7 +1130,7 @@ function restaurerEtat(){
 
 const f =
 localStorage.getItem(
-"jfv852_filtres"
+"jfv86_filtres"
 );
 
 if(f){
@@ -836,7 +1142,7 @@ JSON.parse(f);
 
 const s =
 localStorage.getItem(
-"jfv852_search"
+"jfv86_search"
 );
 
 if(s){
@@ -849,6 +1155,110 @@ document.getElementById(
 
 }
 
+function ajouterNotification(message){
+
+notifications.unshift({
+
+date:
+new Date()
+.toLocaleString(),
+
+texte:
+message
+
+});
+
+if(
+notifications.length > 50
+){
+
+notifications =
+notifications.slice(
+0,
+50
+);
+
+}
+
+localStorage.setItem(
+
+"jfv86_notifications",
+
+JSON.stringify(
+notifications
+)
+
+);
+
+afficherNotifications();
+
+}
+
+function chargerNotifications(){
+
+notifications =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv86_notifications"
+)
+
+||
+
+"[]"
+
+);
+
+afficherNotifications();
+
+}
+
+function afficherNotifications(){
+
+document.getElementById(
+"notificationBadge"
+).innerHTML =
+
+"🔔 "
++
+notifications.length;
+
+let html = "";
+
+if(
+notifications.length===0
+){
+
+html =
+"Aucune notification";
+
+}else{
+
+notifications.forEach(n => {
+
+html += `
+
+<div class="detail">
+
+🔔
+${n.texte}
+
+</div>
+
+`;
+
+});
+
+}
+
+document.getElementById(
+"notifications"
+).innerHTML =
+html;
+
+}
+
 function chargerFavorisOffres(){
 
 offresFavorites =
@@ -856,7 +1266,7 @@ offresFavorites =
 JSON.parse(
 
 localStorage.getItem(
-"jfv852_offres_favorites"
+"jfv86_offres_favorites"
 )
 
 ||
@@ -873,7 +1283,7 @@ function sauvegarderFavorisOffres(){
 
 localStorage.setItem(
 
-"jfv852_offres_favorites",
+"jfv86_offres_favorites",
 
 JSON.stringify(
 offresFavorites
@@ -885,15 +1295,19 @@ majDashboard();
 
 }
 
-function ajouterOffreFavorite(job){
+function estFavori(id){
 
-const existe =
-
-offresFavorites.find(
-x => x.id === job.id
+return offresFavorites.some(
+o => o.id === id
 );
 
-if(existe){
+}
+
+function ajouterOffreFavorite(job){
+
+if(
+estFavori(job.id)
+){
 
 return;
 
@@ -907,6 +1321,14 @@ afficherFavorisOffres();
 
 genererSuggestions();
 
+ajouterNotification(
+
+"Offre ajoutée aux favoris : "
++
+job.titre
+
+);
+
 }
 
 function supprimerOffreFavorite(id){
@@ -914,7 +1336,7 @@ function supprimerOffreFavorite(id){
 offresFavorites =
 
 offresFavorites.filter(
-x => x.id !== id
+o => o.id !== id
 );
 
 sauvegarderFavorisOffres();
@@ -944,8 +1366,7 @@ html += `
 
 <div class="offre">
 
-<div
-class="badge-fav">
+<div class="badge-fav">
 
 ⭐ FAVORI
 
@@ -987,7 +1408,8 @@ ${job.id}
 
 document.getElementById(
 "offresFavorites"
-).innerHTML = html;
+).innerHTML =
+html;
 
 }
 
@@ -998,7 +1420,7 @@ let favoris =
 JSON.parse(
 
 localStorage.getItem(
-"jfv852_recherches"
+"jfv86_recherches"
 )
 
 ||
@@ -1027,7 +1449,7 @@ JSON.stringify(filtres)
 
 localStorage.setItem(
 
-"jfv852_recherches",
+"jfv86_recherches",
 
 JSON.stringify(
 favoris
@@ -1046,7 +1468,7 @@ let favoris =
 JSON.parse(
 
 localStorage.getItem(
-"jfv852_recherches"
+"jfv86_recherches"
 )
 
 ||
@@ -1057,14 +1479,22 @@ localStorage.getItem(
 
 let html = "";
 
-Object.keys(favoris)
+Object.keys(
+favoris
+)
+
 .forEach(f => {
 
-html +=
+html += `
 
-`<option value="${f}">
+<option
+value="${f}">
+
 ${f}
-</option>`;
+
+</option>
+
+`;
 
 });
 
@@ -1077,7 +1507,8 @@ html =
 
 document.getElementById(
 "listeFavoris"
-).innerHTML = html;
+).innerHTML =
+html;
 
 }
 
@@ -1088,7 +1519,7 @@ let favoris =
 JSON.parse(
 
 localStorage.getItem(
-"jfv852_recherches"
+"jfv86_recherches"
 )
 
 ||
@@ -1125,7 +1556,7 @@ let favoris =
 JSON.parse(
 
 localStorage.getItem(
-"jfv852_recherches"
+"jfv86_recherches"
 )
 
 ||
@@ -1144,7 +1575,7 @@ delete favoris[nom];
 
 localStorage.setItem(
 
-"jfv852_recherches",
+"jfv86_recherches",
 
 JSON.stringify(
 favoris
@@ -1156,33 +1587,7 @@ rafraichirFavoris();
 
 }
 
-fetch("/offers")
-
-.then(r => r.json())
-
-.then(data => {
-
-offres = data;
-
-restaurerEtat();
-
-rafraichirFavoris();
-
-chargerFavorisOffres();
-
-remplirFiltres();
-
-afficherOffres(
-offres
-);
-
-majDashboard();
-
-genererSuggestions();
-
-});
-
-      function majDashboard(){
+  function majDashboard(){
 
 document.getElementById(
 "statOffres"
@@ -1224,7 +1629,7 @@ function ajouterHistorique(job){
 
 historique =
 historique.filter(
-x => x.id !== job.id
+o => o.id !== job.id
 );
 
 historique.unshift(job);
@@ -1242,10 +1647,13 @@ historique.slice(
 }
 
 localStorage.setItem(
-"jfv852_historique",
+
+"jfv86_historique",
+
 JSON.stringify(
 historique
 )
+
 );
 
 afficherHistorique();
@@ -1259,7 +1667,7 @@ historique =
 JSON.parse(
 
 localStorage.getItem(
-"jfv852_historique"
+"jfv86_historique"
 )
 
 ||
@@ -1647,7 +2055,7 @@ remplirListe(
 
 }
 
-function remplirListe(
+    function remplirListe(
 id,
 valeurs
 ){
@@ -1724,6 +2132,7 @@ appliquerFiltres();
 remplirFiltres();
 
 }
+
 function appliquerFiltres(){
 
 let resultat =
@@ -1920,11 +2329,11 @@ sites: []
 };
 
 localStorage.removeItem(
-"jfv852_filtres"
+"jfv86_filtres"
 );
 
 localStorage.removeItem(
-"jfv852_search"
+"jfv86_search"
 );
 
 remplirFiltres();
@@ -1938,7 +2347,37 @@ majDashboard();
 }
 );
 
-function afficherOffres(data){
+fetch("/offers")
+
+.then(r => r.json())
+
+.then(data => {
+
+offres = data;
+
+restaurerEtat();
+
+rafraichirFavoris();
+
+chargerFavorisOffres();
+
+chargerHistorique();
+
+chargerNotifications();
+
+remplirFiltres();
+
+afficherOffres(
+offres
+);
+
+majDashboard();
+
+genererSuggestions();
+
+});
+
+   function afficherOffres(data){
 
 document
 .getElementById(
@@ -1966,6 +2405,42 @@ job.publication === "24h"
 :
 
 '';
+
+const favori =
+
+estFavori(job.id);
+
+const boutonFavori =
+
+favori
+
+?
+
+`
+
+<button
+class="btn-offre-fav"
+disabled>
+
+⭐ Favori enregistré
+
+</button>
+
+`
+
+:
+
+`
+
+<button
+class="btn-offre-fav"
+onclick='ajouterOffreFavorite(${JSON.stringify(job)})'>
+
+⭐ Ajouter aux favoris
+
+</button>
+
+`;
 
 html += `
 
@@ -2004,11 +2479,15 @@ ${job.titre}
 </div>
 
 <div class="badge">
+
 ${job.secteur}
+
 </div>
 
 <p>
+
 ${job.description}
+
 </p>
 
 <div class="detail">
@@ -2019,13 +2498,7 @@ ${job.description}
 🌐 ${job.source}
 </div>
 
-<button
-class="btn-offre-fav"
-onclick='ajouterOffreFavorite(${JSON.stringify(job)})'>
-
-⭐ Ajouter aux favoris
-
-</button>
+${boutonFavori}
 
 <a
 class="postuler"
@@ -2045,7 +2518,8 @@ onclick='ajouterHistorique(${JSON.stringify(job)})'>
 
 document.getElementById(
 "offres"
-).innerHTML = html;
+).innerHTML =
+html;
 
 }
 
@@ -2057,7 +2531,10 @@ favoris:
 offresFavorites,
 
 historique:
-historique
+historique,
+
+notifications:
+notifications
 
 };
 
@@ -2091,7 +2568,7 @@ blob
 );
 
 a.download =
-"jobfinder-favoris.json";
+"jobfinder-vaud-v86.json";
 
 a.click();
 
@@ -2108,7 +2585,9 @@ e => {
 const file =
 e.target.files[0];
 
-if(!file) return;
+if(!file){
+return;
+}
 
 const reader =
 new FileReader();
@@ -2127,13 +2606,20 @@ data.favoris || [];
 historique =
 data.historique || [];
 
+notifications =
+data.notifications || [];
+
 sauvegarderFavorisOffres();
 
 afficherFavorisOffres();
 
 afficherHistorique();
 
+afficherNotifications();
+
 majDashboard();
+
+genererSuggestions();
 
 };
 
@@ -2144,7 +2630,15 @@ file
 }
 );
 
-chargerHistorique();
+if(
+"Notification"
+in window
+){
+
+Notification
+.requestPermission();
+
+}
 
 if(
 "serviceWorker"
@@ -2161,13 +2655,54 @@ navigator
 
 </script>
 
+  <button
+class="back-top"
+onclick="
+window.scrollTo({
+top:0,
+behavior:'smooth'
+})
+">
+
+⬆
+
+</button>
+
 <div class="footer">
 
 🤘 Job Finder Vaud
 
 <br>
 
-HEAVY METAL EDITION V8.5.2
+BLACK METAL ULTIMATE V8.6
+
+<br><br>
+
+✅ Dashboard cliquable
+
+<br>
+
+✅ Favoris intelligents
+
+<br>
+
+✅ Notifications
+
+<br>
+
+✅ Historique
+
+<br>
+
+✅ Suggestions
+
+<br>
+
+✅ Export / Import
+
+<br>
+
+✅ PWA Android
 
 <br><br>
 
@@ -2179,4 +2714,3 @@ François
 </body>
 
 </html>
-      
