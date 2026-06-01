@@ -1,18 +1,17 @@
-const CACHE_NAME = "jobfinder-vaud-v86";
+const CACHE_NAME =
+"jobfinder-v10";
 
 const urlsToCache = [
 
 "/",
 "/index.html",
-"/offers.json",
-"/manifest.json"
+"/manifest.json",
+"/offers.json"
 
 ];
 
 self.addEventListener(
-
 "install",
-
 event => {
 
 event.waitUntil(
@@ -32,51 +31,10 @@ urlsToCache
 );
 
 }
-
 );
 
 self.addEventListener(
-
-"activate",
-
-event => {
-
-event.waitUntil(
-
-caches.keys()
-
-.then(keys => {
-
-return Promise.all(
-
-keys.map(key => {
-
-if(
-key !== CACHE_NAME
-){
-
-return caches.delete(
-key
-);
-
-}
-
-})
-
-);
-
-})
-
-);
-
-}
-
-);
-
-self.addEventListener(
-
 "fetch",
-
 event => {
 
 event.respondWith(
@@ -87,14 +45,11 @@ event.request
 
 .then(response => {
 
-if(response){
-
-return response;
-
-}
-
-return fetch(
+return (
+response ||
+fetch(
 event.request
+)
 );
 
 })
@@ -102,64 +57,4 @@ event.request
 );
 
 }
-
-);
-
-self.addEventListener(
-
-"message",
-
-event => {
-
-if(
-event.data
-&&
-event.data.type ===
-"SKIP_WAITING"
-){
-
-self.skipWaiting();
-
-}
-
-}
-
-);
-
-self.addEventListener(
-
-"push",
-
-event => {
-
-const options = {
-
-body:
-event.data
-? event.data.text()
-: "Nouvelle offre disponible",
-
-icon:
-"/icon-192.png",
-
-badge:
-"/icon-192.png"
-
-};
-
-event.waitUntil(
-
-self.registration
-.showNotification(
-
-"🔔 Job Finder Vaud",
-
-options
-
-)
-
-);
-
-}
-
 );
