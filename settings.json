@@ -1,0 +1,8 @@
+{
+  "theme": "black-metal",
+  "notifications": true,
+  "assistantIA": true,
+  "analyseCV": true,
+  "comparateur": true,
+  "suiviCandidatures": true
+}
