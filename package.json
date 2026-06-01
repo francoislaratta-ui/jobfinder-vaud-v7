@@ -1,7 +1,7 @@
 {
-  "name": "jobfinder-vaud-v86",
-  "version": "8.6.0",
-  "description": "Job Finder Vaud Black Metal Ultimate",
+  "name": "jobfinder-vaud-v10",
+  "version": "10.0.0",
+  "description": "Job Finder Vaud Ultimate AI Edition",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -12,7 +12,9 @@
     "jobfinder",
     "pwa",
     "jobs",
-    "render"
+    "ia",
+    "cv",
+    "candidatures"
   ],
   "author": "François",
   "license": "MIT",
