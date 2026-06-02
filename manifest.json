@@ -1,13 +1,13 @@
 {
-  "name": "Job Finder Vaud V13 Premium AI Edition",
-  "short_name": "JFV13",
-  "description": "Gestion intelligente des offres d'emploi, CRM candidatures, IA CV et statistiques avancées.",
+  "name": "Job Finder Vaud V8.6.1 Premium IA Pro",
+  "short_name": "JFV861",
+  "description": "Recherche d'emploi intelligente dans le canton de Vaud avec favoris, analyse CV, génération de lettres et notifications.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#080808",
-  "theme_color": "#c28b14",
+  "background_color": "#090909",
+  "theme_color": "#b66a18",
   "lang": "fr",
   "categories": [
     "business",
@@ -32,22 +32,22 @@
     {
       "name": "Offres",
       "short_name": "Offres",
-      "url": "/#offers"
+      "url": "/#offersSection"
     },
     {
       "name": "Favoris",
       "short_name": "Favoris",
-      "url": "/#favorites"
+      "url": "/#favoritesSection"
     },
     {
-      "name": "CRM",
-      "short_name": "CRM",
-      "url": "/#crm"
+      "name": "Mon CV",
+      "short_name": "CV",
+      "url": "/#cvSection"
     },
     {
-      "name": "IA",
-      "short_name": "IA",
-      "url": "/#ai"
+      "name": "Notifications",
+      "short_name": "Notif",
+      "url": "/#notificationsSection"
     }
   ]
 }
