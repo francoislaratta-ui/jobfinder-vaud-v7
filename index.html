@@ -1,1 +1,2507 @@
+<!DOCTYPE html>
+<html lang="fr">
 
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<meta
+name="description"
+content="Job Finder Vaud V8.6.1 Premium IA Pro">
+
+<title>
+Job Finder Vaud V8.6.1 Premium IA Pro
+</title>
+
+<link
+rel="manifest"
+href="manifest.json">
+
+<meta
+name="theme-color"
+content="#b66a18">
+
+<style>
+
+:root{
+
+--bronze:#b66a18;
+--bronze-dark:#8b5110;
+
+--bg:#090909;
+--bg2:#131313;
+
+--card:#1b1b1b;
+--card2:#222222;
+
+--text:#ffffff;
+--text-soft:#cbd5e1;
+
+--green:#16a34a;
+--orange:#d97706;
+--red:#dc2626;
+
+--shadow:
+0 0 10px rgba(
+182,
+106,
+24,
+0.20
+);
+
+}
+
+*{
+
+margin:0;
+padding:0;
+box-sizing:border-box;
+
+}
+
+html{
+
+scroll-behavior:smooth;
+
+}
+
+body{
+
+font-family:
+Segoe UI,
+Arial,
+sans-serif;
+
+background:
+linear-gradient(
+180deg,
+var(--bg),
+var(--bg2)
+);
+
+color:white;
+
+min-height:100vh;
+
+}
+
+a{
+
+text-decoration:none;
+
+}
+
+button{
+
+cursor:pointer;
+
+font-family:inherit;
+
+}
+
+input,
+select,
+textarea{
+
+font-family:inherit;
+
+}
+
+/* =====================
+HEADER
+===================== */
+
+header{
+
+position:sticky;
+
+top:0;
+
+z-index:1000;
+
+background:#111;
+
+border-bottom:
+1px solid rgba(
+182,
+106,
+24,
+0.20
+);
+
+padding:15px;
+
+}
+
+.header-top{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+gap:10px;
+
+}
+
+.logo{
+
+display:flex;
+
+flex-direction:column;
+
+}
+
+.logo h1{
+
+color:var(--bronze);
+
+font-size:28px;
+
+}
+
+.logo span{
+
+color:var(--text-soft);
+
+font-size:13px;
+
+}
+
+.header-buttons{
+
+display:flex;
+
+gap:10px;
+
+}
+
+.header-icon{
+
+width:42px;
+height:42px;
+
+border:none;
+
+border-radius:12px;
+
+background:#1f1f1f;
+
+color:white;
+
+box-shadow:
+var(--shadow);
+
+}
+
+/* =====================
+BOUTONS FLOTTANTS
+===================== */
+
+.floating-bar{
+
+position:fixed;
+
+top:85px;
+
+right:15px;
+
+display:flex;
+
+flex-direction:column;
+
+gap:10px;
+
+z-index:999;
+
+}
+
+.float-btn{
+
+width:50px;
+height:50px;
+
+border:none;
+
+border-radius:50%;
+
+background:var(--bronze);
+
+color:black;
+
+font-size:20px;
+
+font-weight:bold;
+
+box-shadow:
+var(--shadow);
+
+}
+
+/* =====================
+DASHBOARD
+===================== */
+
+.dashboard{
+
+padding:20px;
+
+}
+
+.stats-grid{
+
+display:grid;
+
+grid-template-columns:
+repeat(
+auto-fit,
+minmax(
+170px,
+1fr
+)
+);
+
+gap:15px;
+
+}
+
+.stat-card{
+
+background:var(--card);
+
+border:
+1px solid rgba(
+182,
+106,
+24,
+0.15
+);
+
+border-radius:18px;
+
+padding:20px;
+
+text-align:center;
+
+box-shadow:
+var(--shadow);
+
+}
+
+.stat-number{
+
+font-size:28px;
+
+font-weight:bold;
+
+color:var(--bronze);
+
+margin-bottom:8px;
+
+}
+
+.stat-label{
+
+color:var(--text-soft);
+
+}
+
+/* =====================
+ACCES RAPIDE
+===================== */
+
+.quick-links{
+
+display:grid;
+
+grid-template-columns:
+repeat(
+2,
+1fr
+);
+
+gap:15px;
+
+margin-top:20px;
+
+}
+
+.quick-card{
+
+background:var(--card);
+
+padding:18px;
+
+border-radius:18px;
+
+text-align:center;
+
+box-shadow:
+var(--shadow);
+
+cursor:pointer;
+
+transition:.2s;
+
+}
+
+.quick-card:hover{
+
+transform:
+translateY(-2px);
+
+}
+
+.quick-card h3{
+
+color:var(--bronze);
+
+margin-bottom:8px;
+
+}
+
+/* =====================
+SECTIONS
+===================== */
+
+.section{
+
+padding:20px;
+
+}
+
+.section-title{
+
+font-size:24px;
+
+margin-bottom:15px;
+
+color:var(--bronze);
+
+}
+
+/* =====================
+CV
+===================== */
+
+.cv-box{
+
+background:var(--card);
+
+padding:20px;
+
+border-radius:18px;
+
+box-shadow:
+var(--shadow);
+
+margin-bottom:20px;
+
+}
+
+.cv-box textarea{
+
+width:100%;
+
+height:220px;
+
+padding:15px;
+
+border:none;
+
+border-radius:12px;
+
+background:#252525;
+
+color:white;
+
+resize:vertical;
+
+}
+
+.action-row{
+
+display:flex;
+
+gap:10px;
+
+flex-wrap:wrap;
+
+margin-top:15px;
+
+}
+
+.primary-btn{
+
+background:var(--bronze);
+
+color:black;
+
+font-weight:bold;
+
+border:none;
+
+padding:12px 18px;
+
+border-radius:12px;
+
+}
+
+.secondary-btn{
+
+background:#2a2a2a;
+
+color:white;
+
+border:none;
+
+padding:12px 18px;
+
+border-radius:12px;
+
+}
+
+/* =====================
+RESPONSIVE
+===================== */
+
+@media(max-width:768px){
+
+.quick-links{
+
+grid-template-columns:1fr;
+
+}
+
+.floating-bar{
+
+bottom:20px;
+
+top:auto;
+
+right:10px;
+
+}
+
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="header-top">
+
+<div class="logo">
+
+<h1>
+
+💼 Job Finder Vaud
+
+</h1>
+
+<span>
+
+V8.6.1 Premium IA Pro
+
+</span>
+
+</div>
+
+<div class="header-buttons">
+
+<button
+class="header-icon"
+id="notifBtn">
+
+🔔
+
+</button>
+
+<button
+class="header-icon"
+id="settingsBtn">
+
+⚙️
+
+</button>
+
+</div>
+
+</div>
+
+</header>
+
+<div class="floating-bar">
+
+<button
+class="float-btn"
+onclick="
+document
+.getElementById('offersSection')
+.scrollIntoView({
+behavior:'smooth'
+});
+">
+
+📋
+
+</button>
+
+<button
+class="float-btn"
+onclick="
+document
+.getElementById('favoritesSection')
+.scrollIntoView({
+behavior:'smooth'
+});
+">
+
+⭐
+
+</button>
+
+<button
+class="float-btn"
+onclick="
+document
+.getElementById('cvSection')
+.scrollIntoView({
+behavior:'smooth'
+});
+">
+
+📄
+
+</button>
+
+<button
+class="float-btn"
+onclick="
+window.scrollTo({
+top:0,
+behavior:'smooth'
+});
+">
+
+⬆
+
+</button>
+
+</div>
+
+<main>
+
+<section class="dashboard">
+
+<div class="stats-grid">
+
+<div
+class="stat-card clickable"
+onclick="
+document
+.getElementById('offersSection')
+.scrollIntoView({
+behavior:'smooth'
+});
+">
+
+<div
+class="stat-number"
+id="offersCount">
+
+0
+
+</div>
+
+<div
+class="stat-label">
+
+📋 Offres
+
+</div>
+
+</div>
+
+<div
+class="stat-card clickable"
+onclick="
+document
+.getElementById('favoritesSection')
+.scrollIntoView({
+behavior:'smooth'
+});
+">
+
+<div
+class="stat-number"
+id="favoritesCount">
+
+0
+
+</div>
+
+<div
+class="stat-label">
+
+⭐ Favoris
+
+</div>
+
+</div>
+
+<div class="stat-card">
+
+<div
+class="stat-number"
+id="notificationCount">
+
+0
+
+</div>
+
+<div
+class="stat-label">
+
+🔔 Notifications
+
+</div>
+
+</div>
+
+<div class="stat-card">
+
+<div
+class="stat-number"
+id="cvScore">
+
+0%
+
+</div>
+
+<div
+class="stat-label">
+
+🤖 Compatibilité
+
+</div>
+
+</div>
+
+</div>
+
+<div class="quick-links">
+
+<div
+class="quick-card"
+onclick="
+document
+.getElementById('offersSection')
+.scrollIntoView({
+behavior:'smooth'
+});
+">
+
+<h3>
+
+📋 Offres
+
+</h3>
+
+<p>
+
+Accéder aux résultats
+
+</p>
+
+</div>
+
+<div
+class="quick-card"
+onclick="
+document
+.getElementById('favoritesSection')
+.scrollIntoView({
+behavior:'smooth'
+});
+">
+
+<h3>
+
+⭐ Favoris
+
+</h3>
+
+<p>
+
+Mes offres sauvegardées
+
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+<section
+id="offersSection"
+class="section">
+
+<h2
+class="section-title">
+
+💼 Offres d'emploi
+
+</h2>
+
+<!-- REGIONS TOUJOURS OUVERT -->
+
+<div class="accordion open">
+
+<div class="accordion-title">
+
+📍 Régions
+
+</div>
+
+<div class="accordion-content">
+
+<label>
+<input
+type="checkbox"
+value="Lausanne">
+Lausanne
+</label>
+
+<label>
+<input
+type="checkbox"
+value="Morges">
+Morges
+</label>
+
+<label>
+<input
+type="checkbox"
+value="Nyon">
+Nyon
+</label>
+
+<label>
+<input
+type="checkbox"
+value="Yverdon">
+Yverdon
+</label>
+
+<label>
+<input
+type="checkbox"
+value="Vevey">
+Vevey
+</label>
+
+<label>
+<input
+type="checkbox"
+value="Riviera">
+Riviera
+</label>
+
+</div>
+
+</div>
+
+<!-- ACCORDEON METIERS -->
+
+<div class="accordion">
+
+<div
+class="accordion-title toggleAccordion">
+
+💼 Métiers
+
+</div>
+
+<div
+class="accordion-content hidden">
+
+<label>
+<input
+type="checkbox"
+value="commerce">
+Employé(e) de commerce
+</label>
+
+<label>
+<input
+type="checkbox"
+value="gestionnaire">
+Gestionnaire de dossier
+</label>
+
+<label>
+<input
+type="checkbox"
+value="assistant">
+Assistant(e) administratif(ve)
+</label>
+
+<label>
+<input
+type="checkbox"
+value="comptable">
+Aide comptable
+</label>
+
+<label>
+<input
+type="checkbox"
+value="support">
+Accueil & Support
+</label>
+
+</div>
+
+</div>
+
+<!-- ACCORDEON TAUX -->
+
+<div class="accordion">
+
+<div
+class="accordion-title toggleAccordion">
+
+⏰ Taux
+
+</div>
+
+<div
+class="accordion-content hidden">
+
+<label>
+<input
+type="checkbox"
+value="40">
+40%
+
+</label>
+
+<label>
+<input
+type="checkbox"
+value="50">
+50%
+
+</label>
+
+<label>
+<input
+type="checkbox"
+value="60">
+60%
+
+</label>
+
+<label>
+<input
+type="checkbox"
+value="70">
+70%
+
+</label>
+
+<label>
+<input
+type="checkbox"
+value="80">
+80%
+
+</label>
+
+<label>
+<input
+type="checkbox"
+value="100">
+100%
+
+</label>
+
+</div>
+
+</div>
+
+<!-- ACCORDEON SECTEURS -->
+
+<div class="accordion">
+
+<div
+class="accordion-title toggleAccordion">
+
+🏢 Secteurs
+
+</div>
+
+<div
+class="accordion-content hidden">
+
+<label>
+<input
+type="checkbox"
+value="administration">
+Administration
+</label>
+
+<label>
+<input
+type="checkbox"
+value="fiduciaire">
+Fiduciaire
+</label>
+
+<label>
+<input
+type="checkbox"
+value="banque">
+Banque
+</label>
+
+<label>
+<input
+type="checkbox"
+value="assurance">
+Assurance
+</label>
+
+<label>
+<input
+type="checkbox"
+value="publique">
+Administration publique
+</label>
+
+<label>
+<input
+type="checkbox"
+value="informatique">
+Informatique
+</label>
+
+</div>
+
+</div>
+
+<!-- ACCORDEON CONTRATS -->
+
+<div class="accordion">
+
+<!-- ACCORDEON CONTRATS -->
+
+<div class="accordion">
+
+<div
+class="accordion-title toggleAccordion">
+
+📄 Contrats
+
+</div>
+
+<div
+class="accordion-content hidden">
+
+<label>
+<input
+type="checkbox"
+value="cdi">
+CDI
+</label>
+
+<label>
+<input
+type="checkbox"
+value="cdd">
+CDD
+</label>
+
+<label>
+<input
+type="checkbox"
+value="temporaire">
+Temporaire
+</label>
+
+<label>
+<input
+type="checkbox"
+value="stage">
+Stage
+</label>
+
+<label>
+<input
+type="checkbox"
+value="mission">
+Mission
+</label>
+
+</div>
+
+</div>
+
+<!-- ACCORDEON SOURCES -->
+
+<div class="accordion">
+
+<div
+class="accordion-title toggleAccordion">
+
+🌐 Sources
+
+</div>
+
+<div
+class="accordion-content hidden">
+
+<label>
+<input
+type="checkbox"
+value="jobup">
+Jobup
+</label>
+
+<label>
+<input
+type="checkbox"
+value="jobs">
+Jobs.ch
+</label>
+
+<label>
+<input
+type="checkbox"
+value="indeed">
+Indeed
+</label>
+
+<label>
+<input
+type="checkbox"
+value="jobscout">
+JobScout24
+</label>
+
+<label>
+<input
+type="checkbox"
+value="etatvaud">
+État de Vaud
+</label>
+
+</div>
+
+</div>
+
+<div
+class="action-row"
+style="margin-top:20px;">
+
+<button
+class="primary-btn"
+id="searchBtn">
+
+🔍 Rechercher
+
+</button>
+
+<button
+class="secondary-btn"
+id="resetFiltersBtn">
+
+♻️ Réinitialiser
+
+</button>
+
+</div>
+
+<div
+id="offersContainer"
+style="margin-top:25px;">
+
+<!-- Cartes injectées ici -->
+
+<div class="offer-card">
+
+<div
+style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+">
+
+<div>
+
+<h3>
+
+💼 Employé(e) de commerce
+
+</h3>
+
+<p>
+
+🏢 Ville de Morges
+
+</p>
+
+</div>
+
+<div
+class="ia-score excellent">
+
+🟢 91%
+
+</div>
+
+</div>
+
+<p>
+
+📍 Morges
+
+</p>
+
+<p>
+
+💰 CHF 78'000
+
+</p>
+
+<p>
+
+📅 Publiée il y a 2 jours
+
+</p>
+
+<p>
+
+🟢 Excellent match
+
+</p>
+
+<hr
+style="
+margin:12px 0;
+border-color:#333;
+">
+
+<div
+class="keywords">
+
+<span>
+✓ CFC employé de commerce
+</span>
+
+<span>
+✓ Excel
+</span>
+
+<span>
+✓ Administration
+</span>
+
+<span>
+✓ Service clientèle
+</span>
+
+</div>
+
+<div
+class="action-row">
+
+<button
+class="primary-btn favorite-btn">
+
+⭐ Ajouter aux favoris
+
+</button>
+
+<button
+class="secondary-btn analyse-btn">
+
+🤖 Analyse CV
+
+</button>
+
+</div>
+
+<div
+class="action-row">
+
+<button
+class="secondary-btn letter-btn">
+
+✉️ Générer lettre
+
+</button>
+
+<a
+href="#"
+class="primary-btn">
+
+🔗 Voir l'offre
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<section
+id="favoritesSection"
+class="section">
+
+<h2
+class="section-title">
+
+⭐ Mes favoris
+
+</h2>
+
+<div
+id="favoritesContainer">
+
+</div>
+
+</section>
+
+<section
+id="cvSection"
+class="section">
+
+<h2
+class="section-title">
+
+📄 Mon CV
+
+</h2>
+
+<div
+class="cv-box">
+
+<textarea
+id="cvContent"
+placeholder="Collez ici votre CV complet...">
+
+</textarea>
+
+<div
+class="action-row">
+
+<button
+class="primary-btn"
+id="saveCvBtn">
+
+💾 Sauvegarder CV
+
+</button>
+
+<button
+class="secondary-btn"
+id="clearCvBtn">
+
+🗑️ Effacer
+
+</button>
+
+</div>
+
+</div>
+
+<div
+id="analysisPanel"
+class="cv-box">
+
+<h3>
+
+🤖 Analyse CV ↔ Offre
+
+</h3>
+
+<div
+id="analysisResult">
+
+<p>
+
+Sélectionnez une offre puis cliquez sur
+<b>🤖 Analyse CV</b>
+
+</p>
+
+</div>
+
+</div>
+
+<div
+id="letterPanel"
+class="cv-box">
+
+<h3>
+
+✉️ Lettre de motivation
+
+</h3>
+
+<div
+id="letterResult">
+
+<p>
+
+Sélectionnez une offre puis cliquez sur
+<b>✉️ Générer lettre</b>
+
+</p>
+
+</div>
+
+<div
+class="action-row">
+
+<button
+class="primary-btn"
+id="copyLetterBtn">
+
+📋 Copier
+
+</button>
+
+<button
+class="secondary-btn"
+id="downloadLetterBtn">
+
+📄 Télécharger
+
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+<section
+id="notificationsSection"
+class="section">
+
+<h2
+class="section-title">
+
+🔔 Notifications
+
+</h2>
+
+<div
+id="notificationsContainer">
+
+<div class="offer-card">
+
+<p>
+
+🔔 Bienvenue dans Job Finder Vaud Premium IA Pro
+
+</p>
+
+<small>
+
+Aujourd'hui
+
+</small>
+
+</div>
+
+</div>
+
+</section>
+
+<style>
+
+.offer-card{
+
+background:var(--card);
+
+padding:20px;
+
+border-radius:18px;
+
+border:
+1px solid rgba(
+182,
+106,
+24,
+0.15
+);
+
+box-shadow:
+var(--shadow);
+
+margin-bottom:20px;
+
+}
+
+.offer-card h3{
+
+color:var(--bronze);
+
+margin-bottom:10px;
+
+}
+
+.keywords{
+
+display:flex;
+
+gap:8px;
+
+flex-wrap:wrap;
+
+margin:12px 0;
+
+}
+
+.keywords span{
+
+background:#252525;
+
+padding:6px 10px;
+
+border-radius:20px;
+
+font-size:12px;
+
+}
+
+.ia-score{
+
+font-weight:bold;
+
+padding:10px;
+
+border-radius:12px;
+
+min-width:70px;
+
+text-align:center;
+
+}
+
+.excellent{
+
+background:
+rgba(22,163,74,.20);
+
+color:#22c55e;
+
+}
+
+.good{
+
+background:
+rgba(217,119,6,.20);
+
+color:#f59e0b;
+
+}
+
+.low{
+
+background:
+rgba(220,38,38,.20);
+
+color:#ef4444;
+
+}
+
+.accordion{
+
+background:var(--card);
+
+margin-bottom:12px;
+
+border-radius:14px;
+
+overflow:hidden;
+
+box-shadow:
+var(--shadow);
+
+}
+
+.accordion-title{
+
+padding:16px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+color:var(--bronze);
+
+}
+
+.accordion-content{
+
+padding:16px;
+
+display:flex;
+
+gap:10px;
+
+flex-wrap:wrap;
+
+}
+
+.accordion-content label{
+
+background:#252525;
+
+padding:8px 12px;
+
+border-radius:12px;
+
+}
+
+.hidden{
+
+display:none;
+
+}
+
+</style>
+
+<script>
+
+/* =========================
+   ETAT GLOBAL
+========================= */
+
+const appState = {
+
+offers: [],
+
+favorites:
+
+JSON.parse(
+localStorage.getItem(
+"jfv861_favorites"
+)
+||
+"[]"
+),
+
+notifications:
+
+JSON.parse(
+localStorage.getItem(
+"jfv861_notifications"
+)
+||
+"[]"
+),
+
+cv:
+
+localStorage.getItem(
+"jfv861_cv"
+)
+||
+""
+
+};
+
+/* =========================
+   ACCORDEONS
+========================= */
+
+document
+.querySelectorAll(
+".toggleAccordion"
+)
+.forEach(item=>{
+
+item.addEventListener(
+"click",
+()=>{
+
+const content =
+
+item.nextElementSibling;
+
+content.classList.toggle(
+"hidden"
+);
+
+});
+
+});
+
+/* =========================
+   CV
+========================= */
+
+const cvContent =
+
+document.getElementById(
+"cvContent"
+);
+
+if(cvContent){
+
+cvContent.value =
+appState.cv;
+
+}
+
+document
+.getElementById(
+"saveCvBtn"
+)
+.addEventListener(
+"click",
+()=>{
+
+localStorage.setItem(
+
+"jfv861_cv",
+
+cvContent.value
+
+);
+
+appState.cv =
+cvContent.value;
+
+addNotification(
+"📄 CV sauvegardé"
+);
+
+alert(
+"CV sauvegardé"
+);
+
+}
+);
+
+document
+.getElementById(
+"clearCvBtn"
+)
+.addEventListener(
+"click",
+()=>{
+
+if(
+confirm(
+"Effacer le CV ?"
+)
+){
+
+cvContent.value="";
+
+localStorage.removeItem(
+"jfv861_cv"
+);
+
+appState.cv="";
+
+addNotification(
+"🗑️ CV supprimé"
+);
+
+}
+
+}
+);
+
+/* =========================
+   FAVORIS
+========================= */
+
+function saveFavorites(){
+
+localStorage.setItem(
+
+"jfv861_favorites",
+
+JSON.stringify(
+appState.favorites
+)
+
+);
+
+updateCounters();
+
+}
+
+function addFavorite(offer){
+
+const exists =
+
+appState.favorites.find(
+x=>x.id===offer.id
+);
+
+if(exists){
+
+return;
+
+}
+
+appState.favorites.push(
+offer
+);
+
+saveFavorites();
+
+renderFavorites();
+
+addNotification(
+"⭐ Offre ajoutée aux favoris"
+);
+
+}
+
+function renderFavorites(){
+
+const container =
+
+document.getElementById(
+"favoritesContainer"
+);
+
+if(!container){
+return;
+}
+
+container.innerHTML="";
+
+appState.favorites.forEach(
+offer=>{
+
+container.innerHTML += `
+
+<div class="offer-card">
+
+<h3>
+
+${offer.title}
+
+</h3>
+
+<p>
+
+🏢 ${offer.company}
+
+</p>
+
+<p>
+
+📍 ${offer.location}
+
+</p>
+
+</div>
+
+`;
+
+});
+
+}
+
+/* =========================
+   NOTIFICATIONS
+========================= */
+
+function addNotification(
+message
+){
+
+appState.notifications.unshift({
+
+message,
+
+date:
+new Date()
+.toLocaleString()
+
+});
+
+localStorage.setItem(
+
+"jfv861_notifications",
+
+JSON.stringify(
+appState.notifications
+)
+
+);
+
+renderNotifications();
+
+updateCounters();
+
+}
+
+function renderNotifications(){
+
+const container =
+
+document.getElementById(
+"notificationsContainer"
+);
+
+if(!container){
+return;
+}
+
+container.innerHTML="";
+
+appState.notifications.forEach(
+item=>{
+
+container.innerHTML += `
+
+<div class="offer-card">
+
+<p>
+
+${item.message}
+
+</p>
+
+<small>
+
+${item.date}
+
+</small>
+
+</div>
+
+`;
+
+});
+
+}
+
+/* =========================
+   COMPTEURS
+========================= */
+
+function updateCounters(){
+
+document.getElementById(
+"favoritesCount"
+).textContent =
+
+appState.favorites.length;
+
+document.getElementById(
+"notificationCount"
+).textContent =
+
+appState.notifications.length;
+
+document.getElementById(
+"offersCount"
+).textContent =
+
+appState.offers.length;
+
+}
+
+/* =========================
+   ANALYSE IA
+========================= */
+
+function analyseOffer(
+offer
+){
+
+const cv =
+
+(
+appState.cv ||
+""
+).toLowerCase();
+
+let score = 40;
+
+const mots = [
+
+"administratif",
+"administration",
+"excel",
+"office",
+"commerce",
+"comptable",
+"gestionnaire",
+"support",
+"informatique",
+"cfc"
+
+];
+
+let points = [];
+
+mots.forEach(
+mot=>{
+
+if(
+cv.includes(mot)
+){
+
+score += 5;
+
+points.push(
+mot
+);
+
+}
+
+});
+
+if(score>100){
+score=100;
+}
+
+let niveau =
+
+"🟢 Excellent match";
+
+if(score<80){
+
+niveau =
+"🟡 Bon match";
+
+}
+
+if(score<60){
+
+niveau =
+"🔴 Match faible";
+
+}
+
+document
+.getElementById(
+"analysisResult"
+)
+.innerHTML = `
+
+<div class="offer-card">
+
+<h3>
+
+${offer.title}
+
+</h3>
+
+<p>
+
+Compatibilité :
+<b>${score}%</b>
+
+</p>
+
+<p>
+
+${niveau}
+
+</p>
+
+<hr>
+
+<p>
+
+<b>Compétences détectées :</b>
+
+</p>
+
+<p>
+
+${points.join(", ")}
+
+</p>
+
+</div>
+
+`;
+
+document.getElementById(
+"cvScore"
+).textContent =
+
+score + "%";
+
+}
+
+/* =========================
+   LETTRE AUTO
+========================= */
+
+function generateLetter(
+offer
+){
+
+const lettre = `
+
+Madame, Monsieur,
+
+Je vous présente ma candidature
+pour le poste de
+${offer.title}
+au sein de
+${offer.company}.
+
+Mon parcours ainsi que mes
+compétences administratives,
+organisationnelles et bureautiques
+correspondent aux attentes du poste.
+
+Je serais heureux de pouvoir
+vous rencontrer afin de vous
+présenter ma motivation.
+
+Avec mes salutations distinguées.
+
+`;
+
+document
+.getElementById(
+"letterResult"
+)
+.innerHTML = `
+
+<div class="offer-card">
+
+<pre>
+
+${lettre}
+
+</pre>
+
+</div>
+
+`;
+
+addNotification(
+"✉️ Lettre générée"
+);
+
+}
+
+/* =========================
+   CHARGEMENT OFFRES
+========================= */
+
+async function loadOffers(){
+
+try{
+
+const response =
+
+await fetch(
+"/offers"
+);
+
+appState.offers =
+
+await response.json();
+
+renderOffers();
+
+updateCounters();
+
+}catch(error){
+
+console.error(
+error
+);
+
+addNotification(
+"⚠️ Impossible de charger les offres"
+);
+
+}
+
+}
+
+/* =========================
+   AFFICHAGE OFFRES
+========================= */
+
+function renderOffers(){
+
+const container =
+
+document.getElementById(
+"offersContainer"
+);
+
+if(!container){
+return;
+}
+
+container.innerHTML = "";
+
+appState.offers.forEach(
+offer=>{
+
+const card =
+document.createElement(
+"div"
+);
+
+card.className =
+"offer-card";
+
+card.innerHTML = `
+
+<div
+style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+">
+
+<div>
+
+<h3>
+
+💼 ${offer.title}
+
+</h3>
+
+<p>
+
+🏢 ${offer.company}
+
+</p>
+
+</div>
+
+<div
+class="ia-score excellent">
+
+🟢 90%
+
+</div>
+
+</div>
+
+<p>
+
+📍 ${offer.location || ""}
+
+</p>
+
+<p>
+
+💰 ${offer.salary || "Non indiqué"}
+
+</p>
+
+<p>
+
+📅 ${offer.date || ""}
+
+</p>
+
+<div
+class="keywords">
+
+<span>✓ Administration</span>
+
+<span>✓ Excel</span>
+
+<span>✓ Service client</span>
+
+</div>
+
+<div
+class="action-row">
+
+<button
+class="primary-btn btn-favorite">
+
+⭐ Ajouter aux favoris
+
+</button>
+
+<button
+class="secondary-btn btn-analyse">
+
+🤖 Analyse CV
+
+</button>
+
+</div>
+
+<div
+class="action-row">
+
+<button
+class="secondary-btn btn-letter">
+
+✉️ Générer lettre
+
+</button>
+
+<a
+class="primary-btn"
+target="_blank"
+href="${offer.url}">
+
+🔗 Voir l'offre
+
+</a>
+
+</div>
+
+`;
+
+card
+.querySelector(
+".btn-favorite"
+)
+.addEventListener(
+"click",
+()=>{
+
+addFavorite(
+offer
+);
+
+}
+);
+
+card
+.querySelector(
+".btn-analyse"
+)
+.addEventListener(
+"click",
+()=>{
+
+analyseOffer(
+offer
+);
+
+document
+.getElementById(
+"cvSection"
+)
+.scrollIntoView({
+behavior:"smooth"
+});
+
+}
+);
+
+card
+.querySelector(
+".btn-letter"
+)
+.addEventListener(
+"click",
+()=>{
+
+generateLetter(
+offer
+);
+
+document
+.getElementById(
+"cvSection"
+)
+.scrollIntoView({
+behavior:"smooth"
+});
+
+}
+);
+
+container.appendChild(
+card
+);
+
+});
+
+}
+
+/* =========================
+   COPIE LETTRE
+========================= */
+
+document
+.getElementById(
+"copyLetterBtn"
+)
+.addEventListener(
+"click",
+()=>{
+
+const texte =
+
+document
+.getElementById(
+"letterResult"
+)
+.innerText;
+
+navigator.clipboard
+.writeText(
+texte
+);
+
+addNotification(
+"📋 Lettre copiée"
+);
+
+}
+);
+
+/* =========================
+   TELECHARGEMENT LETTRE
+========================= */
+
+document
+.getElementById(
+"downloadLetterBtn"
+)
+.addEventListener(
+"click",
+()=>{
+
+const texte =
+
+document
+.getElementById(
+"letterResult"
+)
+.innerText;
+
+const blob =
+
+new Blob(
+[
+texte
+],
+{
+type:"text/plain"
+}
+);
+
+const a =
+document.createElement(
+"a"
+);
+
+a.href =
+URL.createObjectURL(
+blob
+);
+
+a.download =
+"lettre-motivation.txt";
+
+a.click();
+
+addNotification(
+"📄 Lettre téléchargée"
+);
+
+}
+);
+
+/* =========================
+   INITIALISATION
+========================= */
+
+window.addEventListener(
+"load",
+()=>{
+
+renderFavorites();
+
+renderNotifications();
+
+updateCounters();
+
+loadOffers();
+
+addNotification(
+"🚀 Job Finder Vaud Premium IA Pro démarré"
+);
+
+}
+);
+
+</script>
+
+<footer
+style="
+text-align:center;
+padding:30px;
+color:#cbd5e1;
+">
+
+💼 Job Finder Vaud
+
+<br>
+
+V8.6.1 Premium IA Pro
+
+<br><br>
+
+✅ Accordéons
+
+<br>
+
+✅ Favoris
+
+<br>
+
+✅ Analyse CV ↔ Offre
+
+<br>
+
+✅ Lettre automatique
+
+<br>
+
+✅ Notifications
+
+<br>
+
+✅ PWA
+
+</footer>
+
+</main>
+
+</body>
+
+</html>
