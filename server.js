@@ -8,11 +8,12 @@ const PORT =
 process.env.PORT || 3000;
 
 app.use(
+express.json()
+);
+
+app.use(
 express.static(
-path.join(
-__dirname,
-"public"
-)
+__dirname
 )
 );
 
@@ -20,15 +21,11 @@ app.get(
 "/offers",
 (req,res) => {
 
-const filePath =
-
+fs.readFile(
 path.join(
 __dirname,
 "offers.json"
-);
-
-fs.readFile(
-filePath,
+),
 "utf8",
 (err,data) => {
 
@@ -38,18 +35,15 @@ return res
 .status(500)
 .json({
 error:
-"Erreur lecture offers.json"
+"Impossible de lire offers.json"
 });
 
 }
 
 try{
 
-const offres =
-JSON.parse(data);
-
 res.json(
-offres
+JSON.parse(data)
 );
 
 }catch(e){
@@ -69,6 +63,111 @@ error:
 );
 
 app.get(
+"/candidatures",
+(req,res) => {
+
+fs.readFile(
+path.join(
+__dirname,
+"candidatures.json"
+),
+"utf8",
+(err,data) => {
+
+if(err){
+
+return res.json([]);
+
+}
+
+try{
+
+res.json(
+JSON.parse(data)
+);
+
+}catch(e){
+
+res.json([]);
+
+}
+
+});
+
+}
+);
+
+app.get(
+"/settings",
+(req,res) => {
+
+fs.readFile(
+path.join(
+__dirname,
+"settings.json"
+),
+"utf8",
+(err,data) => {
+
+if(err){
+
+return res.json({});
+
+}
+
+try{
+
+res.json(
+JSON.parse(data)
+);
+
+}catch(e){
+
+res.json({});
+
+}
+
+});
+
+}
+);
+
+app.get(
+"/profils-cv",
+(req,res) => {
+
+fs.readFile(
+path.join(
+__dirname,
+"profils-cv.json"
+),
+"utf8",
+(err,data) => {
+
+if(err){
+
+return res.json([]);
+
+}
+
+try{
+
+res.json(
+JSON.parse(data)
+);
+
+}catch(e){
+
+res.json([]);
+
+}
+
+});
+
+}
+);
+
+app.get(
 "/health",
 (req,res) => {
 
@@ -79,7 +178,11 @@ status:"OK",
 application:
 "Job Finder Vaud V11 Ultimate AI Career Manager",
 
-version:"11.0"
+version:"11.0",
+
+date:
+new Date()
+.toISOString()
 
 });
 
@@ -91,13 +194,10 @@ app.get(
 (req,res) => {
 
 res.sendFile(
-
 path.join(
 __dirname,
-"public",
 "index.html"
 )
-
 );
 
 }
@@ -108,7 +208,11 @@ PORT,
 () => {
 
 console.log(
-`🚀 Job Finder Vaud V11 démarré sur le port ${PORT}`
+
+"🚀 Job Finder Vaud V11 lancé sur le port " +
+
+PORT
+
 );
 
 }
