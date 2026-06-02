@@ -10,7 +10,9 @@ name="viewport"
 content="width=device-width, initial-scale=1">
 
 <title>
-🤘 Job Finder Vaud V11 Ultimate AI Career Manager
+
+🤘 Job Finder Vaud V12 Ultimate AI Career Manager
+
 </title>
 
 <link
@@ -43,8 +45,6 @@ padding:0;
 --red:#dc2626;
 --purple:#7e22ce;
 --blue:#2563eb;
-
---text:#e5e7eb;
 
 }
 
@@ -147,6 +147,14 @@ cursor:pointer;
 
 border:
 1px solid rgba(194,109,18,.20);
+
+transition:.25s;
+
+}
+
+.dashboard-card:hover{
+
+transform:scale(1.03);
 
 }
 
@@ -292,22 +300,29 @@ color:white;
 }
 
 .btn-search{
+
 background:var(--fire);
+
 }
 
 .btn-reset{
+
 background:var(--red);
+
 }
 
 .btn-fav{
+
 background:var(--purple);
+
 }
 
 .btn-ai{
-background:var(--blue);
-}
 
-.offre{
+background:var(--blue);
+
+}
+  .offre{
 
 background:#1b1b1b;
 
@@ -382,6 +397,28 @@ font-weight:bold;
 
 }
 
+.notification-badge{
+
+position:fixed;
+
+top:15px;
+
+right:15px;
+
+background:#dc2626;
+
+color:white;
+
+padding:8px 12px;
+
+border-radius:20px;
+
+font-weight:bold;
+
+z-index:9999;
+
+}
+
 .postuler{
 
 display:block;
@@ -401,34 +438,6 @@ background:#16a34a;
 color:white;
 
 font-weight:bold;
-
-}
-
-.hidden{
-
-display:none;
-
-}
-
-  .notification-badge{
-
-position:fixed;
-
-top:15px;
-
-right:15px;
-
-background:#dc2626;
-
-color:white;
-
-padding:8px 12px;
-
-border-radius:20px;
-
-font-weight:bold;
-
-z-index:9999;
 
 }
 
@@ -493,14 +502,6 @@ border:
 
 }
 
-.status-select{
-
-width:100%;
-
-margin-top:10px;
-
-}
-
 .back-top{
 
 position:fixed;
@@ -541,6 +542,12 @@ font-size:14px;
 
 }
 
+.hidden{
+
+display:none;
+
+}
+
 </style>
 
 </head>
@@ -563,7 +570,7 @@ id="notificationBadge">
 
 <div class="subtitle">
 
-ULTIMATE AI CAREER MANAGER V11
+ULTIMATE AI CAREER MANAGER V12
 
 </div>
 
@@ -574,7 +581,6 @@ id="compteur">
 📊 0 offre(s) trouvée(s)
 
 </div>
-
 <div class="dashboard">
 
 <div
@@ -881,28 +887,6 @@ Yverdon-les-Bains
 
 </select>
 
-<select id="alerteTeletravail">
-
-<option value="">
-
-🏠 Télétravail
-
-</option>
-
-<option>
-
-Oui
-
-</option>
-
-<option>
-
-Non
-
-</option>
-
-</select>
-
 <input
 class="search"
 id="motCleAlerte"
@@ -965,23 +949,6 @@ document
 type="file"
 id="importData"
 style="display:none">
-
-</div>
-
-<div class="section">
-
-<h3>
-
-🎯 Recommandé pour vous
-
-</h3>
-
-<div
-id="suggestions">
-
-Aucune recommandation disponible
-
-</div>
 
 </div>
 
@@ -1071,12 +1038,13 @@ id="statHistorique">
 
 <h3>
 
-▶ 💼 Métiers
+💼 Métiers
 
 </h3>
 
 <div
-id="metiersBox">
+id="metiersBox"
+style="display:none;">
 
 <div
 class="tags"
@@ -1086,18 +1054,31 @@ id="metiers">
 
 </div>
 
+<button
+class="btn btn-search"
+onclick="
+toggleAccordion(
+'metiersBox'
+)
+">
+
+Afficher / Masquer
+
+</button>
+
 </div>
 
 <div class="section">
 
 <h3>
 
-▶ ⏰ Taux
+⏰ Taux
 
 </h3>
 
 <div
-id="tauxBox">
+id="tauxBox"
+style="display:none;">
 
 <div
 class="tags"
@@ -1107,18 +1088,31 @@ id="taux">
 
 </div>
 
+<button
+class="btn btn-search"
+onclick="
+toggleAccordion(
+'tauxBox'
+)
+">
+
+Afficher / Masquer
+
+</button>
+
 </div>
 
 <div class="section">
 
 <h3>
 
-▶ 📍 Régions
+📍 Régions
 
 </h3>
 
 <div
-id="regionsBox">
+id="regionsBox"
+style="display:none;">
 
 <div
 class="tags"
@@ -1128,18 +1122,31 @@ id="regions">
 
 </div>
 
+<button
+class="btn btn-search"
+onclick="
+toggleAccordion(
+'regionsBox'
+)
+">
+
+Afficher / Masquer
+
+</button>
+
 </div>
 
 <div class="section">
 
 <h3>
 
-▶ 🏢 Secteurs
+🏢 Secteurs
 
 </h3>
 
 <div
-id="secteursBox">
+id="secteursBox"
+style="display:none;">
 
 <div
 class="tags"
@@ -1149,18 +1156,31 @@ id="secteurs">
 
 </div>
 
+<button
+class="btn btn-search"
+onclick="
+toggleAccordion(
+'secteursBox'
+)
+">
+
+Afficher / Masquer
+
+</button>
+
 </div>
 
 <div class="section">
 
 <h3>
 
-▶ 📅 Publication
+📅 Publication
 
 </h3>
 
 <div
-id="publicationBox">
+id="publicationBox"
+style="display:none;">
 
 <div
 class="tags"
@@ -1170,18 +1190,31 @@ id="publication">
 
 </div>
 
+<button
+class="btn btn-search"
+onclick="
+toggleAccordion(
+'publicationBox'
+)
+">
+
+Afficher / Masquer
+
+</button>
+
 </div>
 
 <div class="section">
 
 <h3>
 
-▶ 📄 Contrat
+📄 Contrat
 
 </h3>
 
 <div
-id="contratBox">
+id="contratBox"
+style="display:none;">
 
 <div
 class="tags"
@@ -1190,6 +1223,18 @@ id="contrat">
 </div>
 
 </div>
+
+<button
+class="btn btn-search"
+onclick="
+toggleAccordion(
+'contratBox'
+)
+">
+
+Afficher / Masquer
+
+</button>
 
 </div>
 
@@ -1202,7 +1247,8 @@ id="contrat">
 </h3>
 
 <div
-id="sitesBox">
+id="sitesBox"
+style="display:block;">
 
 <div
 class="tags"
@@ -1233,8 +1279,7 @@ id="reset">
 </div>
 
 </div>
-
-  <div
+<div
 class="section"
 id="candidaturesSection">
 
@@ -1431,10 +1476,7 @@ Aucune
 </div>
 
 </div>
-
-<div id="offres"></div>
-
-  <div
+<div
 class="section"
 id="assistantIASection">
 
@@ -1571,7 +1613,59 @@ CV Intelligence Artificielle
 
 </div>
 
-  <div class="section">
+<div class="section">
+
+<h3>
+
+🎯 Compatibilité IA
+
+</h3>
+
+<div
+id="scoreCompatibilite">
+
+Aucun calcul effectué
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+📄 Lettre de motivation générée
+
+</h3>
+
+<textarea
+id="lettreMotivation"
+style="min-height:250px"
+placeholder="Votre lettre générée par IA apparaîtra ici">
+</textarea>
+
+<div class="buttons">
+
+<button
+class="btn btn-search"
+onclick="copierLettre()">
+
+📋 Copier
+
+</button>
+
+<button
+class="btn btn-ai"
+onclick="telechargerLettre()">
+
+📄 Télécharger
+
+</button>
+
+</div>
+
+</div>
+<div class="section">
 
 <h3>
 
@@ -1690,59 +1784,6 @@ id="statTauxSucces">
 
 </div>
 
-<div class="section">
-
-<h3>
-
-🎯 Score de compatibilité IA
-
-</h3>
-
-<div
-id="scoreCompatibilite">
-
-Aucun calcul effectué
-
-</div>
-
-</div>
-
-<div class="section">
-
-<h3>
-
-📄 Lettre de motivation générée
-
-</h3>
-
-<textarea
-id="lettreMotivation"
-style="min-height:250px"
-placeholder="Votre lettre générée par IA apparaîtra ici">
-</textarea>
-
-<div class="buttons">
-
-<button
-class="btn btn-search"
-onclick="copierLettre()">
-
-📋 Copier
-
-</button>
-
-<button
-class="btn btn-ai"
-onclick="telechargerLettre()">
-
-📄 Télécharger
-
-</button>
-
-</div>
-
-</div>
-
 <div id="offres"></div>
 
 <script>
@@ -1760,29 +1801,43 @@ let candidatures = [];
 let filtres = {
 
 metiers:[],
-
 taux:[],
-
 regions:[],
-
 secteurs:[],
-
 publication:[],
-
 contrat:[],
-
 sites:[]
 
 };
 
 let recherchesEffectuees = 0;
-
   function toggleAccordion(id){
 
-document
-.getElementById(id)
-.classList
-.toggle("hidden");
+const box =
+
+document.getElementById(
+id
+);
+
+if(
+!box
+){
+return;
+}
+
+if(
+box.style.display === "none"
+||
+box.style.display === ""
+){
+
+box.style.display = "block";
+
+}else{
+
+box.style.display = "none";
+
+}
 
 }
 
@@ -1813,7 +1868,7 @@ notifications.slice(
 
 localStorage.setItem(
 
-"jfv11_notifications",
+"jfv12_notifications",
 
 JSON.stringify(
 notifications
@@ -1832,7 +1887,7 @@ notifications =
 JSON.parse(
 
 localStorage.getItem(
-"jfv11_notifications"
+"jfv12_notifications"
 )
 
 ||
@@ -1874,8 +1929,7 @@ html +=
 
 <div class="detail">
 
-🔔
-${n.texte}
+🔔 ${n.texte}
 
 </div>
 
@@ -1896,15 +1950,14 @@ document.getElementById(
 notifications.length;
 
 }
-
-function chargerHistorique(){
+  function chargerHistorique(){
 
 historique =
 
 JSON.parse(
 
 localStorage.getItem(
-"jfv11_historique"
+"jfv12_historique"
 )
 
 ||
@@ -1939,9 +1992,11 @@ html +=
 <div class="detail">
 
 🕒
+
 ${job.titre}
 
 -
+
 ${job.entreprise}
 
 </div>
@@ -1967,6 +2022,7 @@ historique.length;
 function ajouterHistorique(job){
 
 historique =
+
 historique.filter(
 o => o.id !== job.id
 );
@@ -1987,7 +2043,7 @@ historique.slice(
 
 localStorage.setItem(
 
-"jfv11_historique",
+"jfv12_historique",
 
 JSON.stringify(
 historique
@@ -2014,7 +2070,7 @@ offresFavorites =
 JSON.parse(
 
 localStorage.getItem(
-"jfv11_offres_favorites"
+"jfv12_offres_favorites"
 )
 
 ||
@@ -2031,7 +2087,7 @@ function sauvegarderFavorisOffres(){
 
 localStorage.setItem(
 
-"jfv11_offres_favorites",
+"jfv12_offres_favorites",
 
 JSON.stringify(
 offresFavorites
@@ -2046,9 +2102,7 @@ function ajouterOffreFavorite(job){
 if(
 estFavori(job.id)
 ){
-
 return;
-
 }
 
 offresFavorites.push(job);
@@ -2066,7 +2120,6 @@ job.titre
 );
 
 }
-
   function afficherFavorisOffres(){
 
 let html = "";
@@ -2182,7 +2235,7 @@ candidatures =
 JSON.parse(
 
 localStorage.getItem(
-"jfv11_candidatures"
+"jfv12_candidatures"
 )
 
 ||
@@ -2199,7 +2252,7 @@ function sauvegarderCandidatures(){
 
 localStorage.setItem(
 
-"jfv11_candidatures",
+"jfv12_candidatures",
 
 JSON.stringify(
 candidatures
@@ -2253,7 +2306,6 @@ job.titre
 );
 
 }
-
 function supprimerCandidature(id){
 
 candidatures =
@@ -2295,7 +2347,8 @@ majStatistiquesGlobales();
 }
 
 }
-  function afficherCandidatures(){
+
+function afficherCandidatures(){
 
 let html = "";
 
@@ -2349,7 +2402,6 @@ ${c.titre}
 </div>
 
 <select
-class="status-select"
 onchange="
 changerStatutCandidature(
 ${c.id},
@@ -2357,40 +2409,19 @@ this.value
 )
 ">
 
-<option
-${c.statut==="À envoyer"?"selected":""}>
-À envoyer
-</option>
+<option ${c.statut==="À envoyer"?"selected":""}>À envoyer</option>
 
-<option
-${c.statut==="Envoyée"?"selected":""}>
-Envoyée
-</option>
+<option ${c.statut==="Envoyée"?"selected":""}>Envoyée</option>
 
-<option
-${c.statut==="Réponse reçue"?"selected":""}>
-Réponse reçue
-</option>
+<option ${c.statut==="Réponse reçue"?"selected":""}>Réponse reçue</option>
 
-<option
-${c.statut==="Entretien"?"selected":""}>
-Entretien
-</option>
+<option ${c.statut==="Entretien"?"selected":""}>Entretien</option>
 
-<option
-${c.statut==="Offre reçue"?"selected":""}>
-Offre reçue
-</option>
+<option ${c.statut==="Offre reçue"?"selected":""}>Offre reçue</option>
 
-<option
-${c.statut==="Embauché"?"selected":""}>
-Embauché
-</option>
+<option ${c.statut==="Embauché"?"selected":""}>Embauché</option>
 
-<option
-${c.statut==="Refusée"?"selected":""}>
-Refusée
-</option>
+<option ${c.statut==="Refusée"?"selected":""}>Refusée</option>
 
 </select>
 
@@ -2416,11 +2447,7 @@ const carte =
 
 <div class="kanban-card">
 
-<strong>
-
 ${c.titre}
-
-</strong>
 
 <br>
 
@@ -2430,39 +2457,18 @@ ${c.entreprise}
 
 `;
 
-if(c.statut==="À envoyer"){
-aEnvoyer += carte;
-}
-
-if(c.statut==="Envoyée"){
-envoyees += carte;
-}
-
-if(c.statut==="Réponse reçue"){
-reponses += carte;
-}
-
-if(c.statut==="Entretien"){
-entretiens += carte;
-}
-
-if(c.statut==="Offre reçue"){
-offresRecues += carte;
-}
-
-if(c.statut==="Embauché"){
-embauche += carte;
-}
-
-if(c.statut==="Refusée"){
-refusees += carte;
-}
+if(c.statut==="À envoyer") aEnvoyer+=carte;
+if(c.statut==="Envoyée") envoyees+=carte;
+if(c.statut==="Réponse reçue") reponses+=carte;
+if(c.statut==="Entretien") entretiens+=carte;
+if(c.statut==="Offre reçue") offresRecues+=carte;
+if(c.statut==="Embauché") embauche+=carte;
+if(c.statut==="Refusée") refusees+=carte;
 
 });
 
 }
-
-document.getElementById(
+  document.getElementById(
 "candidatures"
 ).innerHTML =
 html;
@@ -2511,12 +2517,6 @@ function majStatistiquesGlobales(){
 const total =
 candidatures.length;
 
-const nbEnvoyees =
-
-candidatures.filter(
-c => c.statut==="Envoyée"
-).length;
-
 const nbEntretiens =
 
 candidatures.filter(
@@ -2555,7 +2555,10 @@ c.statut!=="Envoyée"
 document.getElementById(
 "statEnvoyees"
 ).innerText =
-nbEnvoyees;
+
+candidatures.filter(
+c => c.statut==="Envoyée"
+).length;
 
 document.getElementById(
 "statEntretiens"
@@ -2581,15 +2584,12 @@ document.getElementById(
 "statTauxReponse"
 ).innerText =
 
-total > 0
-
+total
 ?
 
 Math.round(
 (nbReponses/total)*100
-)
-+
-"%"
+) + "%"
 
 :
 
@@ -2599,15 +2599,12 @@ document.getElementById(
 "statTauxEntretien"
 ).innerText =
 
-total > 0
-
+total
 ?
 
 Math.round(
 (nbEntretiens/total)*100
-)
-+
-"%"
+) + "%"
 
 :
 
@@ -2617,22 +2614,18 @@ document.getElementById(
 "statTauxSucces"
 ).innerText =
 
-total > 0
-
+total
 ?
 
 Math.round(
 (nbSucces/total)*100
-)
-+
-"%"
+) + "%"
 
 :
 
 "0%";
 
 }
-  
   function analyserOffreIA(){
 
 const texte =
@@ -2738,29 +2731,17 @@ ${competences.join(", ") || "Aucune"}
 
 ${
 score >= 80
-
 ?
-
 "Excellente opportunité"
-
 :
-
 score >= 60
-
 ?
-
 "Très intéressante"
-
 :
-
 score >= 40
-
 ?
-
 "Potentiel moyen"
-
 :
-
 "À analyser davantage"
 }
 
@@ -2831,8 +2812,7 @@ const mots = [
 
 let trouves = [];
 let manquants = [];
-
-mots.forEach(m => {
+  mots.forEach(m => {
 
 if(
 offre.includes(m)
@@ -2865,16 +2845,12 @@ score = Math.round(
 
 (
 trouves.length
-
 /
-
 (
 trouves.length +
 manquants.length
 )
-
 )
-
 *100
 
 );
@@ -2940,7 +2916,7 @@ ${trouves.join(", ") || "Aucune"}
 
 <div class="detail">
 
-⚠️ Manquantes :
+⚠️ Compétences manquantes :
 
 ${manquants.join(", ") || "Aucune"}
 
@@ -2951,7 +2927,8 @@ ${manquants.join(", ") || "Aucune"}
 `;
 
 }
-  function genererLettreIA(){
+
+function genererLettreIA(){
 
 const texte =
 
@@ -2975,37 +2952,29 @@ const lettre =
 
 `Madame, Monsieur,
 
-Votre offre d'emploi a particulièrement retenu mon attention.
+Je vous adresse ma candidature avec un vif intérêt pour le poste proposé.
 
-Mon expérience dans les domaines administratifs, de la gestion documentaire, du support utilisateur et de la relation clientèle me permet de répondre efficacement aux exigences du poste.
+Mon expérience professionnelle dans les domaines administratifs, du support, de la gestion documentaire et de la relation clientèle me permet de répondre efficacement aux attentes de votre entreprise.
 
-Rigoureux, autonome et organisé, je souhaite mettre mes compétences au service de votre organisation.
+Rigoureux, organisé et motivé, je suis convaincu de pouvoir apporter une réelle valeur ajoutée à votre équipe.
 
-Motivé à rejoindre votre équipe, je serais heureux de pouvoir vous rencontrer afin de vous exposer plus en détail ma motivation.
+Je serais ravi de pouvoir vous rencontrer afin d'échanger plus en détail sur ma candidature.
 
-Dans l'attente de votre réponse, je vous adresse mes salutations distinguées.
+Dans l'attente de votre réponse, je vous prie d'agréer, Madame, Monsieur, mes salutations distinguées.
 
 François Laratta`;
 
-document
-.getElementById(
+document.getElementById(
 "lettreMotivation"
-)
-.value =
+).value =
 lettre;
-
-navigator
-.clipboard
-.writeText(
-lettre
-);
 
 ajouterNotification(
 "Lettre IA générée"
 );
-
+  
 }
-
+  
 function copierLettre(){
 
 const texte =
@@ -3020,9 +2989,7 @@ if(!texte){
 return;
 }
 
-navigator
-.clipboard
-.writeText(
+navigator.clipboard.writeText(
 texte
 );
 
@@ -3049,13 +3016,10 @@ return;
 const blob =
 
 new Blob(
-
 [texte],
-
 {
 type:"text/plain"
 }
-
 );
 
 const a =
@@ -3095,7 +3059,7 @@ document
 
 localStorage.setItem(
 
-"jfv11_cv_" + nom,
+"jfv12_cv_" + nom,
 
 contenu
 
@@ -3103,8 +3067,7 @@ contenu
 
 ajouterNotification(
 
-"CV sauvegardé : "
-+
+"CV sauvegardé : " +
 nom
 
 );
@@ -3124,7 +3087,7 @@ document
 const contenu =
 
 localStorage.getItem(
-"jfv11_cv_" + nom
+"jfv12_cv_" + nom
 )
 
 ||
@@ -3139,7 +3102,8 @@ document
 contenu;
 
 }
-  function comparerOffres(){
+
+function comparerOffres(){
 
 const id1 =
 
@@ -3161,7 +3125,7 @@ document
 .value
 );
 
-const offre1 =
+  const offre1 =
 
 offres.find(
 o => o.id === id1
@@ -3191,41 +3155,6 @@ return;
 
 }
 
-let gagnant = "";
-
-const salaire1 =
-parseInt(
-offre1.salaire
-.replace(/\D/g,"")
-);
-
-const salaire2 =
-parseInt(
-offre2.salaire
-.replace(/\D/g,"")
-);
-
-if(
-salaire1 > salaire2
-){
-
-gagnant =
-offre1.titre;
-
-}else if(
-salaire2 > salaire1
-){
-
-gagnant =
-offre2.titre;
-
-}else{
-
-gagnant =
-"Égalité";
-
-}
-
 document
 .getElementById(
 "comparateur"
@@ -3250,127 +3179,75 @@ border-collapse:collapse;
 
 <tr>
 
-<td>
-Critère
-</td>
+<td>Critère</td>
 
-<td>
-${offre1.titre}
-</td>
+<td>${offre1.titre}</td>
 
-<td>
-${offre2.titre}
-</td>
+<td>${offre2.titre}</td>
 
 </tr>
 
 <tr>
 
-<td>
-Entreprise
-</td>
+<td>Entreprise</td>
 
-<td>
-${offre1.entreprise}
-</td>
+<td>${offre1.entreprise}</td>
 
-<td>
-${offre2.entreprise}
-</td>
+<td>${offre2.entreprise}</td>
 
 </tr>
 
 <tr>
 
-<td>
-Lieu
-</td>
+<td>Lieu</td>
 
-<td>
-${offre1.lieu}
-</td>
+<td>${offre1.lieu}</td>
 
-<td>
-${offre2.lieu}
-</td>
+<td>${offre2.lieu}</td>
 
 </tr>
 
 <tr>
 
-<td>
-Taux
-</td>
+<td>Taux</td>
 
-<td>
-${offre1.taux}
-</td>
+<td>${offre1.taux}</td>
 
-<td>
-${offre2.taux}
-</td>
+<td>${offre2.taux}</td>
 
 </tr>
 
 <tr>
 
-<td>
-Salaire
-</td>
+<td>Salaire</td>
 
-<td>
-${offre1.salaire}
-</td>
+<td>${offre1.salaire}</td>
 
-<td>
-${offre2.salaire}
-</td>
+<td>${offre2.salaire}</td>
 
 </tr>
 
 <tr>
 
-<td>
-Secteur
-</td>
+<td>Secteur</td>
 
-<td>
-${offre1.secteur}
-</td>
+<td>${offre1.secteur}</td>
 
-<td>
-${offre2.secteur}
-</td>
+<td>${offre2.secteur}</td>
 
 </tr>
 
 <tr>
 
-<td>
-Contrat
-</td>
+<td>Contrat</td>
 
-<td>
-${offre1.contrat}
-</td>
+<td>${offre1.contrat}</td>
 
-<td>
-${offre2.contrat}
-</td>
+<td>${offre2.contrat}</td>
 
 </tr>
 
 </table>
-
-<br>
-
-<div class="detail">
-
-🏆 Recommandation IA :
-
-${gagnant}
-
-</div>
 
 </div>
 
@@ -3381,26 +3258,14 @@ ${gagnant}
 function remplirComparateur(){
 
 const select1 =
-
 document.getElementById(
 "offreCompare1"
 );
 
 const select2 =
-
 document.getElementById(
 "offreCompare2"
 );
-
-if(
-!select1
-||
-!select2
-){
-
-return;
-
-}
 
 let html =
 
@@ -3424,29 +3289,12 @@ ${job.entreprise}
 
 });
 
-select1.innerHTML =
-html;
+select1.innerHTML = html;
 
-select2.innerHTML =
-html;
+select2.innerHTML = html;
 
 }
 
-function remplirStatistiquesRecherche(){
-
-document.getElementById(
-"statRecherches"
-).innerText =
-
-localStorage.getItem(
-"jfv11_nb_recherches"
-)
-
-||
-
-0;
-
-}
   function afficherOffres(data){
 
 document
@@ -3455,70 +3303,22 @@ document
 )
 .innerHTML =
 
-"📊 "
-+
-data.length
-+
+"📊 " +
+data.length +
 " offre(s) trouvée(s)";
 
 let html = "";
 
 data.forEach(job => {
 
-const nouveau =
-
-job.publication === "24h"
-
-?
-
-'<div class="badge-new">🆕 NOUVEAU</div>'
-
-:
-
-"";
-
 const favori =
 estFavori(job.id);
-
-const boutonFavori =
-
-favori
-
-?
-
-`
-
-<button
-class="btn btn-fav"
-disabled>
-
-⭐ Favori enregistré
-
-</button>
-
-`
-
-:
-
-`
-
-<button
-class="btn btn-fav"
-onclick='ajouterOffreFavorite(${JSON.stringify(job)})'>
-
-⭐ Ajouter aux favoris
-
-</button>
-
-`;
 
 html +=
 
 `
 
 <div class="offre">
-
-${nouveau}
 
 <h2>
 
@@ -3586,7 +3386,14 @@ ${job.description}
 
 </div>
 
-${boutonFavori}
+<button
+class="btn btn-fav"
+onclick='ajouterOffreFavorite(${JSON.stringify(job)})'
+${favori ? "disabled" : ""}>
+
+${favori ? "⭐ Favori enregistré" : "⭐ Ajouter aux favoris"}
+
+</button>
 
 <button
 class="btn btn-ai"
@@ -3600,9 +3407,10 @@ onclick='ajouterCandidature(${JSON.stringify(job)})'>
 class="postuler"
 href="${job.url}"
 target="_blank"
+rel="noopener noreferrer"
 onclick='ajouterHistorique(${JSON.stringify(job)})'>
 
-🔗 Voir l'offre originale
+🔗 Voir l'offre sur le site source
 
 </a>
 
@@ -3628,100 +3436,6 @@ data.length;
 
 }
 
-function appliquerRecherche(){
-
-const texte =
-
-document
-.getElementById(
-"search"
-)
-.value
-.toLowerCase();
-
-let nb =
-
-parseInt(
-
-localStorage.getItem(
-"jfv11_nb_recherches"
-)
-
-||
-
-0
-
-);
-
-nb++;
-
-localStorage.setItem(
-
-"jfv11_nb_recherches",
-
-nb
-
-);
-
-remplirStatistiquesRecherche();
-
-const resultat =
-
-offres.filter(o =>
-
-(
-o.titre || ""
-)
-.toLowerCase()
-.includes(texte)
-
-||
-
-(
-o.entreprise || ""
-)
-.toLowerCase()
-.includes(texte)
-
-||
-
-(
-o.description || ""
-)
-.toLowerCase()
-.includes(texte)
-
-||
-
-(
-o.competences || ""
-)
-.toLowerCase()
-.includes(texte)
-
-||
-
-(
-o.lieu || ""
-)
-.toLowerCase()
-.includes(texte)
-
-||
-
-(
-o.secteur || ""
-)
-.toLowerCase()
-.includes(texte)
-
-);
-
-afficherOffres(
-resultat
-);
-
-}
   function exporterDonnees(){
 
 const data = {
@@ -3774,13 +3488,9 @@ blob
 );
 
 a.download =
-"jobfinder-vaud-v11-backup.json";
+"jobfinder-vaud-v12-backup.json";
 
 a.click();
-
-ajouterNotification(
-"Sauvegarde exportée"
-);
 
 }
 
@@ -3822,33 +3532,23 @@ data.notifications || [];
 candidatures =
 data.candidatures || [];
 
-localStorage.setItem(
-"jfv11_offres_favorites",
-JSON.stringify(
-offresFavorites
-)
-);
+sauvegarderFavorisOffres();
 
 localStorage.setItem(
-"jfv11_historique",
+"jfv12_historique",
 JSON.stringify(
 historique
 )
 );
 
 localStorage.setItem(
-"jfv11_notifications",
+"jfv12_notifications",
 JSON.stringify(
 notifications
 )
 );
 
-localStorage.setItem(
-"jfv11_candidatures",
-JSON.stringify(
-candidatures
-)
-);
+sauvegarderCandidatures();
 
 afficherFavorisOffres();
 
@@ -3873,231 +3573,45 @@ file
 }
 );
 
-function sauverFavori(){
-
-const nom =
-
-document
-.getElementById(
-"nomFavori"
-)
-.value;
-
-if(!nom){
-return;
-}
-
-let favoris =
-
-JSON.parse(
-
-localStorage.getItem(
-"jfv11_recherches"
-)
-
-||
-
-"{}"
-
-);
-
-favoris[nom] =
-
-document
-.getElementById(
-"search"
-)
-.value;
-
-localStorage.setItem(
-
-"jfv11_recherches",
-
-JSON.stringify(
-favoris
-)
-
-);
-
-rafraichirFavoris();
-
-}
-
-function rafraichirFavoris(){
-
-let favoris =
-
-JSON.parse(
-
-localStorage.getItem(
-"jfv11_recherches"
-)
-
-||
-
-"{}"
-
-);
-
-let html = "";
-
-Object.keys(
-favoris
-)
-
-.forEach(f => {
-
-html +=
-
-`
-
-<option value="${f}">
-
-${f}
-
-</option>
-
-`;
-
-});
-
-document
-.getElementById(
-"listeFavoris"
-)
-.innerHTML =
-
-html ||
-
-"<option>Aucun favori</option>";
-
-}
-  function chargerFavori(){
-
-let favoris =
-
-JSON.parse(
-
-localStorage.getItem(
-"jfv11_recherches"
-)
-
-||
-
-"{}"
-
-);
-
-const nom =
-
-document
-.getElementById(
-"listeFavoris"
-)
-.value;
-
-if(
-!favoris[nom]
-){
-
-return;
-
-}
-
-document
-.getElementById(
-"search"
-)
-.value =
-
-favoris[nom];
-
-appliquerRecherche();
-
-}
-
-function supprimerFavori(){
-
-let favoris =
-
-JSON.parse(
-
-localStorage.getItem(
-"jfv11_recherches"
-)
-
-||
-
-"{}"
-
-);
-
-const nom =
-
-document
-.getElementById(
-"listeFavoris"
-)
-.value;
-
-delete favoris[nom];
-
-localStorage.setItem(
-
-"jfv11_recherches",
-
-JSON.stringify(
-favoris
-)
-
-);
-
-rafraichirFavoris();
-
-}
-
-document
+  document
 .getElementById(
 "search"
 )
 .addEventListener(
 "input",
-appliquerRecherche
+e => {
+
+const texte =
+
+e.target.value
+.toLowerCase();
+
+recherchesEffectuees++;
+
+document
+.getElementById(
+"statRecherches"
+).innerText =
+recherchesEffectuees;
+
+const resultat =
+
+offres.filter(job =>
+
+JSON.stringify(job)
+.toLowerCase()
+.includes(texte)
+
 );
-
-document
-.getElementById(
-"rechercher"
-)
-.addEventListener(
-"click",
-appliquerRecherche
-);
-
-document
-.getElementById(
-"reset"
-)
-.addEventListener(
-"click",
-() => {
-
-document
-.getElementById(
-"search"
-)
-.value = "";
 
 afficherOffres(
-offres
+resultat
 );
 
 }
 );
 
-fetch(
-"/offers"
-)
+fetch("/offers")
 
 .then(
 r => r.json()
@@ -4107,211 +3621,23 @@ r => r.json()
 
 offres = data;
 
+chargerNotifications();
+
+chargerHistorique();
+
+chargerFavorisOffres();
+
+chargerCandidatures();
+
+remplirComparateur();
+
 afficherOffres(
 offres
 );
 
-remplirComparateur();
-
-rafraichirFavoris();
-
-chargerFavorisOffres();
-
-chargerHistorique();
-
-chargerNotifications();
-
-chargerCandidatures();
-
-remplirStatistiquesRecherche();
-
-majStatistiquesGlobales();
-
-});
-  function verifierAlertes(){
-
-const region =
-
-document
-.getElementById(
-"alerteRegion"
-)
-.value;
-
-const motCle =
-
-document
-.getElementById(
-"motCleAlerte"
-)
-.value
-.toLowerCase();
-
-if(
-!region
-&&
-!motCle
-){
-
-return;
-
-}
-
-const resultats =
-
-offres.filter(o => {
-
-const matchRegion =
-
-!region
-
-||
-
-o.lieu === region;
-
-const matchMotCle =
-
-!motCle
-
-||
-
-(
-o.titre +
-" " +
-o.description +
-" " +
-o.competences
-)
-
-.toLowerCase()
-.includes(
-motCle
-);
-
-return (
-matchRegion
-&&
-matchMotCle
-);
-
 });
 
 if(
-resultats.length > 0
-){
-
-ajouterNotification(
-
-resultats.length
-+
-" offre(s) correspondent à vos alertes"
-
-);
-
-}
-
-}
-
-function genererSuggestions(){
-
-if(
-offresFavorites.length===0
-){
-
-document
-.getElementById(
-"suggestions"
-)
-.innerHTML =
-
-"Aucune recommandation";
-
-return;
-
-}
-
-const secteur =
-
-offresFavorites[0]
-.secteur;
-
-const suggestions =
-
-offres.filter(
-o =>
-
-o.secteur === secteur
-
-&&
-
-!offresFavorites.find(
-f => f.id === o.id
-)
-
-)
-
-.slice(
-0,
-5
-);
-
-let html = "";
-
-suggestions.forEach(job => {
-
-html +=
-
-`
-
-<div class="detail">
-
-🎯
-
-${job.titre}
-
--
-
-${job.entreprise}
-
-</div>
-
-`;
-
-});
-
-document
-.getElementById(
-"suggestions"
-)
-.innerHTML =
-
-html ||
-
-"Aucune recommandation";
-
-}
-
-setInterval(
-verifierAlertes,
-60000
-);
-
-window.addEventListener(
-"beforeunload",
-() => {
-
-localStorage.setItem(
-
-"jfv11_last_session",
-
-new Date()
-.toISOString()
-
-);
-
-}
-);
-  if(
 "Notification"
 in window
 ){
@@ -4330,47 +3656,9 @@ navigator
 .serviceWorker
 .register(
 "/service-worker.js"
-)
-
-.then(() => {
-
-console.log(
-"Service Worker OK"
 );
-
-})
-
-.catch(err => {
-
-console.error(
-err
-);
-
-});
 
 }
-
-document
-.getElementById(
-"alerteRegion"
-)
-.addEventListener(
-"change",
-verifierAlertes
-);
-
-document
-.getElementById(
-"motCleAlerte"
-)
-.addEventListener(
-"input",
-verifierAlertes
-);
-
-console.log(
-"Job Finder Vaud V11 Ultimate AI Career Manager chargé"
-);
 
 </script>
 
@@ -4389,31 +3677,31 @@ behavior:'smooth'
 
 <div class="footer">
 
-🤘 Job Finder Vaud V11 Ultimate AI Career Manager
+🤘 Job Finder Vaud V12
 
 <br><br>
 
-✅ Recherche multi-sites
+✅ Accordéons corrigés
 
 <br>
 
-✅ Favoris intelligents
+✅ Sites ouverts par défaut
 
 <br>
 
-✅ Historique complet
+✅ Historique des offres
 
 <br>
 
-✅ Notifications intelligentes
+✅ Favoris
 
 <br>
 
-✅ Suggestions personnalisées
+✅ Suivi des candidatures Kanban
 
 <br>
 
-✅ Analyse IA des offres
+✅ Analyse IA
 
 <br>
 
@@ -4421,11 +3709,11 @@ behavior:'smooth'
 
 <br>
 
-✅ Pourcentage de compatibilité
+✅ Compatibilité %
 
 <br>
 
-✅ Générateur de lettre IA
+✅ Générateur de lettre
 
 <br>
 
@@ -4433,28 +3721,19 @@ behavior:'smooth'
 
 <br>
 
-✅ Suivi des candidatures
+✅ Export / Import
 
 <br>
 
-✅ Tableau Kanban
+✅ Notifications
 
 <br>
 
-✅ Statistiques avancées
-
-<br>
-
-✅ Export / Import complet
-
-<br>
-
-✅ PWA Android
+✅ Ouverture des offres sur le site source
 
 <br><br>
 
-Co-créateur :
-
+Créateur :
 François
 
 </div>
