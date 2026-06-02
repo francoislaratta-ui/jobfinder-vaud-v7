@@ -1,31 +1,22 @@
-const CACHE_NAME =
-"jobfinder-v13-premium-v1";
 
-const ASSETS = [
+const CACHE_NAME = "jobfinder-vaud-v861";
+
+const urlsToCache = [
 
 "/",
-
 "/index.html",
-
 "/manifest.json",
-
-"/offers.json",
-
-"/icon-192.png",
-
-"/icon-512.png"
+"/offers.json"
 
 ];
 
-/* ==========================
+/* =========================
    INSTALL
-========================== */
+========================= */
 
 self.addEventListener(
 "install",
 event=>{
-
-self.skipWaiting();
 
 event.waitUntil(
 
@@ -35,19 +26,21 @@ CACHE_NAME
 .then(cache=>{
 
 return cache.addAll(
-ASSETS
+urlsToCache
 );
 
 })
 
 );
 
+self.skipWaiting();
+
 }
 );
 
-/* ==========================
+/* =========================
    ACTIVATE
-========================== */
+========================= */
 
 self.addEventListener(
 "activate",
@@ -85,9 +78,9 @@ self.clients.claim();
 }
 );
 
-/* ==========================
+/* =========================
    FETCH
-========================== */
+========================= */
 
 self.addEventListener(
 "fetch",
@@ -95,35 +88,16 @@ event=>{
 
 event.respondWith(
 
+caches.match(
+event.request
+)
+.then(response=>{
+
+return (
+response ||
 fetch(
 event.request
 )
-
-.then(response=>{
-
-const copy =
-response.clone();
-
-caches.open(
-CACHE_NAME
-)
-.then(cache=>{
-
-cache.put(
-event.request,
-copy
-);
-
-});
-
-return response;
-
-})
-
-.catch(()=>{
-
-return caches.match(
-event.request
 );
 
 })
@@ -133,29 +107,9 @@ event.request
 }
 );
 
-/* ==========================
-   MESSAGE
-========================== */
-
-self.addEventListener(
-"message",
-event=>{
-
-if(
-event.data ===
-"SKIP_WAITING"
-){
-
-self.skipWaiting();
-
-}
-
-}
-);
-
-/* ==========================
-   PUSH
-========================== */
+/* =========================
+   NOTIFICATIONS
+========================= */
 
 self.addEventListener(
 "push",
@@ -164,28 +118,25 @@ event=>{
 const options = {
 
 body:
-
-event.data
-?
-
-event.data.text()
-
-:
-
-"Nouvelle notification",
+"Nouvelle offre disponible",
 
 icon:
 "/icon-192.png",
 
 badge:
-"/icon-192.png"
+"/icon-192.png",
+
+vibrate:[
+200,
+100,
+200
+]
 
 };
 
 event.waitUntil(
 
-self.registration
-.showNotification(
+self.registration.showNotification(
 
 "Job Finder Vaud",
 
@@ -198,9 +149,9 @@ options
 }
 );
 
-/* ==========================
-   NOTIFICATION CLICK
-========================== */
+/* =========================
+   CLICK NOTIFICATION
+========================= */
 
 self.addEventListener(
 "notificationclick",
