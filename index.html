@@ -2706,6 +2706,304 @@ updateStatistics();
 }
 
 );
+/* ==========================================
+   CHARGEMENT DYNAMIQUE DES OFFRES
+========================================== */
 
+let allOffers = [];
+
+async function loadOffers(){
+
+try{
+
+const response =
+await fetch(
+"offers.json"
+);
+
+allOffers =
+await response.json();
+
+renderOffers(
+allOffers
+);
+
+}catch(error){
+
+console.error(
+error
+);
+
+}
+
+}
+
+/* ==========================================
+   AFFICHAGE DES OFFRES
+========================================== */
+
+function renderOffers(offers){
+
+const container =
+
+document.getElementById(
+"offersContainer"
+);
+
+if(!container){
+
+return;
+
+}
+
+container.innerHTML = "";
+
+offers.forEach(offer=>{
+
+container.innerHTML += `
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+${offer.title}
+
+</div>
+
+<div class="offer-company">
+
+🏢 ${offer.company}
+
+</div>
+
+<div class="compatibility">
+
+🟢 ${offer.compatibility}%
+
+</div>
+
+<div class="offer-meta">
+
+<div class="meta-item">
+📍 ${offer.location}
+</div>
+
+<div class="meta-item">
+💰 ${offer.salary}
+</div>
+
+<div class="meta-item">
+📅 ${offer.date}
+</div>
+
+<div class="meta-item">
+⏰ ${offer.rate}
+</div>
+
+<div class="meta-item">
+📄 ${offer.contract}
+</div>
+
+<div class="meta-item">
+🌐 ${offer.source}
+</div>
+
+</div>
+
+<div class="offer-actions">
+
+<button
+class="favorite-btn"
+onclick="saveOfferFavorite(
+'${offer.title}',
+'${offer.company}'
+)">
+
+⭐ Ajouter aux favoris
+
+</button>
+
+<button
+class="ai-btn">
+
+🤖 Analyse
+
+</button>
+
+<button
+class="letter-btn">
+
+✉️ Lettre
+
+</button>
+
+<a
+class="offer-link-btn"
+target="_blank"
+href="${offer.url}">
+
+🔗 Voir l'offre
+
+</a>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+updateOfferCounter(
+offers.length
+);
+
+}
+
+/* ==========================================
+   COMPTEUR OFFRES
+========================================== */
+
+function updateOfferCounter(count){
+
+const element =
+
+document.getElementById(
+"offersCount"
+);
+
+if(element){
+
+element.textContent =
+count;
+
+}
+
+}
+
+/* ==========================================
+   FAVORIS OFFRES
+========================================== */
+
+function saveOfferFavorite(
+
+title,
+company
+
+){
+
+addFavorite(
+title,
+company
+);
+
+alert(
+"Offre ajoutée aux favoris"
+);
+
+}
+
+/* ==========================================
+   FILTRE REGIONS
+========================================== */
+
+function getSelectedRegions(){
+
+const values = [];
+
+document
+.querySelectorAll(
+"#regionsContainer input:checked"
+)
+.forEach(
+
+item=>{
+
+values.push(
+
+item.parentElement
+.textContent
+.trim()
+
+);
+
+}
+
+);
+
+return values;
+
+}
+
+/* ==========================================
+   APPLICATION FILTRES
+========================================== */
+
+function applyFilters(){
+
+const regions =
+
+getSelectedRegions();
+
+let results =
+
+allOffers.filter(
+
+offer=>{
+
+if(
+
+regions.length > 0 &&
+!regions.includes(
+offer.location
+)
+
+){
+
+return false;
+
+}
+
+return true;
+
+}
+
+);
+
+renderOffers(
+results
+);
+
+}
+
+/* ==========================================
+   EVENEMENTS FILTRES
+========================================== */
+
+document
+.querySelectorAll(
+"#regionsContainer input"
+)
+.forEach(
+
+checkbox=>{
+
+checkbox.addEventListener(
+
+"change",
+
+applyFilters
+
+);
+
+}
+
+);
+
+/* ==========================================
+   INITIALISATION
+========================================== */
+
+loadOffers();
 </script> 
    
