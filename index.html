@@ -1,1 +1,4465 @@
+<!DOCTYPE html>
+<html lang="fr">
 
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1">
+
+<title>
+🤘 Job Finder Vaud V11 Ultimate AI Career Manager
+</title>
+
+<link
+rel="manifest"
+href="/manifest.json">
+
+<meta
+name="theme-color"
+content="#c26d12">
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+:root{
+
+--fire:#c26d12;
+--fire2:#9a5a14;
+
+--black:#050505;
+--black2:#0f0f0f;
+
+--card:#181818;
+
+--green:#22c55e;
+--red:#dc2626;
+--purple:#7e22ce;
+--blue:#2563eb;
+
+--text:#e5e7eb;
+
+}
+
+html{
+
+scroll-behavior:smooth;
+
+}
+
+body{
+
+font-family:Arial,sans-serif;
+
+background:
+linear-gradient(
+180deg,
+#050505,
+#090909,
+#111111
+);
+
+color:white;
+
+padding:20px;
+
+min-height:100vh;
+
+}
+
+h1{
+
+text-align:center;
+
+font-size:34px;
+
+margin-bottom:10px;
+
+color:var(--fire);
+
+}
+
+.subtitle{
+
+text-align:center;
+
+color:#d1d5db;
+
+margin-bottom:20px;
+
+}
+
+.counter{
+
+background:#1b1b1b;
+
+padding:15px;
+
+border-radius:18px;
+
+margin-bottom:15px;
+
+text-align:center;
+
+font-size:22px;
+
+font-weight:bold;
+
+border:
+1px solid rgba(194,109,18,.25);
+
+}
+
+.dashboard{
+
+display:grid;
+
+grid-template-columns:
+repeat(
+2,
+1fr
+);
+
+gap:10px;
+
+margin-bottom:15px;
+
+}
+
+.dashboard-card{
+
+background:var(--card);
+
+padding:15px;
+
+border-radius:16px;
+
+text-align:center;
+
+cursor:pointer;
+
+border:
+1px solid rgba(194,109,18,.20);
+
+}
+
+.dashboard-card strong{
+
+display:block;
+
+font-size:22px;
+
+color:var(--fire);
+
+}
+
+.quickbar{
+
+display:flex;
+
+gap:10px;
+
+flex-wrap:wrap;
+
+margin-bottom:15px;
+
+}
+
+.quickbtn{
+
+flex:1;
+
+padding:12px;
+
+border:none;
+
+border-radius:14px;
+
+cursor:pointer;
+
+background:#232323;
+
+color:white;
+
+font-weight:bold;
+
+}
+
+.section{
+
+background:var(--card);
+
+padding:18px;
+
+border-radius:18px;
+
+margin-bottom:15px;
+
+border:
+1px solid rgba(194,109,18,.15);
+
+}
+
+.section h3{
+
+color:var(--fire);
+
+margin-bottom:12px;
+
+}
+
+.search,
+textarea,
+select{
+
+width:100%;
+
+padding:14px;
+
+border:none;
+
+border-radius:12px;
+
+background:#1f2937;
+
+color:white;
+
+margin-top:10px;
+
+}
+
+.tags{
+
+display:flex;
+
+flex-wrap:wrap;
+
+gap:8px;
+
+}
+
+.tag{
+
+background:#2a2a2a;
+
+padding:10px 14px;
+
+border-radius:30px;
+
+cursor:pointer;
+
+}
+
+.tag.active{
+
+background:var(--fire);
+
+}
+
+.buttons{
+
+display:flex;
+
+gap:10px;
+
+margin-top:15px;
+
+}
+
+.btn{
+
+flex:1;
+
+padding:12px;
+
+border:none;
+
+border-radius:12px;
+
+cursor:pointer;
+
+font-weight:bold;
+
+color:white;
+
+}
+
+.btn-search{
+background:var(--fire);
+}
+
+.btn-reset{
+background:var(--red);
+}
+
+.btn-fav{
+background:var(--purple);
+}
+
+.btn-ai{
+background:var(--blue);
+}
+
+.offre{
+
+background:#1b1b1b;
+
+padding:18px;
+
+border-radius:18px;
+
+margin-bottom:15px;
+
+border:
+1px solid rgba(194,109,18,.15);
+
+}
+
+.detail{
+
+margin:6px 0;
+
+color:#d1d5db;
+
+}
+
+.badge{
+
+display:inline-block;
+
+padding:6px 12px;
+
+border-radius:15px;
+
+background:#a16207;
+
+margin-top:8px;
+
+font-size:12px;
+
+}
+
+.badge-new{
+
+display:inline-block;
+
+padding:6px 12px;
+
+border-radius:15px;
+
+background:#16a34a;
+
+margin-bottom:10px;
+
+font-size:12px;
+
+font-weight:bold;
+
+}
+
+.badge-fav{
+
+display:inline-block;
+
+padding:6px 12px;
+
+border-radius:15px;
+
+background:#7e22ce;
+
+margin-bottom:10px;
+
+font-size:12px;
+
+font-weight:bold;
+
+}
+
+.postuler{
+
+display:block;
+
+margin-top:10px;
+
+padding:12px;
+
+border-radius:12px;
+
+text-decoration:none;
+
+text-align:center;
+
+background:#16a34a;
+
+color:white;
+
+font-weight:bold;
+
+}
+
+.hidden{
+
+display:none;
+
+}
+
+  .notification-badge{
+
+position:fixed;
+
+top:15px;
+
+right:15px;
+
+background:#dc2626;
+
+color:white;
+
+padding:8px 12px;
+
+border-radius:20px;
+
+font-weight:bold;
+
+z-index:9999;
+
+}
+
+.kanban{
+
+display:grid;
+
+grid-template-columns:
+repeat(
+auto-fit,
+minmax(
+250px,
+1fr
+)
+);
+
+gap:15px;
+
+margin-top:15px;
+
+}
+
+.kanban-column{
+
+background:#111111;
+
+border:
+1px solid rgba(194,109,18,.20);
+
+border-radius:16px;
+
+padding:12px;
+
+min-height:220px;
+
+}
+
+.kanban-title{
+
+text-align:center;
+
+font-weight:bold;
+
+margin-bottom:10px;
+
+color:var(--fire);
+
+}
+
+.kanban-card{
+
+background:#1b1b1b;
+
+padding:10px;
+
+border-radius:12px;
+
+margin-bottom:10px;
+
+border:
+1px solid rgba(194,109,18,.15);
+
+}
+
+.status-select{
+
+width:100%;
+
+margin-top:10px;
+
+}
+
+.back-top{
+
+position:fixed;
+
+bottom:20px;
+
+right:20px;
+
+width:50px;
+
+height:50px;
+
+border:none;
+
+border-radius:50%;
+
+background:var(--fire);
+
+color:white;
+
+font-size:20px;
+
+cursor:pointer;
+
+z-index:9999;
+
+}
+
+.footer{
+
+text-align:center;
+
+margin-top:40px;
+
+color:#9ca3af;
+
+font-size:14px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div
+class="notification-badge"
+id="notificationBadge">
+
+🔔 0
+
+</div>
+
+<h1>
+
+🤘 JOB FINDER VAUD
+
+</h1>
+
+<div class="subtitle">
+
+ULTIMATE AI CAREER MANAGER V11
+
+</div>
+
+<div
+class="counter"
+id="compteur">
+
+📊 0 offre(s) trouvée(s)
+
+</div>
+
+<div class="dashboard">
+
+<div
+class="dashboard-card"
+onclick="
+document
+.getElementById('offres')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+<strong id="statOffres">
+
+0
+
+</strong>
+
+📋 Offres
+
+</div>
+
+<div
+class="dashboard-card"
+onclick="
+document
+.getElementById('offresFavorites')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+<strong id="statFavoris">
+
+0
+
+</strong>
+
+⭐ Favoris
+
+</div>
+
+<div
+class="dashboard-card"
+onclick="
+document
+.getElementById('candidaturesSection')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+<strong id="statTotalCand">
+
+0
+
+</strong>
+
+📤 Candidatures
+
+</div>
+
+<div
+class="dashboard-card"
+onclick="
+document
+.getElementById('assistantIASection')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+<strong>
+
+AI
+
+</strong>
+
+🤖 Assistant IA
+
+</div>
+
+<div
+class="dashboard-card"
+onclick="
+document
+.getElementById('cvSection')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+<strong>
+
+CV
+
+</strong>
+
+📄 Analyse CV
+
+</div>
+
+<div
+class="dashboard-card"
+onclick="
+document
+.getElementById('statsSection')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+<strong id="statTauxSucces">
+
+0%
+
+</strong>
+
+📊 Statistiques
+
+</div>
+
+</div>
+
+<div class="quickbar">
+
+<button
+class="quickbtn"
+onclick="
+document
+.getElementById('offres')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+📋 Offres
+
+</button>
+
+<button
+class="quickbtn"
+onclick="
+document
+.getElementById('offresFavorites')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+⭐ Favoris
+
+</button>
+
+<button
+class="quickbtn"
+onclick="
+document
+.getElementById('candidaturesSection')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+📤 Candidatures
+
+</button>
+
+<button
+class="quickbtn"
+onclick="
+document
+.getElementById('assistantIASection')
+.scrollIntoView({
+behavior:'smooth'
+})
+">
+
+🤖 IA
+
+</button>
+
+<button
+class="quickbtn"
+onclick="
+window.scrollTo({
+top:0,
+behavior:'smooth'
+})
+">
+
+⬆ Haut
+
+</button>
+
+</div>
+
+<input
+class="search"
+id="search"
+placeholder="🔍 Rechercher un emploi...">
+<div class="section">
+
+<h3>
+
+⭐ Favoris de recherches
+
+</h3>
+
+<input
+class="search"
+id="nomFavori"
+placeholder="Nom du favori">
+
+<select
+id="listeFavoris">
+
+<option>
+
+Aucun favori
+
+</option>
+
+</select>
+
+<div class="buttons">
+
+<button
+class="btn btn-fav"
+onclick="sauverFavori()">
+
+💾 Sauver
+
+</button>
+
+<button
+class="btn btn-search"
+onclick="chargerFavori()">
+
+📂 Charger
+
+</button>
+
+<button
+class="btn btn-reset"
+onclick="supprimerFavori()">
+
+🗑️ Supprimer
+
+</button>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+🔔 Notifications intelligentes
+
+</h3>
+
+<div
+id="notifications">
+
+Aucune notification
+
+</div>
+
+<br>
+
+<select id="alerteRegion">
+
+<option value="">
+
+📍 Région surveillée
+
+</option>
+
+<option>
+
+Lausanne
+
+</option>
+
+<option>
+
+Morges
+
+</option>
+
+<option>
+
+Nyon
+
+</option>
+
+<option>
+
+Yverdon-les-Bains
+
+</option>
+
+</select>
+
+<select id="alerteTeletravail">
+
+<option value="">
+
+🏠 Télétravail
+
+</option>
+
+<option>
+
+Oui
+
+</option>
+
+<option>
+
+Non
+
+</option>
+
+</select>
+
+<input
+class="search"
+id="motCleAlerte"
+placeholder="Mot-clé d'alerte">
+
+</div>
+
+<div class="section">
+
+<h3>
+
+🔥 Mes offres favorites
+
+</h3>
+
+<div
+id="offresFavorites">
+
+Aucune offre favorite
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+☁️ Sauvegarde et Synchronisation
+
+</h3>
+
+<div class="buttons">
+
+<button
+class="btn btn-search"
+onclick="exporterDonnees()">
+
+📤 Exporter
+
+</button>
+
+<button
+class="btn btn-fav"
+onclick="
+document
+.getElementById(
+'importData'
+)
+.click()
+">
+
+📥 Importer
+
+</button>
+
+</div>
+
+<input
+type="file"
+id="importData"
+style="display:none">
+
+</div>
+
+<div class="section">
+
+<h3>
+
+🎯 Recommandé pour vous
+
+</h3>
+
+<div
+id="suggestions">
+
+Aucune recommandation disponible
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+🕒 Dernières offres consultées
+
+</h3>
+
+<div
+id="historique">
+
+Aucun historique
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+📈 Statistiques de recherche
+
+</h3>
+
+<div class="dashboard">
+
+<div class="dashboard-card">
+
+<strong
+id="statRecherches">
+
+0
+
+</strong>
+
+🔎 Recherches
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statNotifications">
+
+0
+
+</strong>
+
+🔔 Alertes
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statFavorisGlobal">
+
+0
+
+</strong>
+
+⭐ Favoris
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statHistorique">
+
+0
+
+</strong>
+
+🕒 Historique
+
+</div>
+
+</div>
+
+</div>
+<div class="section">
+
+<h3>
+
+▶ 💼 Métiers
+
+</h3>
+
+<div
+id="metiersBox">
+
+<div
+class="tags"
+id="metiers">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+▶ ⏰ Taux
+
+</h3>
+
+<div
+id="tauxBox">
+
+<div
+class="tags"
+id="taux">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+▶ 📍 Régions
+
+</h3>
+
+<div
+id="regionsBox">
+
+<div
+class="tags"
+id="regions">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+▶ 🏢 Secteurs
+
+</h3>
+
+<div
+id="secteursBox">
+
+<div
+class="tags"
+id="secteurs">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+▶ 📅 Publication
+
+</h3>
+
+<div
+id="publicationBox">
+
+<div
+class="tags"
+id="publication">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+▶ 📄 Contrat
+
+</h3>
+
+<div
+id="contratBox">
+
+<div
+class="tags"
+id="contrat">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+🌐 Sites
+
+</h3>
+
+<div
+id="sitesBox">
+
+<div
+class="tags"
+id="sites">
+
+</div>
+
+<div class="buttons">
+
+<button
+class="btn btn-search"
+id="rechercher">
+
+🔎 Rechercher
+
+</button>
+
+<button
+class="btn btn-reset"
+id="reset">
+
+🧹 Réinitialiser
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+  <div
+class="section"
+id="candidaturesSection">
+
+<h3>
+
+📤 Suivi des candidatures
+
+</h3>
+
+<div class="dashboard">
+
+<div class="dashboard-card">
+
+<strong
+id="statEnvoyees">
+
+0
+
+</strong>
+
+📤 Envoyées
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statEntretiens">
+
+0
+
+</strong>
+
+🤝 Entretiens
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statOffresRecues">
+
+0
+
+</strong>
+
+✅ Offres reçues
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statRefusees">
+
+0
+
+</strong>
+
+❌ Refusées
+
+</div>
+
+</div>
+
+<div
+id="candidatures">
+
+Aucune candidature enregistrée
+
+</div>
+
+<div class="kanban">
+
+<div class="kanban-column">
+
+<div class="kanban-title">
+
+📌 À envoyer
+
+</div>
+
+<div
+id="kanbanAEnvoyer">
+
+Aucune
+
+</div>
+
+</div>
+
+<div class="kanban-column">
+
+<div class="kanban-title">
+
+📤 Envoyées
+
+</div>
+
+<div
+id="kanbanEnvoyees">
+
+Aucune
+
+</div>
+
+</div>
+
+<div class="kanban-column">
+
+<div class="kanban-title">
+
+📞 Réponses
+
+</div>
+
+<div
+id="kanbanReponses">
+
+Aucune
+
+</div>
+
+</div>
+
+<div class="kanban-column">
+
+<div class="kanban-title">
+
+🤝 Entretiens
+
+</div>
+
+<div
+id="kanbanEntretiens">
+
+Aucune
+
+</div>
+
+</div>
+
+<div class="kanban-column">
+
+<div class="kanban-title">
+
+✅ Offres reçues
+
+</div>
+
+<div
+id="kanbanOffres">
+
+Aucune
+
+</div>
+
+</div>
+
+<div class="kanban-column">
+
+<div class="kanban-title">
+
+🎉 Embauché
+
+</div>
+
+<div
+id="kanbanEmbauche">
+
+Aucune
+
+</div>
+
+</div>
+
+<div class="kanban-column">
+
+<div class="kanban-title">
+
+❌ Refusées
+
+</div>
+
+<div
+id="kanbanRefusees">
+
+Aucune
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="offres"></div>
+
+  <div
+class="section"
+id="assistantIASection">
+
+<h3>
+
+🤖 Assistant Emploi IA
+
+</h3>
+
+<textarea
+id="texteIA"
+style="min-height:180px"
+placeholder="Collez ici une offre d'emploi complète">
+</textarea>
+
+<div class="buttons">
+
+<button
+class="btn btn-search"
+onclick="analyserOffreIA()">
+
+🔍 Analyse IA
+
+</button>
+
+<button
+class="btn btn-ai"
+onclick="genererLettreIA()">
+
+✍️ Lettre IA
+
+</button>
+
+</div>
+
+<div
+id="resultatIA">
+
+Analyse IA en attente
+
+</div>
+
+</div>
+
+<div
+class="section"
+id="cvSection">
+
+<h3>
+
+📄 Analyse CV ↔ Offre
+
+</h3>
+
+<textarea
+id="cvTexte"
+style="min-height:220px"
+placeholder="Collez ici votre CV complet">
+</textarea>
+
+<div class="buttons">
+
+<button
+class="btn btn-search"
+onclick="analyserCV()">
+
+📊 Analyser mon CV
+
+</button>
+
+<button
+class="btn btn-ai"
+onclick="sauvegarderCV()">
+
+💾 Sauvegarder CV
+
+</button>
+
+<button
+class="btn btn-fav"
+onclick="chargerCV()">
+
+📂 Charger CV
+
+</button>
+
+</div>
+
+<div
+id="resultatCV">
+
+Aucune analyse disponible
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+📁 Gestion Multi-CV
+
+</h3>
+
+<select
+id="cvSelect">
+
+<option>
+
+CV Administration
+
+</option>
+
+<option>
+
+CV Immobilier
+
+</option>
+
+<option>
+
+CV Informatique
+
+</option>
+
+<option>
+
+CV Intelligence Artificielle
+
+</option>
+
+</select>
+
+</div>
+
+  <div class="section">
+
+<h3>
+
+⚖️ Comparateur d'offres
+
+</h3>
+
+<select
+id="offreCompare1">
+
+<option value="">
+
+Sélectionner offre 1
+
+</option>
+
+</select>
+
+<select
+id="offreCompare2">
+
+<option value="">
+
+Sélectionner offre 2
+
+</option>
+
+</select>
+
+<div class="buttons">
+
+<button
+class="btn btn-search"
+onclick="comparerOffres()">
+
+⚖️ Comparer
+
+</button>
+
+</div>
+
+<div
+id="comparateur">
+
+Sélectionnez deux offres à comparer
+
+</div>
+
+</div>
+
+<div
+class="section"
+id="statsSection">
+
+<h3>
+
+📊 Statistiques avancées
+
+</h3>
+
+<div class="dashboard">
+
+<div class="dashboard-card">
+
+<strong
+id="statTotalCand">
+
+0
+
+</strong>
+
+📤 Total
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statTauxReponse">
+
+0%
+
+</strong>
+
+📞 Réponses
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statTauxEntretien">
+
+0%
+
+</strong>
+
+🤝 Entretiens
+
+</div>
+
+<div class="dashboard-card">
+
+<strong
+id="statTauxSucces">
+
+0%
+
+</strong>
+
+🎉 Succès
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+🎯 Score de compatibilité IA
+
+</h3>
+
+<div
+id="scoreCompatibilite">
+
+Aucun calcul effectué
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h3>
+
+📄 Lettre de motivation générée
+
+</h3>
+
+<textarea
+id="lettreMotivation"
+style="min-height:250px"
+placeholder="Votre lettre générée par IA apparaîtra ici">
+</textarea>
+
+<div class="buttons">
+
+<button
+class="btn btn-search"
+onclick="copierLettre()">
+
+📋 Copier
+
+</button>
+
+<button
+class="btn btn-ai"
+onclick="telechargerLettre()">
+
+📄 Télécharger
+
+</button>
+
+</div>
+
+</div>
+
+<div id="offres"></div>
+
+<script>
+
+let offres = [];
+
+let offresFavorites = [];
+
+let historique = [];
+
+let notifications = [];
+
+let candidatures = [];
+
+let filtres = {
+
+metiers:[],
+
+taux:[],
+
+regions:[],
+
+secteurs:[],
+
+publication:[],
+
+contrat:[],
+
+sites:[]
+
+};
+
+let recherchesEffectuees = 0;
+
+  function toggleAccordion(id){
+
+document
+.getElementById(id)
+.classList
+.toggle("hidden");
+
+}
+
+function ajouterNotification(message){
+
+notifications.unshift({
+
+date:
+new Date()
+.toLocaleString(),
+
+texte:
+message
+
+});
+
+if(
+notifications.length > 50
+){
+
+notifications =
+notifications.slice(
+0,
+50
+);
+
+}
+
+localStorage.setItem(
+
+"jfv11_notifications",
+
+JSON.stringify(
+notifications
+)
+
+);
+
+afficherNotifications();
+
+}
+
+function chargerNotifications(){
+
+notifications =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv11_notifications"
+)
+
+||
+
+"[]"
+
+);
+
+afficherNotifications();
+
+}
+
+function afficherNotifications(){
+
+document.getElementById(
+"notificationBadge"
+).innerHTML =
+
+"🔔 "
++
+notifications.length;
+
+let html = "";
+
+if(
+notifications.length===0
+){
+
+html =
+"Aucune notification";
+
+}else{
+
+notifications.forEach(n => {
+
+html +=
+
+`
+
+<div class="detail">
+
+🔔
+${n.texte}
+
+</div>
+
+`;
+
+});
+
+}
+
+document.getElementById(
+"notifications"
+).innerHTML =
+html;
+
+document.getElementById(
+"statNotifications"
+).innerText =
+notifications.length;
+
+}
+
+function chargerHistorique(){
+
+historique =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv11_historique"
+)
+
+||
+
+"[]"
+
+);
+
+afficherHistorique();
+
+}
+
+function afficherHistorique(){
+
+let html = "";
+
+if(
+historique.length===0
+){
+
+html =
+"Aucun historique";
+
+}else{
+
+historique.forEach(job => {
+
+html +=
+
+`
+
+<div class="detail">
+
+🕒
+${job.titre}
+
+-
+${job.entreprise}
+
+</div>
+
+`;
+
+});
+
+}
+
+document.getElementById(
+"historique"
+).innerHTML =
+html;
+
+document.getElementById(
+"statHistorique"
+).innerText =
+historique.length;
+
+}
+
+function ajouterHistorique(job){
+
+historique =
+historique.filter(
+o => o.id !== job.id
+);
+
+historique.unshift(job);
+
+if(
+historique.length > 30
+){
+
+historique =
+historique.slice(
+0,
+30
+);
+
+}
+
+localStorage.setItem(
+
+"jfv11_historique",
+
+JSON.stringify(
+historique
+)
+
+);
+
+afficherHistorique();
+
+}
+
+function estFavori(id){
+
+return offresFavorites.some(
+o => o.id === id
+);
+
+}
+
+function chargerFavorisOffres(){
+
+offresFavorites =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv11_offres_favorites"
+)
+
+||
+
+"[]"
+
+);
+
+afficherFavorisOffres();
+
+}
+
+function sauvegarderFavorisOffres(){
+
+localStorage.setItem(
+
+"jfv11_offres_favorites",
+
+JSON.stringify(
+offresFavorites
+)
+
+);
+
+}
+
+function ajouterOffreFavorite(job){
+
+if(
+estFavori(job.id)
+){
+
+return;
+
+}
+
+offresFavorites.push(job);
+
+sauvegarderFavorisOffres();
+
+afficherFavorisOffres();
+
+ajouterNotification(
+
+"Favori ajouté : "
++
+job.titre
+
+);
+
+}
+
+  function afficherFavorisOffres(){
+
+let html = "";
+
+if(
+offresFavorites.length===0
+){
+
+html =
+"Aucune offre favorite";
+
+}else{
+
+offresFavorites.forEach(job => {
+
+html +=
+
+`
+
+<div class="offre">
+
+<div class="badge-fav">
+
+⭐ FAVORI
+
+</div>
+
+<h2>
+
+${job.titre}
+
+</h2>
+
+<div class="detail">
+
+🏢 ${job.entreprise}
+
+</div>
+
+<div class="detail">
+
+📍 ${job.lieu}
+
+</div>
+
+<div class="detail">
+
+⏰ ${job.taux}
+
+</div>
+
+<div class="detail">
+
+💰 ${job.salaire}
+
+</div>
+
+<button
+class="btn btn-reset"
+onclick="
+supprimerOffreFavorite(
+${job.id}
+)
+">
+
+❌ Supprimer
+
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+document.getElementById(
+"offresFavorites"
+).innerHTML =
+html;
+
+document.getElementById(
+"statFavoris"
+).innerText =
+offresFavorites.length;
+
+document.getElementById(
+"statFavorisGlobal"
+).innerText =
+offresFavorites.length;
+
+}
+
+function supprimerOffreFavorite(id){
+
+offresFavorites =
+
+offresFavorites.filter(
+o => o.id !== id
+);
+
+sauvegarderFavorisOffres();
+
+afficherFavorisOffres();
+
+}
+
+function chargerCandidatures(){
+
+candidatures =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv11_candidatures"
+)
+
+||
+
+"[]"
+
+);
+
+afficherCandidatures();
+
+}
+
+function sauvegarderCandidatures(){
+
+localStorage.setItem(
+
+"jfv11_candidatures",
+
+JSON.stringify(
+candidatures
+)
+
+);
+
+}
+
+function ajouterCandidature(job){
+
+if(
+
+candidatures.find(
+c => c.id === job.id
+)
+
+){
+
+return;
+
+}
+
+candidatures.push({
+
+id:job.id,
+
+titre:job.titre,
+
+entreprise:job.entreprise,
+
+lieu:job.lieu,
+
+date:new Date()
+.toLocaleDateString(),
+
+statut:"À envoyer"
+
+});
+
+sauvegarderCandidatures();
+
+afficherCandidatures();
+
+ajouterNotification(
+
+"Candidature ajoutée : "
++
+job.titre
+
+);
+
+}
+
+function supprimerCandidature(id){
+
+candidatures =
+
+candidatures.filter(
+c => c.id !== id
+);
+
+sauvegarderCandidatures();
+
+afficherCandidatures();
+
+}
+
+function changerStatutCandidature(
+id,
+statut
+){
+
+const candidature =
+
+candidatures.find(
+c => c.id === id
+);
+
+if(
+candidature
+){
+
+candidature.statut =
+statut;
+
+sauvegarderCandidatures();
+
+afficherCandidatures();
+
+majStatistiquesGlobales();
+
+}
+
+}
+  function afficherCandidatures(){
+
+let html = "";
+
+let aEnvoyer = "";
+let envoyees = "";
+let reponses = "";
+let entretiens = "";
+let offresRecues = "";
+let embauche = "";
+let refusees = "";
+
+if(
+candidatures.length===0
+){
+
+html =
+"Aucune candidature enregistrée";
+
+}else{
+
+candidatures.forEach(c => {
+
+html +=
+
+`
+
+<div class="offre">
+
+<h2>
+
+${c.titre}
+
+</h2>
+
+<div class="detail">
+
+🏢 ${c.entreprise}
+
+</div>
+
+<div class="detail">
+
+📍 ${c.lieu}
+
+</div>
+
+<div class="detail">
+
+📅 ${c.date}
+
+</div>
+
+<select
+class="status-select"
+onchange="
+changerStatutCandidature(
+${c.id},
+this.value
+)
+">
+
+<option
+${c.statut==="À envoyer"?"selected":""}>
+À envoyer
+</option>
+
+<option
+${c.statut==="Envoyée"?"selected":""}>
+Envoyée
+</option>
+
+<option
+${c.statut==="Réponse reçue"?"selected":""}>
+Réponse reçue
+</option>
+
+<option
+${c.statut==="Entretien"?"selected":""}>
+Entretien
+</option>
+
+<option
+${c.statut==="Offre reçue"?"selected":""}>
+Offre reçue
+</option>
+
+<option
+${c.statut==="Embauché"?"selected":""}>
+Embauché
+</option>
+
+<option
+${c.statut==="Refusée"?"selected":""}>
+Refusée
+</option>
+
+</select>
+
+<button
+class="btn btn-reset"
+onclick="
+supprimerCandidature(
+${c.id}
+)
+">
+
+❌ Supprimer
+
+</button>
+
+</div>
+
+`;
+
+const carte =
+
+`
+
+<div class="kanban-card">
+
+<strong>
+
+${c.titre}
+
+</strong>
+
+<br>
+
+${c.entreprise}
+
+</div>
+
+`;
+
+if(c.statut==="À envoyer"){
+aEnvoyer += carte;
+}
+
+if(c.statut==="Envoyée"){
+envoyees += carte;
+}
+
+if(c.statut==="Réponse reçue"){
+reponses += carte;
+}
+
+if(c.statut==="Entretien"){
+entretiens += carte;
+}
+
+if(c.statut==="Offre reçue"){
+offresRecues += carte;
+}
+
+if(c.statut==="Embauché"){
+embauche += carte;
+}
+
+if(c.statut==="Refusée"){
+refusees += carte;
+}
+
+});
+
+}
+
+document.getElementById(
+"candidatures"
+).innerHTML =
+html;
+
+document.getElementById(
+"kanbanAEnvoyer"
+).innerHTML =
+aEnvoyer || "Aucune";
+
+document.getElementById(
+"kanbanEnvoyees"
+).innerHTML =
+envoyees || "Aucune";
+
+document.getElementById(
+"kanbanReponses"
+).innerHTML =
+reponses || "Aucune";
+
+document.getElementById(
+"kanbanEntretiens"
+).innerHTML =
+entretiens || "Aucune";
+
+document.getElementById(
+"kanbanOffres"
+).innerHTML =
+offresRecues || "Aucune";
+
+document.getElementById(
+"kanbanEmbauche"
+).innerHTML =
+embauche || "Aucune";
+
+document.getElementById(
+"kanbanRefusees"
+).innerHTML =
+refusees || "Aucune";
+
+majStatistiquesGlobales();
+
+}
+
+function majStatistiquesGlobales(){
+
+const total =
+candidatures.length;
+
+const nbEnvoyees =
+
+candidatures.filter(
+c => c.statut==="Envoyée"
+).length;
+
+const nbEntretiens =
+
+candidatures.filter(
+c => c.statut==="Entretien"
+).length;
+
+const nbOffres =
+
+candidatures.filter(
+c => c.statut==="Offre reçue"
+).length;
+
+const nbRefusees =
+
+candidatures.filter(
+c => c.statut==="Refusée"
+).length;
+
+const nbSucces =
+
+candidatures.filter(
+c => c.statut==="Embauché"
+).length;
+
+const nbReponses =
+
+candidatures.filter(
+c =>
+
+c.statut!=="À envoyer"
+&&
+c.statut!=="Envoyée"
+
+).length;
+
+document.getElementById(
+"statEnvoyees"
+).innerText =
+nbEnvoyees;
+
+document.getElementById(
+"statEntretiens"
+).innerText =
+nbEntretiens;
+
+document.getElementById(
+"statOffresRecues"
+).innerText =
+nbOffres;
+
+document.getElementById(
+"statRefusees"
+).innerText =
+nbRefusees;
+
+document.getElementById(
+"statTotalCand"
+).innerText =
+total;
+
+document.getElementById(
+"statTauxReponse"
+).innerText =
+
+total > 0
+
+?
+
+Math.round(
+(nbReponses/total)*100
+)
++
+"%"
+
+:
+
+"0%";
+
+document.getElementById(
+"statTauxEntretien"
+).innerText =
+
+total > 0
+
+?
+
+Math.round(
+(nbEntretiens/total)*100
+)
++
+"%"
+
+:
+
+"0%";
+
+document.getElementById(
+"statTauxSucces"
+).innerText =
+
+total > 0
+
+?
+
+Math.round(
+(nbSucces/total)*100
+)
++
+"%"
+
+:
+
+"0%";
+
+}
+  
+  function analyserOffreIA(){
+
+const texte =
+
+document
+.getElementById(
+"texteIA"
+)
+.value
+.toLowerCase();
+
+if(!texte){
+
+document
+.getElementById(
+"resultatIA"
+)
+.innerHTML =
+
+"Veuillez coller une offre.";
+
+return;
+
+}
+
+let score = 0;
+
+const competences = [];
+
+const mots = [
+
+"excel",
+"office",
+"sap",
+"administration",
+"organisation",
+"comptabilité",
+"support",
+"informatique",
+"python",
+"ia",
+"intelligence artificielle",
+"windows",
+"réseau",
+"crm",
+"anglais",
+"allemand"
+
+];
+
+mots.forEach(m => {
+
+if(
+texte.includes(m)
+){
+
+score += 6;
+
+competences.push(m);
+
+}
+
+});
+
+if(score > 100){
+score = 100;
+}
+
+document
+.getElementById(
+"resultatIA"
+)
+.innerHTML =
+
+`
+
+<div class="offre">
+
+<h2>
+
+🤖 Analyse IA
+
+</h2>
+
+<div class="detail">
+
+📊 Score :
+${score}%
+
+</div>
+
+<div class="detail">
+
+🎯 Compétences détectées :
+
+${competences.join(", ") || "Aucune"}
+
+</div>
+
+<div class="detail">
+
+💡 Evaluation :
+
+${
+score >= 80
+
+?
+
+"Excellente opportunité"
+
+:
+
+score >= 60
+
+?
+
+"Très intéressante"
+
+:
+
+score >= 40
+
+?
+
+"Potentiel moyen"
+
+:
+
+"À analyser davantage"
+}
+
+</div>
+
+</div>
+
+`;
+
+}
+
+function analyserCV(){
+
+const cv =
+
+document
+.getElementById(
+"cvTexte"
+)
+.value
+.toLowerCase();
+
+const offre =
+
+document
+.getElementById(
+"texteIA"
+)
+.value
+.toLowerCase();
+
+if(
+!cv
+||
+!offre
+){
+
+document
+.getElementById(
+"resultatCV"
+)
+.innerHTML =
+
+"Veuillez coller un CV et une offre.";
+
+return;
+
+}
+
+const mots = [
+
+"excel",
+"office",
+"sap",
+"administration",
+"organisation",
+"comptabilité",
+"support",
+"informatique",
+"python",
+"windows",
+"réseau",
+"crm",
+"anglais",
+"allemand"
+
+];
+
+let trouves = [];
+let manquants = [];
+
+mots.forEach(m => {
+
+if(
+offre.includes(m)
+){
+
+if(
+cv.includes(m)
+){
+
+trouves.push(m);
+
+}else{
+
+manquants.push(m);
+
+}
+
+}
+
+});
+
+let score = 0;
+
+if(
+trouves.length +
+manquants.length > 0
+){
+
+score = Math.round(
+
+(
+trouves.length
+
+/
+
+(
+trouves.length +
+manquants.length
+)
+
+)
+
+*100
+
+);
+
+}
+
+document
+.getElementById(
+"scoreCompatibilite"
+)
+.innerHTML =
+
+`
+
+<div class="offre">
+
+<h2>
+
+🎯 Compatibilité
+
+</h2>
+
+<div class="detail">
+
+${score}%
+
+</div>
+
+</div>
+
+`;
+
+document
+.getElementById(
+"resultatCV"
+)
+.innerHTML =
+
+`
+
+<div class="offre">
+
+<h2>
+
+📄 Analyse CV ↔ Offre
+
+</h2>
+
+<div class="detail">
+
+📊 Match :
+${score}%
+
+</div>
+
+<div class="detail">
+
+✅ Correspondances :
+
+${trouves.join(", ") || "Aucune"}
+
+</div>
+
+<div class="detail">
+
+⚠️ Manquantes :
+
+${manquants.join(", ") || "Aucune"}
+
+</div>
+
+</div>
+
+`;
+
+}
+  function genererLettreIA(){
+
+const texte =
+
+document
+.getElementById(
+"texteIA"
+)
+.value;
+
+if(!texte){
+
+alert(
+"Veuillez coller une offre."
+);
+
+return;
+
+}
+
+const lettre =
+
+`Madame, Monsieur,
+
+Votre offre d'emploi a particulièrement retenu mon attention.
+
+Mon expérience dans les domaines administratifs, de la gestion documentaire, du support utilisateur et de la relation clientèle me permet de répondre efficacement aux exigences du poste.
+
+Rigoureux, autonome et organisé, je souhaite mettre mes compétences au service de votre organisation.
+
+Motivé à rejoindre votre équipe, je serais heureux de pouvoir vous rencontrer afin de vous exposer plus en détail ma motivation.
+
+Dans l'attente de votre réponse, je vous adresse mes salutations distinguées.
+
+François Laratta`;
+
+document
+.getElementById(
+"lettreMotivation"
+)
+.value =
+lettre;
+
+navigator
+.clipboard
+.writeText(
+lettre
+);
+
+ajouterNotification(
+"Lettre IA générée"
+);
+
+}
+
+function copierLettre(){
+
+const texte =
+
+document
+.getElementById(
+"lettreMotivation"
+)
+.value;
+
+if(!texte){
+return;
+}
+
+navigator
+.clipboard
+.writeText(
+texte
+);
+
+ajouterNotification(
+"Lettre copiée"
+);
+
+}
+
+function telechargerLettre(){
+
+const texte =
+
+document
+.getElementById(
+"lettreMotivation"
+)
+.value;
+
+if(!texte){
+return;
+}
+
+const blob =
+
+new Blob(
+
+[texte],
+
+{
+type:"text/plain"
+}
+
+);
+
+const a =
+document.createElement(
+"a"
+);
+
+a.href =
+URL.createObjectURL(
+blob
+);
+
+a.download =
+"lettre-motivation.txt";
+
+a.click();
+
+}
+
+function sauvegarderCV(){
+
+const nom =
+
+document
+.getElementById(
+"cvSelect"
+)
+.value;
+
+const contenu =
+
+document
+.getElementById(
+"cvTexte"
+)
+.value;
+
+localStorage.setItem(
+
+"jfv11_cv_" + nom,
+
+contenu
+
+);
+
+ajouterNotification(
+
+"CV sauvegardé : "
++
+nom
+
+);
+
+}
+
+function chargerCV(){
+
+const nom =
+
+document
+.getElementById(
+"cvSelect"
+)
+.value;
+
+const contenu =
+
+localStorage.getItem(
+"jfv11_cv_" + nom
+)
+
+||
+
+"";
+
+document
+.getElementById(
+"cvTexte"
+)
+.value =
+contenu;
+
+}
+  function comparerOffres(){
+
+const id1 =
+
+parseInt(
+document
+.getElementById(
+"offreCompare1"
+)
+.value
+);
+
+const id2 =
+
+parseInt(
+document
+.getElementById(
+"offreCompare2"
+)
+.value
+);
+
+const offre1 =
+
+offres.find(
+o => o.id === id1
+);
+
+const offre2 =
+
+offres.find(
+o => o.id === id2
+);
+
+if(
+!offre1
+||
+!offre2
+){
+
+document
+.getElementById(
+"comparateur"
+)
+.innerHTML =
+
+"Veuillez sélectionner deux offres.";
+
+return;
+
+}
+
+let gagnant = "";
+
+const salaire1 =
+parseInt(
+offre1.salaire
+.replace(/\D/g,"")
+);
+
+const salaire2 =
+parseInt(
+offre2.salaire
+.replace(/\D/g,"")
+);
+
+if(
+salaire1 > salaire2
+){
+
+gagnant =
+offre1.titre;
+
+}else if(
+salaire2 > salaire1
+){
+
+gagnant =
+offre2.titre;
+
+}else{
+
+gagnant =
+"Égalité";
+
+}
+
+document
+.getElementById(
+"comparateur"
+)
+.innerHTML =
+
+`
+
+<div class="offre">
+
+<h2>
+
+⚖️ Comparaison IA
+
+</h2>
+
+<table
+style="
+width:100%;
+border-collapse:collapse;
+">
+
+<tr>
+
+<td>
+Critère
+</td>
+
+<td>
+${offre1.titre}
+</td>
+
+<td>
+${offre2.titre}
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Entreprise
+</td>
+
+<td>
+${offre1.entreprise}
+</td>
+
+<td>
+${offre2.entreprise}
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Lieu
+</td>
+
+<td>
+${offre1.lieu}
+</td>
+
+<td>
+${offre2.lieu}
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Taux
+</td>
+
+<td>
+${offre1.taux}
+</td>
+
+<td>
+${offre2.taux}
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Salaire
+</td>
+
+<td>
+${offre1.salaire}
+</td>
+
+<td>
+${offre2.salaire}
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Secteur
+</td>
+
+<td>
+${offre1.secteur}
+</td>
+
+<td>
+${offre2.secteur}
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Contrat
+</td>
+
+<td>
+${offre1.contrat}
+</td>
+
+<td>
+${offre2.contrat}
+</td>
+
+</tr>
+
+</table>
+
+<br>
+
+<div class="detail">
+
+🏆 Recommandation IA :
+
+${gagnant}
+
+</div>
+
+</div>
+
+`;
+
+}
+
+function remplirComparateur(){
+
+const select1 =
+
+document.getElementById(
+"offreCompare1"
+);
+
+const select2 =
+
+document.getElementById(
+"offreCompare2"
+);
+
+if(
+!select1
+||
+!select2
+){
+
+return;
+
+}
+
+let html =
+
+'<option value="">Choisir une offre</option>';
+
+offres.forEach(job => {
+
+html +=
+
+`
+
+<option value="${job.id}">
+
+${job.titre}
+-
+${job.entreprise}
+
+</option>
+
+`;
+
+});
+
+select1.innerHTML =
+html;
+
+select2.innerHTML =
+html;
+
+}
+
+function remplirStatistiquesRecherche(){
+
+document.getElementById(
+"statRecherches"
+).innerText =
+
+localStorage.getItem(
+"jfv11_nb_recherches"
+)
+
+||
+
+0;
+
+}
+  function afficherOffres(data){
+
+document
+.getElementById(
+"compteur"
+)
+.innerHTML =
+
+"📊 "
++
+data.length
++
+" offre(s) trouvée(s)";
+
+let html = "";
+
+data.forEach(job => {
+
+const nouveau =
+
+job.publication === "24h"
+
+?
+
+'<div class="badge-new">🆕 NOUVEAU</div>'
+
+:
+
+"";
+
+const favori =
+estFavori(job.id);
+
+const boutonFavori =
+
+favori
+
+?
+
+`
+
+<button
+class="btn btn-fav"
+disabled>
+
+⭐ Favori enregistré
+
+</button>
+
+`
+
+:
+
+`
+
+<button
+class="btn btn-fav"
+onclick='ajouterOffreFavorite(${JSON.stringify(job)})'>
+
+⭐ Ajouter aux favoris
+
+</button>
+
+`;
+
+html +=
+
+`
+
+<div class="offre">
+
+${nouveau}
+
+<h2>
+
+${job.titre}
+
+</h2>
+
+<div class="detail">
+
+🏢 ${job.entreprise}
+
+</div>
+
+<div class="detail">
+
+📍 ${job.lieu}
+
+</div>
+
+<div class="detail">
+
+⏰ ${job.taux}
+
+</div>
+
+<div class="detail">
+
+📅 ${job.publication}
+
+</div>
+
+<div class="detail">
+
+📄 ${job.contrat}
+
+</div>
+
+<div class="detail">
+
+💰 ${job.salaire}
+
+</div>
+
+<div class="badge">
+
+${job.secteur}
+
+</div>
+
+<p>
+
+${job.description}
+
+</p>
+
+<div class="detail">
+
+🎯 ${job.competences}
+
+</div>
+
+<div class="detail">
+
+🌐 ${job.source}
+
+</div>
+
+${boutonFavori}
+
+<button
+class="btn btn-ai"
+onclick='ajouterCandidature(${JSON.stringify(job)})'>
+
+📤 Ajouter aux candidatures
+
+</button>
+
+<a
+class="postuler"
+href="${job.url}"
+target="_blank"
+onclick='ajouterHistorique(${JSON.stringify(job)})'>
+
+🔗 Voir l'offre originale
+
+</a>
+
+</div>
+
+`;
+
+});
+
+document
+.getElementById(
+"offres"
+)
+.innerHTML =
+html;
+
+document
+.getElementById(
+"statOffres"
+)
+.innerText =
+data.length;
+
+}
+
+function appliquerRecherche(){
+
+const texte =
+
+document
+.getElementById(
+"search"
+)
+.value
+.toLowerCase();
+
+let nb =
+
+parseInt(
+
+localStorage.getItem(
+"jfv11_nb_recherches"
+)
+
+||
+
+0
+
+);
+
+nb++;
+
+localStorage.setItem(
+
+"jfv11_nb_recherches",
+
+nb
+
+);
+
+remplirStatistiquesRecherche();
+
+const resultat =
+
+offres.filter(o =>
+
+(
+o.titre || ""
+)
+.toLowerCase()
+.includes(texte)
+
+||
+
+(
+o.entreprise || ""
+)
+.toLowerCase()
+.includes(texte)
+
+||
+
+(
+o.description || ""
+)
+.toLowerCase()
+.includes(texte)
+
+||
+
+(
+o.competences || ""
+)
+.toLowerCase()
+.includes(texte)
+
+||
+
+(
+o.lieu || ""
+)
+.toLowerCase()
+.includes(texte)
+
+||
+
+(
+o.secteur || ""
+)
+.toLowerCase()
+.includes(texte)
+
+);
+
+afficherOffres(
+resultat
+);
+
+}
+  function exporterDonnees(){
+
+const data = {
+
+favoris:
+offresFavorites,
+
+historique:
+historique,
+
+notifications:
+notifications,
+
+candidatures:
+candidatures,
+
+dateExport:
+new Date()
+.toISOString()
+
+};
+
+const blob =
+
+new Blob(
+
+[
+JSON.stringify(
+data,
+null,
+2
+)
+],
+
+{
+type:
+"application/json"
+}
+
+);
+
+const a =
+document.createElement(
+"a"
+);
+
+a.href =
+URL.createObjectURL(
+blob
+);
+
+a.download =
+"jobfinder-vaud-v11-backup.json";
+
+a.click();
+
+ajouterNotification(
+"Sauvegarde exportée"
+);
+
+}
+
+document
+.getElementById(
+"importData"
+)
+.addEventListener(
+"change",
+e => {
+
+const file =
+e.target.files[0];
+
+if(!file){
+return;
+}
+
+const reader =
+new FileReader();
+
+reader.onload =
+evt => {
+
+const data =
+JSON.parse(
+evt.target.result
+);
+
+offresFavorites =
+data.favoris || [];
+
+historique =
+data.historique || [];
+
+notifications =
+data.notifications || [];
+
+candidatures =
+data.candidatures || [];
+
+localStorage.setItem(
+"jfv11_offres_favorites",
+JSON.stringify(
+offresFavorites
+)
+);
+
+localStorage.setItem(
+"jfv11_historique",
+JSON.stringify(
+historique
+)
+);
+
+localStorage.setItem(
+"jfv11_notifications",
+JSON.stringify(
+notifications
+)
+);
+
+localStorage.setItem(
+"jfv11_candidatures",
+JSON.stringify(
+candidatures
+)
+);
+
+afficherFavorisOffres();
+
+afficherHistorique();
+
+afficherNotifications();
+
+afficherCandidatures();
+
+majStatistiquesGlobales();
+
+ajouterNotification(
+"Sauvegarde importée"
+);
+
+};
+
+reader.readAsText(
+file
+);
+
+}
+);
+
+function sauverFavori(){
+
+const nom =
+
+document
+.getElementById(
+"nomFavori"
+)
+.value;
+
+if(!nom){
+return;
+}
+
+let favoris =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv11_recherches"
+)
+
+||
+
+"{}"
+
+);
+
+favoris[nom] =
+
+document
+.getElementById(
+"search"
+)
+.value;
+
+localStorage.setItem(
+
+"jfv11_recherches",
+
+JSON.stringify(
+favoris
+)
+
+);
+
+rafraichirFavoris();
+
+}
+
+function rafraichirFavoris(){
+
+let favoris =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv11_recherches"
+)
+
+||
+
+"{}"
+
+);
+
+let html = "";
+
+Object.keys(
+favoris
+)
+
+.forEach(f => {
+
+html +=
+
+`
+
+<option value="${f}">
+
+${f}
+
+</option>
+
+`;
+
+});
+
+document
+.getElementById(
+"listeFavoris"
+)
+.innerHTML =
+
+html ||
+
+"<option>Aucun favori</option>";
+
+}
+  function chargerFavori(){
+
+let favoris =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv11_recherches"
+)
+
+||
+
+"{}"
+
+);
+
+const nom =
+
+document
+.getElementById(
+"listeFavoris"
+)
+.value;
+
+if(
+!favoris[nom]
+){
+
+return;
+
+}
+
+document
+.getElementById(
+"search"
+)
+.value =
+
+favoris[nom];
+
+appliquerRecherche();
+
+}
+
+function supprimerFavori(){
+
+let favoris =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv11_recherches"
+)
+
+||
+
+"{}"
+
+);
+
+const nom =
+
+document
+.getElementById(
+"listeFavoris"
+)
+.value;
+
+delete favoris[nom];
+
+localStorage.setItem(
+
+"jfv11_recherches",
+
+JSON.stringify(
+favoris
+)
+
+);
+
+rafraichirFavoris();
+
+}
+
+document
+.getElementById(
+"search"
+)
+.addEventListener(
+"input",
+appliquerRecherche
+);
+
+document
+.getElementById(
+"rechercher"
+)
+.addEventListener(
+"click",
+appliquerRecherche
+);
+
+document
+.getElementById(
+"reset"
+)
+.addEventListener(
+"click",
+() => {
+
+document
+.getElementById(
+"search"
+)
+.value = "";
+
+afficherOffres(
+offres
+);
+
+}
+);
+
+fetch(
+"/offers"
+)
+
+.then(
+r => r.json()
+)
+
+.then(data => {
+
+offres = data;
+
+afficherOffres(
+offres
+);
+
+remplirComparateur();
+
+rafraichirFavoris();
+
+chargerFavorisOffres();
+
+chargerHistorique();
+
+chargerNotifications();
+
+chargerCandidatures();
+
+remplirStatistiquesRecherche();
+
+majStatistiquesGlobales();
+
+});
+  function verifierAlertes(){
+
+const region =
+
+document
+.getElementById(
+"alerteRegion"
+)
+.value;
+
+const motCle =
+
+document
+.getElementById(
+"motCleAlerte"
+)
+.value
+.toLowerCase();
+
+if(
+!region
+&&
+!motCle
+){
+
+return;
+
+}
+
+const resultats =
+
+offres.filter(o => {
+
+const matchRegion =
+
+!region
+
+||
+
+o.lieu === region;
+
+const matchMotCle =
+
+!motCle
+
+||
+
+(
+o.titre +
+" " +
+o.description +
+" " +
+o.competences
+)
+
+.toLowerCase()
+.includes(
+motCle
+);
+
+return (
+matchRegion
+&&
+matchMotCle
+);
+
+});
+
+if(
+resultats.length > 0
+){
+
+ajouterNotification(
+
+resultats.length
++
+" offre(s) correspondent à vos alertes"
+
+);
+
+}
+
+}
+
+function genererSuggestions(){
+
+if(
+offresFavorites.length===0
+){
+
+document
+.getElementById(
+"suggestions"
+)
+.innerHTML =
+
+"Aucune recommandation";
+
+return;
+
+}
+
+const secteur =
+
+offresFavorites[0]
+.secteur;
+
+const suggestions =
+
+offres.filter(
+o =>
+
+o.secteur === secteur
+
+&&
+
+!offresFavorites.find(
+f => f.id === o.id
+)
+
+)
+
+.slice(
+0,
+5
+);
+
+let html = "";
+
+suggestions.forEach(job => {
+
+html +=
+
+`
+
+<div class="detail">
+
+🎯
+
+${job.titre}
+
+-
+
+${job.entreprise}
+
+</div>
+
+`;
+
+});
+
+document
+.getElementById(
+"suggestions"
+)
+.innerHTML =
+
+html ||
+
+"Aucune recommandation";
+
+}
+
+setInterval(
+verifierAlertes,
+60000
+);
+
+window.addEventListener(
+"beforeunload",
+() => {
+
+localStorage.setItem(
+
+"jfv11_last_session",
+
+new Date()
+.toISOString()
+
+);
+
+}
+);
+  if(
+"Notification"
+in window
+){
+
+Notification
+.requestPermission();
+
+}
+
+if(
+"serviceWorker"
+in navigator
+){
+
+navigator
+.serviceWorker
+.register(
+"/service-worker.js"
+)
+
+.then(() => {
+
+console.log(
+"Service Worker OK"
+);
+
+})
+
+.catch(err => {
+
+console.error(
+err
+);
+
+});
+
+}
+
+document
+.getElementById(
+"alerteRegion"
+)
+.addEventListener(
+"change",
+verifierAlertes
+);
+
+document
+.getElementById(
+"motCleAlerte"
+)
+.addEventListener(
+"input",
+verifierAlertes
+);
+
+console.log(
+"Job Finder Vaud V11 Ultimate AI Career Manager chargé"
+);
+
+</script>
+
+<button
+class="back-top"
+onclick="
+window.scrollTo({
+top:0,
+behavior:'smooth'
+})
+">
+
+⬆
+
+</button>
+
+<div class="footer">
+
+🤘 Job Finder Vaud V11 Ultimate AI Career Manager
+
+<br><br>
+
+✅ Recherche multi-sites
+
+<br>
+
+✅ Favoris intelligents
+
+<br>
+
+✅ Historique complet
+
+<br>
+
+✅ Notifications intelligentes
+
+<br>
+
+✅ Suggestions personnalisées
+
+<br>
+
+✅ Analyse IA des offres
+
+<br>
+
+✅ Analyse CV ↔ Offre
+
+<br>
+
+✅ Pourcentage de compatibilité
+
+<br>
+
+✅ Générateur de lettre IA
+
+<br>
+
+✅ Comparateur d'offres
+
+<br>
+
+✅ Suivi des candidatures
+
+<br>
+
+✅ Tableau Kanban
+
+<br>
+
+✅ Statistiques avancées
+
+<br>
+
+✅ Export / Import complet
+
+<br>
+
+✅ PWA Android
+
+<br><br>
+
+Co-créateur :
+
+François
+
+</div>
+
+</body>
+
+</html>
+  
