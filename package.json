@@ -1,25 +1,15 @@
 {
-  "name": "jobfinder-vaud-v86",
-  "version": "8.6.0",
-  "description": "Job Finder Vaud Black Metal Ultimate",
+  "name": "jobfinder-vaud-v861",
+  "version": "8.6.1",
+  "description": "Job Finder Vaud Premium IA Pro",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": [
-    "emploi",
-    "vaud",
-    "jobfinder",
-    "pwa",
-    "jobs",
-    "render"
-  ],
-  "author": "François",
-  "license": "MIT",
-  "dependencies": {
-    "express": "^4.19.2"
-  },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
   }
 }
