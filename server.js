@@ -1,6 +1,6 @@
 const express = require("express");
-const path = require("path");
 const fs = require("fs");
+const path = require("path");
 
 const app = express();
 
@@ -8,66 +8,78 @@ const PORT =
 process.env.PORT || 3000;
 
 app.use(
-express.json({
-limit:"10mb"
-})
-);
-
-app.use(
-express.static(__dirname)
+express.static(
+path.join(
+__dirname,
+"public"
+)
+)
 );
 
 app.get(
 "/offers",
-(req,res)=>{
+(req,res) => {
+
+const filePath =
+
+path.join(
+__dirname,
+"offers.json"
+);
+
+fs.readFile(
+filePath,
+"utf8",
+(err,data) => {
+
+if(err){
+
+return res
+.status(500)
+.json({
+error:
+"Erreur lecture offers.json"
+});
+
+}
 
 try{
 
 const offres =
-
-JSON.parse(
-
-fs.readFileSync(
-"./offers.json",
-"utf8"
-)
-
-);
+JSON.parse(data);
 
 res.json(
 offres
 );
 
-}catch(error){
+}catch(e){
 
-res.status(500).json({
-
+res
+.status(500)
+.json({
 error:
-"Impossible de charger les offres"
-
+"JSON invalide"
 });
 
 }
+
+});
 
 }
 );
 
 app.get(
 "/health",
-(req,res)=>{
+(req,res) => {
 
 res.json({
 
-status:"ok",
+status:"OK",
 
 application:
-"Job Finder Vaud V10",
+"Job Finder Vaud V11 Ultimate AI Career Manager",
 
-version:
-"10.0",
-
-mode:
-"Ultimate AI Edition"
+version:"11.0"
 
 });
 
@@ -75,193 +87,14 @@ mode:
 );
 
 app.get(
-"/stats",
-(req,res)=>{
-
-try{
-
-const offres =
-
-JSON.parse(
-
-fs.readFileSync(
-"./offers.json",
-"utf8"
-)
-
-);
-
-const stats = {
-
-offres:
-offres.length,
-
-regions:
-
-[
-...new Set(
-offres.map(
-o=>o.lieu
-)
-)
-].length,
-
-secteurs:
-
-[
-...new Set(
-offres.map(
-o=>o.secteur
-)
-)
-].length,
-
-entreprises:
-
-[
-...new Set(
-offres.map(
-o=>o.entreprise
-)
-)
-].length
-
-};
-
-res.json(
-stats
-);
-
-}catch(error){
-
-res.status(500).json({
-
-error:
-"Impossible de générer les statistiques"
-
-});
-
-}
-
-}
-);
-
-app.post(
-"/analyse-cv",
-(req,res)=>{
-
-const {
-
-cv,
-offre
-
-} = req.body;
-
-if(
-!cv ||
-!offre
-){
-
-return res.status(400).json({
-
-error:
-"Données manquantes"
-
-});
-
-}
-
-let score = 0;
-
-const mots = [
-
-"excel",
-"office",
-"administration",
-"organisation",
-"comptabilité",
-"support",
-"informatique",
-"python"
-
-];
-
-mots.forEach(m=>{
-
-if(
-
-cv.toLowerCase()
-.includes(m)
-
-&&
-
-offre.toLowerCase()
-.includes(m)
-
-){
-
-score += 12;
-
-}
-
-});
-
-res.json({
-
-score:
-Math.min(
-100,
-score
-)
-
-});
-
-}
-);
-
-app.post(
-"/generate-letter",
-(req,res)=>{
-
-const {
-
-nom,
-poste,
-entreprise
-
-} = req.body;
-
-const lettre =
-
-`Madame, Monsieur,
-
-Je souhaite vous proposer ma candidature pour le poste de ${poste} au sein de ${entreprise}.
-
-Mon expérience professionnelle et ma motivation me permettront de contribuer efficacement à vos activités.
-
-Je reste à votre disposition pour un entretien.
-
-Avec mes salutations distinguées.
-
-${nom}`;
-
-res.json({
-
-lettre
-
-});
-
-}
-);
-
-app.get(
-"/",
-(req,res)=>{
+"*",
+(req,res) => {
 
 res.sendFile(
 
 path.join(
 __dirname,
+"public",
 "index.html"
 )
 
@@ -270,27 +103,12 @@ __dirname,
 }
 );
 
-app.use(
-(req,res)=>{
-
-res.status(404).json({
-
-error:
-"Page introuvable"
-
-});
-
-}
-);
-
 app.listen(
 PORT,
-()=>{
+() => {
 
 console.log(
-
-`🤘 Job Finder Vaud V10 lancé sur le port ${PORT}`
-
+`🚀 Job Finder Vaud V11 démarré sur le port ${PORT}`
 );
 
 }
