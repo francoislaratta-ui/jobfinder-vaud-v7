@@ -3005,5 +3005,496 @@ applyFilters
 ========================================== */
 
 loadOffers();
+ 
+/* ==========================================
+   FILTRES METIERS
+========================================== */
+
+function getSelectedValues(containerId){
+
+const values = [];
+
+document
+.querySelectorAll(
+
+`#${containerId} input:checked`
+
+)
+.forEach(
+
+item=>{
+
+values.push(
+
+item.parentElement
+.textContent
+.trim()
+
+);
+
+}
+
+);
+
+return values;
+
+}
+
+/* ==========================================
+   FILTRAGE COMPLET
+========================================== */
+
+function applyFilters(){
+
+const regions =
+getSelectedValues(
+"regionsContainer"
+);
+
+const jobs =
+getSelectedValues(
+"jobsContainer"
+);
+
+const rates =
+getSelectedValues(
+"rateContainer"
+);
+
+const sectors =
+getSelectedValues(
+"sectorContainer"
+);
+
+const contracts =
+getSelectedValues(
+"contractContainer"
+);
+
+const sources =
+getSelectedValues(
+"sourceContainer"
+);
+
+let results =
+allOffers.filter(
+
+offer=>{
+
+if(
+
+regions.length &&
+!regions.includes(
+offer.location
+)
+
+){
+
+return false;
+
+}
+
+if(
+
+jobs.length &&
+!jobs.includes(
+offer.title
+)
+
+){
+
+return false;
+
+}
+
+if(
+ 
+rates.length &&
+
+!rates.includes(
+offer.rate
+) &&
+
+!(
+rates.includes(
+"Temps plein"
+) &&
+offer.rate === "100%"
+) &&
+
+!(
+rates.includes(
+"Temps partiel"
+) &&
+offer.rate !== "100%"
+)
+
+){
+
+return false;
+
+}
+
+if(
+
+sectors.length &&
+!sectors.includes(
+offer.sector
+)
+
+){
+
+return false;
+
+}
+
+if(
+
+contracts.length &&
+!contracts.includes(
+offer.contract
+)
+
+){
+
+return false;
+
+}
+
+if(
+
+sources.length &&
+!sources.includes(
+offer.source
+)
+
+){
+
+return false;
+
+}
+
+return true;
+
+}
+
+);
+
+renderOffers(
+results
+);
+
+}
+
+/* ==========================================
+   EVENEMENTS FILTRES
+========================================== */
+
+[
+"regionsContainer",
+"jobsContainer",
+"rateContainer",
+"sectorContainer",
+"contractContainer",
+"sourceContainer"
+]
+.forEach(
+
+containerId=>{
+
+document
+.querySelectorAll(
+
+`#${containerId} input`
+
+)
+.forEach(
+
+checkbox=>{
+
+checkbox.addEventListener(
+
+"change",
+
+applyFilters
+
+);
+
+}
+
+);
+
+}
+
+);
+
+/* ==========================================
+   ANALYSE CV ↔ OFFRE
+========================================== */
+
+function analyzeOffer(
+
+offerTitle
+
+){
+
+const cv =
+
+document
+.getElementById(
+"cvText"
+)
+.value
+.toLowerCase();
+
+let score = 50;
+
+if(
+
+offerTitle
+.toLowerCase()
+.includes(
+"commerce"
+) &&
+
+cv.includes(
+"commerce"
+)
+
+){
+
+score += 20;
+
+}
+
+if(
+
+offerTitle
+.toLowerCase()
+.includes(
+"dossier"
+) &&
+
+cv.includes(
+"dossier"
+)
+
+){
+
+score += 20;
+
+}
+
+if(
+
+offerTitle
+.toLowerCase()
+.includes(
+"informatique"
+) &&
+
+cv.includes(
+"informatique"
+)
+
+){
+
+score += 20;
+
+}
+
+if(
+
+cv.includes(
+"administratif"
+)
+
+){
+
+score += 10;
+
+}
+
+if(score > 98){
+
+score = 98;
+
+}
+
+document
+.getElementById(
+"aiResults"
+)
+.innerHTML = `
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+Analyse CV ↔ Offre
+
+</div>
+
+<div class="compatibility">
+
+🟢 ${score}%
+
+</div>
+
+<div class="offer-meta">
+
+<div class="meta-item">
+
+Offre :
+
+${offerTitle}
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+/* ==========================================
+   LETTRE PERSONNALISEE
+========================================== */
+
+function generateCustomLetter(
+
+job,
+company
+
+){
+
+const textarea =
+
+document
+.getElementById(
+"letterContent"
+);
+
+textarea.value =
+
+`Objet : Candidature au poste de ${job}
+
+Madame, Monsieur,
+
+Je vous adresse ma candidature pour le poste de ${job} au sein de ${company}.
+
+Mon expérience professionnelle et mes compétences me permettent de répondre aux exigences de cette fonction.
+
+Je serais heureux de pouvoir vous rencontrer afin d'échanger sur ma motivation et ma contribution potentielle.
+
+Dans l'attente de votre réponse, je vous adresse mes salutations distinguées.
+
+F. Laratta`;
+
+}
+
+/* ==========================================
+   FIN P14
+========================================== */
+ /* ==========================================
+   CORRECTIONS FINALES
+========================================== */
+
+function initializeApplication(){
+
+console.log(
+"JOB FINDER VAUD"
+);
+
+console.log(
+"V8.6.2 PREMIUM IA PRO"
+);
+
+console.log(
+"Créateur F. Laratta"
+);
+
+updateStatistics();
+
+renderFavorites();
+
+loadCV();
+
+}
+
+initializeApplication();
+
+/* ==========================================
+   SCROLL TOP
+========================================== */
+
+document
+.querySelectorAll(
+".float-btn"
+)
+.forEach(
+
+button=>{
+
+if(
+
+button.textContent.includes(
+"⬆"
+)
+
+){
+
+button.addEventListener(
+
+"click",
+
+()=>{
+
+window.scrollTo({
+
+top:0,
+
+behavior:
+"smooth"
+
+});
+
+}
+
+);
+
+}
+
+}
+
+);
+
+/* ==========================================
+   EXPORT GLOBAL
+========================================== */
+
+window.applyFilters =
+applyFilters;
+
+window.analyzeOffer =
+analyzeOffer;
+
+window.generateCustomLetter =
+generateCustomLetter;
+
+window.saveOfferFavorite =
+saveOfferFavorite;
+
+/* ==========================================
+   FIN APPLICATION
+========================================== */
+
+</script>
+
+</body>
+
+</html>  
 </script> 
    
