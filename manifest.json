@@ -1,7 +1,7 @@
 {
-  "name": "Job Finder Vaud V8.6.1 Premium IA Pro",
-  "short_name": "JFV861",
-  "description": "Recherche d'emploi intelligente dans le canton de Vaud avec favoris, analyse CV, génération de lettres et notifications.",
+  "name": "Job Finder Vaud V8.6.2 Premium IA Pro",
+  "short_name": "JFV862",
+  "description": "Recherche intelligente d'emploi dans le canton de Vaud avec IA, analyse CV, favoris et génération de lettres de motivation.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -32,22 +32,22 @@
     {
       "name": "Offres",
       "short_name": "Offres",
-      "url": "/#offersSection"
+      "url": "/#offersContainer"
     },
     {
       "name": "Favoris",
       "short_name": "Favoris",
-      "url": "/#favoritesSection"
+      "url": "/#favoritesContainer"
     },
     {
-      "name": "Mon CV",
+      "name": "CV",
       "short_name": "CV",
-      "url": "/#cvSection"
+      "url": "/#cvText"
     },
     {
-      "name": "Notifications",
-      "short_name": "Notif",
-      "url": "/#notificationsSection"
+      "name": "IA",
+      "short_name": "IA",
+      "url": "/#aiResults"
     }
   ]
 }
