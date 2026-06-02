@@ -23,7 +23,7 @@ href="manifest.json">
 
 <meta
 name="theme-color"
-content="#c28b14">
+content="#b66a18">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -31,21 +31,21 @@ content="#c28b14">
 
 :root{
 
---gold:#c28b14;
---gold-dark:#8f670d;
+--gold:#b66a18;
+--gold-dark:#8b5110;
 
---bg:#080808;
---bg2:#121212;
+--bg:#090909;
+--bg2:#131313;
 
---card:#1a1a1a;
+--card:#1b1b1b;
+--card2:#202020;
 
 --green:#16a34a;
 --blue:#2563eb;
---purple:#7c3aed;
 --red:#dc2626;
 
 --text:#ffffff;
---text-soft:#d1d5db;
+--text-soft:#cbd5e1;
 
 }
 
@@ -53,6 +53,10 @@ content="#c28b14">
 margin:0;
 padding:0;
 box-sizing:border-box;
+}
+
+html{
+scroll-behavior:smooth;
 }
 
 body{
@@ -69,11 +73,9 @@ var(--bg),
 var(--bg2)
 );
 
-color:
-var(--text);
+color:white;
 
-min-height:
-100vh;
+min-height:100vh;
 
 }
 
@@ -91,9 +93,9 @@ background:#111;
 
 border-bottom:
 1px solid rgba(
-194,
-139,
-20,
+182,
+106,
+24,
 0.25
 );
 
@@ -101,7 +103,7 @@ position:sticky;
 
 top:0;
 
-z-index:100;
+z-index:1000;
 
 }
 
@@ -110,8 +112,6 @@ z-index:100;
 color:var(--gold);
 
 font-size:30px;
-
-margin-bottom:4px;
 
 }
 
@@ -185,7 +185,7 @@ cursor:pointer;
 
 font-weight:600;
 
-transition:0.2s;
+transition:.2s;
 
 }
 
@@ -238,9 +238,9 @@ border-radius:20px;
 
 border:
 1px solid rgba(
-194,
-139,
-20,
+182,
+106,
+24,
 0.15
 );
 
@@ -250,7 +250,7 @@ text-align:center;
 
 .kpi-card div{
 
-font-size:32px;
+font-size:30px;
 
 font-weight:bold;
 
@@ -320,6 +320,164 @@ min-height:320px;
 
 }
 
+.search-toolbar{
+
+display:flex;
+
+gap:10px;
+
+flex-wrap:wrap;
+
+margin-top:20px;
+
+margin-bottom:20px;
+
+}
+
+.search-toolbar input,
+.search-toolbar select{
+
+padding:12px;
+
+border:none;
+
+border-radius:12px;
+
+background:#222;
+
+color:white;
+
+}
+
+button{
+
+cursor:pointer;
+
+}
+
+.primary-btn{
+
+background:var(--gold);
+
+color:black;
+
+border:none;
+
+padding:12px 18px;
+
+border-radius:12px;
+
+font-weight:bold;
+
+}
+
+.secondary-btn{
+
+background:#262626;
+
+color:white;
+
+border:none;
+
+padding:12px 18px;
+
+border-radius:12px;
+
+}
+
+.card-container{
+
+display:grid;
+
+grid-template-columns:
+repeat(
+auto-fit,
+minmax(
+320px,
+1fr
+)
+);
+
+gap:20px;
+
+margin-top:20px;
+
+}
+
+.offer-card{
+
+background:var(--card);
+
+padding:20px;
+
+border-radius:18px;
+
+border:
+1px solid rgba(
+182,
+106,
+24,
+0.15
+);
+
+}
+
+.offer-card h3{
+
+color:var(--gold);
+
+margin-bottom:10px;
+
+}
+
+.offer-card p{
+
+margin:6px 0;
+
+}
+
+.favorite-btn{
+
+width:100%;
+
+margin-top:15px;
+
+background:var(--gold);
+
+color:black;
+
+border:none;
+
+padding:12px;
+
+border-radius:12px;
+
+font-weight:bold;
+
+}
+
+@media(max-width:900px){
+
+.chart-grid{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+.footer{
+
+margin-top:40px;
+
+padding:30px;
+
+text-align:center;
+
+color:#94a3b8;
+
+}
+
 </style>
 
 </head>
@@ -335,7 +493,7 @@ min-height:320px;
 </h1>
 
 <span>
-Premium AI Edition V13
+Premium AI Edition V13 Corrigée
 </span>
 
 </div>
@@ -343,11 +501,20 @@ Premium AI Edition V13
 <div class="header-actions">
 
 <button id="btnNotifications">
-🔔 <span id="notifCount">0</span>
+
+🔔
+<span id="notifCount">
+
+0
+
+</span>
+
 </button>
 
 <button id="btnSettings">
+
 ⚙️
+
 </button>
 
 </div>
@@ -357,34 +524,49 @@ Premium AI Edition V13
 <nav class="main-tabs">
 
 <button data-tab="dashboard">
+
 🏠 Dashboard
+
 </button>
 
 <button data-tab="offers">
+
 💼 Offres
+
 </button>
 
 <button data-tab="favorites">
+
 ⭐ Favoris
+
 </button>
 
 <button data-tab="crm">
+
 📋 CRM
+
 </button>
 
 <button data-tab="ai">
+
 🤖 IA
+
 </button>
 
 <button data-tab="stats">
+
 📊 Statistiques
+
 </button>
 
 <button data-tab="settings">
+
 ⚙️ Paramètres
+
 </button>
 
 </nav>
+
 <main>
 
 <section
@@ -396,11 +578,15 @@ class="tab-content active-tab">
 <div class="kpi-card">
 
 <div id="kpiOffers">
+
 0
+
 </div>
 
 <span>
+
 Offres
+
 </span>
 
 </div>
@@ -408,11 +594,15 @@ Offres
 <div class="kpi-card">
 
 <div id="kpiFavorites">
+
 0
+
 </div>
 
 <span>
+
 Favoris
+
 </span>
 
 </div>
@@ -420,11 +610,15 @@ Favoris
 <div class="kpi-card">
 
 <div id="kpiApplications">
+
 0
+
 </div>
 
 <span>
+
 Candidatures
+
 </span>
 
 </div>
@@ -432,11 +626,15 @@ Candidatures
 <div class="kpi-card">
 
 <div id="kpiInterviews">
+
 0
+
 </div>
 
 <span>
+
 Entretiens
+
 </span>
 
 </div>
@@ -444,11 +642,15 @@ Entretiens
 <div class="kpi-card">
 
 <div id="kpiSuccess">
+
 0%
+
 </div>
 
 <span>
+
 Succès
+
 </span>
 
 </div>
@@ -456,11 +658,15 @@ Succès
 <div class="kpi-card">
 
 <div id="kpiSalary">
+
 0
+
 </div>
 
 <span>
+
 Salaire moyen
+
 </span>
 
 </div>
@@ -476,7 +682,9 @@ Salaire moyen
 <p>
 
 <span id="alertFollowups">
+
 0
+
 </span>
 
 à effectuer
@@ -492,7 +700,9 @@ Salaire moyen
 <p>
 
 <span id="alertInterviews">
+
 0
+
 </span>
 
 planifiés
@@ -508,7 +718,9 @@ planifiés
 <p>
 
 <span id="alertPriorities">
+
 0
+
 </span>
 
 urgentes
@@ -524,7 +736,9 @@ urgentes
 <p>
 
 <span id="alertActivity">
+
 0
+
 </span>
 
 actions récentes
@@ -534,17 +748,19 @@ actions récentes
 </div>
 
 </div>
-
 <div class="chart-grid">
 
 <div class="chart-card">
 
 <h3>
+
 📈 Candidatures
+
 </h3>
 
 <canvas
 id="applicationsChart">
+
 </canvas>
 
 </div>
@@ -552,11 +768,14 @@ id="applicationsChart">
 <div class="chart-card">
 
 <h3>
+
 🤝 Entretiens
+
 </h3>
 
 <canvas
 id="interviewsChart">
+
 </canvas>
 
 </div>
@@ -564,11 +783,14 @@ id="interviewsChart">
 <div class="chart-card">
 
 <h3>
+
 🎯 Taux de succès
+
 </h3>
 
 <canvas
 id="successChart">
+
 </canvas>
 
 </div>
@@ -576,11 +798,14 @@ id="successChart">
 <div class="chart-card">
 
 <h3>
+
 🏢 Répartition secteurs
+
 </h3>
 
 <canvas
 id="sectorChart">
+
 </canvas>
 
 </div>
@@ -594,11 +819,15 @@ style="margin-top:20px;">
 <div class="kpi-card">
 
 <div id="todayOffers">
+
 0
+
 </div>
 
 <span>
+
 Nouvelles offres
+
 </span>
 
 </div>
@@ -606,11 +835,15 @@ Nouvelles offres
 <div class="kpi-card">
 
 <div id="todayResponses">
+
 0
+
 </div>
 
 <span>
+
 Réponses reçues
+
 </span>
 
 </div>
@@ -618,11 +851,15 @@ Réponses reçues
 <div class="kpi-card">
 
 <div id="todayMeetings">
+
 0
+
 </div>
 
 <span>
+
 Entretiens semaine
+
 </span>
 
 </div>
@@ -630,11 +867,15 @@ Entretiens semaine
 <div class="kpi-card">
 
 <div id="todayActions">
+
 0
+
 </div>
 
 <span>
+
 Actions IA
+
 </span>
 
 </div>
@@ -642,6 +883,7 @@ Actions IA
 </div>
 
 </section>
+
 <section
 id="offers"
 class="tab-content">
@@ -675,11 +917,11 @@ Morges
 </option>
 
 <option>
-Yverdon
+Nyon
 </option>
 
 <option>
-Nyon
+Yverdon-les-Bains
 </option>
 
 <option>
@@ -704,11 +946,11 @@ Informatique
 </option>
 
 <option>
-RH
+Finance
 </option>
 
 <option>
-Finance
+RH
 </option>
 
 <option>
@@ -718,39 +960,24 @@ Immobilier
 </select>
 
 <select
-id="teleworkFilter">
-
-<option value="">
-Télétravail
-</option>
-
-<option value="true">
-Oui
-</option>
-
-<option value="false">
-Non
-</option>
-
-</select>
-
-<select
 id="sortFilter">
 
 <option value="score">
+
 Score IA
+
 </option>
 
 <option value="salary">
+
 Salaire
+
 </option>
 
 <option value="date">
-Date
-</option>
 
-<option value="company">
-Entreprise
+Date
+
 </option>
 
 </select>
@@ -758,36 +985,47 @@ Entreprise
 </div>
 
 <div
-style="margin-top:15px;margin-bottom:15px;">
+style="
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:20px;
+">
 
-<button id="refreshOffersBtn">
+<button
+class="primary-btn"
+id="refreshOffersBtn">
 
 🔄 Actualiser
 
 </button>
 
-<button id="duplicatesBtn">
+<button
+class="secondary-btn"
+id="highScoreBtn">
 
-⚠️ Doublons
+🎯 Top IA
 
 </button>
 
-<button id="highScoreBtn">
+<button
+class="secondary-btn"
+id="duplicatesBtn">
 
-🎯 Top IA
+⚠️ Doublons
 
 </button>
 
 </div>
 
 <div
-id="offersContainer">
-
-<!-- Offres injectées ici -->
+id="offersContainer"
+class="card-container">
 
 </div>
 
 </section>
+
 <section
 id="favorites"
 class="tab-content">
@@ -802,29 +1040,37 @@ class="tab-content">
 style="
 display:flex;
 gap:10px;
-margin-bottom:20px;
 flex-wrap:wrap;
+margin-bottom:20px;
 ">
 
-<button id="allFavoritesBtn">
+<button
+class="secondary-btn"
+id="allFavoritesBtn">
 
 Tous
 
 </button>
 
-<button id="highPriorityBtn">
+<button
+class="secondary-btn"
+id="highPriorityBtn">
 
 🔴 Priorité haute
 
 </button>
 
-<button id="recentFavoritesBtn">
+<button
+class="secondary-btn"
+id="recentFavoritesBtn">
 
 🕒 Récents
 
 </button>
 
-<button id="favoriteExportBtn">
+<button
+class="primary-btn"
+id="favoriteExportBtn">
 
 📤 Export
 
@@ -832,9 +1078,7 @@ Tous
 
 </div>
 
-<div
-id="favoritesStats"
-class="kpi-grid">
+<div class="kpi-grid">
 
 <div class="kpi-card">
 
@@ -887,11 +1131,13 @@ Notes
 </div>
 
 <div
-id="favoritesContainer">
+id="favoritesContainer"
+class="card-container">
 
 </div>
 
 </section>
+
 <section
 id="crm"
 class="tab-content">
@@ -902,17 +1148,20 @@ class="tab-content">
 
 </h2>
 
-<div
-class="crm-summary kpi-grid">
+<div class="kpi-grid">
 
 <div class="kpi-card">
 
 <div id="crmTotal">
+
 0
+
 </div>
 
 <span>
+
 Candidatures
+
 </span>
 
 </div>
@@ -920,11 +1169,15 @@ Candidatures
 <div class="kpi-card">
 
 <div id="crmInterviews">
+
 0
+
 </div>
 
 <span>
+
 Entretiens
+
 </span>
 
 </div>
@@ -932,11 +1185,15 @@ Entretiens
 <div class="kpi-card">
 
 <div id="crmOffers">
+
 0
+
 </div>
 
 <span>
+
 Offres reçues
+
 </span>
 
 </div>
@@ -944,24 +1201,34 @@ Offres reçues
 <div class="kpi-card">
 
 <div id="crmHiredCount">
+
 0
+
 </div>
 
 <span>
+
 Embauches
+
 </span>
 
 </div>
 
 </div>
 
-<div class="kanban">
+<div
+style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+margin-top:20px;
+">
 
-<div class="kanban-column">
+<div class="offer-card">
 
 <h3>
 
-📌 A analyser
+📌 À analyser
 
 </h3>
 
@@ -971,11 +1238,11 @@ Embauches
 
 </div>
 
-<div class="kanban-column">
+<div class="offer-card">
 
 <h3>
 
-📄 A postuler
+📄 À postuler
 
 </h3>
 
@@ -985,7 +1252,7 @@ Embauches
 
 </div>
 
-<div class="kanban-column">
+<div class="offer-card">
 
 <h3>
 
@@ -999,7 +1266,7 @@ Embauches
 
 </div>
 
-<div class="kanban-column">
+<div class="offer-card">
 
 <h3>
 
@@ -1013,7 +1280,7 @@ Embauches
 
 </div>
 
-<div class="kanban-column">
+<div class="offer-card">
 
 <h3>
 
@@ -1027,7 +1294,7 @@ Embauches
 
 </div>
 
-<div class="kanban-column">
+<div class="offer-card">
 
 <h3>
 
@@ -1041,7 +1308,7 @@ Embauches
 
 </div>
 
-<div class="kanban-column">
+<div class="offer-card">
 
 <h3>
 
@@ -1055,7 +1322,7 @@ Embauches
 
 </div>
 
-<div class="kanban-column">
+<div class="offer-card">
 
 <h3>
 
@@ -1072,6 +1339,7 @@ Embauches
 </div>
 
 </section>
+
 <section
 id="ai"
 class="tab-content">
@@ -1082,23 +1350,38 @@ class="tab-content">
 
 </h2>
 
-<div class="ai-grid">
+<div
+style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+gap:20px;
+">
 
-<div class="ai-module">
+<div class="offer-card">
 
 <h3>
 
-📋 Analyse Offre
+📋 Analyse d'offre
 
 </h3>
 
 <textarea
 id="offerAnalysisInput"
-placeholder="Collez une offre d'emploi ici...">
+style="
+width:100%;
+height:180px;
+padding:12px;
+background:#222;
+color:white;
+border:none;
+border-radius:12px;
+">
 
 </textarea>
 
 <button
+class="primary-btn"
+style="margin-top:10px;"
 onclick="analyzeOffer()">
 
 Analyser
@@ -1106,13 +1389,14 @@ Analyser
 </button>
 
 <div
-id="offerAnalysisResult">
+id="offerAnalysisResult"
+style="margin-top:15px;">
 
 </div>
 
 </div>
 
-<div class="ai-module">
+<div class="offer-card">
 
 <h3>
 
@@ -1122,11 +1406,21 @@ id="offerAnalysisResult">
 
 <textarea
 id="cvInput"
-placeholder="Collez votre CV ici...">
+style="
+width:100%;
+height:180px;
+padding:12px;
+background:#222;
+color:white;
+border:none;
+border-radius:12px;
+">
 
 </textarea>
 
 <button
+class="primary-btn"
+style="margin-top:10px;"
 onclick="analyzeCV()">
 
 Analyser CV
@@ -1134,51 +1428,73 @@ Analyser CV
 </button>
 
 <div
-id="cvAnalysisResult">
+id="cvAnalysisResult"
+style="margin-top:15px;">
 
 </div>
 
 </div>
 
-<div class="ai-module">
+<div class="offer-card">
 
 <h3>
 
-🤝 Préparation Entretien
+🤝 Préparation entretien
 
 </h3>
 
 <button
+class="primary-btn"
 onclick="prepareInterview()">
 
-Générer
+Générer les questions
 
 </button>
 
 <div
-id="interviewPreparation">
+id="interviewPreparation"
+style="margin-top:15px;">
 
 </div>
 
 </div>
 
-<div class="ai-module">
+<div class="offer-card">
 
 <h3>
 
-✉️ Lettre Motivation
+✉️ Lettre de motivation
 
 </h3>
 
 <input
 id="companyInput"
-placeholder="Entreprise">
+placeholder="Entreprise"
+style="
+width:100%;
+padding:12px;
+margin-bottom:10px;
+background:#222;
+color:white;
+border:none;
+border-radius:12px;
+">
 
 <input
 id="jobInput"
-placeholder="Poste">
+placeholder="Poste"
+style="
+width:100%;
+padding:12px;
+margin-bottom:10px;
+background:#222;
+color:white;
+border:none;
+border-radius:12px;
+">
 
 <button
+class="primary-btn"
 onclick="generateLetter()">
 
 Générer
@@ -1186,7 +1502,8 @@ Générer
 </button>
 
 <div
-id="motivationLetter">
+id="motivationLetter"
+style="margin-top:15px;">
 
 </div>
 
@@ -1205,7 +1522,7 @@ class="tab-content">
 
 </h2>
 
-<div class="stats-grid">
+<div class="kpi-grid">
 
 <div class="kpi-card">
 
@@ -1294,7 +1611,7 @@ id="monthlyChart">
 
 <h3>
 
-🎯 Répartition résultats
+🎯 Résultats
 
 </h3>
 
@@ -1337,12 +1654,13 @@ id="yearlyChart">
 
 </div>
 
-<section
-class="statistics-history">
+<div
+class="offer-card"
+style="margin-top:20px;">
 
 <h3>
 
-🕒 Historique activité
+🕒 Historique d'activité
 
 </h3>
 
@@ -1351,11 +1669,11 @@ id="statsHistoryContainer">
 
 </div>
 
-</section>
+</div>
 
 </section>
 
-}<section
+<section
 id="settings"
 class="tab-content">
 
@@ -1365,9 +1683,14 @@ class="tab-content">
 
 </h2>
 
-<div class="settings-grid">
+<div
+style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:20px;
+">
 
-<div class="settings-card">
+<div class="offer-card">
 
 <h3>
 
@@ -1376,7 +1699,15 @@ class="tab-content">
 </h3>
 
 <select
-id="languageSelector">
+id="languageSelector"
+style="
+width:100%;
+padding:12px;
+background:#222;
+color:white;
+border:none;
+border-radius:12px;
+">
 
 <option value="fr">
 
@@ -1394,7 +1725,7 @@ English
 
 </div>
 
-<div class="settings-card">
+<div class="offer-card">
 
 <h3>
 
@@ -1403,6 +1734,7 @@ English
 </h3>
 
 <button
+class="primary-btn"
 id="notificationToggle">
 
 Activer / Désactiver
@@ -1410,7 +1742,8 @@ Activer / Désactiver
 </button>
 
 <p
-id="notificationStatus">
+id="notificationStatus"
+style="margin-top:10px;">
 
 Activées
 
@@ -1418,7 +1751,7 @@ Activées
 
 </div>
 
-<div class="settings-card">
+<div class="offer-card">
 
 <h3>
 
@@ -1427,7 +1760,7 @@ Activées
 </h3>
 
 <button
-id="exportJsonBtn"
+class="primary-btn"
 onclick="exportJSON()">
 
 Export JSON
@@ -1435,8 +1768,9 @@ Export JSON
 </button>
 
 <button
-id="exportCsvBtn"
-onclick="exportCSV()">
+class="secondary-btn"
+onclick="exportCSV()"
+style="margin-left:10px;">
 
 Export CSV
 
@@ -1444,7 +1778,7 @@ Export CSV
 
 </div>
 
-<div class="settings-card">
+<div class="offer-card">
 
 <h3>
 
@@ -1454,33 +1788,32 @@ Export CSV
 
 <input
 type="file"
-id="importFile">
-
-<button
-id="importBtn">
-
-Importer
-
-</button>
+id="importFile"
+style="
+width:100%;
+padding:10px;
+background:#222;
+border-radius:12px;
+">
 
 </div>
 
-<div class="settings-card">
+<div class="offer-card">
 
 <h3>
 
-📱 Progressive Web App
+📱 Installation PWA
 
 </h3>
 
 <p>
 
-Installation Android
-et Desktop
+Installer l'application sur Android ou PC.
 
 </p>
 
 <button
+class="primary-btn"
 id="installPwaBtn">
 
 Installer
@@ -1489,7 +1822,7 @@ Installer
 
 </div>
 
-<div class="settings-card">
+<div class="offer-card">
 
 <h3>
 
@@ -1498,6 +1831,7 @@ Installer
 </h3>
 
 <button
+class="primary-btn"
 id="resetAppBtn">
 
 Réinitialiser
@@ -1508,287 +1842,46 @@ Réinitialiser
 
 </div>
 
-</section><section
-id="notificationsPanel"
-style="display:none;">
+</section>
 
-<h3>
+<section
+id="notificationsPanel"
+class="tab-content">
+
+<h2>
 
 🔔 Notifications
 
-</h3>
+</h2>
 
 <div
 id="notificationsContainer">
 
 </div>
 
-</section>.settings-grid{
+</section>
 
-display:grid;
-
-grid-template-columns:
-repeat(
-auto-fit,
-minmax(
-320px,
-1fr
-)
-);
-
-gap:20px;
-
-margin-top:20px;
-
-}
-
-.settings-card{
-
-background:#1a1a1a;
-
-padding:20px;
-
-border-radius:20px;
-
-border:
-1px solid rgba(
-194,
-139,
-20,
-0.15
-);
-
-}
-
-.settings-card h3{
-
-margin-bottom:15px;
-
-color:#c28b14;
-
-}
-
-.settings-card button{
-
-background:#c28b14;
-
-color:black;
-
-border:none;
-
-padding:12px 16px;
-
-border-radius:12px;
-
-cursor:pointer;
-
-font-weight:bold;
-
-margin-top:10px;
-
-}
-
-.settings-card select,
-.settings-card input{
-
-width:100%;
-
-padding:12px;
-
-border:none;
-
-border-radius:12px;
-
-background:#222;
-
-color:white;
-
-}
-
-.notification-card{
-
-background:#222;
-
-padding:12px;
-
-border-radius:12px;
-
-margin-bottom:10px;
-
-}function renderNotifications(){
-
-const container =
-
-document.getElementById(
-"notificationsContainer"
-);
-
-if(!container){
-return;
-}
-
-container.innerHTML="";
-
-appState.notifications
-.slice(0,50)
-.forEach(item=>{
-
-const card =
-document.createElement(
-"div"
-);
-
-card.className =
-"notification-card";
-
-card.innerHTML =
-
-`
-
-<p>
-
-${item.message}
-
-</p>
-
-<small>
-
-${item.date}
-
-</small>
-
-`;
-
-container.appendChild(
-card
-);
-
-});
-
-}function toggleNotifications(){
-
-appState.settings.notifications =
-
-!appState.settings.notifications;
-
-saveSettings();
-
-document
-.getElementById(
-"notificationStatus"
-)
-.textContent =
-
-appState.settings.notifications
-
-?
-
-"Activées"
-
-:
-
-"Désactivées";
-
-}function resetApplication(){
-
-if(
-
-!confirm(
-"Réinitialiser toutes les données ?"
-)
-
-){
-return;
-}
-
-localStorage.clear();
-
-location.reload();
-
-}function importJSON(file){
-
-const reader =
-new FileReader();
-
-reader.onload =
-event=>{
-
-try{
-
-const data =
-
-JSON.parse(
-event.target.result
-);
-
-console.log(data);
-
-}catch{
-
-alert(
-"Fichier invalide"
-);
-
-}
-
-};
-
-reader.readAsText(
-file
-);
-
-}let deferredPrompt;
-
-window.addEventListener(
-"beforeinstallprompt",
-event=>{
-
-event.preventDefault();
-
-deferredPrompt =
-event;
-
-});document
-.getElementById(
-"resetAppBtn"
-)
-.addEventListener(
-"click",
-resetApplication
-);
-
-document
-.getElementById(
-"notificationToggle"
-)
-.addEventListener(
-"click",
-toggleNotifications
-);<script>
+<script>
 
 /* =========================
-   APP STATE GLOBAL
+   ÉTAT GLOBAL
 ========================= */
 
 const appState = {
 
-offers:[],
-
-favorites:[],
-
-crm:[],
-
-notes:[],
-
-history:[],
-
-notifications:[],
-
-settings:{},
-
-stats:{}
+offers: [],
+favorites: [],
+crm: [],
+notifications: [],
+history: [],
+settings: {
+language: "fr",
+notifications: true
+}
 
 };
+
+let deferredPrompt = null;
 
 /* =========================
    INITIALISATION
@@ -1796,61 +1889,34 @@ stats:{}
 
 window.addEventListener(
 "load",
-()=>{
-
-initializeApp();
+async () => {
 
 bindNavigation();
 
-showTab(
-"dashboard"
-);
-
-});
-
-async function initializeApp(){
-
-loadSettings();
-
-loadNotifications();
-
-loadHistory();
+await loadOffers();
 
 loadFavorites();
 
 loadCRM();
 
-loadNotes();
-
-await loadOffers();
+loadNotifications();
 
 updateDashboard();
-
-updateCRMKPIs();
-
-updateStatistics();
 
 renderOffers();
 
 renderFavorites();
 
-renderCRM();
-
-renderHistory();
-
-renderStatsHistory();
-
-renderNotifications();
+updateNotificationBadge();
 
 initializeCharts();
 
-initializeAdvancedCharts();
-
-registerServiceWorker();
-
-checkCRMAlerts();
+showTab(
+"dashboard"
+);
 
 }
+);
 
 /* =========================
    NAVIGATION
@@ -1862,29 +1928,30 @@ document
 .querySelectorAll(
 ".main-tabs button"
 )
-.forEach(btn=>{
+.forEach(btn => {
 
 btn.addEventListener(
 "click",
-()=>{
+() => {
 
 showTab(
 btn.dataset.tab
 );
 
-});
+}
+);
 
 });
 
 }
 
-function showTab(tabId){
+function showTab(id){
 
 document
 .querySelectorAll(
 ".tab-content"
 )
-.forEach(tab=>{
+.forEach(tab => {
 
 tab.classList.remove(
 "active-tab"
@@ -1892,193 +1959,23 @@ tab.classList.remove(
 
 });
 
-document
-.getElementById(
-tabId
-)
-.classList.add(
+const target =
+document.getElementById(
+id
+);
+
+if(target){
+
+target.classList.add(
 "active-tab"
 );
 
 }
 
-/* =========================
-   SAFE PARSE
-========================= */
-
-function safeParse(
-value,
-fallback=[]
-){
-
-try{
-
-return JSON.parse(
-value
-);
-
-}catch{
-
-return fallback;
-
-}
-
 }
 
 /* =========================
-   STORAGE LOADERS
-========================= */
-
-function loadFavorites(){
-
-appState.favorites =
-
-safeParse(
-
-localStorage.getItem(
-"jfv13_favorites"
-),
-
-[]
-
-);
-
-}
-
-function loadCRM(){
-
-appState.crm =
-
-safeParse(
-
-localStorage.getItem(
-"jfv13_crm"
-),
-
-[]
-
-);
-
-}
-
-function loadNotes(){
-
-appState.notes =
-
-safeParse(
-
-localStorage.getItem(
-"jfv13_notes"
-),
-
-[]
-
-);
-
-}
-
-function loadHistory(){
-
-appState.history =
-
-safeParse(
-
-localStorage.getItem(
-"jfv13_history"
-),
-
-[]
-
-);
-
-}
-
-function loadNotifications(){
-
-appState.notifications =
-
-safeParse(
-
-localStorage.getItem(
-"jfv13_notifications"
-),
-
-[]
-
-);
-
-}
-
-function loadSettings(){
-
-appState.settings =
-
-safeParse(
-
-localStorage.getItem(
-"jfv13_settings"
-),
-
-{
-language:"fr",
-notifications:true,
-theme:"premium"
-}
-
-);
-
-}
-
-/* =========================
-   STORAGE SAVERS
-========================= */
-
-function saveFavorites(){
-
-localStorage.setItem(
-"jfv13_favorites",
-JSON.stringify(
-appState.favorites
-)
-);
-
-}
-
-function saveCRM(){
-
-localStorage.setItem(
-"jfv13_crm",
-JSON.stringify(
-appState.crm
-)
-);
-
-}
-
-function saveSettings(){
-
-localStorage.setItem(
-"jfv13_settings",
-JSON.stringify(
-appState.settings
-)
-);
-
-}
-
-function saveNotes(){
-
-localStorage.setItem(
-"jfv13_notes",
-JSON.stringify(
-appState.notes
-)
-);
-
-}
-
-/* =========================
-   OFFRES
+   CHARGEMENT OFFRES
 ========================= */
 
 async function loadOffers(){
@@ -2086,129 +1983,247 @@ async function loadOffers(){
 try{
 
 const response =
-
 await fetch(
 "/offers"
 );
 
 appState.offers =
-
 await response.json();
 
-calculateAIScores();
+}catch(error){
 
-}catch{
+console.error(
+error
+);
 
-appState.offers=[];
+appState.offers = [];
 
 }
 
 }
 
-function calculateAIScores(){
+function renderOffers(){
+
+const container =
+
+document.getElementById(
+"offersContainer"
+);
+
+if(!container){
+return;
+}
+
+container.innerHTML = "";
 
 appState.offers.forEach(
-offer=>{
+offer => {
 
-offer.scoreIA =
-calculateAIScore(
-offer
+const card =
+document.createElement(
+"div"
+);
+
+card.className =
+"offer-card";
+
+card.innerHTML = `
+
+<h3>
+
+${offer.titre || "Offre"}
+
+</h3>
+
+<p>
+🏢 ${offer.entreprise || ""}
+</p>
+
+<p>
+📍 ${offer.lieu || ""}
+</p>
+
+<p>
+💰 ${offer.salaire || ""}
+</p>
+
+<p>
+📂 ${offer.secteur || ""}
+</p>
+
+<button
+class="favorite-btn"
+onclick="addFavorite(${offer.id})">
+
+⭐ Ajouter aux favoris
+
+</button>
+
+`;
+
+container.appendChild(
+card
 );
 
 });
 
 }
 
-function calculateAIScore(
-offer
-){
-
-let score = 50;
-
-if(
-offer.teletravail
-){
-score += 10;
-}
-
-if(
-offer.langues?.length
-){
-score += 10;
-}
-
-if(
-offer.competences?.length
-){
-score += 15;
-}
-
-if(
-offer.experience
-){
-score += 10;
-}
-
-if(
-offer.salaire
-){
-score += 5;
-}
-
-return Math.min(
-score,
-100
-);
-
-}
-
 /* =========================
-   PWA
+   FAVORIS
 ========================= */
 
-function registerServiceWorker(){
+function loadFavorites(){
 
-if(
-"serviceWorker"
-in navigator
-){
+appState.favorites =
 
-navigator
-.serviceWorker
-.register(
-"/service-worker.js"
+JSON.parse(
+
+localStorage.getItem(
+"jfv13_favorites"
 )
-.catch(
-console.error
+
+||
+
+"[]"
+
 );
 
 }
 
+function saveFavorites(){
+
+localStorage.setItem(
+
+"jfv13_favorites",
+
+JSON.stringify(
+appState.favorites
+)
+
+);
+
 }
 
-window.addEventListener(
-"offline",
-()=>{
+function addFavorite(id){
+
+const offer =
+
+appState.offers.find(
+o => o.id === id
+);
+
+if(!offer){
+return;
+}
+
+const exists =
+
+appState.favorites.find(
+o => o.id === id
+);
+
+if(exists){
+return;
+}
+
+appState.favorites.push(
+offer
+);
+
+saveFavorites();
+
+renderFavorites();
+
+updateDashboard();
 
 addNotification(
-"Mode hors ligne activé"
+"Offre ajoutée aux favoris"
 );
 
 }
+
+function renderFavorites(){
+
+const container =
+
+document.getElementById(
+"favoritesContainer"
 );
 
-window.addEventListener(
-"online",
-()=>{
+if(!container){
+return;
+}
 
-addNotification(
-"Connexion rétablie"
+container.innerHTML = "";
+
+appState.favorites.forEach(
+offer => {
+
+container.innerHTML += `
+
+<div class="offer-card">
+
+<h3>
+
+${offer.titre}
+
+</h3>
+
+<p>
+
+🏢 ${offer.entreprise}
+
+</p>
+
+<p>
+
+📍 ${offer.lieu}
+
+</p>
+
+</div>
+
+`;
+
+});
+
+}
+/* =========================
+   CRM
+========================= */
+
+function loadCRM(){
+
+appState.crm =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv13_crm"
+)
+
+||
+
+"[]"
+
 );
 
 }
+
+function saveCRM(){
+
+localStorage.setItem(
+
+"jfv13_crm",
+
+JSON.stringify(
+appState.crm
+)
+
 );
 
-</script><script>
+}
 
 /* =========================
    DASHBOARD
@@ -2236,8 +2251,7 @@ document.getElementById(
 ).textContent =
 
 appState.crm.filter(
-item =>
-item.statut === "Entretien"
+c => c.status === "Entretien"
 ).length;
 
 document.getElementById(
@@ -2249,15 +2263,423 @@ calculateSuccessRate()
 "%";
 
 document.getElementById(
-"kpiSalary"
+"favoritesCount"
 ).textContent =
+appState.favorites.length;
 
-calculateAverageSalary();
+}
+
+function calculateSuccessRate(){
+
+if(
+appState.crm.length === 0
+){
+return 0;
+}
+
+const hired =
+
+appState.crm.filter(
+c => c.status === "Embauché"
+).length;
+
+return Math.round(
+
+(hired /
+appState.crm.length)
+
+* 100
+
+);
 
 }
 
 /* =========================
-   CHARTS
+   NOTIFICATIONS
+========================= */
+
+function loadNotifications(){
+
+appState.notifications =
+
+JSON.parse(
+
+localStorage.getItem(
+"jfv13_notifications"
+)
+
+||
+
+"[]"
+
+);
+
+renderNotifications();
+
+}
+
+function saveNotifications(){
+
+localStorage.setItem(
+
+"jfv13_notifications",
+
+JSON.stringify(
+appState.notifications
+)
+
+);
+
+}
+
+function addNotification(message){
+
+appState.notifications.unshift({
+
+message,
+date:new Date()
+.toLocaleString()
+
+});
+
+if(
+appState.notifications.length > 100
+){
+
+appState.notifications =
+appState.notifications.slice(
+0,
+100
+);
+
+}
+
+saveNotifications();
+
+renderNotifications();
+
+updateNotificationBadge();
+
+}
+
+function renderNotifications(){
+
+const container =
+
+document.getElementById(
+"notificationsContainer"
+);
+
+if(!container){
+return;
+}
+
+container.innerHTML = "";
+
+appState.notifications.forEach(
+item => {
+
+container.innerHTML += `
+
+<div class="offer-card">
+
+<p>
+
+🔔 ${item.message}
+
+</p>
+
+<small>
+
+${item.date}
+
+</small>
+
+</div>
+
+`;
+
+});
+
+}
+
+function updateNotificationBadge(){
+
+const badge =
+
+document.getElementById(
+"notifCount"
+);
+
+if(badge){
+
+badge.textContent =
+
+appState.notifications.length;
+
+}
+
+}
+/* =========================
+   IA PREMIUM
+========================= */
+
+function analyzeOffer(){
+
+const texte =
+
+document
+.getElementById(
+"offerAnalysisInput"
+)
+.value
+.trim();
+
+const result =
+
+document.getElementById(
+"offerAnalysisResult"
+);
+
+if(!texte){
+
+result.innerHTML =
+
+"Veuillez coller une offre.";
+
+return;
+
+}
+
+let score = 50;
+
+if(
+texte.toLowerCase().includes(
+"office"
+)
+){
+score += 10;
+}
+
+if(
+texte.toLowerCase().includes(
+"excel"
+)
+){
+score += 10;
+}
+
+if(
+texte.toLowerCase().includes(
+"anglais"
+)
+){
+score += 10;
+}
+
+if(
+texte.toLowerCase().includes(
+"administratif"
+)
+){
+score += 15;
+}
+
+result.innerHTML = `
+
+<div class="offer-card">
+
+<h3>
+
+🎯 Résultat IA
+
+</h3>
+
+<p>
+
+Compatibilité :
+<b>${score}%</b>
+
+</p>
+
+<p>
+
+Analyse automatique terminée.
+
+</p>
+
+</div>
+
+`;
+
+}
+
+function analyzeCV(){
+
+const texte =
+
+document
+.getElementById(
+"cvInput"
+)
+.value
+.trim();
+
+const result =
+
+document.getElementById(
+"cvAnalysisResult"
+);
+
+if(!texte){
+
+result.innerHTML =
+
+"Veuillez coller votre CV.";
+
+return;
+
+}
+
+let points = [];
+
+if(
+texte.toLowerCase().includes(
+"office"
+)
+){
+points.push(
+"Maîtrise bureautique détectée"
+);
+}
+
+if(
+texte.toLowerCase().includes(
+"administratif"
+)
+){
+points.push(
+"Expérience administrative détectée"
+);
+}
+
+if(
+texte.toLowerCase().includes(
+"informatique"
+)
+){
+points.push(
+"Compétences informatiques détectées"
+);
+}
+
+result.innerHTML = `
+
+<div class="offer-card">
+
+<h3>
+
+📄 Analyse CV
+
+</h3>
+
+<p>
+
+${points.join("<br>")}
+
+</p>
+
+</div>
+
+`;
+
+}
+
+function prepareInterview(){
+
+document.getElementById(
+"interviewPreparation"
+).innerHTML = `
+
+<div class="offer-card">
+
+<ul>
+
+<li>
+Présentez-vous.
+</li>
+
+<li>
+Pourquoi ce poste ?
+</li>
+
+<li>
+Quels sont vos points forts ?
+</li>
+
+<li>
+Comment gérez-vous les priorités ?
+</li>
+
+<li>
+Pourquoi devrions-nous vous engager ?
+</li>
+
+</ul>
+
+</div>
+
+`;
+
+}
+
+function generateLetter(){
+
+const company =
+
+document
+.getElementById(
+"companyInput"
+)
+.value;
+
+const job =
+
+document
+.getElementById(
+"jobInput"
+)
+.value;
+
+document.getElementById(
+"motivationLetter"
+).innerHTML = `
+
+<div class="offer-card">
+
+Madame, Monsieur,<br><br>
+
+Je vous présente ma candidature
+pour le poste de
+<b>${job}</b>
+au sein de
+<b>${company}</b>.<br><br>
+
+Motivé, organisé et orienté
+service, je souhaite mettre
+mes compétences à votre
+disposition.<br><br>
+
+Avec mes salutations distinguées.
+
+</div>
+
+`;
+
+}
+
+/* =========================
+   STATISTIQUES
 ========================= */
 
 function initializeCharts(){
@@ -2305,10 +2727,6 @@ data:[
 
 }
 
-/* =========================
-   EXPORT JSON
-========================= */
-
 function exportJSON(){
 
 const data = {
@@ -2319,21 +2737,13 @@ appState.favorites,
 crm:
 appState.crm,
 
-notes:
-appState.notes,
-
-history:
-appState.history,
-
-settings:
-appState.settings,
-
-stats:
-appState.stats
+notifications:
+appState.notifications
 
 };
 
 const blob =
+
 new Blob(
 [
 JSON.stringify(
@@ -2348,23 +2758,23 @@ type:
 }
 );
 
-const link =
+const a =
 document.createElement(
 "a"
 );
 
-link.href =
+a.href =
 URL.createObjectURL(
 blob
 );
 
-link.download =
+a.download =
 "jobfinder-v13.json";
 
-link.click();
+a.click();
 
-}
-
+}   
+ 
 /* =========================
    EXPORT CSV
 ========================= */
@@ -2372,127 +2782,176 @@ link.click();
 function exportCSV(){
 
 let csv =
+"Titre,Entreprise\n";
 
-"Titre,Entreprise,Statut\n";
-
-appState.crm.forEach(
-item=>{
+appState.favorites.forEach(
+item => {
 
 csv +=
 
-`"${item.titre}","${item.entreprise}","${item.statut}"\n`;
+`"${item.titre}","${item.entreprise}"\n`;
 
 });
 
 const blob =
+
 new Blob(
 [csv],
 {
-type:
-"text/csv"
+type:"text/csv"
 }
 );
 
-const link =
+const a =
 document.createElement(
 "a"
 );
 
-link.href =
+a.href =
 URL.createObjectURL(
 blob
 );
 
-link.download =
+a.download =
 "jobfinder-v13.csv";
 
-link.click();
+a.click();
 
 }
 
 /* =========================
-   NOTIFICATIONS
+   PWA
 ========================= */
 
-function addNotification(
-message
-){
+window.addEventListener(
+"beforeinstallprompt",
+e => {
 
-appState.notifications.unshift({
+e.preventDefault();
 
-message,
-
-date:
-new Date()
-.toISOString()
-
-});
-
-localStorage.setItem(
-"jfv13_notifications",
-JSON.stringify(
-appState.notifications
-)
-);
-
-updateNotificationBadge();
+deferredPrompt = e;
 
 }
+);
 
-function updateNotificationBadge(){
-
-const badge =
+const installBtn =
 
 document.getElementById(
-"notifCount"
+"installPwaBtn"
 );
+
+if(installBtn){
+
+installBtn.addEventListener(
+"click",
+async ()=>{
 
 if(
-badge
+!deferredPrompt
+){
+return;
+}
+
+deferredPrompt.prompt();
+
+await deferredPrompt.userChoice;
+
+deferredPrompt = null;
+
+}
+);
+
+}
+
+if(
+"serviceWorker"
+in navigator
 ){
 
-badge.textContent =
-
-appState.notifications.length;
-
-}
-
-}
-
-/* =========================
-   SUCCESS RATE
-========================= */
-
-function calculateSuccessRate(){
-
-const total =
-appState.crm.length;
-
-if(total===0){
-return 0;
-}
-
-const hired =
-
-appState.crm.filter(
-item=>
-
-item.statut==="Embauché"
-
-).length;
-
-return Math.round(
-(hired/total)*100
+navigator.serviceWorker
+.register(
+"/service-worker.js"
+)
+.catch(
+console.error
 );
 
 }
 
 /* =========================
-   FOOTER HELPERS
+   PARAMÈTRES
+========================= */
+
+const resetBtn =
+
+document.getElementById(
+"resetAppBtn"
+);
+
+if(resetBtn){
+
+resetBtn.addEventListener(
+"click",
+()=>{
+
+if(
+confirm(
+"Réinitialiser toutes les données ?"
+)
+){
+
+localStorage.clear();
+
+location.reload();
+
+}
+
+}
+);
+
+}
+
+const notificationBtn =
+
+document.getElementById(
+"notificationToggle"
+);
+
+if(notificationBtn){
+
+notificationBtn.addEventListener(
+"click",
+()=>{
+
+appState.settings.notifications =
+
+!appState.settings.notifications;
+
+document.getElementById(
+"notificationStatus"
+).textContent =
+
+appState.settings.notifications
+
+?
+
+"Activées"
+
+:
+
+"Désactivées";
+
+}
+);
+
+}
+
+/* =========================
+   FIN
 ========================= */
 
 console.log(
-"Job Finder Vaud V13 Premium chargé"
+"Job Finder Vaud V13 Corrigée chargée"
 );
 
 </script>
@@ -2503,13 +2962,17 @@ console.log(
 
 💼 Job Finder Vaud
 
-Premium AI Edition V13
+</p>
+
+<p>
+
+Premium AI Edition V13 Corrigée
 
 </p>
 
 <p>
 
-PWA Ready • FR / EN
+PWA Ready • Android • Desktop
 
 </p>
 
@@ -2521,6 +2984,8 @@ PWA Ready • FR / EN
 
 </footer>
 
+</main>
+
 </body>
 
-</html>
+</html>  
