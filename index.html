@@ -11,574 +11,51 @@ content="width=device-width, initial-scale=1.0">
 
 <meta
 name="description"
-content="Job Finder Vaud V13.0.1 Premium IA">
+content="Job Finder Vaud V14.0.0 Premium IA">
 
 <meta
 name="theme-color"
 content="#c28b14">
 
 <title>
-Job Finder Vaud V13.0.1 Premium IA
+Job Finder Vaud V14.0.0 Premium IA
 </title>
 
 <link
 rel="manifest"
 href="manifest.json">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-
-:root{
-
---gold:#c28b14;
---gold-dark:#9d6f0c;
-
---bg:#080808;
---bg2:#121212;
-
---card:#1a1a1a;
-
---white:#ffffff;
---soft:#cfcfcf;
-
---success:#16a34a;
---danger:#dc2626;
---info:#2563eb;
-
-}
-
-html{
-
-scroll-behavior:smooth;
-
-}
-
-body{
-
-font-family:
-Segoe UI,
-Arial,
-sans-serif;
-
-background:
-linear-gradient(
-180deg,
-var(--bg),
-var(--bg2)
-);
-
-color:white;
-
-min-height:100vh;
-
-}
-
-h1,h2,h3,h4,h5{
-
-color:white;
-
-}
-
-a{
-
-text-decoration:none;
-
-}
-
-button{
-
-cursor:pointer;
-
-}
-
-/* ==========================================
-HEADER
-========================================== */
-
-.app-header{
-
-position:sticky;
-
-top:0;
-
-z-index:1000;
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:center;
-
-padding:8px 15px;
-
-background:#111;
-
-border-bottom:
-1px solid rgba(
-194,
-139,
-20,
-0.20
-);
-
-}
-
-.logo-area h1{
-
-font-size:30px;
-
-font-weight:800;
-
-line-height:1;
-
-}
-
-.logo-area span{
-
-font-size:12px;
-
-color:#bdbdbd;
-
-}
-
-/* ==========================================
-TOP BUTTONS
-========================================== */
-
-.header-actions{
-
-display:flex;
-
-gap:8px;
-
-}
-
-.top-btn{
-
-width:42px;
-
-height:42px;
-
-border:none;
-
-border-radius:12px;
-
-background:#222;
-
-color:white;
-
-font-size:18px;
-
-}
-
-.top-btn:hover{
-
-background:var(--gold);
-
-color:black;
-
-}
-
-/* ==========================================
-NAVIGATION
-========================================== */
-
-.main-tabs{
-
-display:flex;
-
-gap:8px;
-
-overflow-x:auto;
-
-padding:10px;
-
-background:#111;
-
-}
-
-.main-tabs button{
-
-border:none;
-
-padding:10px 16px;
-
-border-radius:12px;
-
-background:#1f1f1f;
-
-color:white;
-
-font-weight:600;
-
-white-space:nowrap;
-
-}
-
-.main-tabs button:hover{
-
-background:var(--gold);
-
-color:black;
-
-}
-
-/* ==========================================
-SECTIONS
-========================================== */
-
-.tab-content{
-
-display:none;
-
-padding:15px;
-
-}
-
-.active-tab{
-
-display:block;
-
-}
-
-.section-title{
-
-font-size:22px;
-
-font-weight:700;
-
-margin-bottom:15px;
-
-}
-
-/* ==========================================
-KPI
-========================================== */
-
-.kpi-grid{
-
-display:grid;
-
-grid-template-columns:
-repeat(2,1fr);
-
-gap:10px;
-
-}
-
-.kpi-card{
-
-background:var(--card);
-
-padding:12px;
-
-border-radius:16px;
-
-text-align:center;
-
-min-height:95px;
-
-}
-
-.kpi-value{
-
-font-size:28px;
-
-font-weight:800;
-
-color:var(--gold);
-
-}
-
-.kpi-label{
-
-font-size:14px;
-
-margin-top:5px;
-
-}
-
-/* ==========================================
-CARDS
-========================================== */
-
-.objectives-card{
-
-background:var(--card);
-
-padding:15px;
-
-border-radius:16px;
-
-margin-top:15px;
-
-}
-
-.offer-card{
-
-background:var(--card);
-
-padding:15px;
-
-border-radius:16px;
-
-margin-bottom:12px;
-
-border-left:
-4px solid var(--gold);
-
-}
-
-.offer-title{
-
-font-size:18px;
-
-font-weight:700;
-
-}
-
-.offer-company{
-
-margin-top:5px;
-
-color:#cfcfcf;
-
-}
-
-/* ==========================================
-BADGES
-========================================== */
-
-.recommended{
-
-display:inline-block;
-
-margin-top:8px;
-
-padding:4px 8px;
-
-border-radius:8px;
-
-background:#ff9800;
-
-color:black;
-
-font-size:12px;
-
-font-weight:700;
-
-}
-
-/* ==========================================
-BUTTONS
-========================================== */
-
-.action-btn{
-
-background:var(--gold);
-
-color:black;
-
-border:none;
-
-padding:12px 16px;
-
-border-radius:12px;
-
-font-weight:700;
-
-}
-
-/* ==========================================
-PROGRESS
-========================================== */
-
-.progress-bar{
-
-height:10px;
-
-background:#2b2b2b;
-
-border-radius:10px;
-
-overflow:hidden;
-
-margin-top:8px;
-
-}
-
-.progress-fill{
-
-height:100%;
-
-width:0%;
-
-background:var(--gold);
-
-}
-
-/* ==========================================
-FILTERS
-========================================== */
-
-.filter-box{
-
-background:var(--card);
-
-border-radius:16px;
-
-overflow:hidden;
-
-margin-bottom:12px;
-
-}
-
-.filter-header{
-
-padding:15px;
-
-font-size:20px;
-
-font-weight:700;
-
-background:#202020;
-
-cursor:pointer;
-
-}
-
-.filter-content{
-
-display:none;
-
-padding:15px;
-
-}
-
-.filter-content label{
-
-display:block;
-
-margin-bottom:8px;
-
-}
-
-.rate-grid{
-
-display:grid;
-
-grid-template-columns:
-repeat(3,1fr);
-
-gap:8px;
-
-}
-
-/* ==========================================
-INPUTS
-========================================== */
-
-textarea{
-
-width:100%;
-
-min-height:140px;
-
-padding:12px;
-
-border:none;
-
-border-radius:12px;
-
-background:#222;
-
-color:white;
-
-}
-
-input[type="file"]{
-
-width:100%;
-
-padding:10px;
-
-}
-
-/* ==========================================
-FLOATING BUTTONS
-========================================== */
-
-.floating-actions{
-
-position:fixed;
-
-right:10px;
-
-bottom:80px;
-
-display:flex;
-
-flex-direction:column;
-
-gap:8px;
-
-z-index:999;
-
-}
-
-.floating-btn{
-
-width:50px;
-
-height:50px;
-
-border:none;
-
-border-radius:50%;
-
-background:var(--gold);
-
-font-size:20px;
-
-}
-
-/* ==========================================
-CANVAS
-========================================== */
-
-canvas{
-
-max-width:100%;
-
-}
-
-</style>
+<link
+rel="stylesheet"
+href="style.css">
+
+<script
+src="https://cdn.jsdelivr.net/npm/chart.js">
+</script>
 
 </head>
 
 <body>
- <header class="app-header">
+
+<!-- ==========================================
+HEADER
+========================================== -->
+
+<header class="app-header">
 
 <div class="logo-area">
 
 <h1>
-
 💼 JOB FINDER VAUD
-
 </h1>
 
-<span>
+<div class="app-version">
+V14.0.0 Premium IA
+</div>
 
-V13.0.1 PREMIUM IA
-
-</span>
+<div class="app-author">
+Créateur : F. Laratta
+</div>
 
 </div>
 
@@ -586,7 +63,8 @@ V13.0.1 PREMIUM IA
 
 <button
 id="btnNotifications"
-class="top-btn">
+class="top-btn"
+title="Notifications">
 
 🔔
 
@@ -594,15 +72,17 @@ class="top-btn">
 
 <button
 id="btnSettings"
-class="top-btn">
+class="top-btn"
+title="Paramètres">
 
 ⚙️
 
 </button>
 
 <button
-id="btnSearch"
-class="top-btn">
+id="btnFilters"
+class="top-btn"
+title="Filtres">
 
 🔍
 
@@ -610,7 +90,8 @@ class="top-btn">
 
 <button
 id="btnReset"
-class="top-btn">
+class="top-btn"
+title="Réinitialiser">
 
 🔄
 
@@ -619,6 +100,10 @@ class="top-btn">
 </div>
 
 </header>
+
+<!-- ==========================================
+NAVIGATION
+========================================== -->
 
 <nav class="main-tabs">
 
@@ -630,9 +115,9 @@ data-tab="dashboard">
 </button>
 
 <button
-data-tab="offers">
+data-tab="filters">
 
-💼 Offres
+🔎 Filtres
 
 </button>
 
@@ -644,9 +129,9 @@ data-tab="favorites">
 </button>
 
 <button
-data-tab="crm">
+data-tab="applications">
 
-📋 CRM
+🚀 Mes candidatures
 
 </button>
 
@@ -674,13 +159,18 @@ data-tab="settings">
 </nav>
 
 <main>
- <section
+
+<!-- ==========================================
+DASHBOARD
+========================================== -->
+
+<section
 id="dashboard"
 class="tab-content active-tab">
 
 <h2 class="section-title">
 
-📊 Tableau de bord
+📊 Dashboard
 
 </h2>
 
@@ -698,7 +188,7 @@ class="kpi-value">
 
 <div class="kpi-label">
 
-Offres trouvées
+💼 Offres
 
 </div>
 
@@ -716,7 +206,7 @@ class="kpi-value">
 
 <div class="kpi-label">
 
-Favoris
+⭐ Favoris
 
 </div>
 
@@ -734,7 +224,7 @@ class="kpi-value">
 
 <div class="kpi-label">
 
-Candidatures
+🚀 Mes candidatures
 
 </div>
 
@@ -752,31 +242,25 @@ class="kpi-value">
 
 <div class="kpi-label">
 
-Analyses IA
+🤖 IA
 
 </div>
 
 </div>
 
 </div>
-
 <div class="objectives-card">
 
 <h3>
 
-🎯 Objectifs
+🎯 Objectifs hebdomadaires
 
 </h3>
 
 <p>
 
-Objectif hebdomadaire
-
-</p>
-
-<p>
-
-3 offres ciblées
+Objectif :
+3 candidatures par semaine
 
 </p>
 
@@ -792,14 +276,9 @@ class="progress-fill">
 
 <div
 id="weeklyAchievement"
-style="
-display:none;
-margin-top:10px;
-font-weight:700;
-color:#c28b14;
-">
+class="achievement-badge">
 
-🤘🏼 Objectif hebdomadaire atteint !
+🤘🏼 Objectif hebdomadaire atteint
 
 </div>
 
@@ -809,13 +288,14 @@ color:#c28b14;
 
 <h3>
 
-🏆 Objectif mensuel
+🏆 Objectifs mensuels
 
 </h3>
 
 <p>
 
-12 offres ciblées
+Objectif :
+12 candidatures par mois
 
 </p>
 
@@ -831,14 +311,9 @@ class="progress-fill">
 
 <div
 id="monthlyAchievement"
-style="
-display:none;
-margin-top:10px;
-font-weight:700;
-color:#c28b14;
-">
+class="achievement-badge">
 
-🤘🏼🎸 Objectif mensuel atteint !
+🤘🏼🎸 Objectif mensuel atteint
 
 </div>
 
@@ -855,208 +330,445 @@ color:#c28b14;
 <div
 id="activityFeed">
 
-Aucune activité
+Aucune activité enregistrée
 
 </div>
 
 </div>
 
 </section>
- <section
-id="dashboard"
-class="tab-content active-tab">
+
+<!-- ==========================================
+FILTRES + RESULTATS
+========================================== -->
+
+<section
+id="filters"
+class="tab-content">
 
 <h2 class="section-title">
 
-📊 Tableau de bord
+🔎 Filtres
 
 </h2>
 
-<div class="kpi-grid">
+<!-- ==========================================
+METIERS
+========================================== -->
 
-<div class="kpi-card">
+<div class="filter-box">
+
+<div class="filter-header">
+
+👔 Métier
+
+</div>
+
+<div class="filter-content active-filter">
+
+<label>
+<input type="checkbox" value="Employé de commerce">
+Employé de commerce
+</label>
+
+<label>
+<input type="checkbox" value="Employé administratif">
+Employé administratif
+</label>
+
+<label>
+<input type="checkbox" value="Assistant administratif">
+Assistant administratif
+</label>
+
+<label>
+<input type="checkbox" value="Assistant de direction">
+Assistant de direction
+</label>
+
+<label>
+<input type="checkbox" value="Gestionnaire de dossier">
+Gestionnaire de dossier
+</label>
+
+<label>
+<input type="checkbox" value="Coordinateur administratif">
+Coordinateur administratif
+</label>
+
+<label>
+<input type="checkbox" value="Assistant RH">
+Assistant RH
+</label>
+
+<label>
+<input type="checkbox" value="Conseiller clientèle">
+Conseiller clientèle
+</label>
+
+<label>
+<input type="checkbox" value="Support utilisateur">
+Support utilisateur
+</label>
+
+<label>
+<input type="checkbox" value="Technicien informatique">
+Technicien informatique
+</label>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+SECTEURS
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+🏢 Secteur
+
+</div>
+
+<div class="filter-content active-filter">
+ <label>
+<input type="checkbox" value="Administration">
+Administration
+</label>
+
+<label>
+<input type="checkbox" value="Administration publique">
+Administration publique
+</label>
+
+<label>
+<input type="checkbox" value="Fondation">
+Fondation
+</label>
+
+<label>
+<input type="checkbox" value="Informatique">
+Informatique
+</label>
+
+<label>
+<input type="checkbox" value="Immobilier">
+Immobilier
+</label>
+
+<label>
+<input type="checkbox" value="Assurance">
+Assurance
+</label>
+
+<label>
+<input type="checkbox" value="Ressource humaine">
+Ressource humaine
+</label>
+
+<label>
+<input type="checkbox" value="Service client">
+Service client
+</label>
+
+<label>
+<input type="checkbox" value="Support utilisateur">
+Support utilisateur
+</label>
+
+<label>
+<input type="checkbox" value="Secrétariat">
+Secrétariat
+</label>
+
+<label>
+<input type="checkbox" value="Secrétariat médical">
+Secrétariat médical
+</label>
+
+<label>
+<input type="checkbox" value="Santé">
+Santé
+</label>
+
+<label>
+<input type="checkbox" value="Fiduciaire">
+Fiduciaire
+</label>
+
+<label>
+<input type="checkbox" value="Banque">
+Banque
+</label>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+TAUX
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+⏱️ Taux
+
+</div>
+
+<div class="filter-content active-filter">
+
+<div class="rate-grid">
+
+<label>
+<input type="checkbox" value="20">
+20%
+</label>
+
+<label>
+<input type="checkbox" value="30">
+30%
+</label>
+
+<label>
+<input type="checkbox" value="40">
+40%
+</label>
+
+<label>
+<input type="checkbox" value="50">
+50%
+</label>
+
+<label>
+<input type="checkbox" value="60">
+60%
+</label>
+
+<label>
+<input type="checkbox" value="70">
+70%
+</label>
+
+<label>
+<input type="checkbox" value="80">
+80%
+</label>
+
+<label>
+<input type="checkbox" value="90">
+90%
+</label>
+
+<label>
+<input type="checkbox" value="100">
+100%
+</label>
+
+</div>
+
+<hr class="filter-separator">
+
+<label>
+<input type="checkbox" value="Temps plein">
+Temps plein
+</label>
+
+<label>
+<input type="checkbox" value="Temps partiel">
+Temps partiel
+</label>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+CONTRATS
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+📄 Contrat
+
+</div>
+
+<div class="filter-content active-filter">
+ <label>
+<input type="checkbox" value="CDI">
+CDI
+</label>
+
+<label>
+<input type="checkbox" value="CDD">
+CDD
+</label>
+
+<label>
+<input type="checkbox" value="Temporaire">
+Temporaire
+</label>
+
+<label>
+<input type="checkbox" value="Stage">
+Stage
+</label>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+REGIONS
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+📍 Région
+
+</div>
+
+<div class="filter-content active-filter">
+
+<label>
+<input type="checkbox" value="Lausanne">
+Lausanne
+</label>
+
+<label>
+<input type="checkbox" value="Ouest lausannois">
+Ouest lausannois
+</label>
+
+<label>
+<input type="checkbox" value="Morges">
+Morges
+</label>
+
+<label>
+<input type="checkbox" value="Nyon">
+Nyon
+</label>
+
+<label>
+<input type="checkbox" value="Riviera">
+Riviera
+</label>
+
+<label>
+<input type="checkbox" value="Aigle">
+Aigle
+</label>
+
+<label>
+<input type="checkbox" value="Broye-Vully">
+Broye-Vully
+</label>
+
+<label>
+<input type="checkbox" value="Jura-Nord vaudois">
+Jura-Nord vaudois
+</label>
+
+<label>
+<input type="checkbox" value="Gros-de-Vaud">
+Gros-de-Vaud
+</label>
+
+<label>
+<input type="checkbox" value="Lavaux-Oron">
+Lavaux-Oron
+</label>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+BOUTONS FILTRES
+========================================== -->
+
+<div class="filters-actions">
+
+<button
+id="searchOffersBtn"
+class="action-btn">
+
+🚀 Rechercher
+
+</button>
+
+<button
+id="resetFiltersBtn"
+class="action-btn secondary-btn">
+
+🔄 Réinitialiser
+
+</button>
+
+</div>
+
+<!-- ==========================================
+RESULTATS
+========================================== -->
+
+<div class="results-summary">
 
 <div
-id="kpiOffers"
-class="kpi-value">
+id="resultsCounter">
 
-0
-
-</div>
-
-<div class="kpi-label">
-
-Offres trouvées
+💼 Offres trouvées : 0
 
 </div>
-
-</div>
-
-<div class="kpi-card">
 
 <div
-id="kpiFavorites"
-class="kpi-value">
+id="recommendedCounter">
 
-0
-
-</div>
-
-<div class="kpi-label">
-
-Favoris
+🔥 Très recommandées : 0
 
 </div>
-
-</div>
-
-<div class="kpi-card">
 
 <div
-id="kpiApplications"
-class="kpi-value">
+id="newOffersCounter">
 
-0
-
-</div>
-
-<div class="kpi-label">
-
-Candidatures
+🆕 Nouvelles offres : 0
 
 </div>
-
-</div>
-
-<div class="kpi-card">
 
 <div
-id="kpiAI"
-class="kpi-value">
+id="averageMatchCounter">
 
-0
-
-</div>
-
-<div class="kpi-label">
-
-Analyses IA
-
-</div>
-
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🎯 Objectifs
-
-</h3>
-
-<p>
-
-Objectif hebdomadaire
-
-</p>
-
-<p>
-
-3 offres ciblées
-
-</p>
-
-<div class="progress-bar">
-
-<div
-id="weeklyProgress"
-class="progress-fill">
+🤖 Match moyen IA : 0%
 
 </div>
 
 </div>
 
 <div
-id="weeklyAchievement"
-style="
-display:none;
-margin-top:10px;
-font-weight:700;
-color:#c28b14;
-">
-
-🤘🏼 Objectif hebdomadaire atteint !
-
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🏆 Objectif mensuel
-
-</h3>
-
-<p>
-
-12 offres ciblées
-
-</p>
-
-<div class="progress-bar">
-
-<div
-id="monthlyProgress"
-class="progress-fill">
-
-</div>
-
-</div>
-
-<div
-id="monthlyAchievement"
-style="
-display:none;
-margin-top:10px;
-font-weight:700;
-color:#c28b14;
-">
-
-🤘🏼🎸 Objectif mensuel atteint !
-
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🆕 Activité récente
-
-</h3>
-
-<div
-id="activityFeed">
-
-Aucune activité
-
-</div>
+id="offersContainer">
 
 </div>
 
 </section>
- <section
+
+<!-- ==========================================
+FAVORIS
+========================================== -->
+
+<section
 id="favorites"
 class="tab-content">
 
 <h2 class="section-title">
 
-⭐ Favoris Premium
+⭐ Favoris
 
 </h2>
 
@@ -1068,23 +780,11 @@ class="tab-content">
 
 </h3>
 
-<p>
+<p>⭐⭐⭐ Priorité faible</p>
 
-⭐⭐⭐ Priorité faible
+<p>⭐⭐⭐⭐ Priorité moyenne</p>
 
-</p>
-
-<p>
-
-⭐⭐⭐⭐ Priorité moyenne
-
-</p>
-
-<p>
-
-⭐⭐⭐⭐⭐ Priorité haute
-
-</p>
+<p>⭐⭐⭐⭐⭐ Priorité élevée</p>
 
 </div>
 
@@ -1095,229 +795,25 @@ id="favoritesContainer">
 
 </section>
 
+<!-- ==========================================
+MES CANDIDATURES
+========================================== -->
+
 <section
-id="searchHistory"
+id="applications"
 class="tab-content">
 
 <h2 class="section-title">
 
-🕘 Historique recherches
+🚀 Mes candidatures
 
 </h2>
-
-<div
-id="searchHistoryContainer">
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-Aucune recherche enregistrée
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-<template
-id="offerTemplate">
-
-<div
-class="offer-card">
-
-<div
-class="offer-title">
-
-Titre offre
-
-</div>
-
-<div
-class="offer-company">
-
-Entreprise
-
-</div>
-
-<div
-class="recommended">
-
-🔥 Très recommandé
-
-</div>
-
-<div
-style="
-margin-top:10px;
-font-weight:700;
-color:#c28b14;
-">
-
-92%
-Compatible avec votre profil
-
-</div>
-
-<div
-style="
-margin-top:10px;
-line-height:1.7;
-">
-
-✓ Correspond à votre expérience
-
-<br>
-
-✓ Correspond à votre profil
-
-<br>
-
-✓ Secteur compatible
-
-<br>
-
-✓ Télétravail disponible
-
-</div>
-
-<div
-style="
-margin-top:12px;
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-">
-
-<button
-class="action-btn">
-
-⭐ Favori
-
-</button>
-
-<button
-class="action-btn">
-
-📋 CRM
-
-</button>
-
-<a
-href="#"
-target="_blank"
-rel="noopener noreferrer"
-class="action-btn"
-style="
-display:inline-block;
-text-decoration:none;
-">
-
-🔗 Voir l'offre
-
-</a>
-
-</div>
-
-</div>
-
-</template>
-<section
-id="crm"
-class="tab-content">
-
-<h2 class="section-title">
-
-📋 CRM Candidatures
-
-</h2>
-
-<div class="objectives-card">
-
-<h3>
-
-🎯 Objectif hebdomadaire
-
-</h3>
-
-<p>
-
-3 offres ciblées
-
-</p>
-
-<div class="progress-bar">
-
-<div
-id="crmWeeklyProgress"
-class="progress-fill">
-
-</div>
-
-</div>
-
-<div
-id="weeklyAchievement"
-style="
-display:none;
-margin-top:12px;
-font-weight:700;
-color:#c28b14;
-">
-
-🤘🏼 Objectif hebdomadaire atteint !
-
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🏆 Objectif mensuel
-
-</h3>
-
-<p>
-
-12 offres ciblées
-
-</p>
-
-<div class="progress-bar">
-
-<div
-id="crmMonthlyProgress"
-class="progress-fill">
-
-</div>
-
-</div>
-
-<div
-id="monthlyAchievement"
-style="
-display:none;
-margin-top:12px;
-font-weight:700;
-color:#c28b14;
-">
-
-🤘🏼🎸 Objectif mensuel atteint !
-
-</div>
-
-</div>
-
 <div class="kpi-grid">
 
 <div class="kpi-card">
 
 <div
-id="crmApplications"
+id="applicationsCount"
 class="kpi-value">
 
 0
@@ -1326,7 +822,7 @@ class="kpi-value">
 
 <div class="kpi-label">
 
-Candidatures
+📨 Envoyées
 
 </div>
 
@@ -1335,7 +831,7 @@ Candidatures
 <div class="kpi-card">
 
 <div
-id="crmResponses"
+id="responsesCount"
 class="kpi-value">
 
 0
@@ -1344,7 +840,7 @@ class="kpi-value">
 
 <div class="kpi-label">
 
-Réponses
+📞 Réponses
 
 </div>
 
@@ -1353,7 +849,7 @@ Réponses
 <div class="kpi-card">
 
 <div
-id="crmInterviews"
+id="interviewsCount"
 class="kpi-value">
 
 0
@@ -1362,7 +858,7 @@ class="kpi-value">
 
 <div class="kpi-label">
 
-Entretiens
+🎤 Entretiens
 
 </div>
 
@@ -1371,7 +867,7 @@ Entretiens
 <div class="kpi-card">
 
 <div
-id="crmHired"
+id="hiredCount"
 class="kpi-value">
 
 0
@@ -1380,7 +876,7 @@ class="kpi-value">
 
 <div class="kpi-label">
 
-Embauches
+🎉 Embauches
 
 </div>
 
@@ -1392,75 +888,82 @@ Embauches
 
 <h3>
 
-📊 Pipeline candidatures
+🎯 Objectifs
 
 </h3>
 
-<div
-id="crmBoard">
+<p>
 
-<div class="offer-card">
+3 candidatures par semaine
 
-<div class="offer-title">
+</p>
 
-📨 Candidature envoyée
+<p>
 
-</div>
+12 candidatures par mois
 
-</div>
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-📞 Réponse reçue
+</p>
 
 </div>
-
-</div>
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-🎤 Entretien
-
-</div>
-
-</div>
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-🎉 Embauche
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🔔 Relances
-
-</h3>
 
 <div
-id="crmReminders">
+id="applicationsBoard">
 
 <div class="offer-card">
 
 <div class="offer-title">
 
-Aucune relance en attente
+📨 Candidatures envoyées
 
 </div>
+
+<div
+id="sentApplications">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+📞 Réponses reçues
+
+</div>
+
+<div
+id="receivedResponses">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+🎤 Entretiens
+
+</div>
+
+<div
+id="scheduledInterviews">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+🎉 Embauches
+
+</div>
+
+<div
+id="successfulApplications">
 
 </div>
 
@@ -1469,13 +972,18 @@ Aucune relance en attente
 </div>
 
 </section>
+
+<!-- ==========================================
+IA PREMIUM
+========================================== -->
+
 <section
 id="ai"
 class="tab-content">
 
 <h2 class="section-title">
 
-🤖 Intelligence Artificielle
+🤖 IA Premium
 
 </h2>
 
@@ -1483,7 +991,7 @@ class="tab-content">
 
 <h3>
 
-📄 Analyse CV
+📄 Import CV
 
 </h3>
 
@@ -1502,45 +1010,27 @@ class="action-btn">
 
 </button>
 
-<div
-id="cvAnalysisResult">
-
-</div>
-
 </div>
 
 <div class="objectives-card">
 
 <h3>
 
-🎯 Compatibilité Profil
+🎯 Match IA
 
 </h3>
 
 <div
-style="
-font-size:42px;
-font-weight:800;
-color:#c28b14;
-text-align:center;
-">
-
-<span
-id="profileCompatibility">
+id="profileCompatibility"
+class="big-score">
 
 0%
 
-</span>
-
 </div>
 
-<p
-style="
-text-align:center;
-margin-top:10px;
-">
+<p>
 
-Compatible avec votre profil
+Compatibilité moyenne avec les offres
 
 </p>
 
@@ -1550,42 +1040,16 @@ Compatible avec votre profil
 
 <h3>
 
-🔥 Pourquoi cette offre ?
+🔥 Meilleur match du jour
 
 </h3>
 
-<ul
-id="whyOfferList"
-style="
-padding-left:20px;
-line-height:2;
-">
+<div
+id="bestMatchContainer">
 
-<li>
+Aucun résultat disponible
 
-✓ Correspond à votre expérience
-
-</li>
-
-<li>
-
-✓ Correspond à votre profil
-
-</li>
-
-<li>
-
-✓ Secteur compatible
-
-</li>
-
-<li>
-
-✓ Télétravail disponible
-
-</li>
-
-</ul>
+</div>
 
 </div>
 
@@ -1619,12 +1083,11 @@ id="interviewResult">
 </div>
 
 </div>
-
 <div class="objectives-card">
 
 <h3>
 
-✉️ Lettre motivation IA
+✉️ Lettre de motivation IA
 
 </h3>
 
@@ -1640,7 +1103,7 @@ placeholder="Collez ici une offre d'emploi">
 id="generateLetterBtn"
 class="action-btn">
 
-✍️ Générer lettre
+✉️ Générer la lettre
 
 </button>
 
@@ -1655,17 +1118,28 @@ id="letterResult">
 
 <h3>
 
-⚡ CV IA Express
+📋 Structure de lettre V14.0.0
 
 </h3>
 
-<button
-id="quickCVBtn"
-class="action-btn">
+<div
+id="letterPreview">
 
-⚡ Analyse rapide
+Nom Prénom<br>
+Adresse<br>
+NPA Ville<br><br>
 
-</button>
+Entreprise<br>
+Adresse<br>
+NPA Ville<br><br>
+
+Lieu, date<br><br>
+
+Votre annonce parue pour un poste de ...<br><br>
+
+Madame, Monsieur,
+
+</div>
 
 </div>
 
@@ -1746,13 +1220,18 @@ Suggestions IA
 </div>
 
 </section>
+
+<!-- ==========================================
+STATISTIQUES
+========================================== -->
+
 <section
 id="stats"
 class="tab-content">
 
 <h2 class="section-title">
 
-📊 Statistiques Premium
+📊 Statistiques
 
 </h2>
 
@@ -1815,61 +1294,16 @@ Taux succès
 <div class="kpi-card">
 
 <div
-id="averageSalary"
+id="averageMatch"
 class="kpi-value">
 
-0
+0%
 
 </div>
 
 <div class="kpi-label">
 
-Salaire moyen CHF
-
-</div>
-
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🎯 Progression des objectifs
-
-</h3>
-
-<p>
-
-Objectif hebdomadaire :
-3 offres ciblées
-
-</p>
-
-<div class="progress-bar">
-
-<div
-id="statsWeeklyProgress"
-class="progress-fill">
-
-</div>
-
-</div>
-
-<p
-style="margin-top:15px;">
-
-Objectif mensuel :
-12 offres ciblées
-
-</p>
-
-<div class="progress-bar">
-
-<div
-id="statsMonthlyProgress"
-class="progress-fill">
+Match IA moyen
 
 </div>
 
@@ -1896,7 +1330,7 @@ id="applicationsChart">
 
 <h3>
 
-🎯 Répartition résultats
+🎯 Résultats
 
 </h3>
 
@@ -1911,7 +1345,7 @@ id="resultsChart">
 
 <h3>
 
-🏢 Répartition secteurs
+🏢 Secteurs
 
 </h3>
 
@@ -1922,140 +1356,18 @@ id="sectorsChart">
 
 </div>
 
-<div class="objectives-card">
-
-<h3>
-
-🤘🏼 Progression hebdomadaire
-
-</h3>
-
-<canvas
-id="weeklyGoalsChart">
-
-</canvas>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🕘 Historique activité
-
-</h3>
-
-<div
-id="activityHistory">
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-Aucune activité enregistrée
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🤖 Performance IA
-
-</h3>
-
-<div class="kpi-grid">
-
-<div class="kpi-card">
-
-<div
-id="recommendedOffers"
-class="kpi-value">
-
-0
-
-</div>
-
-<div class="kpi-label">
-
-🔥 Recommandées
-
-</div>
-
-</div>
-
-<div class="kpi-card">
-
-<div
-id="newOffersCount"
-class="kpi-value">
-
-0
-
-</div>
-
-<div class="kpi-label">
-
-🆕 Nouvelles
-
-</div>
-
-</div>
-
-<div class="kpi-card">
-
-<div
-id="compatibleOffers"
-class="kpi-value">
-
-0
-
-</div>
-
-<div class="kpi-label">
-
-🎯 Compatibles
-
-</div>
-
-</div>
-
-<div class="kpi-card">
-
-<div
-id="favoriteOffers"
-class="kpi-value">
-
-0
-
-</div>
-
-<div class="kpi-label">
-
-⭐ Favoris
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </section>
+<!-- ==========================================
+PARAMETRES
+========================================== -->
+
 <section
 id="settings"
 class="tab-content">
 
 <h2 class="section-title">
 
-⚙️ Paramètres Premium
+⚙️ Paramètres
 
 </h2>
 
@@ -2089,46 +1401,8 @@ Notifications activées
 
 <h3>
 
-🌐 Langue
-
-</h3>
-
-<select
-id="languageSelector"
-style="
-width:100%;
-padding:12px;
-border:none;
-border-radius:12px;
-background:#222;
-color:white;
-">
-
-<option value="fr">
-
-Français
-
-</option>
-
-<option value="en">
-
-English
-
-</option>
-
-</select>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-📤 Export des données
-
-</h3>
-
-<p>
+📤 Export
+ <p>
 
 Exporter les favoris, candidatures et statistiques.
 
@@ -2143,8 +1417,6 @@ class="action-btn">
 📄 Export JSON
 
 </button>
-
-&nbsp;
 
 <button
 id="exportCsvBtn"
@@ -2184,39 +1456,13 @@ class="action-btn">
 
 <h3>
 
-🧹 Réinitialiser les filtres
-
-</h3>
-
-<p>
-
-Décoche automatiquement toutes les cases.
-
-</p>
-
-<br>
-
-<button
-id="resetFiltersBtn"
-class="action-btn">
-
-🔄 Réinitialiser filtres
-
-</button>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
 📱 Installation PWA
 
 </h3>
 
 <p>
 
-Installer Job Finder Vaud sur Android, Windows ou iPhone.
+Installer Job Finder Vaud sur Windows, Android ou iPhone.
 
 </p>
 
@@ -2236,13 +1482,13 @@ class="action-btn">
 
 <h3>
 
-🗑️ Réinitialisation complète
+🧹 Réinitialisation
 
 </h3>
 
 <p>
 
-Supprimer toutes les données locales.
+Réinitialiser les données et les filtres.
 
 </p>
 
@@ -2250,7 +1496,7 @@ Supprimer toutes les données locales.
 
 <button
 id="resetAppBtn"
-class="action-btn">
+class="action-btn danger-btn">
 
 🗑️ Réinitialiser l'application
 
@@ -2259,6 +1505,11 @@ class="action-btn">
 </div>
 
 </section>
+
+<!-- ==========================================
+NOTIFICATIONS
+========================================== -->
+
 <section
 id="notifications"
 class="tab-content">
@@ -2280,15 +1531,7 @@ class="tab-content">
 <div
 id="newOffersNotifications">
 
-<div class="offer-card">
-
-<div class="offer-title">
-
 Aucune nouvelle offre
-
-</div>
-
-</div>
 
 </div>
 
@@ -2305,15 +1548,7 @@ Aucune nouvelle offre
 <div
 id="favoritesNotifications">
 
-<div class="offer-card">
-
-<div class="offer-title">
-
-Aucun favori à suivre
-
-</div>
-
-</div>
+Aucun favori suivi
 
 </div>
 
@@ -2323,47 +1558,14 @@ Aucun favori à suivre
 
 <h3>
 
-📋 Relances CRM
+🚀 Relances candidatures
 
 </h3>
 
 <div
-id="crmNotifications">
+id="applicationsNotifications">
 
-<div class="offer-card">
-
-<div class="offer-title">
-
-Aucune relance prévue
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🎯 Objectifs
-
-</h3>
-
-<div
-id="goalNotifications">
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-Objectifs en cours
-
-</div>
-
-</div>
+Aucune relance
 
 </div>
 
@@ -2380,57 +1582,20 @@ Objectifs en cours
 <div
 id="aiNotifications">
 
-<div class="offer-card">
-
-<div class="offer-title">
-
 Aucune alerte IA
 
 </div>
 
 </div>
 
-</div>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🕘 Historique notifications
-
-</h3>
-
-<div
-id="notificationsHistory">
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-Aucune notification enregistrée
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </section>
+
+<!-- ==========================================
+BOUTONS FLOTTANTS
+========================================== -->
+
 <div
 class="floating-actions">
-
-<button
-id="floatingOffers"
-class="floating-btn"
-title="Première offre">
-
-💼
-
-</button>
 
 <button
 id="floatingFavorites"
@@ -2442,9 +1607,18 @@ title="Favoris">
 </button>
 
 <button
+id="floatingApplications"
+class="floating-btn"
+title="Mes candidatures">
+
+🚀
+
+</button>
+
+<button
 id="floatingAI"
 class="floating-btn"
-title="CV IA">
+title="IA">
 
 🤖
 
@@ -2460,6 +1634,9 @@ title="Retour haut">
 </button>
 
 </div>
+<!-- ==========================================
+TEMPLATE CARTE OFFRE V14
+========================================== -->
 
 <template
 id="offerTemplate">
@@ -2470,845 +1647,123 @@ class="offer-card">
 <div
 class="offer-title">
 
-Titre offre
+👔 Gestionnaire de dossier
 
 </div>
 
 <div
 class="offer-company">
 
-Entreprise
+🏢 Entreprise
 
 </div>
 
 <div
-class="recommended">
+class="offer-location">
 
-🔥 Très recommandé
-
-</div>
-
-<div
-style="
-margin-top:10px;
-font-weight:700;
-color:#c28b14;
-">
-
-95%
-Compatible avec votre profil
+📍 Lausanne
 
 </div>
 
 <div
-style="
-margin-top:10px;
-line-height:1.7;
-">
+class="offer-meta">
 
-✓ Correspond à votre expérience
-
-<br>
-
-✓ Correspond à votre profil
-
-<br>
-
-✓ Secteur compatible
-
-<br>
-
-✓ Télétravail disponible
+⏱️ 80% | 📄 CDI
 
 </div>
 
 <div
-style="
-margin-top:12px;
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-">
+class="
+ <div
+class="offer-sector">
+
+🏢 Administration publique
+
+</div>
+
+<div
+class="offer-date">
+
+📅 Aujourd'hui
+
+</div>
+
+<div
+class="offer-match">
+
+🤖 Match IA : 97%
+
+</div>
+
+<div
+class="offer-reasons">
+
+✓ Métier compatible<br>
+
+✓ Secteur compatible<br>
+
+✓ Région compatible<br>
+
+✓ Taux compatible
+
+</div>
+
+<div
+class="offer-actions">
 
 <button
-class="action-btn">
+class="offer-btn favorite-btn"
+title="Favori">
 
-⭐ Favori
+⭐
 
 </button>
 
 <button
-class="action-btn">
+class="offer-btn apply-btn"
+title="Ajouter candidature">
 
-📋 CRM
+🚀
 
 </button>
 
-<a
-href="#"
-target="_blank"
-rel="noopener noreferrer"
-class="action-btn"
-style="
-display:inline-block;
-text-decoration:none;
-">
+<button
+class="offer-btn ai-btn"
+title="Analyse IA">
 
-🔗 Voir l'offre
+🤖
 
-</a>
+</button>
+
+<button
+class="offer-btn letter-btn"
+title="Lettre IA">
+
+✉️
+
+</button>
+
+<button
+class="offer-btn link-btn"
+title="Voir l'offre">
+
+🔗
+
+</button>
 
 </div>
 
 </div>
 
 </template>
-<script>
 
-const appState = {
+</main>
 
-offers:[],
-favorites:[],
-crm:[],
-notifications:[],
-history:[],
-settings:{
-notifications:true,
-language:"fr"
-}
-
-};
-
-/* ==========================================
-NAVIGATION
-========================================== */
-
-function showTab(tabId){
-
-document
-.querySelectorAll(
-".tab-content"
-)
-.forEach(tab=>{
-
-tab.classList.remove(
-"active-tab"
-);
-
-});
-
-const target =
-
-document.getElementById(
-tabId
-);
-
-if(target){
-
-target.classList.add(
-"active-tab"
-);
-
-}
-
-}
-
-document
-.querySelectorAll(
-".main-tabs button"
-)
-.forEach(btn=>{
-
-btn.addEventListener(
-"click",
-()=>{
-
-showTab(
-btn.dataset.tab
-);
-
-});
-
-});
-
-/* ==========================================
-FILTRES
-========================================== */
-
-function toggleFilter(id){
-
-const el =
-
-document.getElementById(
-id
-);
-
-if(!el) return;
-
-el.style.display =
-
-el.style.display ===
-"block"
-?
-"none"
-:
-"block";
-
-}
-
-/* ==========================================
-OFFRES
-========================================== */
-
-async function loadOffers(){
-
-try{
-
-const response =
-
-await fetch(
-"offers.json"
-);
-
-const data =
-
-await response.json();
-
-appState.offers =
-
-data.filter(
-
-offer=>
-
-!offer.title
-.toLowerCase()
-.includes(
-"assistant ppe"
-)
-
-&&
-
-!offer.title
-.toLowerCase()
-.includes(
-"assistant de courtage"
-)
-
-);
-
-renderOffers();
-
-}catch(error){
-
-console.error(
-error
-);
-
-}
-
-}
-
-function renderOffers(){
-
-const container =
-
-document.getElementById(
-"offersContainer"
-);
-
-if(!container) return;
-
-container.innerHTML = "";
-
-appState.offers.forEach(
-
-offer=>{
-
-const card =
-
-document.createElement(
-"div"
-);
-
-card.className =
-"offer-card";
-
-card.innerHTML = `
-
-<div class="offer-title">
-
-${offer.title}
-
-</div>
-
-<div class="offer-company">
-
-${offer.company}
-
-</div>
-
-<div class="recommended">
-
-🔥 Très recommandé
-
-</div>
-
-<div style="
-margin-top:10px;
-font-weight:700;
-color:#c28b14;
-">
-
-${offer.score}%
-Compatible avec votre profil
-
-</div>
-
-<div style="
-margin-top:10px;
-line-height:1.7;
-">
-
-✓ Correspond à votre expérience
-
-<br>
-
-✓ Correspond à votre profil
-
-<br>
-
-✓ Secteur compatible
-
-<br>
-
-✓ Télétravail disponible
-
-</div>
-
-<div style="
-margin-top:12px;
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-">
-
-<button
-class="action-btn"
-onclick="addFavorite(${offer.id})">
-
-⭐ Favori
-
-</button>
-
-<button
-class="action-btn"
-onclick="addCRM(${offer.id})">
-
-📋 CRM
-
-</button>
-
-<a
-href="${offer.url}"
-target="_blank"
-class="action-btn"
-style="
-display:inline-block;
-text-decoration:none;
-">
-
-🔗 Voir l'offre
-
-</a>
-
-</div>
-
-`;
-
-container.appendChild(
-card
-);
-
-}
-
-);
-
-updateKPIs();
-
-}
-
-/* ==========================================
-FAVORIS
-========================================== */
-
-function addFavorite(id){
-
-const offer =
-
-appState.offers.find(
-
-o=>o.id===id
-
-);
-
-if(!offer) return;
-
-appState.favorites.push(
-offer
-);
-
-renderFavorites();
-
-updateKPIs();
-
-}
-
-function renderFavorites(){
-
-const container =
-
-document.getElementById(
-"favoritesContainer"
-);
-
-if(!container) return;
-
-container.innerHTML = "";
-
-appState.favorites.forEach(
-
-offer=>{
-
-const card =
-
-document.createElement(
-"div"
-);
-
-card.className =
-"offer-card";
-
-card.innerHTML = `
-
-<div class="offer-title">
-
-${offer.title}
-
-</div>
-
-<div class="offer-company">
-
-${offer.company}
-
-</div>
-
-`;
-
-container.appendChild(
-card
-);
-
-}
-
-);
-
-}
-
-/* ==========================================
-CRM
-========================================== */
-
-function addCRM(id){
-
-const offer =
-
-appState.offers.find(
-
-o=>o.id===id
-
-);
-
-if(!offer) return;
-
-appState.crm.push(
-offer
-);
-
-updateKPIs();
-
-}
-
-/* ==========================================
-KPI
-========================================== */
-
-function updateKPIs(){
-
-const offersKPI =
-
-document.getElementById(
-"kpiOffers"
-);
-
-if(offersKPI){
-
-offersKPI.textContent =
-appState.offers.length;
-
-}
-
-const favKPI =
-
-document.getElementById(
-"kpiFavorites"
-);
-
-if(favKPI){
-
-favKPI.textContent =
-appState.favorites.length;
-
-}
-
-const crmKPI =
-
-document.getElementById(
-"kpiApplications"
-);
-
-if(crmKPI){
-
-crmKPI.textContent =
-appState.crm.length;
-
-}
-
-const counter =
-
-document.getElementById(
-"resultsCounter"
-);
-
-if(counter){
-
-counter.textContent =
-
-appState.offers.length +
-" offres trouvées";
-
-}
-
-}
-
-/* ==========================================
-OBJECTIFS
-========================================== */
-
-function updateGoals(){
-
-const weekly =
-
-Math.min(
-appState.crm.length,
-3
-);
-
-const monthly =
-
-Math.min(
-appState.crm.length,
-12
-);
-
-const weeklyPercent =
-
-(weekly/3)*100;
-
-const monthlyPercent =
-
-(monthly/12)*100;
-
-const weeklyBar =
-
-document.getElementById(
-"weeklyProgress"
-);
-
-const monthlyBar =
-
-document.getElementById(
-"monthlyProgress"
-);
-
-if(weeklyBar){
-
-weeklyBar.style.width =
-weeklyPercent + "%";
-
-}
-
-if(monthlyBar){
-
-monthlyBar.style.width =
-monthlyPercent + "%";
-
-}
-
-if(appState.crm.length>=3){
-
-const badge =
-
-document.getElementById(
-"weeklyAchievement"
-);
-
-if(badge){
-
-badge.style.display =
-"block";
-
-}
-
-}
-
-if(appState.crm.length>=12){
-
-const badge =
-
-document.getElementById(
-"monthlyAchievement"
-);
-
-if(badge){
-
-badge.style.display =
-"block";
-
-}
-
-}
-
-}
-
-/* ==========================================
-BOUTONS HAUT
-========================================== */
-
-document
-.getElementById(
-"btnNotifications"
-)
-?.addEventListener(
-"click",
-()=>showTab(
-"notifications"
-)
-);
-
-document
-.getElementById(
-"btnSettings"
-)
-?.addEventListener(
-"click",
-()=>showTab(
-"settings"
-)
-);
-
-document
-.getElementById(
-"btnReset"
-)
-?.addEventListener(
-"click",
-()=>{
-
-document
-.querySelectorAll(
-'input[type="checkbox"]'
-)
-.forEach(
-
-c=>c.checked=false
-
-);
-
-});
-
-/* ==========================================
-BOUTONS FLOTTANTS
-========================================== */
-
-document
-.getElementById(
-"floatingOffers"
-)
-?.addEventListener(
-"click",
-()=>showTab(
-"offers"
-)
-);
-
-document
-.getElementById(
-"floatingFavorites"
-)
-?.addEventListener(
-"click",
-()=>showTab(
-"favorites"
-)
-);
-
-document
-.getElementById(
-"floatingAI"
-)
-?.addEventListener(
-"click",
-()=>showTab(
-"ai"
-)
-);
-
-document
-.getElementById(
-"floatingTop"
-)
-?.addEventListener(
-"click",
-()=>{
-
-window.scrollTo({
-
-top:0,
-behavior:"smooth"
-
-});
-
-});
-
-/* ==========================================
-EXPORT JSON
-========================================== */
-
-document
-.getElementById(
-"exportJsonBtn"
-)
-?.addEventListener(
-"click",
-()=>{
-
-const blob =
-
-new Blob(
-
-[
-JSON.stringify(
-appState,
-null,
-2
-)
-],
-
-{
-type:
-"application/json"
-}
-
-);
-
-const a =
-
-document.createElement(
-"a"
-);
-
-a.href =
-
-URL.createObjectURL(
-blob
-);
-
-a.download =
-"jobfinder-vaud.json";
-
-a.click();
-
-});
-
-/* ==========================================
-CHARTS
-========================================== */
-
-function initCharts(){
-
-const canvas =
-
-document.getElementById(
-"applicationsChart"
-);
-
-if(!canvas) return;
-
-new Chart(
-
-canvas,
-
-{
-type:"bar",
-data:{
-labels:[
-"Lun",
-"Mar",
-"Mer",
-"Jeu",
-"Ven"
-],
-datasets:[{
-label:
-"Candidatures",
-data:[
-1,
-2,
-3,
-2,
-4
-]
-}]
-}
-}
-
-);
-
-}
-
-/* ==========================================
-INITIALISATION
-========================================== */
-
-document
-.addEventListener(
-
-"DOMContentLoaded",
-
-async()=>{
-
-await loadOffers();
-
-renderFavorites();
-
-updateKPIs();
-
-updateGoals();
-
-initCharts();
-
-}
-
-);
+<script
+src="app.js">
 
 </script>
+
+</body>
+
+</html>
