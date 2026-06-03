@@ -1438,7 +1438,47 @@ updateDashboard();
 
 }
 );
+/* ==========================================
+BOUTONS FLOTTANTS
+========================================== */
 
+document
+.getElementById("floatingFavorites")
+?.addEventListener(
+"click",
+() => openTab("favorites")
+);
+
+document
+.getElementById("floatingApplications")
+?.addEventListener(
+"click",
+() => openTab("applications")
+);
+
+document
+.getElementById("floatingAI")
+?.addEventListener(
+"click",
+() => openTab("ai")
+);
+
+document
+.getElementById("floatingTop")
+?.addEventListener(
+"click",
+() => {
+
+window.scrollTo({
+
+top:0,
+
+behavior:"smooth"
+
+});
+
+}
+);
 /* ==========================================
 EXPORT GLOBAL
 ========================================== */
