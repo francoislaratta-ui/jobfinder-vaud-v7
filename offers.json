@@ -1,13 +1,13 @@
 [
   {
     "id": 1,
-    "title": "Employé administratif",
-    "company": "Etat de Vaud",
+    "title": "Assistant de direction",
+    "company": "Administration cantonale",
     "location": "Lausanne",
-    "sector": "Administration publique",
+    "sector": "Administration",
     "rate": "100%",
     "contract": "CDI",
-    "score": 96,
+    "score": 97,
     "isNew": true,
     "url": "https://www.vd.ch"
   },
@@ -25,15 +25,15 @@
   },
   {
     "id": 3,
-    "title": "Assistant administratif",
-    "company": "EPFL",
-    "location": "Ecublens",
-    "sector": "Administration",
+    "title": "Employé administratif",
+    "company": "État de Vaud",
+    "location": "Lausanne",
+    "sector": "Administration publique",
     "rate": "100%",
     "contract": "CDI",
-    "score": 94,
+    "score": 96,
     "isNew": true,
-    "url": "https://www.epfl.ch"
+    "url": "https://www.vd.ch"
   },
   {
     "id": 4,
@@ -109,14 +109,14 @@
   },
   {
     "id": 10,
-    "title": "Assistant de direction",
-    "company": "Administration cantonale",
-    "location": "Lausanne",
+    "title": "Secrétaire administratif",
+    "company": "EPFL",
+    "location": "Ecublens",
     "sector": "Administration",
     "rate": "100%",
     "contract": "CDI",
-    "score": 97,
+    "score": 94,
     "isNew": true,
-    "url": "https://www.vd.ch"
+    "url": "https://www.epfl.ch"
   }
 ]
