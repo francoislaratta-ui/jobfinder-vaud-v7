@@ -1,27 +1,11 @@
 {
-  "name": "jobfinder-vaud-v862",
-  "version": "8.6.2",
-  "description": "Job Finder Vaud V8.6.2 Premium IA Pro - Créateur F. Laratta",
+  "name": "jobfinder-vaud",
+  "version": "13.0.1",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "keywords": [
-    "emploi",
-    "job",
-    "vaud",
-    "ia",
-    "cv",
-    "pwa",
-    "render"
-  ],
-  "author": "F. Laratta",
-  "license": "MIT",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^5.1.0"
   }
 }
