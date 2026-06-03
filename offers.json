@@ -1,122 +1,534 @@
 [
   {
-    "id": 1,
-    "title": "Assistant de direction",
-    "company": "Administration cantonale",
+    "id": "offer001",
+    "title": "Gestionnaire de dossier",
+    "company": "Etat de Vaud",
     "location": "Lausanne",
-    "sector": "Administration",
-    "rate": "100%",
+    "rate": "80%",
     "contract": "CDI",
-    "score": 97,
-    "isNew": true,
-    "url": "https://www.vd.ch"
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.vd.ch",
+    "salary": "CHF 75'000",
+    "language": "Français"
   },
+
   {
-    "id": 2,
-    "title": "Gestionnaire de dossiers",
+    "id": "offer002",
+    "title": "Gestionnaire de dossier",
     "company": "Ville de Lausanne",
     "location": "Lausanne",
-    "sector": "Administration publique",
-    "rate": "80%",
-    "contract": "CDI",
-    "score": 95,
-    "isNew": true,
-    "url": "https://www.lausanne.ch"
-  },
-  {
-    "id": 3,
-    "title": "Employé administratif",
-    "company": "État de Vaud",
-    "location": "Lausanne",
-    "sector": "Administration publique",
     "rate": "100%",
     "contract": "CDI",
-    "score": 96,
-    "isNew": true,
-    "url": "https://www.vd.ch"
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.lausanne.ch",
+    "salary": "CHF 78'000",
+    "language": "Français"
   },
+
   {
-    "id": 4,
-    "title": "Employé de commerce",
-    "company": "UNIL",
+    "id": "offer003",
+    "title": "Employé administratif",
+    "company": "CHUV",
     "location": "Lausanne",
-    "sector": "Administration",
-    "rate": "90%",
+    "rate": "80%",
     "contract": "CDI",
-    "score": 93,
-    "isNew": true,
-    "url": "https://www.unil.ch"
+    "sector": "Santé",
+    "date": "Il y a 1 jour",
+    "url": "https://www.chuv.ch",
+    "salary": "CHF 70'000",
+    "language": "Français"
   },
+
   {
-    "id": 5,
-    "title": "Coordinateur administratif",
+    "id": "offer004",
+    "title": "Employé de commerce",
+    "company": "Retraites Populaires",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Assurance",
+    "date": "Il y a 2 jours",
+    "url": "https://www.retraitespopulaires.ch",
+    "salary": "CHF 72'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer005",
+    "title": "Assistant administratif",
+    "company": "EPFL",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Administration",
+    "date": "Aujourd'hui",
+    "url": "https://www.epfl.ch",
+    "salary": "CHF 76'000",
+    "language": "Français"
+  }
+  ,
+  {
+    "id": "offer006",
+    "title": "Assistant de direction",
+    "company": "EPFL",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Administration",
+    "date": "Aujourd'hui",
+    "url": "https://www.epfl.ch",
+    "salary": "CHF 88'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer007",
+    "title": "Assistant RH",
+    "company": "Migros Vaud",
+    "location": "Ecublens",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Ressource humaine",
+    "date": "Aujourd'hui",
+    "url": "https://www.migros.ch",
+    "salary": "CHF 74'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer008",
+    "title": "Conseiller clientèle",
+    "company": "BCV",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Banque",
+    "date": "Il y a 1 jour",
+    "url": "https://www.bcv.ch",
+    "salary": "CHF 82'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer009",
+    "title": "Support utilisateur",
+    "company": "CHUV",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Support utilisateur",
+    "date": "Aujourd'hui",
+    "url": "https://www.chuv.ch",
+    "salary": "CHF 78'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer010",
+    "title": "Technicien informatique",
+    "company": "Etat de Vaud",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Informatique",
+    "date": "Aujourd'hui",
+    "url": "https://www.vd.ch",
+    "salary": "CHF 92'000",
+    "language": "Français"
+  }
+  ,
+  {
+    "id": "offer011",
+    "title": "Employé administratif",
     "company": "Fondation de Vernand",
     "location": "Lausanne",
-    "sector": "Fondation",
     "rate": "80%",
     "contract": "CDI",
-    "score": 92,
-    "isNew": false,
-    "url": "https://www.vernand.ch"
+    "sector": "Fondation",
+    "date": "Il y a 2 jours",
+    "url": "https://www.vernand.ch",
+    "salary": "CHF 71'000",
+    "language": "Français"
   },
+
   {
-    "id": 6,
-    "title": "Support utilisateur",
-    "company": "Swisscom",
+    "id": "offer012",
+    "title": "Coordinateur administratif",
+    "company": "HES-SO",
     "location": "Lausanne",
-    "sector": "Support utilisateur",
     "rate": "100%",
     "contract": "CDI",
-    "score": 91,
-    "isNew": true,
-    "url": "https://www.swisscom.ch"
+    "sector": "Administration",
+    "date": "Aujourd'hui",
+    "url": "https://www.hes-so.ch",
+    "salary": "CHF 84'000",
+    "language": "Français"
   },
+
   {
-    "id": 7,
-    "title": "Technicien informatique",
-    "company": "ELCA",
+    "id": "offer013",
+    "title": "Gestionnaire de dossier",
+    "company": "Caisse cantonale vaudoise de compensation",
+    "location": "Vevey",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.caisseavsvaud.ch",
+    "salary": "CHF 77'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer014",
+    "title": "Employé de commerce",
+    "company": "Vaudoise Assurances",
     "location": "Lausanne",
-    "sector": "Informatique",
     "rate": "100%",
     "contract": "CDI",
-    "score": 90,
-    "isNew": true,
-    "url": "https://www.elca.ch"
+    "sector": "Assurance",
+    "date": "Il y a 1 jour",
+    "url": "https://www.vaudoise.ch",
+    "salary": "CHF 74'000",
+    "language": "Français"
   },
+
   {
-    "id": 8,
+    "id": "offer015",
+    "title": "Assistant administratif",
+    "company": "Ville de Morges",
+    "location": "Morges",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.morges.ch",
+    "salary": "CHF 72'000",
+    "language": "Français"
+  }
+  ,
+  {
+    "id": "offer016",
+    "title": "Gestionnaire de dossier",
+    "company": "Ville de Nyon",
+    "location": "Nyon",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.nyon.ch",
+    "salary": "CHF 79'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer017",
+    "title": "Employé administratif",
+    "company": "Commune de Pully",
+    "location": "Lavaux-Oron",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.pully.ch",
+    "salary": "CHF 73'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer018",
     "title": "Assistant RH",
     "company": "CHUV",
     "location": "Lausanne",
-    "sector": "Ressources humaines",
-    "rate": "80%",
-    "contract": "CDD",
-    "score": 89,
-    "isNew": false,
-    "url": "https://www.chuv.ch"
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Ressource humaine",
+    "date": "Aujourd'hui",
+    "url": "https://www.chuv.ch",
+    "salary": "CHF 81'000",
+    "language": "Français"
   },
+
   {
-    "id": 9,
-    "title": "Conseiller service client",
+    "id": "offer019",
+    "title": "Conseiller clientèle",
+    "company": "PostFinance",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Service client",
+    "date": "Il y a 1 jour",
+    "url": "https://www.postfinance.ch",
+    "salary": "CHF 76'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer020",
+    "title": "Technicien informatique",
+    "company": "EPFL",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Informatique",
+    "date": "Aujourd'hui",
+    "url": "https://www.epfl.ch",
+    "salary": "CHF 95'000",
+    "language": "Français"
+  }
+  ,
+  {
+    "id": "offer021",
+    "title": "Support utilisateur",
+    "company": "Hôpital Riviera-Chablais",
+    "location": "Riviera",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Support utilisateur",
+    "date": "Aujourd'hui",
+    "url": "https://www.hopitalriviera.ch",
+    "salary": "CHF 79'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer022",
+    "title": "Employé de commerce",
+    "company": "Banque Cantonale Vaudoise",
+    "location": "Nyon",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Banque",
+    "date": "Aujourd'hui",
+    "url": "https://www.bcv.ch",
+    "salary": "CHF 73'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer023",
+    "title": "Assistant de direction",
+    "company": "Fondation Asile des Aveugles",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Fondation",
+    "date": "Il y a 2 jours",
+    "url": "https://www.asile-aveugles.ch",
+    "salary": "CHF 90'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer024",
+    "title": "Coordinateur administratif",
+    "company": "Ville d'Aigle",
+    "location": "Aigle",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.aigle.ch",
+    "salary": "CHF 78'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer025",
+    "title": "Gestionnaire de dossier",
+    "company": "Office régional de placement",
+    "location": "Jura-Nord vaudois",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.vd.ch",
+    "salary": "CHF 80'000",
+    "language": "Français"
+  }
+  ,
+  {
+    "id": "offer026",
+    "title": "Employé administratif",
+    "company": "Commune d'Yverdon-les-Bains",
+    "location": "Jura-Nord vaudois",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.yverdon-les-bains.ch",
+    "salary": "CHF 72'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer027",
+    "title": "Assistant administratif",
+    "company": "Ville de Vevey",
+    "location": "Riviera",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.vevey.ch",
+    "salary": "CHF 73'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer028",
+    "title": "Conseiller clientèle",
+    "company": "CSS Assurance",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Assurance",
+    "date": "Aujourd'hui",
+    "url": "https://www.css.ch",
+    "salary": "CHF 77'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer029",
+    "title": "Technicien informatique",
+    "company": "HES-SO Vaud",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Informatique",
+    "date": "Il y a 1 jour",
+    "url": "https://www.hes-so.ch",
+    "salary": "CHF 93'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer030",
+    "title": "Support utilisateur",
+    "company": "Etat de Vaud",
+    "location": "Lausanne",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Support utilisateur",
+    "date": "Aujourd'hui",
+    "url": "https://www.vd.ch",
+    "salary": "CHF 82'000",
+    "language": "Français"
+  }
+  ,
+  {
+    "id": "offer031",
+    "title": "Gestionnaire de dossier",
+    "company": "Commune d'Echallens",
+    "location": "Gros-de-Vaud",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.echallens.ch",
+    "salary": "CHF 76'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer032",
+    "title": "Employé administratif",
+    "company": "Association Régionale Gros-de-Vaud",
+    "location": "Gros-de-Vaud",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Administration",
+    "date": "Aujourd'hui",
+    "url": "https://www.gros-de-vaud.ch",
+    "salary": "CHF 74'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer033",
+    "title": "Assistant administratif",
+    "company": "Commune de Payerne",
+    "location": "Broye-Vully",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.payerne.ch",
+    "salary": "CHF 73'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer034",
+    "title": "Coordinateur administratif",
+    "company": "Réseau Santé Broye",
+    "location": "Broye-Vully",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Santé",
+    "date": "Aujourd'hui",
+    "url": "https://www.rsbj.ch",
+    "salary": "CHF 81'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer035",
+    "title": "Employé de commerce",
+    "company": "Ville de Morges",
+    "location": "Morges",
+    "rate": "100%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.morges.ch",
+    "salary": "CHF 74'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer036",
+    "title": "Assistant RH",
     "company": "Romande Energie",
     "location": "Morges",
-    "sector": "Service client",
-    "rate": "100%",
+    "rate": "80%",
     "contract": "CDI",
-    "score": 88,
-    "isNew": false,
-    "url": "https://www.romande-energie.ch"
+    "sector": "Ressource humaine",
+    "date": "Aujourd'hui",
+    "url": "https://www.romande-energie.ch",
+    "salary": "CHF 79'000",
+    "language": "Français"
   },
+
   {
-    "id": 10,
-    "title": "Secrétaire administratif",
-    "company": "EPFL",
-    "location": "Ecublens",
-    "sector": "Administration",
+    "id": "offer037",
+    "title": "Gestionnaire de dossier",
+    "company": "Commune de Lutry",
+    "location": "Lavaux-Oron",
+    "rate": "80%",
+    "contract": "CDI",
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.lutry.ch",
+    "salary": "CHF 77'000",
+    "language": "Français"
+  },
+
+  {
+    "id": "offer038",
+    "title": "Assistant de direction",
+    "company": "Ville d'Oron",
+    "location": "Lavaux-Oron",
     "rate": "100%",
     "contract": "CDI",
-    "score": 94,
-    "isNew": true,
-    "url": "https://www.epfl.ch"
+    "sector": "Administration publique",
+    "date": "Aujourd'hui",
+    "url": "https://www.oron.ch",
+    "salary": "CHF 88'000",
+    "language": "Français"
   }
+
 ]
