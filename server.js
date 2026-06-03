@@ -1,326 +1,619 @@
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
+/* ==========================================
+JOB FINDER VAUD V14.0.0 PREMIUM IA
+Créateur : F. Laratta
+========================================== */
 
-const app = express();
+const express =
+require(
+"express"
+);
 
-const PORT = process.env.PORT || 3000;
+const fs =
+require(
+"fs"
+);
 
-app.use(express.json());
+const path =
+require(
+"path"
+);
 
-app.use(express.static(__dirname));
+const cors =
+require(
+"cors"
+);
+
+const app =
+express();
+
+const PORT =
+process.env.PORT || 3000;
+
+/* ==========================================
+MIDDLEWARES
+========================================== */
+
+app.use(
+cors()
+);
+
+app.use(
+express.json()
+);
+
+app.use(
+express.static(
+path.join(
+__dirname
+)
+)
+);
+
+/* ==========================================
+FICHIERS
+========================================== */
+
+const OFFERS_FILE =
+path.join(
+__dirname,
+"offers.json"
+);
 
 const FAVORITES_FILE =
-path.join(__dirname,"favorites.json");
+path.join(
+__dirname,
+"favorites.json"
+);
 
-const CRM_FILE =
-path.join(__dirname,"crm.json");
+const APPLICATIONS_FILE =
+path.join(
+__dirname,
+"candidatures.json"
+);
 
 /* ==========================================
-UTILS
+LECTURE JSON
 ========================================== */
 
-function readJson(file, fallback = []) {
+function readJson(file){
 
-  try {
+try{
 
-    if (!fs.existsSync(file)) {
-      return fallback;
-    }
+const data =
+fs.readFileSync(
+file,
+"utf8"
+);
 
-    const data =
-    fs.readFileSync(
-      file,
-      "utf8"
-    );
-
-    return JSON.parse(data);
-
-  } catch {
-
-    return fallback;
-
-  }
+return JSON.parse(
+data
+);
 
 }
+catch(error){
 
-function saveJson(file,data){
+console.error(
+error
+);
 
-  fs.writeFileSync(
-    file,
-    JSON.stringify(
-      data,
-      null,
-      2
-    )
-  );
+return [];
+
+}
 
 }
 
 /* ==========================================
-HOME
+ECRITURE JSON
 ========================================== */
 
-app.get("/",(req,res)=>{
+function writeJson(
+file,
+data
+){
 
-  res.sendFile(
-    path.join(
-      __dirname,
-      "index.html"
-    )
-  );
+try{
 
-});
+fs.writeFileSync(
+file,
+JSON.stringify(
+data,
+null,
+2
+),
+"utf8"
+);
 
+return true;
+
+}
+catch(error){
+
+console.error(
+error
+);
+
+return false;
+
+}
+
+}
 /* ==========================================
-OFFERS
-========================================== */
-
-app.get("/api/offers",(req,res)=>{
-
-  const offers = readJson(
-    path.join(
-      __dirname,
-      "offers.json"
-    ),
-    []
-  );
-
-  res.json(
-    offers
-  );
-
-});
-
-/* ==========================================
-FAVORITES
-========================================== */
-
-app.get(
-"/api/favorites",
-(req,res)=>{
-
-  res.json(
-    readJson(
-      FAVORITES_FILE,
-      []
-    )
-  );
-
-});
-
-app.post(
-"/api/favorites",
-(req,res)=>{
-
-  const favorites =
-  readJson(
-    FAVORITES_FILE,
-    []
-  );
-
-  favorites.push(
-    req.body
-  );
-
-  saveJson(
-    FAVORITES_FILE,
-    favorites
-  );
-
-  res.json({
-
-    success:true
-
-  });
-
-});
-
-app.delete(
-"/api/favorites/:id",
-(req,res)=>{
-
-  const id =
-  Number(
-    req.params.id
-  );
-
-  const favorites =
-  readJson(
-    FAVORITES_FILE,
-    []
-  ).filter(
-
-    item =>
-    item.id !== id
-
-  );
-
-  saveJson(
-    FAVORITES_FILE,
-    favorites
-  );
-
-  res.json({
-
-    success:true
-
-  });
-
-});
-
-/* ==========================================
-CRM
-========================================== */
-
-app.get(
-"/api/crm",
-(req,res)=>{
-
-  res.json(
-    readJson(
-      CRM_FILE,
-      []
-    )
-  );
-
-});
-
-app.post(
-"/api/crm",
-(req,res)=>{
-
-  const crm =
-  readJson(
-    CRM_FILE,
-    []
-  );
-
-  crm.push(
-    req.body
-  );
-
-  saveJson(
-    CRM_FILE,
-    crm
-  );
-
-  res.json({
-
-    success:true
-
-  });
-
-});
-
-app.delete(
-"/api/crm/:id",
-(req,res)=>{
-
-  const id =
-  Number(
-    req.params.id
-  );
-
-  const crm =
-  readJson(
-    CRM_FILE,
-    []
-  ).filter(
-
-    item =>
-    item.id !== id
-
-  );
-
-  saveJson(
-    CRM_FILE,
-    crm
-  );
-
-  res.json({
-
-    success:true
-
-  });
-
-});
-
-/* ==========================================
-STATISTICS
-========================================== */
-
-app.get(
-"/api/stats",
-(req,res)=>{
-
-  const favorites =
-  readJson(
-    FAVORITES_FILE,
-    []
-  );
-
-  const crm =
-  readJson(
-    CRM_FILE,
-    []
-  );
-
-  res.json({
-
-    offers:
-    readJson(
-      path.join(
-        __dirname,
-        "offers.json"
-      ),
-      []
-    ).length,
-
-    favorites:
-    favorites.length,
-
-    applications:
-    crm.length
-
-  });
-
-});
-
-/* ==========================================
-HEALTH
+API HEALTH
 ========================================== */
 
 app.get(
 "/api/health",
-(req,res)=>{
+(req,res) => {
 
-  res.json({
+res.json({
 
-    status:"ok",
+status:"OK",
 
-    app:
-    "Job Finder Vaud",
+version:"14.0.0",
 
-    version:
-    "13.0.1"
+application:
+"Job Finder Vaud",
 
-  });
+timestamp:
+new Date().toISOString()
 
 });
 
+}
+);
+
 /* ==========================================
-START
+API OFFRES
+========================================== */
+
+app.get(
+"/api/offers",
+(req,res) => {
+
+const offers =
+readJson(
+OFFERS_FILE
+);
+
+res.json(
+offers
+);
+
+}
+);
+
+/* ==========================================
+API FAVORIS
+========================================== */
+
+app.get(
+"/api/favorites",
+(req,res) => {
+
+const favorites =
+readJson(
+FAVORITES_FILE
+);
+
+res.json(
+favorites
+);
+
+}
+);
+
+app.post(
+"/api/favorites",
+(req,res) => {
+
+const favorites =
+readJson(
+FAVORITES_FILE
+);
+
+favorites.push(
+req.body
+);
+
+writeJson(
+FAVORITES_FILE,
+favorites
+);
+
+res.json({
+
+success:true,
+
+message:
+"Favori ajouté"
+
+});
+
+}
+);
+
+app.delete(
+"/api/favorites/:id",
+(req,res) => {
+
+let favorites =
+readJson(
+FAVORITES_FILE
+);
+
+favorites =
+favorites.filter(
+item =>
+item.id !==
+req.params.id
+);
+
+writeJson(
+FAVORITES_FILE,
+favorites
+);
+
+res.json({
+
+success:true,
+
+message:
+"Favori supprimé"
+
+});
+
+}
+);
+/* ==========================================
+API CANDIDATURES
+========================================== */
+
+app.get(
+"/api/candidatures",
+(req,res) => {
+
+const candidatures =
+readJson(
+APPLICATIONS_FILE
+);
+
+res.json(
+candidatures
+);
+
+}
+);
+
+app.post(
+"/api/candidatures",
+(req,res) => {
+
+const candidatures =
+readJson(
+APPLICATIONS_FILE
+);
+
+candidatures.push(
+req.body
+);
+
+writeJson(
+APPLICATIONS_FILE,
+candidatures
+);
+
+res.json({
+
+success:true,
+
+message:
+"Candidature ajoutée"
+
+});
+
+}
+);
+
+app.put(
+"/api/candidatures/:id",
+(req,res) => {
+
+const candidatures =
+readJson(
+APPLICATIONS_FILE
+);
+
+const index =
+candidatures.findIndex(
+item =>
+item.id ===
+req.params.id
+);
+
+if(index === -1){
+
+return res.status(404)
+.json({
+
+success:false,
+
+message:
+"Candidature introuvable"
+
+});
+
+}
+
+candidatures[index] = {
+
+...candidatures[index],
+
+...req.body
+
+};
+
+writeJson(
+APPLICATIONS_FILE,
+candidatures
+);
+
+res.json({
+
+success:true,
+
+message:
+"Candidature mise à jour"
+
+});
+
+}
+);
+
+app.delete(
+"/api/candidatures/:id",
+(req,res) => {
+
+let candidatures =
+readJson(
+APPLICATIONS_FILE
+);
+
+candidatures =
+candidatures.filter(
+item =>
+item.id !==
+req.params.id
+);
+
+writeJson(
+APPLICATIONS_FILE,
+candidatures
+);
+
+res.json({
+
+success:true,
+
+message:
+"Candidature supprimée"
+
+});
+
+}
+);
+/* ==========================================
+API STATISTIQUES
+========================================== */
+
+app.get(
+"/api/stats",
+(req,res) => {
+
+const offers =
+readJson(
+OFFERS_FILE
+);
+
+const favorites =
+readJson(
+FAVORITES_FILE
+);
+
+const candidatures =
+readJson(
+APPLICATIONS_FILE
+);
+
+const sent =
+candidatures.filter(
+item =>
+item.status === "Envoyée"
+).length;
+
+const responses =
+candidatures.filter(
+item =>
+item.status === "Réponse"
+).length;
+
+const interviews =
+candidatures.filter(
+item =>
+item.status === "Entretien"
+).length;
+
+const hired =
+candidatures.filter(
+item =>
+item.status === "Embauche"
+).length;
+
+res.json({
+
+offers:
+offers.length,
+
+favorites:
+favorites.length,
+
+applications:
+candidatures.length,
+
+sent,
+
+responses,
+
+interviews,
+
+hired,
+
+responseRate:
+candidatures.length
+? Math.round(
+(responses /
+candidatures.length)
+* 100
+)
+: 0,
+
+interviewRate:
+candidatures.length
+? Math.round(
+(interviews /
+candidatures.length)
+* 100
+)
+: 0,
+
+successRate:
+candidatures.length
+? Math.round(
+(hired /
+candidatures.length)
+* 100
+)
+: 0
+
+});
+
+}
+);
+
+/* ==========================================
+API RESET
+========================================== */
+
+app.post(
+"/api/reset",
+(req,res) => {
+
+writeJson(
+FAVORITES_FILE,
+[]
+);
+
+writeJson(
+APPLICATIONS_FILE,
+[]
+);
+
+res.json({
+
+success:true,
+
+message:
+"Application réinitialisée"
+
+});
+
+}
+);
+/* ==========================================
+ROUTE PRINCIPALE
+========================================== */
+
+app.get(
+"/",
+(req,res) => {
+
+res.sendFile(
+path.join(
+__dirname,
+"index.html"
+)
+);
+
+}
+);
+
+/* ==========================================
+GESTION ERREURS API
+========================================== */
+
+app.use(
+(req,res) => {
+
+res.status(404)
+.json({
+
+success:false,
+
+message:
+"Route introuvable"
+
+});
+
+}
+);
+
+app.use(
+(error,req,res,next) => {
+
+console.error(
+error
+);
+
+res.status(500)
+.json({
+
+success:false,
+
+message:
+"Erreur interne serveur"
+
+});
+
+}
+);
+
+/* ==========================================
+DEMARRAGE SERVEUR
 ========================================== */
 
 app.listen(
 PORT,
-()=>{
+() => {
 
-  console.log(
+console.log(
+"=================================="
+);
 
-    `Job Finder Vaud V13.0.1 lancé sur le port ${PORT}`
+console.log(
+"JOB FINDER VAUD V14.0.0 PREMIUM IA"
+);
 
-  );
+console.log(
+`Serveur démarré :
+http://localhost:${PORT}`
+);
 
-});
+console.log(
+"=================================="
+);
+
+}
+);
+
+/* ==========================================
+FIN SERVER.JS
+========================================== */
