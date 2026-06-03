@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
 
 <meta charset="UTF-8">
@@ -8,13 +9,17 @@
 name="viewport"
 content="width=device-width, initial-scale=1.0">
 
-<title>
-Job Finder Vaud V13.0.1 Premium IA
-</title>
+<meta
+name="description"
+content="Job Finder Vaud V13.0.1 Premium IA">
 
 <meta
 name="theme-color"
 content="#c28b14">
+
+<title>
+Job Finder Vaud V13.0.1 Premium IA
+</title>
 
 <link
 rel="manifest"
@@ -41,11 +46,17 @@ box-sizing:border-box;
 --card:#1a1a1a;
 
 --white:#ffffff;
---soft:#d1d5db;
+--soft:#cfcfcf;
 
---green:#16a34a;
---red:#dc2626;
---blue:#2563eb;
+--success:#16a34a;
+--danger:#dc2626;
+--info:#2563eb;
+
+}
+
+html{
+
+scroll-behavior:smooth;
 
 }
 
@@ -69,11 +80,27 @@ min-height:100vh;
 
 }
 
-h1,h2,h3,h4{
+h1,h2,h3,h4,h5{
 
 color:white;
 
 }
+
+a{
+
+text-decoration:none;
+
+}
+
+button{
+
+cursor:pointer;
+
+}
+
+/* ==========================================
+HEADER
+========================================== */
 
 .app-header{
 
@@ -89,7 +116,7 @@ justify-content:space-between;
 
 align-items:center;
 
-padding:10px 15px;
+padding:8px 15px;
 
 background:#111;
 
@@ -121,6 +148,10 @@ color:#bdbdbd;
 
 }
 
+/* ==========================================
+TOP BUTTONS
+========================================== */
+
 .header-actions{
 
 display:flex;
@@ -145,8 +176,6 @@ color:white;
 
 font-size:18px;
 
-cursor:pointer;
-
 }
 
 .top-btn:hover{
@@ -156,6 +185,10 @@ background:var(--gold);
 color:black;
 
 }
+
+/* ==========================================
+NAVIGATION
+========================================== */
 
 .main-tabs{
 
@@ -177,15 +210,13 @@ border:none;
 
 padding:10px 16px;
 
+border-radius:12px;
+
 background:#1f1f1f;
 
 color:white;
 
-border-radius:12px;
-
 font-weight:600;
-
-cursor:pointer;
 
 white-space:nowrap;
 
@@ -198,6 +229,10 @@ background:var(--gold);
 color:black;
 
 }
+
+/* ==========================================
+SECTIONS
+========================================== */
 
 .tab-content{
 
@@ -219,43 +254,34 @@ font-size:22px;
 
 font-weight:700;
 
-margin-bottom:12px;
+margin-bottom:15px;
 
 }
+
+/* ==========================================
+KPI
+========================================== */
 
 .kpi-grid{
 
 display:grid;
 
 grid-template-columns:
-repeat(
-2,
-1fr
-);
+repeat(2,1fr);
 
 gap:10px;
-
-margin-top:15px;
 
 }
 
 .kpi-card{
 
-background:#1a1a1a;
+background:var(--card);
 
 padding:12px;
 
 border-radius:16px;
 
 text-align:center;
-
-border:
-1px solid rgba(
-194,
-139,
-20,
-0.12
-);
 
 min-height:95px;
 
@@ -275,23 +301,104 @@ color:var(--gold);
 
 font-size:14px;
 
-margin-top:4px;
-
-color:white;
+margin-top:5px;
 
 }
 
+/* ==========================================
+CARDS
+========================================== */
+
 .objectives-card{
 
-background:#1a1a1a;
+background:var(--card);
 
 padding:15px;
 
-border-radius:18px;
+border-radius:16px;
 
 margin-top:15px;
 
 }
+
+.offer-card{
+
+background:var(--card);
+
+padding:15px;
+
+border-radius:16px;
+
+margin-bottom:12px;
+
+border-left:
+4px solid var(--gold);
+
+}
+
+.offer-title{
+
+font-size:18px;
+
+font-weight:700;
+
+}
+
+.offer-company{
+
+margin-top:5px;
+
+color:#cfcfcf;
+
+}
+
+/* ==========================================
+BADGES
+========================================== */
+
+.recommended{
+
+display:inline-block;
+
+margin-top:8px;
+
+padding:4px 8px;
+
+border-radius:8px;
+
+background:#ff9800;
+
+color:black;
+
+font-size:12px;
+
+font-weight:700;
+
+}
+
+/* ==========================================
+BUTTONS
+========================================== */
+
+.action-btn{
+
+background:var(--gold);
+
+color:black;
+
+border:none;
+
+padding:12px 16px;
+
+border-radius:12px;
+
+font-weight:700;
+
+}
+
+/* ==========================================
+PROGRESS
+========================================== */
 
 .progress-bar{
 
@@ -299,7 +406,7 @@ height:10px;
 
 background:#2b2b2b;
 
-border-radius:12px;
+border-radius:10px;
 
 overflow:hidden;
 
@@ -311,21 +418,25 @@ margin-top:8px;
 
 height:100%;
 
-background:var(--gold);
-
 width:0%;
+
+background:var(--gold);
 
 }
 
+/* ==========================================
+FILTERS
+========================================== */
+
 .filter-box{
 
-background:#1a1a1a;
+background:var(--card);
 
-border-radius:15px;
-
-margin-bottom:12px;
+border-radius:16px;
 
 overflow:hidden;
+
+margin-bottom:12px;
 
 }
 
@@ -338,8 +449,6 @@ font-size:20px;
 font-weight:700;
 
 background:#202020;
-
-color:white;
 
 cursor:pointer;
 
@@ -366,34 +475,45 @@ margin-bottom:8px;
 display:grid;
 
 grid-template-columns:
-repeat(
-3,
-1fr
-);
+repeat(3,1fr);
 
 gap:8px;
 
 }
 
-.action-btn{
+/* ==========================================
+INPUTS
+========================================== */
 
-background:var(--gold);
+textarea{
 
-color:black;
+width:100%;
+
+min-height:140px;
+
+padding:12px;
 
 border:none;
 
-padding:12px 16px;
-
 border-radius:12px;
 
-font-weight:bold;
+background:#222;
 
-cursor:pointer;
-
-margin-bottom:15px;
+color:white;
 
 }
+
+input[type="file"]{
+
+width:100%;
+
+padding:10px;
+
+}
+
+/* ==========================================
+FLOATING BUTTONS
+========================================== */
 
 .floating-actions{
 
@@ -427,58 +547,15 @@ background:var(--gold);
 
 font-size:20px;
 
-cursor:pointer;
-
 }
 
-.offer-card{
+/* ==========================================
+CANVAS
+========================================== */
 
-background:#1a1a1a;
+canvas{
 
-padding:15px;
-
-border-radius:16px;
-
-margin-bottom:12px;
-
-border-left:
-4px solid var(--gold);
-
-}
-
-.offer-title{
-
-font-size:18px;
-
-font-weight:700;
-
-}
-
-.offer-company{
-
-margin-top:5px;
-
-color:#cfcfcf;
-
-}
-
-.recommended{
-
-display:inline-block;
-
-padding:4px 8px;
-
-margin-top:8px;
-
-border-radius:8px;
-
-background:#ff9800;
-
-color:black;
-
-font-size:12px;
-
-font-weight:700;
+max-width:100%;
 
 }
 
@@ -487,8 +564,7 @@ font-weight:700;
 </head>
 
 <body>
-
-<header class="app-header">
+ <header class="app-header">
 
 <div class="logo-area">
 
@@ -546,43 +622,50 @@ class="top-btn">
 
 <nav class="main-tabs">
 
-<button data-tab="dashboard">
+<button
+data-tab="dashboard">
 
 🏠 Dashboard
 
 </button>
 
-<button data-tab="offers">
+<button
+data-tab="offers">
 
 💼 Offres
 
 </button>
 
-<button data-tab="favorites">
+<button
+data-tab="favorites">
 
 ⭐ Favoris
 
 </button>
 
-<button data-tab="crm">
+<button
+data-tab="crm">
 
 📋 CRM
 
 </button>
 
-<button data-tab="ai">
+<button
+data-tab="ai">
 
 🤖 IA
 
 </button>
 
-<button data-tab="stats">
+<button
+data-tab="stats">
 
 📊 Stats
 
 </button>
 
-<button data-tab="settings">
+<button
+data-tab="settings">
 
 ⚙️ Paramètres
 
@@ -591,14 +674,13 @@ class="top-btn">
 </nav>
 
 <main>
-
-<section
+ <section
 id="dashboard"
 class="tab-content active-tab">
 
 <h2 class="section-title">
 
-Tableau de bord
+📊 Tableau de bord
 
 </h2>
 
@@ -664,13 +746,13 @@ Candidatures
 id="kpiAI"
 class="kpi-value">
 
-IA
+0
 
 </div>
 
 <div class="kpi-label">
 
-Analyses Premium
+Analyses IA
 
 </div>
 
@@ -688,7 +770,13 @@ Analyses Premium
 
 <p>
 
-3 offres ciblées / semaine
+Objectif hebdomadaire
+
+</p>
+
+<p>
+
+3 offres ciblées
 
 </p>
 
@@ -702,10 +790,32 @@ class="progress-fill">
 
 </div>
 
-<p
-style="margin-top:15px;">
+<div
+id="weeklyAchievement"
+style="
+display:none;
+margin-top:10px;
+font-weight:700;
+color:#c28b14;
+">
 
-12 offres ciblées / mois
+🤘🏼 Objectif hebdomadaire atteint !
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🏆 Objectif mensuel
+
+</h3>
+
+<p>
+
+12 offres ciblées
 
 </p>
 
@@ -719,258 +829,228 @@ class="progress-fill">
 
 </div>
 
-</div>
-</section>
+<div
+id="monthlyAchievement"
+style="
+display:none;
+margin-top:10px;
+font-weight:700;
+color:#c28b14;
+">
 
-<section
-id="offers"
-class="tab-content">
+🤘🏼🎸 Objectif mensuel atteint !
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🆕 Activité récente
+
+</h3>
+
+<div
+id="activityFeed">
+
+Aucune activité
+
+</div>
+
+</div>
+
+</section>
+ <section
+id="dashboard"
+class="tab-content active-tab">
 
 <h2 class="section-title">
 
-💼 Offres d'emploi
+📊 Tableau de bord
 
 </h2>
 
+<div class="kpi-grid">
+
+<div class="kpi-card">
+
 <div
-id="resultsCounter"
+id="kpiOffers"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Offres trouvées
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="kpiFavorites"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Favoris
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="kpiApplications"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Candidatures
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="kpiAI"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Analyses IA
+
+</div>
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🎯 Objectifs
+
+</h3>
+
+<p>
+
+Objectif hebdomadaire
+
+</p>
+
+<p>
+
+3 offres ciblées
+
+</p>
+
+<div class="progress-bar">
+
+<div
+id="weeklyProgress"
+class="progress-fill">
+
+</div>
+
+</div>
+
+<div
+id="weeklyAchievement"
 style="
-font-size:18px;
+display:none;
+margin-top:10px;
 font-weight:700;
 color:#c28b14;
-margin-bottom:15px;
 ">
 
-0 offres trouvées
+🤘🏼 Objectif hebdomadaire atteint !
 
 </div>
 
-<button
-id="newOffersBtn"
-class="action-btn">
+</div>
 
-🆕 Offres nouvelles
+<div class="objectives-card">
 
-</button>
+<h3>
 
-<div class="filter-box">
+🏆 Objectif mensuel
+
+</h3>
+
+<p>
+
+12 offres ciblées
+
+</p>
+
+<div class="progress-bar">
 
 <div
-class="filter-header"
-onclick="toggleFilter('regionFilter')">
-
-📍 Région
+id="monthlyProgress"
+class="progress-fill">
 
 </div>
-
-<div
-id="regionFilter"
-class="filter-content">
-
-<label>
-<input type="checkbox" value="Lausanne">
-Lausanne
-</label>
-
-<label>
-<input type="checkbox" value="Morges">
-Morges
-</label>
-
-<label>
-<input type="checkbox" value="Vevey">
-Vevey
-</label>
-
-<label>
-<input type="checkbox" value="Nyon">
-Nyon
-</label>
-
-<label>
-<input type="checkbox" value="Yverdon">
-Yverdon
-</label>
-
-</div>
-
-</div>
-
-<div class="filter-box">
-
-<div
-class="filter-header"
-onclick="toggleFilter('sectorFilter')">
-
-🏢 Secteur
 
 </div>
 
 <div
-id="sectorFilter"
-class="filter-content">
-
-<label><input type="checkbox"> Administration</label>
-
-<label><input type="checkbox"> Administration publique</label>
-
-<label><input type="checkbox"> Informatique</label>
-
-<label><input type="checkbox"> Fondation</label>
-
-<label><input type="checkbox"> Immobilier</label>
-
-<label><input type="checkbox"> Assurance</label>
-
-<label><input type="checkbox"> Secrétariat</label>
-
-<label><input type="checkbox"> Secrétariat médical</label>
-
-<label><input type="checkbox"> Ressources humaines</label>
-
-<label><input type="checkbox"> Service client</label>
-
-<label><input type="checkbox"> Support utilisateur</label>
-
-<label><input type="checkbox"> Santé</label>
-
-<label><input type="checkbox"> Fiduciaire</label>
-
-<label><input type="checkbox"> Banque</label>
-
-</div>
-
-</div>
-
-<div class="filter-box">
-
-<div
-class="filter-header"
-onclick="toggleFilter('rateFilter')">
-
-⏱️ Taux
-
-</div>
-
-<div
-id="rateFilter"
-class="filter-content">
-
-<div class="rate-grid">
-
-<label><input type="checkbox">20%</label>
-<label><input type="checkbox">30%</label>
-<label><input type="checkbox">40%</label>
-
-<label><input type="checkbox">50%</label>
-<label><input type="checkbox">60%</label>
-<label><input type="checkbox">70%</label>
-
-<label><input type="checkbox">80%</label>
-<label><input type="checkbox">90%</label>
-<label><input type="checkbox">100%</label>
-
-</div>
-
-<div
+id="monthlyAchievement"
 style="
-margin-top:15px;
-display:flex;
-gap:20px;
+display:none;
+margin-top:10px;
+font-weight:700;
+color:#c28b14;
 ">
 
-<label>
-
-<input type="checkbox">
-
-Temps plein
-
-</label>
-
-<label>
-
-<input type="checkbox">
-
-Temps partiel
-
-</label>
+🤘🏼🎸 Objectif mensuel atteint !
 
 </div>
 
 </div>
 
-</div>
+<div class="objectives-card">
 
-<div class="filter-box">
+<h3>
+
+🆕 Activité récente
+
+</h3>
 
 <div
-class="filter-header"
-onclick="toggleFilter('contractFilter')">
+id="activityFeed">
 
-📄 Contrat
-
-</div>
-
-<div
-id="contractFilter"
-class="filter-content">
-
-<label><input type="checkbox"> CDI</label>
-
-<label><input type="checkbox"> CDD</label>
-
-<label><input type="checkbox"> Temporaire</label>
-
-<label><input type="checkbox"> Stage</label>
+Aucune activité
 
 </div>
-
-</div>
-
-<div
-id="offersContainer">
 
 </div>
 
 </section>
-
-<div
-class="floating-actions">
-
-<button
-id="floatingOffers"
-class="floating-btn">
-
-💼
-
-</button>
-
-<button
-id="floatingFavorites"
-class="floating-btn">
-
-⭐
-
-</button>
-
-<button
-id="floatingAI"
-class="floating-btn">
-
-🤖
-
-</button>
-
-<button
-id="floatingTop"
-class="floating-btn">
-
-⬆️
-
-</button>
-
-</div>
-<section
+ <section
 id="favorites"
 class="tab-content">
 
@@ -1016,12 +1096,12 @@ id="favoritesContainer">
 </section>
 
 <section
-id="searchHistorySection"
+id="searchHistory"
 class="tab-content">
 
 <h2 class="section-title">
 
-🕘 Historique des recherches
+🕘 Historique recherches
 
 </h2>
 
@@ -1032,27 +1112,7 @@ id="searchHistoryContainer">
 
 <div class="offer-title">
 
-Assistant administratif
-
-</div>
-
-</div>
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-Gestionnaire de dossiers
-
-</div>
-
-</div>
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-Technicien informatique
+Aucune recherche enregistrée
 
 </div>
 
@@ -1092,18 +1152,18 @@ class="recommended">
 <div
 style="
 margin-top:10px;
-font-weight:bold;
+font-weight:700;
 color:#c28b14;
 ">
 
-92% compatible avec votre profil
+92%
+Compatible avec votre profil
 
 </div>
 
 <div
 style="
 margin-top:10px;
-font-size:14px;
 line-height:1.7;
 ">
 
@@ -1115,7 +1175,7 @@ line-height:1.7;
 
 <br>
 
-✓ Secteur préféré
+✓ Secteur compatible
 
 <br>
 
@@ -1151,8 +1211,8 @@ target="_blank"
 rel="noopener noreferrer"
 class="action-btn"
 style="
-text-decoration:none;
 display:inline-block;
+text-decoration:none;
 ">
 
 🔗 Voir l'offre
@@ -1203,7 +1263,6 @@ id="weeklyAchievement"
 style="
 display:none;
 margin-top:12px;
-font-size:18px;
 font-weight:700;
 color:#c28b14;
 ">
@@ -1243,7 +1302,6 @@ id="monthlyAchievement"
 style="
 display:none;
 margin-top:12px;
-font-size:20px;
 font-weight:700;
 color:#c28b14;
 ">
@@ -1465,7 +1523,6 @@ font-size:42px;
 font-weight:800;
 color:#c28b14;
 text-align:center;
-margin-top:10px;
 ">
 
 <span
@@ -1518,7 +1575,7 @@ line-height:2;
 
 <li>
 
-✓ Secteur favori
+✓ Secteur compatible
 
 </li>
 
@@ -1542,15 +1599,7 @@ line-height:2;
 
 <textarea
 id="interviewInput"
-style="
-width:100%;
-min-height:140px;
-padding:12px;
-border:none;
-border-radius:12px;
-background:#222;
-color:white;
-">
+placeholder="Collez ici une offre d'emploi">
 
 </textarea>
 
@@ -1581,15 +1630,7 @@ id="interviewResult">
 
 <textarea
 id="letterInput"
-style="
-width:100%;
-min-height:140px;
-padding:12px;
-border:none;
-border-radius:12px;
-background:#222;
-color:white;
-">
+placeholder="Collez ici une offre d'emploi">
 
 </textarea>
 
@@ -1622,19 +1663,11 @@ id="letterResult">
 id="quickCVBtn"
 class="action-btn">
 
-🤖 Analyse rapide
+⚡ Analyse rapide
 
 </button>
 
 </div>
-
-<div class="objectives-card">
-
-<h3>
-
-📊 Résumé IA
-
-</h3>
 
 <div class="kpi-grid">
 
@@ -1705,235 +1738,6 @@ class="kpi-value">
 <div class="kpi-label">
 
 Suggestions IA
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-<section
-id="settings"
-class="tab-content">
-
-<h2 class="section-title">
-
-⚙️ Paramètres Premium
-
-</h2>
-
-<div class="objectives-card">
-
-<h3>
-
-🔔 Notifications
-
-</h3>
-
-<button
-id="notificationToggle"
-class="action-btn">
-
-Activer / Désactiver
-
-</button>
-
-<p
-id="notificationStatus">
-
-Activées
-
-</p>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🌐 Langue
-
-</h3>
-
-<select
-id="languageSelector"
-style="
-width:100%;
-padding:12px;
-border:none;
-border-radius:12px;
-background:#222;
-color:white;
-">
-
-<option value="fr">
-
-Français
-
-</option>
-
-<option value="en">
-
-English
-
-</option>
-
-</select>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-📤 Export
-
-</h3>
-
-<button
-id="exportJsonBtn"
-class="action-btn">
-
-Export JSON
-
-</button>
-
-<button
-id="exportCsvBtn"
-class="action-btn">
-
-Export CSV
-
-</button>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-📥 Import
-
-</h3>
-
-<input
-type="file"
-id="importFile">
-
-<br><br>
-
-<button
-id="importBtn"
-class="action-btn">
-
-Importer
-
-</button>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-📱 Progressive Web App
-
-</h3>
-
-<p>
-
-Installation Android et Windows
-
-</p>
-
-<br>
-
-<button
-id="installPwaBtn"
-class="action-btn">
-
-Installer l'application
-
-</button>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🧹 Réinitialisation filtres
-
-</h3>
-
-<p>
-
-Décoche automatiquement
-toutes les cases.
-
-</p>
-
-<br>
-
-<button
-id="resetFiltersBtn"
-class="action-btn">
-
-🔄 Réinitialiser filtres
-
-</button>
-
-</div>
-
-<div class="objectives-card">
-
-<h3>
-
-🗑️ Réinitialisation application
-
-</h3>
-
-<p>
-
-Supprime toutes les données locales.
-
-</p>
-
-<br>
-
-<button
-id="resetAppBtn"
-class="action-btn">
-
-🗑️ Réinitialiser
-
-</button>
-
-</div>
-
-</section>
-
-<section
-id="notifications"
-class="tab-content">
-
-<h2 class="section-title">
-
-🔔 Notifications
-
-</h2>
-
-<div
-id="notificationsContainer">
-
-<div class="offer-card">
-
-<div class="offer-title">
-
-Aucune notification
 
 </div>
 
@@ -2032,13 +1836,14 @@ Salaire moyen CHF
 
 <h3>
 
-🎯 Progression objectifs
+🎯 Progression des objectifs
 
 </h3>
 
 <p>
 
-Hebdo : 3 offres ciblées
+Objectif hebdomadaire :
+3 offres ciblées
 
 </p>
 
@@ -2055,7 +1860,8 @@ class="progress-fill">
 <p
 style="margin-top:15px;">
 
-Mensuel : 12 offres ciblées
+Objectif mensuel :
+12 offres ciblées
 
 </p>
 
@@ -2243,30 +2049,532 @@ class="kpi-value">
 </div>
 
 </section>
-<script>
+<section
+id="settings"
+class="tab-content">
 
-/* ==========================================
-APP STATE
-========================================== */
+<h2 class="section-title">
+
+⚙️ Paramètres Premium
+
+</h2>
+
+<div class="objectives-card">
+
+<h3>
+
+🔔 Notifications
+
+</h3>
+
+<p>
+
+Activer ou désactiver les notifications.
+
+</p>
+
+<br>
+
+<button
+id="notificationToggle"
+class="action-btn">
+
+Notifications activées
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🌐 Langue
+
+</h3>
+
+<select
+id="languageSelector"
+style="
+width:100%;
+padding:12px;
+border:none;
+border-radius:12px;
+background:#222;
+color:white;
+">
+
+<option value="fr">
+
+Français
+
+</option>
+
+<option value="en">
+
+English
+
+</option>
+
+</select>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+📤 Export des données
+
+</h3>
+
+<p>
+
+Exporter les favoris, candidatures et statistiques.
+
+</p>
+
+<br>
+
+<button
+id="exportJsonBtn"
+class="action-btn">
+
+📄 Export JSON
+
+</button>
+
+&nbsp;
+
+<button
+id="exportCsvBtn"
+class="action-btn">
+
+📊 Export CSV
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+📥 Import des données
+
+</h3>
+
+<input
+type="file"
+id="importFile">
+
+<br><br>
+
+<button
+id="importBtn"
+class="action-btn">
+
+📥 Importer
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🧹 Réinitialiser les filtres
+
+</h3>
+
+<p>
+
+Décoche automatiquement toutes les cases.
+
+</p>
+
+<br>
+
+<button
+id="resetFiltersBtn"
+class="action-btn">
+
+🔄 Réinitialiser filtres
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+📱 Installation PWA
+
+</h3>
+
+<p>
+
+Installer Job Finder Vaud sur Android, Windows ou iPhone.
+
+</p>
+
+<br>
+
+<button
+id="installPwaBtn"
+class="action-btn">
+
+📱 Installer l'application
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🗑️ Réinitialisation complète
+
+</h3>
+
+<p>
+
+Supprimer toutes les données locales.
+
+</p>
+
+<br>
+
+<button
+id="resetAppBtn"
+class="action-btn">
+
+🗑️ Réinitialiser l'application
+
+</button>
+
+</div>
+
+</section>
+<section
+id="notifications"
+class="tab-content">
+
+<h2 class="section-title">
+
+🔔 Notifications
+
+</h2>
+
+<div class="objectives-card">
+
+<h3>
+
+🆕 Nouvelles offres
+
+</h3>
+
+<div
+id="newOffersNotifications">
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+Aucune nouvelle offre
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+⭐ Favoris suivis
+
+</h3>
+
+<div
+id="favoritesNotifications">
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+Aucun favori à suivre
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+📋 Relances CRM
+
+</h3>
+
+<div
+id="crmNotifications">
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+Aucune relance prévue
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🎯 Objectifs
+
+</h3>
+
+<div
+id="goalNotifications">
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+Objectifs en cours
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🤖 Alertes IA
+
+</h3>
+
+<div
+id="aiNotifications">
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+Aucune alerte IA
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🕘 Historique notifications
+
+</h3>
+
+<div
+id="notificationsHistory">
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+Aucune notification enregistrée
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+<div
+class="floating-actions">
+
+<button
+id="floatingOffers"
+class="floating-btn"
+title="Première offre">
+
+💼
+
+</button>
+
+<button
+id="floatingFavorites"
+class="floating-btn"
+title="Favoris">
+
+⭐
+
+</button>
+
+<button
+id="floatingAI"
+class="floating-btn"
+title="CV IA">
+
+🤖
+
+</button>
+
+<button
+id="floatingTop"
+class="floating-btn"
+title="Retour haut">
+
+⬆️
+
+</button>
+
+</div>
+
+<template
+id="offerTemplate">
+
+<div
+class="offer-card">
+
+<div
+class="offer-title">
+
+Titre offre
+
+</div>
+
+<div
+class="offer-company">
+
+Entreprise
+
+</div>
+
+<div
+class="recommended">
+
+🔥 Très recommandé
+
+</div>
+
+<div
+style="
+margin-top:10px;
+font-weight:700;
+color:#c28b14;
+">
+
+95%
+Compatible avec votre profil
+
+</div>
+
+<div
+style="
+margin-top:10px;
+line-height:1.7;
+">
+
+✓ Correspond à votre expérience
+
+<br>
+
+✓ Correspond à votre profil
+
+<br>
+
+✓ Secteur compatible
+
+<br>
+
+✓ Télétravail disponible
+
+</div>
+
+<div
+style="
+margin-top:12px;
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+">
+
+<button
+class="action-btn">
+
+⭐ Favori
+
+</button>
+
+<button
+class="action-btn">
+
+📋 CRM
+
+</button>
+
+<a
+href="#"
+target="_blank"
+rel="noopener noreferrer"
+class="action-btn"
+style="
+display:inline-block;
+text-decoration:none;
+">
+
+🔗 Voir l'offre
+
+</a>
+
+</div>
+
+</div>
+
+</template>
+<script>
 
 const appState = {
 
 offers:[],
-
 favorites:[],
-
 crm:[],
-
 notifications:[],
-
 history:[],
-
 settings:{
-
-language:"fr",
-
-notifications:true
-
+notifications:true,
+language:"fr"
 }
 
 };
@@ -2329,350 +2637,76 @@ FILTRES
 
 function toggleFilter(id){
 
-const element =
+const el =
 
 document.getElementById(
 id
 );
 
-if(
-element.style.display ===
+if(!el) return;
+
+el.style.display =
+
+el.style.display ===
 "block"
-){
-
-element.style.display =
-"none";
-
-}else{
-
-element.style.display =
+?
+"none"
+:
 "block";
 
 }
 
-}
-
 /* ==========================================
-RECHERCHER
+OFFRES
 ========================================== */
 
-document
-.getElementById(
-"btnSearch"
-)
-?.addEventListener(
-"click",
-applyFilters
+async function loadOffers(){
+
+try{
+
+const response =
+
+await fetch(
+"offers.json"
 );
 
-function applyFilters(){
+const data =
+
+await response.json();
+
+appState.offers =
+
+data.filter(
+
+offer=>
+
+!offer.title
+.toLowerCase()
+.includes(
+"assistant ppe"
+)
+
+&&
+
+!offer.title
+.toLowerCase()
+.includes(
+"assistant de courtage"
+)
+
+);
 
 renderOffers();
 
-}
+}catch(error){
 
-/* ==========================================
-RÉINITIALISER FILTRES
-========================================== */
-
-function resetFilters(){
-
-document
-.querySelectorAll(
-'.filter-content input[type="checkbox"]'
-)
-.forEach(input=>{
-
-input.checked = false;
-
-});
-
-renderOffers();
-
-}
-
-document
-.getElementById(
-"btnReset"
-)
-?.addEventListener(
-"click",
-resetFilters
+console.error(
+error
 );
-
-document
-.getElementById(
-"resetFiltersBtn"
-)
-?.addEventListener(
-"click",
-resetFilters
-);
-
-/* ==========================================
-NOTIFICATIONS
-========================================== */
-
-document
-.getElementById(
-"btnNotifications"
-)
-?.addEventListener(
-"click",
-()=>{
-
-showTab(
-"notifications"
-);
-
-});
-
-/* ==========================================
-PARAMÈTRES
-========================================== */
-
-document
-.getElementById(
-"btnSettings"
-)
-?.addEventListener(
-"click",
-()=>{
-
-showTab(
-"settings"
-);
-
-});
-
-/* ==========================================
-BOUTONS FLOTTANTS
-========================================== */
-
-document
-.getElementById(
-"floatingTop"
-)
-?.addEventListener(
-"click",
-()=>{
-
-window.scrollTo({
-
-top:0,
-
-behavior:"smooth"
-
-});
-
-});
-
-document
-.getElementById(
-"floatingFavorites"
-)
-?.addEventListener(
-"click",
-()=>{
-
-showTab(
-"favorites"
-);
-
-});
-
-document
-.getElementById(
-"floatingAI"
-)
-?.addEventListener(
-"click",
-()=>{
-
-showTab(
-"ai"
-);
-
-});
-
-document
-.getElementById(
-"floatingOffers"
-)
-?.addEventListener(
-"click",
-()=>{
-
-showTab(
-"offers"
-);
-
-const firstOffer =
-
-document.querySelector(
-".offer-card"
-);
-
-if(firstOffer){
-
-firstOffer.scrollIntoView({
-
-behavior:"smooth"
-
-});
-
-}
-
-});
-
-/* ==========================================
-OBJECTIFS
-========================================== */
-
-function updateGoals(
-
-weekly,
-
-monthly
-
-){
-
-const weeklyPercent =
-
-Math.min(
-(weekly/3)*100,
-100
-);
-
-const monthlyPercent =
-
-Math.min(
-(monthly/12)*100,
-100
-);
-
-const weeklyBar =
-
-document.getElementById(
-"weeklyProgress"
-);
-
-const monthlyBar =
-
-document.getElementById(
-"monthlyProgress"
-);
-
-if(weeklyBar){
-
-weeklyBar.style.width =
-
-weeklyPercent + "%";
-
-}
-
-if(monthlyBar){
-
-monthlyBar.style.width =
-
-monthlyPercent + "%";
-
-}
-
-if(
-weekly >= 3
-){
-
-const badge =
-
-document.getElementById(
-"weeklyAchievement"
-);
-
-if(badge){
-
-badge.style.display =
-"block";
 
 }
 
 }
-
-if(
-monthly >= 12
-){
-
-const badge =
-
-document.getElementById(
-"monthlyAchievement"
-);
-
-if(badge){
-
-badge.style.display =
-"block";
-
-}
-
-}
-
-}
-
-/* ==========================================
-STATISTIQUES
-========================================== */
-
-function updateStatistics(){
-
-document
-.getElementById(
-"responseRate"
-)
-.textContent =
-"0%";
-
-document
-.getElementById(
-"interviewRate"
-)
-.textContent =
-"0%";
-
-document
-.getElementById(
-"successRate"
-)
-.textContent =
-"0%";
-
-}
-
-/* ==========================================
-COMPTEUR OFFRES
-========================================== */
-
-function updateResultsCounter(){
-
-const counter =
-
-document.getElementById(
-"resultsCounter"
-);
-
-if(counter){
-
-counter.textContent =
-
-appState.offers.length +
-" offres trouvées";
-
-}
-
-}
-/* ==========================================
-RENDER OFFRES
-========================================== */
 
 function renderOffers(){
 
@@ -2709,7 +2743,7 @@ ${offer.title}
 
 <div class="offer-company">
 
-${offer.company || ""}
+${offer.company}
 
 </div>
 
@@ -2721,11 +2755,11 @@ ${offer.company || ""}
 
 <div style="
 margin-top:10px;
-font-weight:bold;
+font-weight:700;
 color:#c28b14;
 ">
 
-${offer.score || 92}%
+${offer.score}%
 Compatible avec votre profil
 
 </div>
@@ -2743,7 +2777,7 @@ line-height:1.7;
 
 <br>
 
-✓ Secteur favori
+✓ Secteur compatible
 
 <br>
 
@@ -2760,7 +2794,7 @@ flex-wrap:wrap;
 
 <button
 class="action-btn"
-onclick="addFavorite('${offer.id}')">
+onclick="addFavorite(${offer.id})">
 
 ⭐ Favori
 
@@ -2768,20 +2802,19 @@ onclick="addFavorite('${offer.id}')">
 
 <button
 class="action-btn"
-onclick="addCRM('${offer.id}')">
+onclick="addCRM(${offer.id})">
 
 📋 CRM
 
 </button>
 
 <a
-href="${offer.url || '#'}"
+href="${offer.url}"
 target="_blank"
-rel="noopener noreferrer"
 class="action-btn"
 style="
-text-decoration:none;
 display:inline-block;
+text-decoration:none;
 ">
 
 🔗 Voir l'offre
@@ -2800,7 +2833,7 @@ card
 
 );
 
-updateResultsCounter();
+updateKPIs();
 
 }
 
@@ -2814,7 +2847,7 @@ const offer =
 
 appState.offers.find(
 
-o=>o.id==id
+o=>o.id===id
 
 );
 
@@ -2824,13 +2857,60 @@ appState.favorites.push(
 offer
 );
 
-document
-.getElementById(
-"kpiFavorites"
-)
-.textContent =
+renderFavorites();
 
-appState.favorites.length;
+updateKPIs();
+
+}
+
+function renderFavorites(){
+
+const container =
+
+document.getElementById(
+"favoritesContainer"
+);
+
+if(!container) return;
+
+container.innerHTML = "";
+
+appState.favorites.forEach(
+
+offer=>{
+
+const card =
+
+document.createElement(
+"div"
+);
+
+card.className =
+"offer-card";
+
+card.innerHTML = `
+
+<div class="offer-title">
+
+${offer.title}
+
+</div>
+
+<div class="offer-company">
+
+${offer.company}
+
+</div>
+
+`;
+
+container.appendChild(
+card
+);
+
+}
+
+);
 
 }
 
@@ -2844,7 +2924,7 @@ const offer =
 
 appState.offers.find(
 
-o=>o.id==id
+o=>o.id===id
 
 );
 
@@ -2854,77 +2934,261 @@ appState.crm.push(
 offer
 );
 
-document
-.getElementById(
-"kpiApplications"
-)
-.textContent =
+updateKPIs();
 
+}
+
+/* ==========================================
+KPI
+========================================== */
+
+function updateKPIs(){
+
+const offersKPI =
+
+document.getElementById(
+"kpiOffers"
+);
+
+if(offersKPI){
+
+offersKPI.textContent =
+appState.offers.length;
+
+}
+
+const favKPI =
+
+document.getElementById(
+"kpiFavorites"
+);
+
+if(favKPI){
+
+favKPI.textContent =
+appState.favorites.length;
+
+}
+
+const crmKPI =
+
+document.getElementById(
+"kpiApplications"
+);
+
+if(crmKPI){
+
+crmKPI.textContent =
 appState.crm.length;
 
 }
 
-/* ==========================================
-HISTORIQUE
-========================================== */
+const counter =
 
-function addHistory(search){
-
-appState.history.unshift(
-search
+document.getElementById(
+"resultsCounter"
 );
 
-if(
-appState.history.length > 10
-){
+if(counter){
 
-appState.history.pop();
+counter.textContent =
+
+appState.offers.length +
+" offres trouvées";
 
 }
 
 }
 
 /* ==========================================
-PWA
+OBJECTIFS
 ========================================== */
 
-let deferredPrompt;
+function updateGoals(){
 
-window.addEventListener(
+const weekly =
 
-"beforeinstallprompt",
+Math.min(
+appState.crm.length,
+3
+);
 
-e=>{
+const monthly =
 
-e.preventDefault();
+Math.min(
+appState.crm.length,
+12
+);
 
-deferredPrompt = e;
+const weeklyPercent =
+
+(weekly/3)*100;
+
+const monthlyPercent =
+
+(monthly/12)*100;
+
+const weeklyBar =
+
+document.getElementById(
+"weeklyProgress"
+);
+
+const monthlyBar =
+
+document.getElementById(
+"monthlyProgress"
+);
+
+if(weeklyBar){
+
+weeklyBar.style.width =
+weeklyPercent + "%";
 
 }
 
+if(monthlyBar){
+
+monthlyBar.style.width =
+monthlyPercent + "%";
+
+}
+
+if(appState.crm.length>=3){
+
+const badge =
+
+document.getElementById(
+"weeklyAchievement"
+);
+
+if(badge){
+
+badge.style.display =
+"block";
+
+}
+
+}
+
+if(appState.crm.length>=12){
+
+const badge =
+
+document.getElementById(
+"monthlyAchievement"
+);
+
+if(badge){
+
+badge.style.display =
+"block";
+
+}
+
+}
+
+}
+
+/* ==========================================
+BOUTONS HAUT
+========================================== */
+
+document
+.getElementById(
+"btnNotifications"
+)
+?.addEventListener(
+"click",
+()=>showTab(
+"notifications"
+)
 );
 
 document
 .getElementById(
-"installPwaBtn"
+"btnSettings"
 )
 ?.addEventListener(
-
 "click",
+()=>showTab(
+"settings"
+)
+);
 
-async()=>{
+document
+.getElementById(
+"btnReset"
+)
+?.addEventListener(
+"click",
+()=>{
 
-if(
-!deferredPrompt
-) return;
+document
+.querySelectorAll(
+'input[type="checkbox"]'
+)
+.forEach(
 
-deferredPrompt.prompt();
-
-await deferredPrompt.userChoice;
-
-}
+c=>c.checked=false
 
 );
+
+});
+
+/* ==========================================
+BOUTONS FLOTTANTS
+========================================== */
+
+document
+.getElementById(
+"floatingOffers"
+)
+?.addEventListener(
+"click",
+()=>showTab(
+"offers"
+)
+);
+
+document
+.getElementById(
+"floatingFavorites"
+)
+?.addEventListener(
+"click",
+()=>showTab(
+"favorites"
+)
+);
+
+document
+.getElementById(
+"floatingAI"
+)
+?.addEventListener(
+"click",
+()=>showTab(
+"ai"
+)
+);
+
+document
+.getElementById(
+"floatingTop"
+)
+?.addEventListener(
+"click",
+()=>{
+
+window.scrollTo({
+
+top:0,
+behavior:"smooth"
+
+});
+
+});
 
 /* ==========================================
 EXPORT JSON
@@ -2935,112 +3199,92 @@ document
 "exportJsonBtn"
 )
 ?.addEventListener(
-
 "click",
-
 ()=>{
 
-const data =
+const blob =
 
+new Blob(
+
+[
 JSON.stringify(
 appState,
 null,
 2
-);
+)
+],
 
-const blob =
-
-new Blob(
-[data],
 {
 type:
 "application/json"
 }
+
 );
 
-const link =
+const a =
 
 document.createElement(
 "a"
 );
 
-link.href =
+a.href =
 
 URL.createObjectURL(
 blob
 );
 
-link.download =
+a.download =
 "jobfinder-vaud.json";
 
-link.click();
+a.click();
 
-}
-
-);
+});
 
 /* ==========================================
-EXPORT CSV
+CHARTS
 ========================================== */
 
-document
-.getElementById(
-"exportCsvBtn"
-)
-?.addEventListener(
+function initCharts(){
 
-"click",
+const canvas =
 
-()=>{
-
-let csv =
-
-"id,title,company\n";
-
-appState.offers.forEach(
-
-offer=>{
-
-csv +=
-
-`${offer.id},
-${offer.title},
-${offer.company}\n`;
-
-}
-
+document.getElementById(
+"applicationsChart"
 );
 
-const blob =
+if(!canvas) return;
 
-new Blob(
-[csv],
+new Chart(
+
+canvas,
+
 {
-type:
-"text/csv"
+type:"bar",
+data:{
+labels:[
+"Lun",
+"Mar",
+"Mer",
+"Jeu",
+"Ven"
+],
+datasets:[{
+label:
+"Candidatures",
+data:[
+1,
+2,
+3,
+2,
+4
+]
+}]
 }
-);
-
-const link =
-
-document.createElement(
-"a"
-);
-
-link.href =
-
-URL.createObjectURL(
-blob
-);
-
-link.download =
-"jobfinder-vaud.csv";
-
-link.click();
-
 }
 
 );
+
+}
 
 /* ==========================================
 INITIALISATION
@@ -3051,25 +3295,20 @@ document
 
 "DOMContentLoaded",
 
-()=>{
+async()=>{
 
-updateGoals(
-0,
-0
-);
+await loadOffers();
 
-updateStatistics();
+renderFavorites();
 
-renderOffers();
+updateKPIs();
+
+updateGoals();
+
+initCharts();
 
 }
 
 );
 
 </script>
-
-</main>
-
-</body>
-
-</html>
