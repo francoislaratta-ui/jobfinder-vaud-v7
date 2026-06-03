@@ -1,372 +1,326 @@
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+app.use(express.static(__dirname));
+
+const FAVORITES_FILE =
+path.join(__dirname,"favorites.json");
+
+const CRM_FILE =
+path.join(__dirname,"crm.json");
 
 /* ==========================================
-   JOB FINDER VAUD
-   V8.6.2 PREMIUM IA PRO
-   Créateur F. Laratta
+UTILS
 ========================================== */
 
-const express =
-require(
-"express"
-);
+function readJson(file, fallback = []) {
 
-const path =
-require(
-"path"
-);
+  try {
 
-const fs =
-require(
-"fs"
-);
+    if (!fs.existsSync(file)) {
+      return fallback;
+    }
 
-const app =
-express();
+    const data =
+    fs.readFileSync(
+      file,
+      "utf8"
+    );
 
-const PORT =
-process.env.PORT ||
-3000;
+    return JSON.parse(data);
 
-/* ==========================================
-   MIDDLEWARES
-========================================== */
+  } catch {
 
-app.use(
+    return fallback;
 
-express.json({
-limit:"10mb"
-})
-
-);
-
-app.use(
-
-express.urlencoded({
-
-extended:true
-
-})
-
-);
-
-app.use(
-
-express.static(
-
-path.join(
-__dirname
-)
-
-)
-
-);
-
-/* ==========================================
-   PAGE PRINCIPALE
-========================================== */
-
-app.get(
-
-"/",
-
-(req,res)=>{
-
-res.sendFile(
-
-path.join(
-
-__dirname,
-
-"index.html"
-
-)
-
-);
+  }
 
 }
 
-);
+function saveJson(file,data){
+
+  fs.writeFileSync(
+    file,
+    JSON.stringify(
+      data,
+      null,
+      2
+    )
+  );
+
+}
 
 /* ==========================================
-   API OFFRES
+HOME
 ========================================== */
 
-app.get(
+app.get("/",(req,res)=>{
 
-"/api/offers",
-
-(req,res)=>{
-
-try{
-
-const offers =
-
-JSON.parse(
-
-fs.readFileSync(
-
-path.join(
-
-__dirname,
-
-"offers.json"
-
-),
-
-"utf8"
-
-)
-
-);
-
-res.json(
-offers
-);
-
-}catch(error){
-
-console.error(
-error
-);
-
-res.status(500).json({
-
-error:
-"Erreur lecture offres"
+  res.sendFile(
+    path.join(
+      __dirname,
+      "index.html"
+    )
+  );
 
 });
 
-}
+/* ==========================================
+OFFERS
+========================================== */
 
-}
+app.get("/api/offers",(req,res)=>{
 
-);
+  const offers = readJson(
+    path.join(
+      __dirname,
+      "offers.json"
+    ),
+    []
+  );
+
+  res.json(
+    offers
+  );
+
+});
 
 /* ==========================================
-   API SANTE
+FAVORITES
 ========================================== */
 
 app.get(
+"/api/favorites",
+(req,res)=>{
 
+  res.json(
+    readJson(
+      FAVORITES_FILE,
+      []
+    )
+  );
+
+});
+
+app.post(
+"/api/favorites",
+(req,res)=>{
+
+  const favorites =
+  readJson(
+    FAVORITES_FILE,
+    []
+  );
+
+  favorites.push(
+    req.body
+  );
+
+  saveJson(
+    FAVORITES_FILE,
+    favorites
+  );
+
+  res.json({
+
+    success:true
+
+  });
+
+});
+
+app.delete(
+"/api/favorites/:id",
+(req,res)=>{
+
+  const id =
+  Number(
+    req.params.id
+  );
+
+  const favorites =
+  readJson(
+    FAVORITES_FILE,
+    []
+  ).filter(
+
+    item =>
+    item.id !== id
+
+  );
+
+  saveJson(
+    FAVORITES_FILE,
+    favorites
+  );
+
+  res.json({
+
+    success:true
+
+  });
+
+});
+
+/* ==========================================
+CRM
+========================================== */
+
+app.get(
+"/api/crm",
+(req,res)=>{
+
+  res.json(
+    readJson(
+      CRM_FILE,
+      []
+    )
+  );
+
+});
+
+app.post(
+"/api/crm",
+(req,res)=>{
+
+  const crm =
+  readJson(
+    CRM_FILE,
+    []
+  );
+
+  crm.push(
+    req.body
+  );
+
+  saveJson(
+    CRM_FILE,
+    crm
+  );
+
+  res.json({
+
+    success:true
+
+  });
+
+});
+
+app.delete(
+"/api/crm/:id",
+(req,res)=>{
+
+  const id =
+  Number(
+    req.params.id
+  );
+
+  const crm =
+  readJson(
+    CRM_FILE,
+    []
+  ).filter(
+
+    item =>
+    item.id !== id
+
+  );
+
+  saveJson(
+    CRM_FILE,
+    crm
+  );
+
+  res.json({
+
+    success:true
+
+  });
+
+});
+
+/* ==========================================
+STATISTICS
+========================================== */
+
+app.get(
+"/api/stats",
+(req,res)=>{
+
+  const favorites =
+  readJson(
+    FAVORITES_FILE,
+    []
+  );
+
+  const crm =
+  readJson(
+    CRM_FILE,
+    []
+  );
+
+  res.json({
+
+    offers:
+    readJson(
+      path.join(
+        __dirname,
+        "offers.json"
+      ),
+      []
+    ).length,
+
+    favorites:
+    favorites.length,
+
+    applications:
+    crm.length
+
+  });
+
+});
+
+/* ==========================================
+HEALTH
+========================================== */
+
+app.get(
 "/api/health",
-
 (req,res)=>{
 
-res.json({
+  res.json({
 
-status:"ok",
+    status:"ok",
 
-application:
+    app:
+    "Job Finder Vaud",
 
-"Job Finder Vaud",
+    version:
+    "13.0.1"
 
-version:
-
-"8.6.2",
-
-creator:
-
-"F. Laratta",
-
-timestamp:
-
-new Date()
+  });
 
 });
 
-}
-
-);
-
 /* ==========================================
-   API ANALYSE IA
-========================================== */
-
-app.post(
-
-"/api/analyze",
-
-(req,res)=>{
-
-const {
-
-cv,
-
-offer
-
-} = req.body;
-
-let score = 70;
-
-if(
-
-cv &&
-cv.toLowerCase()
-.includes(
-"administratif"
-)
-
-){
-
-score += 10;
-
-}
-
-if(
-
-cv &&
-cv.toLowerCase()
-.includes(
-"commerce"
-)
-
-){
-
-score += 10;
-
-}
-
-if(
-
-cv &&
-cv.toLowerCase()
-.includes(
-"informatique"
-)
-
-){
-
-score += 10;
-
-}
-
-if(score > 98){
-
-score = 98;
-
-}
-
-res.json({
-
-compatibility:
-
-score
-
-});
-
-}
-
-);
-
-/* ==========================================
-   API LETTRE
-========================================== */
-
-app.post(
-
-"/api/letter",
-
-(req,res)=>{
-
-const {
-
-company,
-
-job
-
-} = req.body;
-
-const letter =
-
-`Madame, Monsieur,
-
-Je vous présente ma candidature pour le poste :
-
-${job || ""}
-
-au sein de :
-
-${company || ""}
-
-Je suis particulièrement motivé par cette opportunité et serais heureux de pouvoir vous rencontrer.
-
-Veuillez agréer, Madame, Monsieur, mes salutations distinguées.`;
-
-res.json({
-
-letter
-
-});
-
-}
-
-);
-
-/* ==========================================
-   404
-========================================== */
-
-app.use(
-
-(req,res)=>{
-
-res.status(404).json({
-
-error:
-"Route introuvable"
-
-});
-
-}
-
-);
-
-/* ==========================================
-   START
+START
 ========================================== */
 
 app.listen(
-
 PORT,
-
 ()=>{
 
-console.log(
+  console.log(
 
-"==================================="
+    `Job Finder Vaud V13.0.1 lancé sur le port ${PORT}`
 
-);
+  );
 
-console.log(
-
-"JOB FINDER VAUD"
-
-);
-
-console.log(
-
-"V8.6.2 PREMIUM IA PRO"
-
-);
-
-console.log(
-
-"Créateur F. Laratta"
-
-);
-
-console.log(
-
-`Serveur actif : ${PORT}`
-
-);
-
-console.log(
-
-"==================================="
-
-);
-
-}
-
-);
+});
