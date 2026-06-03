@@ -1,12 +1,5 @@
-
-/* ==========================================
-   JOB FINDER VAUD
-   V8.6.2 PREMIUM IA PRO
-   Créateur F. Laratta
-========================================== */
-
 const CACHE_NAME =
-"jobfinder-vaud-v862";
+"jobfinder-vaud-v13";
 
 const urlsToCache = [
 
@@ -17,10 +10,6 @@ const urlsToCache = [
 
 ];
 
-/* ==========================================
-   INSTALL
-========================================== */
-
 self.addEventListener(
 
 "install",
@@ -29,88 +18,23 @@ event=>{
 
 event.waitUntil(
 
-caches
-.open(
+caches.open(
 CACHE_NAME
 )
-.then(
 
-cache=>{
+.then(cache=>{
 
 return cache.addAll(
-
 urlsToCache
+);
+
+})
 
 );
 
 }
 
-)
-
 );
-
-self.skipWaiting();
-
-}
-
-);
-
-/* ==========================================
-   ACTIVATE
-========================================== */
-
-self.addEventListener(
-
-"activate",
-
-event=>{
-
-event.waitUntil(
-
-caches.keys()
-.then(
-
-keys=>{
-
-return Promise.all(
-
-keys.map(
-
-key=>{
-
-if(
-
-key !== CACHE_NAME
-
-){
-
-return caches.delete(
-key
-);
-
-}
-
-}
-
-)
-
-);
-
-}
-
-)
-
-);
-
-self.clients.claim();
-
-}
-
-);
-
-/* ==========================================
-   FETCH
-========================================== */
 
 self.addEventListener(
 
@@ -123,154 +47,57 @@ event.respondWith(
 caches.match(
 event.request
 )
-.then(
 
-response=>{
+.then(response=>{
 
-if(response){
-
-return response;
-
-}
-
-return fetch(
+return (
+response ||
+fetch(
 event.request
-);
-
-}
-
 )
+);
+
+})
 
 );
 
 }
 
 );
-
-/* ==========================================
-   PUSH NOTIFICATIONS
-========================================== */
 
 self.addEventListener(
 
-"push",
+"activate",
 
 event=>{
-
-const data =
-
-event.data
-? event.data.text()
-: "Nouvelle offre disponible";
-
-const options = {
-
-body:data,
-
-icon:"icon-192.png",
-
-badge:"icon-192.png",
-
-vibrate:[
-200,
-100,
-200
-],
-
-requireInteraction:false
-
-};
 
 event.waitUntil(
 
-self.registration
-.showNotification(
+caches.keys()
 
-"Job Finder Vaud",
+.then(keys=>{
 
-options
+return Promise.all(
 
-)
-
-);
-
-}
-
-);
-
-/* ==========================================
-   NOTIFICATION CLICK
-========================================== */
-
-self.addEventListener(
-
-"notificationclick",
-
-event=>{
-
-event.notification.close();
-
-event.waitUntil(
-
-clients.openWindow(
-"/"
-)
-
-);
-
-}
-
-);
-
-/* ==========================================
-   BACKGROUND SYNC
-========================================== */
-
-self.addEventListener(
-
-"sync",
-
-event=>{
+keys.map(key=>{
 
 if(
-
-event.tag ===
-"jobfinder-sync"
-
+key !== CACHE_NAME
 ){
 
-event.waitUntil(
-
-Promise.resolve()
-
+return caches.delete(
+key
 );
 
 }
 
-}
+})
 
 );
 
-/* ==========================================
-   MESSAGE
-========================================== */
+})
 
-self.addEventListener(
-
-"message",
-
-event=>{
-
-if(
-
-event.data ===
-"SKIP_WAITING"
-
-){
-
-self.skipWaiting();
-
-}
+);
 
 }
 
