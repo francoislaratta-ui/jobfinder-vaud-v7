@@ -836,13 +836,9 @@ border:
 }
 
 #offersContainer{
-
-display:flex;
-
-flex-direction:column;
-
-gap:12px;
-
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:16px;
 }
 
 /* ==========================================
