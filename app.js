@@ -1,5 +1,5 @@
 /* ==========================================
-JOB FINDER VAUD V14.1.0 PREMIUM IA
+JOB FINDER VAUD V14.2.0 PREMIUM IA
 Créateur : F. Laratta
 ========================================== */
 
@@ -8,39 +8,32 @@ STORAGE
 ========================================== */
 
 const STORAGE_KEYS = {
-
-favorites:
-"jobfinder_favorites",
-
-applications:
-"jobfinder_applications",
-
-settings:
-"jobfinder_settings",
-
-stats:
-"jobfinder_stats",
-
-offers:
-"jobfinder_offers",
-
-letters:
-"jobfinder_letters"
-
+favorites: "jobfinder_favorites",
+applications: "jobfinder_applications",
+settings: "jobfinder_settings",
+stats: "jobfinder_stats",
+offers: "jobfinder_offers",
+letters: "jobfinder_letters"
 };
 
 /* ==========================================
-INITIALISATION SAFE V14.1.1 (OFFICIAL CLEAN)
+CONFIGURATION
 ========================================== */
 
-/* SAFE HELPERS */
+const APP_VERSION = "14.2.0";
+
+const WEEKLY_TARGET = 3;
+const MONTHLY_TARGET = 12;
+
+/* ==========================================
+SAFE HELPERS
+========================================== */
 
 function safeArray(arr){
 return Array.isArray(arr) ? arr : [];
 }
 
 function safeJSON(value, fallback){
-
 if(value === null || value === undefined){
 return fallback;
 }
@@ -50,24 +43,90 @@ return JSON.parse(value);
 }catch(e){
 return fallback;
 }
-
 }
 
-/* SAFE STORAGE ACCESS */
-
-function getStorage(key, fallback){
+function getStorage(key, fallback = null){
 try{
-if(typeof localStorage === "undefined") return fallback;
-return localStorage.getItem(key);
+if(typeof localStorage === "undefined"){
+return fallback;
+}
+
+const value = localStorage.getItem(key);
+
+return value === null ? fallback : value;
 }catch(e){
 return fallback;
 }
 }
 
-/* OFFRES */
+function setStorage(key, value){
+try{
+if(typeof localStorage === "undefined"){
+return false;
+}
+
+localStorage.setItem(
+key,
+JSON.stringify(value)
+);
+
+return true;
+}catch(e){
+console.error("Erreur stockage :", e);
+return false;
+}
+}
+
+function safeGetValue(element){
+return element ? element.value : "";
+}
+
+function safeSetText(element, text){
+if(element){
+element.textContent = text;
+}
+}
+
+function safeSetHTML(element, html){
+if(element){
+element.innerHTML = html;
+}
+}
+
+function escapeHTML(value){
+return String(value || "")
+.replace(/&/g, "&amp;")
+.replace(/</g, "&lt;")
+.replace(/>/g, "&gt;")
+.replace(/"/g, "&quot;")
+.replace(/'/g, "&#039;");
+}
+
+function normalizeText(value){
+return String(value || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "")
+.trim();
+}
+
+function containsNormalized(source, search){
+const s = normalizeText(source);
+const q = normalizeText(search);
+
+if(!s || !q){
+return false;
+}
+
+return s.includes(q);
+}
+
+/* ==========================================
+ETAT APPLICATION
+========================================== */
+
 let offers = [];
 
-/* FAVORIS */
 let favorites =
 safeArray(
 safeJSON(
@@ -76,7 +135,6 @@ getStorage(STORAGE_KEYS.favorites),
 )
 );
 
-/* CANDIDATURES */
 let applications =
 safeArray(
 safeJSON(
@@ -85,14 +143,12 @@ getStorage(STORAGE_KEYS.applications),
 )
 );
 
-/* SETTINGS */
 let settings =
 safeJSON(
 getStorage(STORAGE_KEYS.settings),
 {}
 );
 
-/* LETTRES IA */
 let lettersHistory =
 safeArray(
 safeJSON(
@@ -101,113 +157,100 @@ getStorage(STORAGE_KEYS.letters),
 )
 );
 
-/* CV */
 let currentCV = null;
-
-/* LETTRE ACTIVE */
 let currentLetter = "";
-
-/* OFFRE SÉLECTIONNÉE */
 let selectedOffer = null;
 
+let notificationsEnabled = true;
+let deferredPrompt = null;
+
+let bestOffer = null;
+let filteredOffers = [];
+let employersList = [];
 
 /* ==========================================
-V14.2.0 IA ENGINE
+PROFIL IA V14.2.0
 ========================================== */
 
 const userProfile = {
-
-targetJobs:[
-"Employé(e) de commerce",
+targetJobs: [
 "Employé de commerce",
+"Employée de commerce",
+"Employé(e) de commerce",
 "Assistant administratif",
+"Assistante administrative",
 "Gestionnaire de dossier",
-"Technicien informatique"
+"Gestionnaire administratif",
+"Collaborateur administratif",
+"Collaboratrice administrative",
+"Technicien informatique",
+"Support informatique",
+"Helpdesk",
+"Back-office"
 ],
 
-preferredSectors:[
+preferredSectors: [
 "Administration",
 "Administration publique",
 "Fiduciaire",
 "Informatique",
-"Immobilier"
+"Immobilier",
+"Services",
+"Santé",
+"Assurances",
+"Banque",
+"Collectivités publiques"
 ],
 
-preferredRegions:[
+preferredRegions: [
+"Vaud",
 "Lausanne",
 "Morges",
 "Nyon",
-"Vevey"
+"Vevey",
+"Renens",
+"Prilly",
+"Crissier",
+"Ecublens",
+"Yverdon",
+"Rolle",
+"Aigle",
+"Montreux"
 ],
 
-preferredRates:[
-"80%",
-"100%"
-]
+preferredRates: [
+"50%",
+"60%",
+"70%",
+"50-60%",
+"60-70%",
+"50 - 60%",
+"60 - 70%",
+"50 à 70%",
+"50% - 70%",
+"50-70%"
+],
 
+preferredContracts: [
+"CDI",
+"CDD",
+"Temporaire",
+"Fixe"
+]
 };
 
 const IA_WEIGHTS = {
-
-jobMatch:35,
-sectorMatch:25,
-regionMatch:20,
-rateMatch:10,
-contractBonus:10
-
+jobMatch: 35,
+sectorMatch: 20,
+regionMatch: 20,
+rateMatch: 15,
+contractBonus: 10
 };
-
-/* ==========================================
-ETAT APPLICATION
-========================================== */
-
-let notificationsEnabled =
-true;
-
-let deferredPrompt =
-null;
-
-/* ==========================================
-CONFIGURATION
-========================================== */
-
-const APP_VERSION =
-"14.1.0";
-
-const WEEKLY_TARGET = 3;
-
-const MONTHLY_TARGET = 12;
-
-/* ==========================================
-STATISTIQUES
-========================================== */
-
-const statistics = {
-
-offersViewed:0,
-
-lettersGenerated:0,
-
-cvAnalyses:0,
-
-applicationsSent:0
-
-};
-
-/* ==========================================
-MATCH IA
-========================================== */
 
 const MATCH_LEVELS = {
-
-excellent:90,
-
-veryGood:80,
-
-good:70,
-
-average:60
-
+excellent: 85,
+good: 70,
+average: 60
 };
 
 /* ==========================================
@@ -215,42 +258,19 @@ FILTRES ACTIFS
 ========================================== */
 
 let activeFilters = {
-
-jobs:[],
-
-sectors:[],
-
-rates:[],
-
-contracts:[],
-
-regions:[],
-
-source:"",
-
-employer:"",
-
-minimumMatch:"",
-
-sort:"match"
-
+jobs: [],
+sectors: [],
+rates: [],
+contracts: [],
+regions: [],
+source: "",
+employer: "",
+minimumMatch: "",
+sort: "match"
 };
 
 /* ==========================================
-CACHE APPLICATION
-========================================== */
-
-let bestOffer = null;
-
-let filteredOffers = [];
-
-let employersList = [];
-
-/* ==========================================
-FIN P1/8
-========================================== */
-/* ==========================================
-DOM - RÉFÉRENCES PRINCIPALES
+DOM - REFERENCES PRINCIPALES
 ========================================== */
 
 const offersContainer =
@@ -351,100 +371,45 @@ NOTIFICATIONS
 
 const notificationToggle =
 document.getElementById("notificationToggle");
-
 /* ==========================================
-INITIALISATION UI
-========================================== */
-
-function initUI(){
-
-if(notificationToggle){
-
-notificationToggle.addEventListener(
-"click",
-() => {
-
-notificationsEnabled =
-!notificationsEnabled;
-
-notificationToggle.textContent =
-notificationsEnabled
-? "Notifications activées"
-: "Notifications désactivées";
-
-}
-);
-
-}
-
-}
-
-/* ==========================================
-HELPERS UI (SAFETY FALLBACKS)
-========================================== */
-
-function safeGetValue(element){
-
-return element ? element.value : "";
-
-}
-
-function safeSetText(element, text){
-
-if(element){
-
-element.textContent = text;
-
-}
-
-}
-
-/* ==========================================
-FIN P2/8
-========================================== */
-/* ==========================================
-FONCTIONS UTILITAIRES
+UTILITAIRES
 ========================================== */
 
 function formatDate(date){
+if(!date){
+return "";
+}
 
-if(!date) return "";
-
+try{
 return new Date(date).toLocaleDateString("fr-CH");
-
+}catch(e){
+return String(date);
+}
 }
 
 function generateId(){
-
 return Date.now().toString() +
-Math.random().toString(36).substring(2,8);
-
+Math.random().toString(36).substring(2, 8);
 }
 
-/* ==========================================
-NOTIFICATIONS UI
-========================================== */
-
 function showSuccess(message){
-
-if(!notificationsEnabled) return;
+if(!notificationsEnabled){
+return;
+}
 
 alert("✅ " + message);
-
 }
 
 function showInfo(message){
-
-if(!notificationsEnabled) return;
+if(!notificationsEnabled){
+return;
+}
 
 alert("ℹ️ " + message);
-
 }
 
 function showError(message){
-
 alert("❌ " + message);
-
 }
 
 /* ==========================================
@@ -452,217 +417,332 @@ TAB NAVIGATION
 ========================================== */
 
 function openTab(tabId){
-
 const tabs =
 document.querySelectorAll(".tab-content");
 
 tabs.forEach(tab => {
-
 tab.classList.remove("active-tab");
-
 });
 
 const target =
 document.getElementById(tabId);
 
 if(target){
-
 target.classList.add("active-tab");
 
 window.scrollTo({
-
-top:0,
-
-behavior:"smooth"
-
+top: 0,
+behavior: "smooth"
 });
-
 }
-
 }
 
 /* ==========================================
-MATCH IA CORE
+INITIALISATION UI
 ========================================== */
 
-function calculateMatch(offer){
+function initUI(){
+if(notificationToggle){
+notificationToggle.addEventListener("click", () => {
+notificationsEnabled = !notificationsEnabled;
 
-if(!offer) return 0;
+notificationToggle.textContent =
+notificationsEnabled
+? "Notifications activées"
+: "Notifications désactivées";
+});
+}
+
+if(btnNotifications){
+btnNotifications.addEventListener("click", () => {
+openTab("notifications");
+});
+}
+
+if(btnSettings){
+btnSettings.addEventListener("click", () => {
+openTab("settings");
+});
+}
+
+if(btnReset){
+btnReset.addEventListener("click", resetFilters);
+}
+
+if(resetFiltersBtn){
+resetFiltersBtn.addEventListener("click", resetFilters);
+}
+
+if(searchOffersBtn){
+searchOffersBtn.addEventListener("click", applyFilters);
+}
+
+if(sourceFilter){
+sourceFilter.addEventListener("change", applyFilters);
+}
+
+if(employerFilter){
+employerFilter.addEventListener("change", applyFilters);
+}
+
+if(matchFilter){
+matchFilter.addEventListener("change", applyFilters);
+}
+
+if(sortFilter){
+sortFilter.addEventListener("change", applyFilters);
+}
+
+document
+.querySelectorAll("input[type='checkbox']")
+.forEach(checkbox => {
+checkbox.addEventListener("change", applyFilters);
+});
+}
+
+/* ==========================================
+MATCH IA - DETAILS
+========================================== */
+
+function getOfferText(offer){
+return [
+offer.title,
+offer.company,
+offer.sector,
+offer.location,
+offer.address,
+offer.rate,
+offer.contract,
+offer.source,
+offer.description
+]
+.join(" ");
+}
+
+function matchAnyOfferField(offer, values){
+const text = getOfferText(offer);
+
+return safeArray(values).some(value =>
+containsNormalized(text, value)
+);
+}
+
+function matchExactOrContains(value, values){
+const source = normalizeText(value);
+
+return safeArray(values).some(item => {
+const target = normalizeText(item);
+
+return source === target ||
+source.includes(target) ||
+target.includes(source);
+});
+}
+
+function calculateMatchDetails(offer){
+if(!offer){
+return {
+score: 0,
+reasons: [],
+missing: []
+};
+}
 
 let score = 0;
+const reasons = [];
+const missing = [];
 
-/* JOB MATCH */
-if(
-userProfile &&
-Array.isArray(userProfile.targetJobs) &&
-userProfile.targetJobs.some(job =>
-String(offer.title || "")
-.toLowerCase()
-.includes(
-String(job)
-.toLowerCase()
-)
-)
-){
+/* METIER */
+const jobOk =
+matchAnyOfferField(
+offer,
+userProfile.targetJobs
+);
 
+if(jobOk){
 score += IA_WEIGHTS.jobMatch;
-
+reasons.push("Métier compatible");
+}else{
+missing.push("Métier peu ciblé");
 }
-/* SECTOR MATCH */
-if(
-userProfile &&
-Array.isArray(userProfile.preferredSectors) &&
-userProfile.preferredSectors.includes(
-String(offer.sector || "")
-)
-){
 
+/* SECTEUR */
+const sectorOk =
+matchAnyOfferField(
+offer,
+userProfile.preferredSectors
+);
+
+if(sectorOk){
 score += IA_WEIGHTS.sectorMatch;
-
+reasons.push("Secteur intéressant");
+}else{
+missing.push("Secteur moins prioritaire");
 }
 
-/* REGION MATCH */
-if(
-userProfile &&
-Array.isArray(userProfile.preferredRegions) &&
-userProfile.preferredRegions.includes(
-String(offer.location || "")
-)
-){
+/* REGION */
+const regionOk =
+matchAnyOfferField(
+offer,
+userProfile.preferredRegions
+);
 
+if(regionOk){
 score += IA_WEIGHTS.regionMatch;
-
+reasons.push("Région compatible");
+}else{
+missing.push("Région à vérifier");
 }
-/* RATE MATCH */
-if(
-userProfile &&
-Array.isArray(userProfile.preferredRates) &&
-userProfile.preferredRates.includes(
-String(offer.rate || "")
-)
-){
 
+/* TAUX */
+const rateText =
+String(offer.rate || "");
+
+const rateOk =
+userProfile.preferredRates.some(rate =>
+containsNormalized(rateText, rate)
+) ||
+/50|60|70/.test(rateText);
+
+if(rateOk){
 score += IA_WEIGHTS.rateMatch;
-
+reasons.push("Taux compatible");
+}else{
+missing.push("Taux à vérifier");
 }
 
-/* CONTRACT BONUS */
-if(
-String(offer.contract || "") === "CDI"
-){
+/* CONTRAT */
+const contractOk =
+matchExactOrContains(
+offer.contract,
+userProfile.preferredContracts
+);
 
+if(contractOk){
 score += IA_WEIGHTS.contractBonus;
-
+reasons.push("Contrat compatible");
+}else{
+missing.push("Contrat à vérifier");
 }
 
-/* SALARY BONUS SAFE */
+/* BONUS SALAIRE */
 if(offer.salary){
-
 const salary =
 parseInt(
 String(offer.salary || "")
-.replace(/[^\d]/g, "")
+.replace(/[^\d]/g, ""),
+10
 );
 
-if(!isNaN(salary) && salary > 60000){
-
+if(!isNaN(salary) && salary >= 55000){
 score += 5;
-
+reasons.push("Salaire potentiellement intéressant");
+}
 }
 
+/* LIMITES */
+score = Math.max(0, Math.min(100, score));
+
+return {
+score: Math.round(score),
+reasons,
+missing
+};
 }
 
-/* LIMIT */
-if(score > 100){
-
-score = 100;
-
+function calculateMatch(offer){
+return calculateMatchDetails(offer).score;
 }
 
-if(score < 0){
-
-score = 0;
-
+function getMatchBadge(score){
+if(score >= MATCH_LEVELS.excellent){
+return "🤘🏼 Très bon match";
 }
 
-return Math.round(score);
+if(score >= MATCH_LEVELS.good){
+return "🤙🏼 Bon match";
+}
 
+if(score >= MATCH_LEVELS.average){
+return "🫣 Match possible";
+}
+
+return "🔎 À vérifier";
+}
+
+function getMatchClass(score){
+if(score >= 90){
+return "match-90";
+}
+
+if(score >= 80){
+return "match-80";
+}
+
+if(score >= 70){
+return "match-70";
+}
+
+return "match-60";
+}
+
+function getAverageMatch(data = offers){
+const list = safeArray(data);
+
+if(!list.length){
+return 0;
+}
+
+const total =
+list.reduce((sum, offer) =>
+sum + calculateMatch(offer), 0
+);
+
+return Math.round(total / list.length);
 }
 
 /* ==========================================
-LETTERS STORAGE
+STORAGE SAVE
 ========================================== */
 
 function saveLetters(){
-
-localStorage.setItem(
+setStorage(
 STORAGE_KEYS.letters,
-JSON.stringify(lettersHistory)
+lettersHistory
 );
-
 }
-
-/* ==========================================
-FAVORITES STORAGE
-========================================== */
 
 function saveFavorites(){
-
-localStorage.setItem(
+setStorage(
 STORAGE_KEYS.favorites,
-JSON.stringify(favorites)
+favorites
 );
-
 }
-
-/* ==========================================
-APPLICATIONS STORAGE
-========================================== */
 
 function saveApplications(){
-
-localStorage.setItem(
+setStorage(
 STORAGE_KEYS.applications,
-JSON.stringify(applications)
+applications
 );
-
 }
 
-/* ==========================================
-AVERAGE MATCH
-========================================== */
-
-function getAverageMatch(){
-
-if(!offers.length) return 0;
-
-const total =
-offers.reduce((sum, o) =>
-sum + calculateMatch(o), 0);
-
-return Math.round(total / offers.length);
-
+function saveSettings(){
+setStorage(
+STORAGE_KEYS.settings,
+settings
+);
 }
-
-/* ==========================================
-FIN P3/8
-========================================== */
 /* ==========================================
 CHARGEMENT OFFRES
 ========================================== */
+
 async function loadOffers(){
-
 try{
-
 const response =
-await fetch("./offers.json");
+await fetch("./offers.json?v=" + APP_VERSION);
 
 if(!response.ok){
-
-throw new Error(
-"HTTP " + response.status
-);
-
+throw new Error("HTTP " + response.status);
 }
 
 const data =
@@ -675,16 +755,20 @@ Array.isArray(data)
 
 offers =
 offers.map(offer => ({
-
 ...offer,
 
 id:
 String(
-offer.id || offer.externalId || generateId()
+offer.id ||
+offer.externalId ||
+generateId()
 ),
 
 offerUrl:
-offer.offerUrl || offer.url || "",
+offer.offerUrl ||
+offer.url ||
+offer.link ||
+"",
 
 address:
 offer.address || "",
@@ -699,80 +783,251 @@ sector:
 offer.sector || "",
 
 location:
-offer.location || "",
+offer.location ||
+offer.region ||
+"",
 
 rate:
-offer.rate || "",
+offer.rate ||
+offer.workRate ||
+"",
 
 contract:
-offer.contract || "",
+offer.contract ||
+offer.contractType ||
+"",
 
 title:
 offer.title || "",
 
 company:
-offer.company || "",
+offer.company ||
+offer.employer ||
+"",
 
 date:
-offer.date || ""
+offer.date ||
+offer.publishedAt ||
+"",
 
+description:
+offer.description || ""
 }));
 
-filteredOffers =
-[...offers];
+filteredOffers = [...offers];
 
 populateEmployersFilter();
-
-renderOffers(
-filteredOffers
-);
-
+renderOffers(filteredOffers);
 updateDashboard();
-
 updateBestMatch();
-
 updateNotifications();
+updateStatistics();
 
-}
-catch(error){
-
+}catch(error){
 console.error(
 "Erreur chargement offres :",
 error
 );
 
 offers = [];
-
 filteredOffers = [];
 
 if(offersContainer){
-
 offersContainer.innerHTML = `
-
 <div class="offer-card">
-
 <div class="offer-title">
 ❌ Erreur de chargement des offres
 </div>
-
 <div class="offer-reasons">
 Ouvre la console du navigateur pour voir le détail technique.
 </div>
-
 </div>
-
 `;
-
+}
+}
 }
 
-}
-
-}
+/* ==========================================
+FILTRE EMPLOYEURS
+========================================== */
 
 function populateEmployersFilter(){
-
+if(!employerFilter){
 return;
+}
 
+const employers =
+[...new Set(
+offers
+.map(offer => offer.company)
+.filter(Boolean)
+)]
+.sort((a, b) =>
+a.localeCompare(b, "fr")
+);
+
+employersList = employers;
+
+employerFilter.innerHTML =
+`<option value="">Tous les employeurs</option>` +
+employers.map(company =>
+`<option value="${escapeHTML(company)}">${escapeHTML(company)}</option>`
+).join("");
+}
+
+/* ==========================================
+LECTURE FILTRES
+========================================== */
+
+function getCheckedValues(name){
+return Array.from(
+document.querySelectorAll(`input[name="${name}"]:checked`)
+)
+.map(input => input.value)
+.filter(Boolean);
+}
+
+function readFilters(){
+activeFilters = {
+jobs: getCheckedValues("jobs"),
+sectors: getCheckedValues("sectors"),
+rates: getCheckedValues("rates"),
+contracts: getCheckedValues("contracts"),
+regions: getCheckedValues("regions"),
+source: safeGetValue(sourceFilter),
+employer: safeGetValue(employerFilter),
+minimumMatch: safeGetValue(matchFilter),
+sort: safeGetValue(sortFilter) || "match"
+};
+
+return activeFilters;
+}
+
+function offerPassesArrayFilter(offer, values){
+if(!values || values.length === 0){
+return true;
+}
+
+return values.some(value =>
+matchAnyOfferField(offer, [value])
+);
+}
+
+function applyFilters(){
+const filters = readFilters();
+
+let result =
+offers.filter(offer => {
+const match = calculateMatch(offer);
+
+if(!offerPassesArrayFilter(offer, filters.jobs)){
+return false;
+}
+
+if(!offerPassesArrayFilter(offer, filters.sectors)){
+return false;
+}
+
+if(!offerPassesArrayFilter(offer, filters.rates)){
+return false;
+}
+
+if(!offerPassesArrayFilter(offer, filters.contracts)){
+return false;
+}
+
+if(!offerPassesArrayFilter(offer, filters.regions)){
+return false;
+}
+
+if(filters.source &&
+!containsNormalized(offer.source, filters.source)){
+return false;
+}
+
+if(filters.employer &&
+normalizeText(offer.company) !== normalizeText(filters.employer)){
+return false;
+}
+
+if(filters.minimumMatch){
+const minimum = parseInt(filters.minimumMatch, 10);
+
+if(!isNaN(minimum) && match < minimum){
+return false;
+}
+}
+
+return true;
+});
+
+result = sortOffers(result, filters.sort);
+
+filteredOffers = result;
+
+renderOffers(filteredOffers);
+updateDashboard();
+updateBestMatch();
+updateNotifications();
+updateStatistics();
+}
+
+function sortOffers(data, sortType){
+const list = [...safeArray(data)];
+
+if(sortType === "date"){
+return list.sort((a, b) =>
+String(b.date || "").localeCompare(String(a.date || ""))
+);
+}
+
+if(sortType === "company"){
+return list.sort((a, b) =>
+String(a.company || "").localeCompare(String(b.company || ""), "fr")
+);
+}
+
+if(sortType === "title"){
+return list.sort((a, b) =>
+String(a.title || "").localeCompare(String(b.title || ""), "fr")
+);
+}
+
+return list.sort((a, b) =>
+calculateMatch(b) - calculateMatch(a)
+);
+}
+
+function resetFilters(){
+activeFilters = {
+jobs: [],
+sectors: [],
+rates: [],
+contracts: [],
+regions: [],
+source: "",
+employer: "",
+minimumMatch: "",
+sort: "match"
+};
+
+document
+.querySelectorAll("input[type='checkbox']")
+.forEach(input => {
+input.checked = false;
+});
+
+if(sourceFilter) sourceFilter.value = "";
+if(employerFilter) employerFilter.value = "";
+if(matchFilter) matchFilter.value = "";
+if(sortFilter) sortFilter.value = "match";
+
+filteredOffers = sortOffers([...offers], "match");
+
+renderOffers(filteredOffers);
+updateAll();
+
+showInfo("Filtres réinitialisés");
 }
 
 /* ==========================================
@@ -780,37 +1035,30 @@ RENDER OFFRES
 ========================================== */
 
 function renderOffers(data){
+if(!offersContainer){
+return;
+}
 
 offersContainer.innerHTML = "";
 
 updateResultsSummary(data);
 
 if(!data || data.length === 0){
-
 offersContainer.innerHTML = `
-
 <div class="offer-card">
-
 <div class="offer-title">
 Aucune offre trouvée
 </div>
-
 </div>
-
 `;
 
 return;
-
 }
 
 data.forEach(offer => {
-
 const card = createOfferCard(offer);
-
 offersContainer.appendChild(card);
-
 });
-
 }
 
 /* ==========================================
@@ -818,123 +1066,150 @@ CREATION CARTE OFFRE
 ========================================== */
 
 function createOfferCard(offer){
-
-const card = document.createElement("div");
+const card =
+document.createElement("div");
 
 card.className = "offer-card";
 
-/* MATCH CLASS */
-const match = calculateMatch(offer);
+const details =
+calculateMatchDetails(offer);
 
-let matchClass = "match-60";
+const match =
+details.score;
 
-if(match >= 90) matchClass = "match-90";
-else if(match >= 80) matchClass = "match-80";
-else if(match >= 70) matchClass = "match-70";
+const matchClass =
+getMatchClass(match);
+
+const badge =
+getMatchBadge(match);
+
+const reasonsHTML =
+details.reasons.length
+? details.reasons
+.map(reason => `✓ ${escapeHTML(reason)}`)
+.join("<br>")
+: "À analyser manuellement";
+
+const missingHTML =
+details.missing.length
+? `<br><small>À vérifier : ${details.missing.map(escapeHTML).join(", ")}</small>`
+: "";
 
 card.innerHTML = `
-
 <div class="offer-match ${matchClass}">
-🤖 Match IA : ${match}%
+🤖 Match IA : ${match}% — ${escapeHTML(badge)}
 </div>
 
 <div class="offer-title">
-${offer.title || ""}
+${escapeHTML(offer.title)}
 </div>
 
 <div class="offer-company">
-🏢 ${offer.company || ""}
+🏢 ${escapeHTML(offer.company)}
 </div>
 
 <div class="offer-location">
-📍 ${offer.location || ""}
+📍 ${escapeHTML(offer.location)}
 </div>
 
 <div class="offer-address">
-📮 ${offer.address || ""}
+📮 ${escapeHTML(offer.address)}
 </div>
 
 <div class="offer-meta">
-⏱️ ${offer.rate || ""} | 📄 ${offer.contract || ""}
+⏱️ ${escapeHTML(offer.rate)} | 📄 ${escapeHTML(offer.contract)}
 </div>
 
 <div class="offer-sector">
-🏭 ${offer.sector || ""}
+🏭 ${escapeHTML(offer.sector)}
 </div>
 
 <div class="offer-salary">
-💰 ${offer.salary || ""}
+💰 ${escapeHTML(offer.salary)}
 </div>
 
 <div class="offer-source">
-🔎 ${offer.source || ""}
+🔎 ${escapeHTML(offer.source)}
 </div>
 
 <div class="offer-date">
-📅 ${offer.date || ""}
+📅 ${escapeHTML(offer.date)}
 </div>
 
 <div class="offer-reasons">
-✓ Métier compatible<br>
-✓ Secteur compatible<br>
-✓ Région compatible<br>
-✓ Taux compatible<br>
-✓ Contrat compatible
+${reasonsHTML}
+${missingHTML}
 </div>
 
 <div class="offer-actions">
-
-<button class="offer-btn favorite-btn">⭐</button>
-<button class="offer-btn apply-btn">🚀</button>
-<button class="offer-btn ai-btn">🤖</button>
-<button class="offer-btn letter-btn">✉️</button>
-<button class="offer-btn link-btn">🔗</button>
-
+<button class="offer-btn favorite-btn" title="Ajouter aux favoris">⭐</button>
+<button class="offer-btn apply-btn" title="Ajouter aux candidatures">🚀</button>
+<button class="offer-btn ai-btn" title="Analyse IA">🤖</button>
+<button class="offer-btn letter-btn" title="Générer une lettre">✉️</button>
+<button class="offer-btn link-btn" title="Ouvrir l'offre">🔗</button>
 </div>
-
 `;
 
-/* EVENTS */
+const favBtn =
+card.querySelector(".favorite-btn");
 
-const favBtn = card.querySelector(".favorite-btn");
-const applyBtn = card.querySelector(".apply-btn");
-const aiBtn = card.querySelector(".ai-btn");
-const letterBtn = card.querySelector(".letter-btn");
-const linkBtn = card.querySelector(".link-btn");
+const applyBtn =
+card.querySelector(".apply-btn");
 
-/* FAVORIS */
-favBtn.addEventListener("click", () => addFavorite(offer));
+const aiBtn =
+card.querySelector(".ai-btn");
 
-/* CANDIDATURE */
-applyBtn.addEventListener("click", () => addApplication(offer));
+const letterBtn =
+card.querySelector(".letter-btn");
 
-/* IA */
-aiBtn.addEventListener("click", () => {
+const linkBtn =
+card.querySelector(".link-btn");
 
+favBtn?.addEventListener("click", () => addFavorite(offer));
+applyBtn?.addEventListener("click", () => addApplication(offer));
+
+aiBtn?.addEventListener("click", () => {
 selectedOffer = offer;
-
 openTab("ai");
-
 showInfo("Analyse IA disponible");
-
 });
 
-/* LETTRE */
-letterBtn.addEventListener("click", () => {
-
+letterBtn?.addEventListener("click", () => {
 selectedOffer = offer;
-
 openTab("ai");
-
 showInfo("Offre sélectionnée pour lettre");
-
 });
 
-/* LINK */
-linkBtn.addEventListener("click", () => openOffer(offer));
+linkBtn?.addEventListener("click", () => openOffer(offer));
 
 return card;
+}
+/* ==========================================
+OUVRIR OFFRE
+========================================== */
 
+function openOffer(offer){
+if(!offer){
+showInfo("Aucune offre sélectionnée");
+return;
+}
+
+const url =
+offer.offerUrl ||
+offer.url ||
+offer.link ||
+"";
+
+if(!url){
+showInfo("Aucun lien disponible pour cette offre");
+return;
+}
+
+window.open(
+url,
+"_blank",
+"noopener,noreferrer"
+);
 }
 
 /* ==========================================
@@ -942,39 +1217,43 @@ BEST MATCH
 ========================================== */
 
 function updateBestMatch(){
-
 const container =
 document.getElementById("bestMatchContainer");
 
-if(!container || offers.length === 0) return;
+const list =
+filteredOffers.length
+? filteredOffers
+: offers;
 
-const best = [...offers]
-.sort((a,b) =>
+if(!container || list.length === 0){
+return;
+}
+
+const best =
+[...list]
+.sort((a, b) =>
 calculateMatch(b) - calculateMatch(a)
 )[0];
 
-if(!best) return;
+if(!best){
+return;
+}
+
+bestOffer = best;
 
 container.innerHTML = `
-
 <div class="offer-card best-match">
-
 <div class="offer-title">
-🔥 ${best.title}
+🔥 ${escapeHTML(best.title)}
 </div>
-
 <div class="offer-company">
-🏢 ${best.company}
+🏢 ${escapeHTML(best.company)}
 </div>
-
-<div class="offer-match">
-🤖 ${calculateMatch(best)}%
+<div class="offer-match ${getMatchClass(calculateMatch(best))}">
+🤖 ${calculateMatch(best)}% — ${escapeHTML(getMatchBadge(calculateMatch(best)))}
 </div>
-
 </div>
-
 `;
-
 }
 
 /* ==========================================
@@ -982,15 +1261,22 @@ RESULTS SUMMARY
 ========================================== */
 
 function updateResultsSummary(data){
+const list =
+safeArray(data);
 
-const total = data.length;
+const total =
+list.length;
 
 const recommended =
-data.filter(o => calculateMatch(o) >= 90).length;
+list.filter(o =>
+calculateMatch(o) >= MATCH_LEVELS.excellent
+).length;
 
 const recent =
-data.filter(o =>
-o.date && o.date.includes("Aujourd")
+list.filter(o =>
+String(o.date || "")
+.toLowerCase()
+.includes("aujourd")
 ).length;
 
 safeSetText(
@@ -1010,121 +1296,94 @@ document.getElementById("newOffersCounter"),
 
 safeSetText(
 document.getElementById("averageMatchCounter"),
-`🤖 Match moyen IA : ${getAverageMatch()}%`
+`🤖 Match moyen IA : ${getAverageMatch(list)}%`
 );
-
 }
-
-/* ==========================================
-FIN P4/8
-========================================== */
 
 /* ==========================================
 FAVORIS
 ========================================== */
 
 function addFavorite(offer){
-
 const exists =
 favorites.find(f => f.id === offer.id);
 
 if(exists){
-
 showInfo("Déjà dans les favoris");
-
 return;
-
 }
 
 favorites.push({
-
 ...offer,
-
-priority:"⭐⭐⭐",
-
-savedAt:new Date().toISOString()
-
+priority: getMatchBadge(calculateMatch(offer)),
+match: calculateMatch(offer),
+savedAt: new Date().toISOString()
 });
 
 saveFavorites();
-
 renderFavorites();
-
 updateDashboard();
 
 showSuccess("Ajouté aux favoris");
-
 }
 
-/* ==========================================
-RENDER FAVORIS
-========================================== */
-
 function renderFavorites(){
-
-if(!favoritesContainer) return;
+if(!favoritesContainer){
+return;
+}
 
 favoritesContainer.innerHTML = "";
 
 if(favorites.length === 0){
-
 favoritesContainer.innerHTML = `
 <div class="offer-card">
 <div class="offer-title">Aucun favori</div>
 </div>
 `;
-return;
 
+return;
 }
 
 favorites.forEach(item => {
-
-const card = document.createElement("div");
+const card =
+document.createElement("div");
 
 card.className = "offer-card";
 
 card.innerHTML = `
-
 <div class="offer-title">
-⭐ ${item.title}
+⭐ ${escapeHTML(item.title)}
 </div>
-
 <div class="offer-company">
-🏢 ${item.company}
+🏢 ${escapeHTML(item.company)}
 </div>
-
 <div class="offer-location">
-📍 ${item.location || ""}
+📍 ${escapeHTML(item.location)}
 </div>
-
 <div class="offer-meta">
-${item.priority}
+${escapeHTML(item.priority || getMatchBadge(calculateMatch(item)))}
 </div>
-
 <div class="offer-actions">
-<button class="offer-btn">🗑️</button>
+<button class="offer-btn open">🔗</button>
+<button class="offer-btn delete">🗑️</button>
 </div>
-
 `;
 
-/* SUPPRESSION FAVORI */
+card.querySelector(".open")?.addEventListener("click", () => {
+openOffer(item);
+});
 
-card.querySelector("button").addEventListener("click", () => {
-
-favorites = favorites.filter(f => f.id !== item.id);
+card.querySelector(".delete")?.addEventListener("click", () => {
+favorites =
+favorites.filter(f => f.id !== item.id);
 
 saveFavorites();
-
 renderFavorites();
-
 updateDashboard();
-
 });
 
 favoritesContainer.appendChild(card);
-
 });
-
 }
 
 /* ==========================================
@@ -1132,46 +1391,30 @@ CANDIDATURES
 ========================================== */
 
 function addApplication(offer){
-
 const exists =
 applications.find(a => a.id === offer.id);
 
 if(exists){
-
 showInfo("Déjà en candidature");
-
 return;
-
 }
 
 applications.push({
-
 ...offer,
-
-status:"Envoyée",
-
-createdAt:new Date().toISOString(),
-
-lastUpdate:new Date().toISOString()
-
+status: "Envoyée",
+match: calculateMatch(offer),
+createdAt: new Date().toISOString(),
+lastUpdate: new Date().toISOString()
 });
 
 saveApplications();
-
 renderApplications();
-
 updateDashboard();
 
 showSuccess("Candidature ajoutée");
-
 }
 
-/* ==========================================
-RENDER CANDIDATURES
-========================================== */
-
 function renderApplications(){
-
 const sent =
 document.getElementById("sentApplications");
 
@@ -1184,7 +1427,9 @@ document.getElementById("scheduledInterviews");
 const hired =
 document.getElementById("successfulApplications");
 
-if(!sent || !response || !interview || !hired) return;
+if(!sent || !response || !interview || !hired){
+return;
+}
 
 sent.innerHTML = "";
 response.innerHTML = "";
@@ -1192,97 +1437,99 @@ interview.innerHTML = "";
 hired.innerHTML = "";
 
 applications.forEach(app => {
+const card =
+document.createElement("div");
 
-const html = `
+card.className = "offer-card";
 
-<div class="offer-card">
-
+card.innerHTML = `
 <div class="offer-title">
-💼 ${app.title}
+💼 ${escapeHTML(app.title)}
 </div>
-
 <div class="offer-company">
-🏢 ${app.company}
+🏢 ${escapeHTML(app.company)}
 </div>
-
 <div class="offer-meta">
-📌 ${app.status}
+📌 ${escapeHTML(app.status)} | 🤖 ${calculateMatch(app)}%
 </div>
-
 <div class="offer-actions">
-
-<button onclick="changeStatus('${app.id}')">
-🔄
-</button>
-
-<button onclick="removeApplication('${app.id}')">
-🗑️
-</button>
-
+<button class="offer-btn status">🔄</button>
+<button class="offer-btn open">🔗</button>
+<button class="offer-btn delete">🗑️</button>
 </div>
-
-</div>
-
 `;
 
-if(app.status === "Envoyée") sent.innerHTML += html;
-if(app.status === "Réponse") response.innerHTML += html;
-if(app.status === "Entretien") interview.innerHTML += html;
-if(app.status === "Embauche") hired.innerHTML += html;
+card.querySelector(".status")?.addEventListener("click", () => {
+changeStatus(app.id);
+});
 
+card.querySelector(".open")?.addEventListener("click", () => {
+openOffer(app);
+});
+
+card.querySelector(".delete")?.addEventListener("click", () => {
+removeApplication(app.id);
+});
+
+if(app.status === "Envoyée"){
+sent.appendChild(card);
+}
+
+if(app.status === "Réponse"){
+response.appendChild(card);
+}
+
+if(app.status === "Entretien"){
+interview.appendChild(card);
+}
+
+if(app.status === "Embauche"){
+hired.appendChild(card);
+}
 });
 
 updateApplicationCounters();
-
 }
-
-/* ==========================================
-CHANGE STATUS
-========================================== */
 
 function changeStatus(id){
+const app =
+applications.find(a => a.id === id);
 
-const app = applications.find(a => a.id === id);
-
-if(!app) return;
-
-if(app.status === "Envoyée") app.status = "Réponse";
-else if(app.status === "Réponse") app.status = "Entretien";
-else if(app.status === "Entretien") app.status = "Embauche";
-else app.status = "Envoyée";
-
-app.lastUpdate = new Date().toISOString();
-
-saveApplications();
-
-renderApplications();
-
-updateDashboard();
-
+if(!app){
+return;
 }
 
-/* ==========================================
-SUPPRESSION CANDIDATURE
-========================================== */
+if(app.status === "Envoyée"){
+app.status = "Réponse";
+}else if(app.status === "Réponse"){
+app.status = "Entretien";
+}else if(app.status === "Entretien"){
+app.status = "Embauche";
+}else{
+app.status = "Envoyée";
+}
+
+app.lastUpdate =
+new Date().toISOString();
+
+saveApplications();
+renderApplications();
+updateDashboard();
+}
 
 function removeApplication(id){
-
-applications = applications.filter(a => a.id !== id);
+applications =
+applications.filter(a => a.id !== id);
 
 saveApplications();
-
 renderApplications();
-
 updateDashboard();
-
 }
-
 /* ==========================================
 COMPTEURS CANDIDATURES
 ========================================== */
 
 function updateApplicationCounters(){
-
 const sentCount =
 applications.filter(a => a.status === "Envoyée").length;
 
@@ -1316,136 +1563,180 @@ hiredCount
 );
 
 updateStatistics();
-
 }
 
 /* ==========================================
-STATISTIQUES CANDIDATURES
+STATISTIQUES
 ========================================== */
 
 function updateStatistics(){
+const total =
+applications.length;
 
-const total = applications.length;
+const response =
+applications.filter(a => a.status === "Réponse").length;
 
-const response = applications.filter(a => a.status === "Réponse").length;
+const interview =
+applications.filter(a => a.status === "Entretien").length;
 
-const interview = applications.filter(a => a.status === "Entretien").length;
+const hired =
+applications.filter(a => a.status === "Embauche").length;
 
-const hired = applications.filter(a => a.status === "Embauche").length;
+const responseRate =
+total ? Math.round((response / total) * 100) : 0;
 
-const responseRate = total ? Math.round((response / total) * 100) : 0;
+const interviewRate =
+total ? Math.round((interview / total) * 100) : 0;
 
-const interviewRate = total ? Math.round((interview / total) * 100) : 0;
+const successRate =
+total ? Math.round((hired / total) * 100) : 0;
 
-const successRate = total ? Math.round((hired / total) * 100) : 0;
+safeSetText(
+document.getElementById("responseRate"),
+responseRate + "%"
+);
 
-safeSetText(document.getElementById("responseRate"), responseRate + "%");
-safeSetText(document.getElementById("interviewRate"), interviewRate + "%");
-safeSetText(document.getElementById("successRate"), successRate + "%");
+safeSetText(
+document.getElementById("interviewRate"),
+interviewRate + "%"
+);
+
+safeSetText(
+document.getElementById("successRate"),
+successRate + "%"
+);
 
 safeSetText(
 document.getElementById("averageMatch"),
-getAverageMatch() + "%"
+getAverageMatch(filteredOffers.length ? filteredOffers : offers) + "%"
 );
-
 }
 
 /* ==========================================
-FIN P5/8
+LETTRES IA - HELPERS
 ========================================== */
 
-/* ==========================================
-LETTRES IA - GENERATION
-========================================== */
-
-function generateShortLetter(offer){
-
-if(!offer) return;
-
-const letter = `
-
-Objet : Candidature au poste de ${offer.title}
-
-Madame, Monsieur,
-
-Je vous adresse ma candidature pour le poste de ${offer.title} au sein de ${offer.company}.
-
-Motivé et rigoureux, je suis convaincu de pouvoir répondre aux exigences du poste.
-
-Je reste à votre disposition pour un entretien.
-
-Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
-
-`;
-
-displayLetter(letter);
-
+function getApplicantBlock(){
+return [
+"François L.",
+"Adresse",
+"NPA Ville",
+"Téléphone",
+"Email"
+].join("\n");
 }
 
-function generateStandardLetter(offer){
+function getEmployerBlock(offer){
+return [
+offer.company || "Entreprise",
+offer.address || "",
+offer.location || ""
+]
+.filter(Boolean)
+.join("\n");
+}
 
-if(!offer) return;
+function getLetterHeader(offer){
+const title =
+offer.title ||
+"Candidature";
 
-const letter = `
+return `
+${getApplicantBlock()}
 
-Nom Prénom
-Adresse
-NPA Ville
-
-${offer.company}
+${getEmployerBlock(offer)}
 
 Lausanne, le ${new Date().toLocaleDateString("fr-CH")}
 
-Objet : Candidature au poste de ${offer.title}
+${title}
+`;
+}
+
+function generateShortLetter(offer){
+if(!offer){
+return;
+}
+
+const letter = `
+${getLetterHeader(offer)}
+
+Madame, Monsieur,
+
+Je vous adresse ma candidature pour le poste de ${offer.title} au sein de ${offer.company || "votre entreprise"}.
+
+Motivé, rigoureux et à l’aise dans les tâches administratives, je souhaite mettre mes compétences au service de votre équipe.
+
+Je reste volontiers à votre disposition pour un entretien.
+
+Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
+
+François L.
+`.trim();
+
+displayLetter(letter);
+}
+
+function generateStandardLetter(offer){
+if(!offer){
+return;
+}
+
+const letter = `
+${getLetterHeader(offer)}
 
 Madame, Monsieur,
 
 Suite à votre annonce, je souhaite vous proposer ma candidature pour le poste de ${offer.title}.
 
-Mon expérience en gestion administrative et ma capacité d’adaptation me permettent de répondre efficacement aux besoins du poste.
+Mon parcours m’a permis de développer de solides compétences en gestion administrative, suivi de dossiers, communication professionnelle et utilisation des outils numériques. Ces compétences me permettent de travailler avec méthode, précision et sens des priorités.
 
-Je serais heureux de pouvoir échanger lors d’un entretien.
+Votre offre correspond à mon intérêt pour un poste structuré, utile et orienté service. Je serais heureux de pouvoir contribuer efficacement aux activités de ${offer.company || "votre organisation"}.
+
+Je me tiens volontiers à votre disposition pour un entretien afin de vous présenter plus en détail ma motivation.
 
 Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
 
-`;
+François L.
+`.trim();
 
 displayLetter(letter);
-
 }
 
 function generatePremiumLetter(offer){
+if(!offer){
+return;
+}
 
-if(!offer) return;
+const score =
+calculateMatch(offer);
 
-const score = calculateMatch(offer);
+const details =
+calculateMatchDetails(offer);
+
+const strengths =
+details.reasons.length
+? details.reasons.join(", ").toLowerCase()
+: "mon profil administratif et polyvalent";
 
 const letter = `
-
-Nom Prénom
-Adresse
-NPA Ville
-
-${offer.company}
-
-Lausanne, le ${new Date().toLocaleDateString("fr-CH")}
-
-Objet : Candidature au poste de ${offer.title}
+${getLetterHeader(offer)}
 
 Madame, Monsieur,
 
-Votre offre a retenu toute mon attention avec un score de compatibilité de ${score}%.
+Votre offre pour le poste de ${offer.title} a retenu toute mon attention. Elle présente une compatibilité estimée à ${score}% avec mon profil, notamment grâce aux éléments suivants : ${strengths}.
 
-Mon profil correspond aux exigences du poste grâce à mes compétences en organisation, gestion de dossiers et outils numériques.
+Mon expérience en gestion de dossiers, organisation administrative, suivi des informations et utilisation des outils numériques me permet d’aborder ce poste avec sérieux et efficacité. Je suis particulièrement attentif à la qualité du travail fourni, à la clarté des échanges et au respect des priorités.
 
-Je suis motivé à rejoindre votre équipe et à contribuer activement à vos projets.
+Rejoindre ${offer.company || "votre équipe"} représenterait pour moi l’opportunité de mettre mes compétences au service d’un environnement professionnel exigeant et concret.
 
-Dans l’attente d’un entretien, veuillez recevoir mes salutations distinguées.
+Je serais heureux de pouvoir vous rencontrer afin d’échanger sur ma candidature et sur les besoins du poste.
 
-`;
+Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
+
+François L.
+`.trim();
 
 displayLetter(letter);
-
 }
 
 /* ==========================================
@@ -1453,7 +1744,6 @@ AFFICHAGE LETTRE
 ========================================== */
 
 function displayLetter(letter){
-
 currentLetter = letter;
 
 safeSetText(
@@ -1462,7 +1752,6 @@ letter
 );
 
 openTab("ai");
-
 }
 
 /* ==========================================
@@ -1470,48 +1759,37 @@ SAUVEGARDE LETTRES
 ========================================== */
 
 function saveCurrentLetter(){
-
 if(!currentLetter){
-
 showInfo("Aucune lettre à sauvegarder");
-
 return;
-
 }
 
 lettersHistory.unshift({
-
 id: generateId(),
-
 content: currentLetter,
-
+offerId: selectedOffer ? selectedOffer.id : null,
+offerTitle: selectedOffer ? selectedOffer.title : "",
+company: selectedOffer ? selectedOffer.company : "",
 createdAt: new Date().toISOString()
-
 });
 
 saveLetters();
-
 renderLettersHistory();
 
 showSuccess("Lettre sauvegardée");
-
 }
 
-/* ==========================================
-HISTORIQUE LETTRES
-========================================== */
-
 function renderLettersHistory(){
-
 const container =
 lettersHistoryContainer;
 
-if(!container) return;
+if(!container){
+return;
+}
 
 container.innerHTML = "";
 
 if(lettersHistory.length === 0){
-
 container.innerHTML = `
 <div class="offer-card">
 <div class="offer-title">Aucune lettre sauvegardée</div>
@@ -1519,168 +1797,141 @@ container.innerHTML = `
 `;
 
 return;
-
 }
 
 lettersHistory.forEach(item => {
-
-const div = document.createElement("div");
+const div =
+document.createElement("div");
 
 div.className = "letter-history-card";
 
 div.innerHTML = `
-
 <div class="letter-history-title">
-📄 Lettre
+📄 ${escapeHTML(item.offerTitle || "Lettre")}
 </div>
-
 <div class="letter-history-date">
-${formatDate(item.createdAt)}
+${escapeHTML(formatDate(item.createdAt))}
 </div>
-
+<div class="offer-company">
+🏢 ${escapeHTML(item.company || "")}
+</div>
 <div class="offer-actions">
-
 <button class="offer-btn view">👁️</button>
 <button class="offer-btn delete">🗑️</button>
-
 </div>
-
 `;
 
-div.querySelector(".view").addEventListener("click", () => {
+div.querySelector(".view")?.addEventListener("click", () => {
 displayLetter(item.content);
 });
 
-div.querySelector(".delete").addEventListener("click", () => {
-
-lettersHistory =
-lettersHistory.filter(l => l.id !== item.id);
-
-saveLetters();
-
-renderLettersHistory();
-
+div.querySelector(".delete")?.addEventListener("click", () => {
+deleteLetter(item.id);
 });
 
 container.appendChild(div);
-
 });
-
 }
 
-/* ==========================================
-SUPPRESSION LETTRE
-========================================== */
-
 function deleteLetter(id){
-
 lettersHistory =
 lettersHistory.filter(l => l.id !== id);
 
 saveLetters();
-
 renderLettersHistory();
-
 }
-
-/* ==========================================
-COPIER LETTRE
-========================================== */
 
 function copyCurrentLetter(){
-
-if(!currentLetter) return;
-
-navigator.clipboard.writeText(currentLetter);
-
-showSuccess("Lettre copiée");
-
+if(!currentLetter){
+showInfo("Aucune lettre à copier");
+return;
 }
 
-/* ==========================================
-BOUTONS LETTRES IA
-========================================== */
-
-generateShortLetterBtn?.addEventListener("click", () => {
-if(!selectedOffer) return showInfo("Sélectionnez une offre");
-generateShortLetter(selectedOffer);
+navigator.clipboard
+.writeText(currentLetter)
+.then(() => {
+showSuccess("Lettre copiée");
+})
+.catch(() => {
+showError("Copie impossible");
 });
-
-generateStandardLetterBtn?.addEventListener("click", () => {
-if(!selectedOffer) return showInfo("Sélectionnez une offre");
-generateStandardLetter(selectedOffer);
-});
-
-generatePremiumLetterBtn?.addEventListener("click", () => {
-if(!selectedOffer) return showInfo("Sélectionnez une offre");
-generatePremiumLetter(selectedOffer);
-});
-
-saveLetterBtn?.addEventListener("click", saveCurrentLetter);
-copyLetterBtn?.addEventListener("click", copyCurrentLetter);
-
+}
 /* ==========================================
-FIN P6/8
-========================================== */
-
-/* ==========================================
-EXPORT PDF (simple fallback)
+EXPORT PDF / WORD / EMAIL
 ========================================== */
 
 function exportPDF(){
-
 if(!currentLetter){
-
 showInfo("Aucune lettre");
-
 return;
-
 }
 
-const blob =
-new Blob(
-[currentLetter],
-{ type: "application/pdf" }
-);
+/*
+Fallback simple :
+ouvre une fenêtre imprimable.
+Pour un vrai PDF, utiliser ensuite Imprimer > Enregistrer en PDF.
+*/
 
-const url =
-URL.createObjectURL(blob);
+const printable =
+window.open("", "_blank");
 
-const a =
-document.createElement("a");
-
-a.href = url;
-
-a.download = "lettre.pdf";
-
-a.click();
-
-URL.revokeObjectURL(url);
-
-showSuccess("PDF généré");
-
+if(!printable){
+showError("Fenêtre PDF bloquée par le navigateur");
+return;
 }
 
-pdfLetterBtn?.addEventListener("click", exportPDF);
+printable.document.write(`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Lettre de motivation</title>
+<style>
+body{
+font-family: Arial, sans-serif;
+line-height: 1.6;
+padding: 40px;
+white-space: pre-wrap;
+}
+</style>
+</head>
+<body>${escapeHTML(currentLetter)}</body>
+</html>
+`);
 
-/* ==========================================
-EXPORT WORD
-========================================== */
+printable.document.close();
+printable.focus();
+printable.print();
+
+showSuccess("Fenêtre PDF prête");
+}
 
 function exportWord(){
-
 if(!currentLetter){
-
 showInfo("Aucune lettre");
-
 return;
-
 }
+
+const html =
+`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Lettre de motivation</title>
+</head>
+<body>
+<pre style="font-family: Arial; white-space: pre-wrap;">
+${escapeHTML(currentLetter)}
+</pre>
+</body>
+</html>
+`;
 
 const blob =
 new Blob(
-[currentLetter],
-{ type: "application/msword" }
+[html],
+{ type: "application/msword;charset=utf-8" }
 );
 
 const url =
@@ -1690,60 +1941,49 @@ const a =
 document.createElement("a");
 
 a.href = url;
+a.download = "lettre-motivation.doc";
 
-a.download = "lettre.doc";
-
+document.body.appendChild(a);
 a.click();
+a.remove();
 
 URL.revokeObjectURL(url);
 
 showSuccess("Word généré");
-
 }
 
-wordLetterBtn?.addEventListener("click", exportWord);
-
-/* ==========================================
-EXPORT EMAIL
-========================================== */
-
 function exportEmail(){
-
 if(!currentLetter){
-
 showInfo("Aucune lettre");
-
 return;
-
 }
 
 const subject =
-encodeURIComponent("Candidature");
+encodeURIComponent(
+selectedOffer
+? `Candidature - ${selectedOffer.title}`
+: "Candidature"
+);
 
 const body =
 encodeURIComponent(currentLetter);
 
 window.location.href =
 `mailto:?subject=${subject}&body=${body}`;
-
 }
-
-emailLetterBtn?.addEventListener("click", exportEmail);
 
 /* ==========================================
 EXPORT JSON
 ========================================== */
 
 function exportJSON(){
-
 const data = {
-
+version: APP_VERSION,
 favorites,
 applications,
 lettersHistory,
 settings,
 exportDate: new Date().toISOString()
-
 };
 
 const blob =
@@ -1759,44 +1999,54 @@ const a =
 document.createElement("a");
 
 a.href = url;
+a.download = "jobfinder_export_v14_2_0.json";
 
-a.download = "jobfinder_export.json";
-
+document.body.appendChild(a);
 a.click();
+a.remove();
 
 URL.revokeObjectURL(url);
 
 showSuccess("Export JSON OK");
-
 }
-
-document
-.getElementById("exportJsonBtn")
-?.addEventListener("click", exportJSON);
 
 /* ==========================================
 EXPORT CSV
 ========================================== */
 
+function csvEscape(value){
+return `"${String(value || "").replace(/"/g, '""')}"`;
+}
+
 function exportCSV(){
-
 let csv =
-"Type,Titre,Entreprise,Statut\n";
+"Type,Titre,Entreprise,Statut,Match\n";
 
-applications.forEach(a => {
-
-csv += `CANDIDATURE,"${a.title}","${a.company}","${a.status}"\n`;
-
+applications.forEach(app => {
+csv += [
+"CANDIDATURE",
+csvEscape(app.title),
+csvEscape(app.company),
+csvEscape(app.status),
+calculateMatch(app)
+].join(",") + "\n";
 });
 
-favorites.forEach(f => {
-
-csv += `FAVORI,"${f.title}","${f.company}","${f.priority}"\n`;
-
+favorites.forEach(fav => {
+csv += [
+"FAVORI",
+csvEscape(fav.title),
+csvEscape(fav.company),
+csvEscape(fav.priority),
+calculateMatch(fav)
+].join(",") + "\n";
 });
 
 const blob =
-new Blob([csv], { type: "text/csv" });
+new Blob(
+[csv],
+{ type: "text/csv;charset=utf-8" }
+);
 
 const url =
 URL.createObjectURL(blob);
@@ -1805,97 +2055,128 @@ const a =
 document.createElement("a");
 
 a.href = url;
+a.download = "jobfinder_export_v14_2_0.csv";
 
-a.download = "jobfinder_export.csv";
-
+document.body.appendChild(a);
 a.click();
+a.remove();
 
 URL.revokeObjectURL(url);
 
 showSuccess("CSV exporté");
-
 }
-
-document
-.getElementById("exportCsvBtn")
-?.addEventListener("click", exportCSV);
 
 /* ==========================================
 IMPORT DONNEES
 ========================================== */
 
 function importData(file){
+const reader =
+new FileReader();
 
-const reader = new FileReader();
-
-reader.onload = (e) => {
-
+reader.onload = (event) => {
 try{
+const data =
+JSON.parse(event.target.result);
 
-const data = JSON.parse(e.target.result);
+favorites =
+safeArray(data.favorites);
 
-favorites = data.favorites || [];
+applications =
+safeArray(data.applications);
 
-applications = data.applications || [];
+lettersHistory =
+safeArray(data.lettersHistory);
 
-lettersHistory = data.lettersHistory || [];
+settings =
+data.settings || {};
 
 saveFavorites();
 saveApplications();
 saveLetters();
+saveSettings();
 
 renderFavorites();
 renderApplications();
 renderLettersHistory();
-
 updateDashboard();
 
 showSuccess("Import OK");
-
-}
-
-catch(err){
-
+}catch(err){
 console.error(err);
-
 showError("Fichier invalide");
-
 }
-
 };
 
 reader.readAsText(file);
-
 }
+
+/* ==========================================
+BOUTONS LETTRES IA
+========================================== */
+
+generateShortLetterBtn?.addEventListener("click", () => {
+if(!selectedOffer){
+return showInfo("Sélectionnez une offre");
+}
+
+generateShortLetter(selectedOffer);
+});
+
+generateStandardLetterBtn?.addEventListener("click", () => {
+if(!selectedOffer){
+return showInfo("Sélectionnez une offre");
+}
+
+generateStandardLetter(selectedOffer);
+});
+
+generatePremiumLetterBtn?.addEventListener("click", () => {
+if(!selectedOffer){
+return showInfo("Sélectionnez une offre");
+}
+
+generatePremiumLetter(selectedOffer);
+});
+
+saveLetterBtn?.addEventListener("click", saveCurrentLetter);
+copyLetterBtn?.addEventListener("click", copyCurrentLetter);
+pdfLetterBtn?.addEventListener("click", exportPDF);
+wordLetterBtn?.addEventListener("click", exportWord);
+emailLetterBtn?.addEventListener("click", exportEmail);
+
+/* ==========================================
+BOUTONS EXPORT / IMPORT / RESET
+========================================== */
+
+document
+.getElementById("exportJsonBtn")
+?.addEventListener("click", exportJSON);
+
+document
+.getElementById("exportCsvBtn")
+?.addEventListener("click", exportCSV);
 
 document
 .getElementById("importBtn")
 ?.addEventListener("click", () => {
-
 const file =
 document.getElementById("importFile")?.files?.[0];
 
 if(!file){
-
 showInfo("Choisir fichier");
-
 return;
-
 }
 
 importData(file);
-
 });
-
-/* ==========================================
-RESET APP
-========================================== */
 
 document
 .getElementById("resetAppBtn")
 ?.addEventListener("click", () => {
-
-if(!confirm("Reset total ?")) return;
+if(!confirm("Reset total ?")){
+return;
+}
 
 favorites = [];
 applications = [];
@@ -1908,45 +2189,16 @@ saveLetters();
 renderFavorites();
 renderApplications();
 renderLettersHistory();
-
 updateDashboard();
 
 showSuccess("Reset terminé");
-
 });
 
 /* ==========================================
-INITIALISATION FINALE
-========================================== */
-
-window.addEventListener("DOMContentLoaded", () => {
-
-loadOffers();
-
-renderFavorites();
-
-renderApplications();
-
-renderLettersHistory();
-
-updateDashboard();
-
-updateApplicationCounters();
-
-updateBestMatch();
-
-updateStatistics();
-
-showSuccess("Application prête");
-
-});
-
-/* ==========================================
-DASHBOARD (SYNC)
+DASHBOARD
 ========================================== */
 
 function updateDashboard(){
-
 safeSetText(
 document.getElementById("kpiOffers"),
 offers.length
@@ -1964,37 +2216,42 @@ applications.length
 
 safeSetText(
 document.getElementById("kpiAI"),
-getAverageMatch() + "%"
+getAverageMatch(filteredOffers.length ? filteredOffers : offers) + "%"
 );
-
 }
 
 /* ==========================================
-NOTIFICATIONS UPDATE
+NOTIFICATIONS
 ========================================== */
 
 function updateNotifications(){
-
 safeSetText(
 document.getElementById("newOffersNotifications"),
-offers.length ? offers.length + " offres" : "Aucune nouvelle offre"
+offers.length
+? offers.length + " offres"
+: "Aucune nouvelle offre"
 );
 
 safeSetText(
 document.getElementById("favoritesNotifications"),
-favorites.length ? favorites.length + " favoris" : "Aucun favori"
+favorites.length
+? favorites.length + " favoris"
+: "Aucun favori"
 );
 
 safeSetText(
 document.getElementById("applicationsNotifications"),
-applications.length ? applications.length + " candidatures" : "Aucune relance"
+applications.length
+? applications.length + " candidatures"
+: "Aucune relance"
 );
 
 safeSetText(
 document.getElementById("aiNotifications"),
-offers.length ? "IA active" : "Aucune alerte IA"
+offers.length
+? "IA active V" + APP_VERSION
+: "Aucune alerte IA"
 );
-
 }
 
 /* ==========================================
@@ -2002,37 +2259,58 @@ UTILS FINAL SYNC
 ========================================== */
 
 function updateAll(){
-
 updateDashboard();
-
 updateApplicationCounters();
-
 updateBestMatch();
-
 updateNotifications();
-
+updateStatistics();
 }
+
+/* ==========================================
+INITIALISATION FINALE
+========================================== */
+
+window.addEventListener("DOMContentLoaded", () => {
+initUI();
+loadOffers();
+renderFavorites();
+renderApplications();
+renderLettersHistory();
+updateDashboard();
+updateApplicationCounters();
+updateBestMatch();
+updateStatistics();
+
+console.log("==================================");
+console.log("JOB FINDER VAUD");
+console.log("V14.2.0 PREMIUM IA");
+console.log("Créateur F. Laratta");
+console.log("==================================");
+});
 
 /* ==========================================
 WINDOW EXPORTS
 ========================================== */
 
+window.openTab = openTab;
 window.openOffer = openOffer;
 window.addFavorite = addFavorite;
 window.addApplication = addApplication;
 window.changeStatus = changeStatus;
 window.removeApplication = removeApplication;
-
 window.generateShortLetter = generateShortLetter;
 window.generateStandardLetter = generateStandardLetter;
 window.generatePremiumLetter = generatePremiumLetter;
-
 window.saveCurrentLetter = saveCurrentLetter;
 window.copyCurrentLetter = copyCurrentLetter;
-
+window.exportPDF = exportPDF;
+window.exportWord = exportWord;
+window.exportEmail = exportEmail;
 window.exportJSON = exportJSON;
 window.exportCSV = exportCSV;
+window.applyFilters = applyFilters;
+window.resetFilters = resetFilters;
 
 /* ==========================================
-FIN APP.JS V14.1.0 CORRIGÉ FINAL
+FIN APP.JS V14.2.0 PREMIUM IA
 ========================================== */
