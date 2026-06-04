@@ -446,27 +446,48 @@ function calculateMatch(offer){
 
 if(!offer) return 0;
 
-let score = 65;
+let score = 0;
 
-/* Métier */
-if(offer.title) score += 10;
+/* JOB MATCH */
+if(userProfile.targetJobs.includes(offer.title)){
+score += IA_WEIGHTS.jobMatch;
+}
 
-/* Secteur */
-if(offer.sector) score += 5;
+/* SECTOR MATCH */
+if(userProfile.preferredSectors.includes(offer.sector)){
+score += IA_WEIGHTS.sectorMatch;
+}
 
-/* Contrat */
-if(offer.contract === "CDI") score += 5;
+/* REGION MATCH */
+if(userProfile.preferredRegions.includes(offer.location)){
+score += IA_WEIGHTS.regionMatch;
+}
 
-/* Temps */
-if(offer.rate === "80%" || offer.rate === "100%") score += 5;
+/* RATE MATCH */
+if(userProfile.preferredRates.includes(String(offer.rate))){
+score += IA_WEIGHTS.rateMatch;
+}
 
-/* Région */
-if(offer.location === "Lausanne") score += 5;
+/* CONTRACT BONUS */
+if(offer.contract === "CDI"){
+score += IA_WEIGHTS.contractBonus;
+}
 
-/* Clamp */
+/* BONUS INTELLIGENT */
+if(offer.salary){
+
+const salary = parseInt(offer.salary);
+
+if(!isNaN(salary) && salary > 6000){
+score += 5;
+}
+
+}
+
+/* CLAMP */
 if(score > 100) score = 100;
 
-return score;
+return Math.round(score);
 
 }
 
