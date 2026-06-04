@@ -491,29 +491,56 @@ score += IA_WEIGHTS.regionMatch;
 
 }
 /* RATE MATCH */
-if(userProfile.preferredRates.includes(String(offer.rate))){
+if(
+userProfile &&
+Array.isArray(userProfile.preferredRates) &&
+userProfile.preferredRates.includes(
+String(offer.rate || "")
+)
+){
+
 score += IA_WEIGHTS.rateMatch;
+
 }
 
 /* CONTRACT BONUS */
-if(offer.contract === "CDI"){
+if(
+String(offer.contract || "") === "CDI"
+){
+
 score += IA_WEIGHTS.contractBonus;
+
 }
 
 /* SALARY BONUS SAFE */
 if(offer.salary){
 
-const salary = parseInt(offer.salary);
+const salary =
+parseInt(
+String(offer.salary || "")
+.replace(/[^\d]/g, "")
+);
 
-if(!isNaN(salary) && salary > 6000){
+if(!isNaN(salary) && salary > 60000){
+
 score += 5;
-}
 
 }
 
-/* SAFETY CLAMP */
-if(score > 100) score = 100;
-if(score < 0) score = 0;
+}
+
+/* LIMIT */
+if(score > 100){
+
+score = 100;
+
+}
+
+if(score < 0){
+
+score = 0;
+
+}
 
 return Math.round(score);
 
