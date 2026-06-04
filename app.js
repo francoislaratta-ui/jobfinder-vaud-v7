@@ -774,6 +774,11 @@ Ouvre la console du navigateur pour voir le détail technique.
 
 }
 
+function populateEmployersFilter(){
+
+return;
+
+}
 
 /* ==========================================
 RENDER OFFRES
