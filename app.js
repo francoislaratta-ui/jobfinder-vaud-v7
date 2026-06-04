@@ -449,20 +449,47 @@ if(!offer) return 0;
 let score = 0;
 
 /* JOB MATCH */
-if(userProfile.targetJobs.includes(offer.title)){
-score += IA_WEIGHTS.jobMatch;
-}
+if(
+userProfile &&
+Array.isArray(userProfile.targetJobs) &&
+userProfile.targetJobs.some(job =>
+String(offer.title || "")
+.toLowerCase()
+.includes(
+String(job)
+.toLowerCase()
+)
+)
+){
 
+score += IA_WEIGHTS.jobMatch;
+
+}
 /* SECTOR MATCH */
-if(userProfile.preferredSectors.includes(offer.sector)){
+if(
+userProfile &&
+Array.isArray(userProfile.preferredSectors) &&
+userProfile.preferredSectors.includes(
+String(offer.sector || "")
+)
+){
+
 score += IA_WEIGHTS.sectorMatch;
+
 }
 
 /* REGION MATCH */
-if(userProfile.preferredRegions.includes(offer.location)){
-score += IA_WEIGHTS.regionMatch;
-}
+if(
+userProfile &&
+Array.isArray(userProfile.preferredRegions) &&
+userProfile.preferredRegions.includes(
+String(offer.location || "")
+)
+){
 
+score += IA_WEIGHTS.regionMatch;
+
+}
 /* RATE MATCH */
 if(userProfile.preferredRates.includes(String(offer.rate))){
 score += IA_WEIGHTS.rateMatch;
