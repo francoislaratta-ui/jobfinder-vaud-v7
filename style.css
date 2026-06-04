@@ -2014,13 +2014,6 @@ display:grid !important;
 grid-template-columns:repeat(2,minmax(0,1fr)) !important;
 gap:16px !important;
 }
-
-#offersContainer{
-display:grid !important;
-grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-gap:16px !important;
-}
-
 @media (max-width:480px){
   
 .kpi-grid,
