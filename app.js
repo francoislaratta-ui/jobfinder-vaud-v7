@@ -553,44 +553,125 @@ FIN P3/8
 /* ==========================================
 CHARGEMENT OFFRES
 ========================================== */
-
 async function loadOffers(){
 
 try{
 
 const response =
-await fetch("offers.json");
+await fetch("./offers.json");
 
-offers =
+if(!response.ok){
+
+throw new Error(
+"HTTP " + response.status
+);
+
+}
+
+const data =
 await response.json();
 
-filteredOffers = [...offers];
+offers =
+Array.isArray(data)
+? data
+: [];
 
-renderOffers(filteredOffers);
+offers =
+offers.map(offer => ({
+
+...offer,
+
+id:
+String(
+offer.id || offer.externalId || generateId()
+),
+
+offerUrl:
+offer.offerUrl || offer.url || "",
+
+address:
+offer.address || "",
+
+salary:
+offer.salary || "",
+
+source:
+offer.source || "Source inconnue",
+
+sector:
+offer.sector || "",
+
+location:
+offer.location || "",
+
+rate:
+offer.rate || "",
+
+contract:
+offer.contract || "",
+
+title:
+offer.title || "",
+
+company:
+offer.company || "",
+
+date:
+offer.date || ""
+
+}));
+
+filteredOffers =
+[...offers];
+
+populateEmployersFilter();
+
+renderOffers(
+filteredOffers
+);
 
 updateDashboard();
 
 updateBestMatch();
 
-showSuccess("Offres chargées");
+updateNotifications();
 
 }
-
 catch(error){
 
-console.error("Erreur chargement offres", error);
+console.error(
+"Erreur chargement offres :",
+error
+);
 
 offers = [];
 
 filteredOffers = [];
 
-renderOffers([]);
+if(offersContainer){
 
-showError("Erreur de chargement des offres");
+offersContainer.innerHTML = `
+
+<div class="offer-card">
+
+<div class="offer-title">
+❌ Erreur de chargement des offres
+</div>
+
+<div class="offer-reasons">
+Ouvre la console du navigateur pour voir le détail technique.
+</div>
+
+</div>
+
+`;
 
 }
 
 }
+
+}
+
 
 /* ==========================================
 RENDER OFFRES
