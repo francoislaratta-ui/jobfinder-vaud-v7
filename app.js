@@ -370,8 +370,7 @@ NOTIFICATIONS
 ========================================== */
 
 const notificationToggle =
-document.getElementById("notificationToggle");
-/* ==========================================
+document.getElementById("notificationToggle");/* ==========================================
 UTILITAIRES
 ========================================== */
 
@@ -731,8 +730,7 @@ setStorage(
 STORAGE_KEYS.settings,
 settings
 );
-}
-/* ==========================================
+}/* ==========================================
 CHARGEMENT OFFRES
 ========================================== */
 
@@ -1183,8 +1181,7 @@ showInfo("Offre sélectionnée pour lettre");
 linkBtn?.addEventListener("click", () => openOffer(offer));
 
 return card;
-}
-/* ==========================================
+}/* ==========================================
 OUVRIR OFFRE
 ========================================== */
 
@@ -1524,8 +1521,7 @@ applications.filter(a => a.id !== id);
 saveApplications();
 renderApplications();
 updateDashboard();
-}
-/* ==========================================
+}/* ==========================================
 COMPTEURS CANDIDATURES
 ========================================== */
 
@@ -1855,8 +1851,7 @@ showSuccess("Lettre copiée");
 .catch(() => {
 showError("Copie impossible");
 });
-}
-/* ==========================================
+}/* ==========================================
 EXPORT PDF / WORD / EMAIL
 ========================================== */
 
