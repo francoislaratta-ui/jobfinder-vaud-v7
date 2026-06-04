@@ -457,7 +457,11 @@ btnNotifications.addEventListener("click", () => {
 openTab("notifications");
 });
 }
-
+if(btnFilters){
+btnFilters.addEventListener("click", () => {
+openTab("filters");
+});
+}
 if(btnSettings){
 btnSettings.addEventListener("click", () => {
 openTab("settings");
