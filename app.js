@@ -113,7 +113,47 @@ let currentLetter = "";
 
 /* OFFRE SÉLECTIONNÉE */
 let selectedOffer = null;
+const userProfile = {
 
+targetJobs:[
+"Employé(e) de commerce",
+"Employé de commerce",
+"Assistant administratif",
+"Gestionnaire de dossier",
+"Technicien informatique"
+],
+
+preferredSectors:[
+"Administration",
+"Administration publique",
+"Fiduciaire",
+"Informatique",
+"Immobilier"
+],
+
+preferredRegions:[
+"Lausanne",
+"Morges",
+"Nyon",
+"Vevey"
+],
+
+preferredRates:[
+"80%",
+"100%"
+]
+
+};
+
+const IA_WEIGHTS = {
+
+jobMatch:35,
+sectorMatch:25,
+regionMatch:20,
+rateMatch:10,
+contractBonus:10
+
+};
 /* ==========================================
 ETAT APPLICATION
 ========================================== */
