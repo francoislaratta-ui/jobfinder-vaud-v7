@@ -550,7 +550,7 @@ document
 .forEach(checkbox => {
 checkbox.addEventListener("change", applyFilters);
 });
-}
+
 
 /* ==========================================
 MATCH IA - DETAILS
