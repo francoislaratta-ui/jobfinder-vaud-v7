@@ -828,9 +828,9 @@ border:
 
 }
 #offersContainer{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:16px;
+display:flex !important;
+flex-direction:column !important;
+gap:16px !important;
 }
 
 @media (max-width:480px){
