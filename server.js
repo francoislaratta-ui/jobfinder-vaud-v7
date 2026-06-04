@@ -1,74 +1,47 @@
 /* ==========================================
-JOB FINDER VAUD V14.0.0 PREMIUM IA
+JOB FINDER VAUD V14.1.0 PREMIUM IA
 Créateur : F. Laratta
 ========================================== */
 
-const express =
-require(
-"express"
-);
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const cors = require("cors");
 
-const fs =
-require(
-"fs"
-);
+const app = express();
 
-const path =
-require(
-"path"
-);
-
-const cors =
-require(
-"cors"
-);
-
-const app =
-express();
-
-const PORT =
-process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 /* ==========================================
 MIDDLEWARES
 ========================================== */
 
-app.use(
-cors()
-);
-
-app.use(
-express.json()
-);
-
-app.use(
-express.static(
-path.join(
-__dirname
-)
-)
-);
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
 /* ==========================================
 FICHIERS
 ========================================== */
 
-const OFFERS_FILE =
-path.join(
+const OFFERS_FILE = path.join(
 __dirname,
 "offers.json"
 );
 
-const FAVORITES_FILE =
-path.join(
+const FAVORITES_FILE = path.join(
 __dirname,
 "favorites.json"
 );
 
-const APPLICATIONS_FILE =
-path.join(
+const APPLICATIONS_FILE = path.join(
 __dirname,
 "candidatures.json"
+);
+
+const LETTERS_FILE = path.join(
+__dirname,
+"letters.json"
 );
 
 /* ==========================================
@@ -79,22 +52,22 @@ function readJson(file){
 
 try{
 
+if(!fs.existsSync(file)){
+return [];
+}
+
 const data =
 fs.readFileSync(
 file,
 "utf8"
 );
 
-return JSON.parse(
-data
-);
+return JSON.parse(data);
 
 }
 catch(error){
 
-console.error(
-error
-);
+console.error(error);
 
 return [];
 
@@ -128,28 +101,27 @@ return true;
 }
 catch(error){
 
-console.error(
-error
-);
+console.error(error);
 
 return false;
 
 }
 
 }
+
 /* ==========================================
 API HEALTH
 ========================================== */
 
 app.get(
 "/api/health",
-(req,res) => {
+(req,res)=>{
 
 res.json({
 
 status:"OK",
 
-version:"14.0.0",
+version:"14.1.0",
 
 application:
 "Job Finder Vaud",
@@ -168,7 +140,7 @@ API OFFRES
 
 app.get(
 "/api/offers",
-(req,res) => {
+(req,res)=>{
 
 const offers =
 readJson(
@@ -188,7 +160,7 @@ API FAVORIS
 
 app.get(
 "/api/favorites",
-(req,res) => {
+(req,res)=>{
 
 const favorites =
 readJson(
@@ -204,7 +176,7 @@ favorites
 
 app.post(
 "/api/favorites",
-(req,res) => {
+(req,res)=>{
 
 const favorites =
 readJson(
@@ -234,7 +206,7 @@ message:
 
 app.delete(
 "/api/favorites/:id",
-(req,res) => {
+(req,res)=>{
 
 let favorites =
 readJson(
@@ -244,8 +216,7 @@ FAVORITES_FILE
 favorites =
 favorites.filter(
 item =>
-item.id !==
-req.params.id
+item.id !== req.params.id
 );
 
 writeJson(
@@ -264,13 +235,14 @@ message:
 
 }
 );
+
 /* ==========================================
 API CANDIDATURES
 ========================================== */
 
 app.get(
 "/api/candidatures",
-(req,res) => {
+(req,res)=>{
 
 const candidatures =
 readJson(
@@ -286,7 +258,7 @@ candidatures
 
 app.post(
 "/api/candidatures",
-(req,res) => {
+(req,res)=>{
 
 const candidatures =
 readJson(
@@ -316,7 +288,7 @@ message:
 
 app.put(
 "/api/candidatures/:id",
-(req,res) => {
+(req,res)=>{
 
 const candidatures =
 readJson(
@@ -326,8 +298,7 @@ APPLICATIONS_FILE
 const index =
 candidatures.findIndex(
 item =>
-item.id ===
-req.params.id
+item.id === req.params.id
 );
 
 if(index === -1){
@@ -371,7 +342,7 @@ message:
 
 app.delete(
 "/api/candidatures/:id",
-(req,res) => {
+(req,res)=>{
 
 let candidatures =
 readJson(
@@ -381,8 +352,7 @@ APPLICATIONS_FILE
 candidatures =
 candidatures.filter(
 item =>
-item.id !==
-req.params.id
+item.id !== req.params.id
 );
 
 writeJson(
@@ -401,13 +371,96 @@ message:
 
 }
 );
+
+/* ==========================================
+API LETTRES
+========================================== */
+
+app.get(
+"/api/letters",
+(req,res)=>{
+
+const letters =
+readJson(
+LETTERS_FILE
+);
+
+res.json(
+letters
+);
+
+}
+);
+
+app.post(
+"/api/letters",
+(req,res)=>{
+
+const letters =
+readJson(
+LETTERS_FILE
+);
+
+letters.push(
+req.body
+);
+
+writeJson(
+LETTERS_FILE,
+letters
+);
+
+res.json({
+
+success:true,
+
+message:
+"Lettre sauvegardée"
+
+});
+
+}
+);
+
+app.delete(
+"/api/letters/:id",
+(req,res)=>{
+
+let letters =
+readJson(
+LETTERS_FILE
+);
+
+letters =
+letters.filter(
+item =>
+item.id !== req.params.id
+);
+
+writeJson(
+LETTERS_FILE,
+letters
+);
+
+res.json({
+
+success:true,
+
+message:
+"Lettre supprimée"
+
+});
+
+}
+);
+
 /* ==========================================
 API STATISTIQUES
 ========================================== */
 
 app.get(
 "/api/stats",
-(req,res) => {
+(req,res)=>{
 
 const offers =
 readJson(
@@ -422,6 +475,11 @@ FAVORITES_FILE
 const candidatures =
 readJson(
 APPLICATIONS_FILE
+);
+
+const letters =
+readJson(
+LETTERS_FILE
 );
 
 const sent =
@@ -459,6 +517,9 @@ favorites.length,
 applications:
 candidatures.length,
 
+letters:
+letters.length,
+
 sent,
 
 responses,
@@ -472,27 +533,30 @@ candidatures.length
 ? Math.round(
 (responses /
 candidatures.length)
+
 * 100
-)
-: 0,
+  )
+  : 0,
 
 interviewRate:
 candidatures.length
 ? Math.round(
 (interviews /
 candidatures.length)
+
 * 100
-)
-: 0,
+  )
+  : 0,
 
 successRate:
 candidatures.length
 ? Math.round(
 (hired /
 candidatures.length)
+
 * 100
-)
-: 0
+  )
+  : 0
 
 });
 
@@ -505,7 +569,7 @@ API RESET
 
 app.post(
 "/api/reset",
-(req,res) => {
+(req,res)=>{
 
 writeJson(
 FAVORITES_FILE,
@@ -514,6 +578,11 @@ FAVORITES_FILE,
 
 writeJson(
 APPLICATIONS_FILE,
+[]
+);
+
+writeJson(
+LETTERS_FILE,
 []
 );
 
@@ -528,13 +597,14 @@ message:
 
 }
 );
+
 /* ==========================================
 ROUTE PRINCIPALE
 ========================================== */
 
 app.get(
 "/",
-(req,res) => {
+(req,res)=>{
 
 res.sendFile(
 path.join(
@@ -547,11 +617,11 @@ __dirname,
 );
 
 /* ==========================================
-GESTION ERREURS API
+GESTION ERREURS
 ========================================== */
 
 app.use(
-(req,res) => {
+(req,res)=>{
 
 res.status(404)
 .json({
@@ -567,11 +637,9 @@ message:
 );
 
 app.use(
-(error,req,res,next) => {
+(error,req,res,next)=>{
 
-console.error(
-error
-);
+console.error(error);
 
 res.status(500)
 .json({
@@ -592,14 +660,14 @@ DEMARRAGE SERVEUR
 
 app.listen(
 PORT,
-() => {
+()=>{
 
 console.log(
 "=================================="
 );
 
 console.log(
-"JOB FINDER VAUD V14.0.0 PREMIUM IA"
+"JOB FINDER VAUD V14.1.0 PREMIUM IA"
 );
 
 console.log(
