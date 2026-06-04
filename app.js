@@ -263,12 +263,11 @@ sectors: [],
 rates: [],
 contracts: [],
 regions: [],
-source: "",
+sources: [],
 employer: "",
-minimumMatch: "",
+matches: [],
 sort: "match"
 };
-
 /* ==========================================
 DOM - REFERENCES PRINCIPALES
 ========================================== */
@@ -353,14 +352,8 @@ document.getElementById("analyzeCVBtn");
 FILTRES AVANCES
 ========================================== */
 
-const sourceFilter =
-document.getElementById("sourceFilter");
-
 const employerFilter =
 document.getElementById("employerFilter");
-
-const matchFilter =
-document.getElementById("matchFilter");
 
 const sortFilter =
 document.getElementById("sortFilter");
@@ -533,20 +526,23 @@ if(searchOffersBtn){
 searchOffersBtn.addEventListener("click", applyFilters);
 }
 
-if(sourceFilter){
-sourceFilter.addEventListener("change", applyFilters);
-}
+document.querySelectorAll('input[name="sources"]')
+.forEach(cb => {
+cb.addEventListener("change", applyFilters);
+});
+
+document.querySelectorAll('input[name="matches"]')
+.forEach(cb => {
+cb.addEventListener("change", applyFilters);
+});
 
 if(employerFilter){
 employerFilter.addEventListener("change", applyFilters);
 }
 
-if(matchFilter){
-matchFilter.addEventListener("change", applyFilters);
-}
-
 if(sortFilter){
 sortFilter.addEventListener("change", applyFilters);
+}
 }
 
 document
@@ -943,19 +939,31 @@ document.querySelectorAll(`input[name="${name}"]:checked`)
 }
 
 function readFilters(){
+
 activeFilters = {
+
 jobs: getCheckedValues("jobs"),
+
 sectors: getCheckedValues("sectors"),
+
 rates: getCheckedValues("rates"),
+
 contracts: getCheckedValues("contracts"),
+
 regions: getCheckedValues("regions"),
-source: safeGetValue(sourceFilter),
+
+sources: getCheckedValues("sources"),
+
 employer: safeGetValue(employerFilter),
-minimumMatch: safeGetValue(matchFilter),
+
+matches: getCheckedValues("matches"),
+
 sort: safeGetValue(sortFilter) || "match"
+
 };
 
 return activeFilters;
+
 }
 
 function offerPassesArrayFilter(offer, values){
@@ -1072,10 +1080,14 @@ document
 input.checked = false;
 });
 
-if(sourceFilter) sourceFilter.value = "";
 if(employerFilter) employerFilter.value = "";
-if(matchFilter) matchFilter.value = "";
 if(sortFilter) sortFilter.value = "match";
+
+document.querySelectorAll('input[name="sources"]')
+.forEach(cb => cb.checked = false);
+
+document.querySelectorAll('input[name="matches"]')
+.forEach(cb => cb.checked = false);
 
 filteredOffers = sortOffers([...offers], "match");
 
