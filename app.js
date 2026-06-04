@@ -1167,9 +1167,11 @@ ${escapeHTML(offer.title)}
 📍 ${escapeHTML(offer.location)}
 </div>
 
+${offer.address ? `
 <div class="offer-address">
 📮 ${escapeHTML(offer.address)}
 </div>
+` : ""}
 
 <div class="offer-meta">
 ⏱️ ${escapeHTML(offer.rate)} | 📄 ${escapeHTML(offer.contract)}
