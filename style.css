@@ -2005,8 +2005,30 @@ border-radius:20px;
 background:var(--gold-dark);
 
 }
+/* ==========================================
+FORCE GRID V14.2.0
+========================================== */
 
+.kpi-grid{
+display:grid !important;
+grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+gap:16px !important;
+}
+
+#offersContainer{
+display:grid !important;
+grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+gap:16px !important;
+}
+
+@media (max-width:768px){
+  
+.kpi-grid,
+#offersContainer{
+grid-template-columns:1fr !important;
+}
+}
 /* ==========================================
 FIN DU FICHIER
-STYLE.CSS V14.1.0
+STYLE.CSS V14.2.0
 ========================================== */
