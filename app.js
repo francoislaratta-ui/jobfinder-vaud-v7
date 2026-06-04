@@ -473,7 +473,7 @@ if(offer.contract === "CDI"){
 score += IA_WEIGHTS.contractBonus;
 }
 
-/* BONUS INTELLIGENT */
+/* SALARY BONUS SAFE */
 if(offer.salary){
 
 const salary = parseInt(offer.salary);
@@ -484,8 +484,9 @@ score += 5;
 
 }
 
-/* CLAMP */
+/* SAFETY CLAMP */
 if(score > 100) score = 100;
+if(score < 0) score = 0;
 
 return Math.round(score);
 
