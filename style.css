@@ -308,16 +308,9 @@ DASHBOARD
 ========================================== */
 
 .kpi-grid{
-
 display:grid;
-
-grid-template-columns:
-repeat(2,1fr);
-
-gap:12px;
-
-margin-bottom:15px;
-
+grid-template-columns:repeat(2,1fr);
+gap:16px;
 }
 
 /* ==========================================
