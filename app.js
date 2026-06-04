@@ -32,8 +32,9 @@ function safeArray(arr){
 return Array.isArray(arr) ? arr : [];
 }
 
+
 /* ==========================================
-INITIALISATION SAFE V14.1.1 (FINAL FIX)
+INITIALISATION SAFE V14.1.1 (OFFICIAL CLEAN)
 ========================================== */
 
 /* SAFE HELPERS */
@@ -56,6 +57,17 @@ return fallback;
 
 }
 
+/* SAFE STORAGE ACCESS */
+
+function getStorage(key, fallback){
+try{
+if(typeof localStorage === "undefined") return fallback;
+return localStorage.getItem(key);
+}catch(e){
+return fallback;
+}
+}
+
 /* OFFRES */
 let offers = [];
 
@@ -63,7 +75,7 @@ let offers = [];
 let favorites =
 safeArray(
 safeJSON(
-localStorage.getItem(STORAGE_KEYS.favorites),
+getStorage(STORAGE_KEYS.favorites),
 []
 )
 );
@@ -72,7 +84,7 @@ localStorage.getItem(STORAGE_KEYS.favorites),
 let applications =
 safeArray(
 safeJSON(
-localStorage.getItem(STORAGE_KEYS.applications),
+getStorage(STORAGE_KEYS.applications),
 []
 )
 );
@@ -80,7 +92,7 @@ localStorage.getItem(STORAGE_KEYS.applications),
 /* SETTINGS */
 let settings =
 safeJSON(
-localStorage.getItem(STORAGE_KEYS.settings),
+getStorage(STORAGE_KEYS.settings),
 {}
 );
 
@@ -88,7 +100,7 @@ localStorage.getItem(STORAGE_KEYS.settings),
 let lettersHistory =
 safeArray(
 safeJSON(
-localStorage.getItem(STORAGE_KEYS.letters),
+getStorage(STORAGE_KEYS.letters),
 []
 )
 );
