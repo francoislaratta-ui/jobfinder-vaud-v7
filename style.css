@@ -835,10 +835,10 @@ border:
 
 }
 
+@media (max-width: 768px){
 #offersContainer{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:16px;
+grid-template-columns:1fr;
+}
 }
 
 /* ==========================================
