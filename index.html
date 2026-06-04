@@ -11,14 +11,14 @@ content="width=device-width, initial-scale=1.0">
 
 <meta
 name="description"
-content="Job Finder Vaud V14.0.0 Premium IA">
+content="Job Finder Vaud V14.1.0 Premium IA">
 
 <meta
 name="theme-color"
 content="#c28b14">
 
 <title>
-Job Finder Vaud V14.0.0 Premium IA
+Job Finder Vaud V14.1.0 Premium IA
 </title>
 
 <link
@@ -50,7 +50,7 @@ HEADER
 </h1>
 
 <div class="app-version">
-V14.0.0 Premium IA
+V14.1.0 Premium IA
 </div>
 
 <div class="app-author">
@@ -143,6 +143,13 @@ data-tab="ai">
 </button>
 
 <button
+data-tab="lettersHistory">
+
+📚 Lettres
+
+</button>
+
+<button
 data-tab="stats">
 
 📊 Stats
@@ -176,7 +183,9 @@ class="tab-content active-tab">
 
 <div class="kpi-grid">
 
-<div class="kpi-card">
+<div
+class="kpi-card clickable-card"
+data-target="filters">
 
 <div
 id="kpiOffers"
@@ -194,7 +203,9 @@ class="kpi-value">
 
 </div>
 
-<div class="kpi-card">
+<div
+class="kpi-card clickable-card"
+data-target="favorites">
 
 <div
 id="kpiFavorites"
@@ -212,7 +223,9 @@ class="kpi-value">
 
 </div>
 
-<div class="kpi-card">
+<div
+class="kpi-card clickable-card"
+data-target="applications">
 
 <div
 id="kpiApplications"
@@ -230,7 +243,9 @@ class="kpi-value">
 
 </div>
 
-<div class="kpi-card">
+<div
+class="kpi-card clickable-card"
+data-target="ai">
 
 <div
 id="kpiAI"
@@ -249,6 +264,7 @@ class="kpi-value">
 </div>
 
 </div>
+
 <div class="objectives-card">
 
 <h3>
@@ -318,7 +334,6 @@ class="achievement-badge">
 </div>
 
 </div>
-
 <div class="objectives-card">
 
 <h3>
@@ -351,6 +366,170 @@ class="tab-content">
 🔎 Filtres
 
 </h2>
+
+<!-- ==========================================
+NOUVEAUX FILTRES V14.1.0
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+🔎 Source
+
+</div>
+
+<div class="filter-content active-filter">
+
+<select id="sourceFilter">
+
+<option value="">
+Toutes les sources
+</option>
+
+<option value="Site employeur">
+Site employeur
+</option>
+
+<option value="JobUp">
+JobUp
+</option>
+
+<option value="JobScout24">
+JobScout24
+</option>
+
+<option value="JobRoom">
+JobRoom
+</option>
+
+<option value="LinkedIn">
+LinkedIn
+</option>
+
+<option value="Indeed">
+Indeed
+</option>
+
+<option value="Jobeo">
+Jobeo
+</option>
+
+<option value="Careerjet">
+Careerjet
+</option>
+
+<option value="Glassdoor">
+Glassdoor
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+🏢 Employeur
+
+</div>
+
+<div class="filter-content active-filter">
+
+<select id="employerFilter">
+
+<option value="">
+Tous les employeurs
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+🤖 Match IA
+
+</div>
+
+<div class="filter-content active-filter">
+
+<select id="matchFilter">
+
+<option value="">
+Tous les matchs
+</option>
+
+<option value="90">
+🤘🏼 90% et +
+</option>
+
+<option value="80">
+🤙🏼 80% et +
+</option>
+
+<option value="70">
+🫣 70% et +
+</option>
+
+<option value="60">
+🙂 60% et +
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+↕️ Tri
+
+</div>
+
+<div class="filter-content active-filter">
+
+<select id="sortFilter">
+
+<option value="match">
+Match IA
+</option>
+
+<option value="date">
+Date
+</option>
+
+<option value="salary">
+Salaire
+</option>
+
+<option value="company">
+Employeur
+</option>
+
+<option value="region">
+Région
+</option>
+
+<option value="job">
+Métier
+</option>
+
+</select>
+
+</div>
+
+</div>
 
 <!-- ==========================================
 METIERS
@@ -419,7 +598,6 @@ Technicien informatique
 </div>
 
 </div>
-
 <!-- ==========================================
 SECTEURS
 ========================================== -->
@@ -433,7 +611,8 @@ SECTEURS
 </div>
 
 <div class="filter-content active-filter">
- <label>
+
+<label>
 <input type="checkbox" value="Administration">
 Administration
 </label>
@@ -523,50 +702,15 @@ TAUX
 
 <div class="rate-grid">
 
-<label>
-<input type="checkbox" value="20">
-20%
-</label>
-
-<label>
-<input type="checkbox" value="30">
-30%
-</label>
-
-<label>
-<input type="checkbox" value="40">
-40%
-</label>
-
-<label>
-<input type="checkbox" value="50">
-50%
-</label>
-
-<label>
-<input type="checkbox" value="60">
-60%
-</label>
-
-<label>
-<input type="checkbox" value="70">
-70%
-</label>
-
-<label>
-<input type="checkbox" value="80">
-80%
-</label>
-
-<label>
-<input type="checkbox" value="90">
-90%
-</label>
-
-<label>
-<input type="checkbox" value="100">
-100%
-</label>
+<label><input type="checkbox" value="20">20%</label>
+<label><input type="checkbox" value="30">30%</label>
+<label><input type="checkbox" value="40">40%</label>
+<label><input type="checkbox" value="50">50%</label>
+<label><input type="checkbox" value="60">60%</label>
+<label><input type="checkbox" value="70">70%</label>
+<label><input type="checkbox" value="80">80%</label>
+<label><input type="checkbox" value="90">90%</label>
+<label><input type="checkbox" value="100">100%</label>
 
 </div>
 
@@ -599,7 +743,8 @@ CONTRATS
 </div>
 
 <div class="filter-content active-filter">
- <label>
+
+<label>
 <input type="checkbox" value="CDI">
 CDI
 </label>
@@ -637,55 +782,16 @@ REGIONS
 
 <div class="filter-content active-filter">
 
-<label>
-<input type="checkbox" value="Lausanne">
-Lausanne
-</label>
-
-<label>
-<input type="checkbox" value="Ouest lausannois">
-Ouest lausannois
-</label>
-
-<label>
-<input type="checkbox" value="Morges">
-Morges
-</label>
-
-<label>
-<input type="checkbox" value="Nyon">
-Nyon
-</label>
-
-<label>
-<input type="checkbox" value="Riviera">
-Riviera
-</label>
-
-<label>
-<input type="checkbox" value="Aigle">
-Aigle
-</label>
-
-<label>
-<input type="checkbox" value="Broye-Vully">
-Broye-Vully
-</label>
-
-<label>
-<input type="checkbox" value="Jura-Nord vaudois">
-Jura-Nord vaudois
-</label>
-
-<label>
-<input type="checkbox" value="Gros-de-Vaud">
-Gros-de-Vaud
-</label>
-
-<label>
-<input type="checkbox" value="Lavaux-Oron">
-Lavaux-Oron
-</label>
+<label><input type="checkbox" value="Lausanne">Lausanne</label>
+<label><input type="checkbox" value="Ouest lausannois">Ouest lausannois</label>
+<label><input type="checkbox" value="Morges">Morges</label>
+<label><input type="checkbox" value="Nyon">Nyon</label>
+<label><input type="checkbox" value="Riviera">Riviera</label>
+<label><input type="checkbox" value="Aigle">Aigle</label>
+<label><input type="checkbox" value="Broye-Vully">Broye-Vully</label>
+<label><input type="checkbox" value="Jura-Nord vaudois">Jura-Nord vaudois</label>
+<label><input type="checkbox" value="Gros-de-Vaud">Gros-de-Vaud</label>
+<label><input type="checkbox" value="Lavaux-Oron">Lavaux-Oron</label>
 
 </div>
 
@@ -721,32 +827,20 @@ RESULTATS
 
 <div class="results-summary">
 
-<div
-id="resultsCounter">
-
+<div id="resultsCounter">
 💼 Offres trouvées : 0
-
 </div>
 
-<div
-id="recommendedCounter">
-
+<div id="recommendedCounter">
 🔥 Très recommandées : 0
-
 </div>
 
-<div
-id="newOffersCounter">
-
+<div id="newOffersCounter">
 🆕 Nouvelles offres : 0
-
 </div>
 
-<div
-id="averageMatchCounter">
-
+<div id="averageMatchCounter">
 🤖 Match moyen IA : 0%
-
 </div>
 
 </div>
@@ -757,7 +851,6 @@ id="offersContainer">
 </div>
 
 </section>
-
 <!-- ==========================================
 FAVORIS
 ========================================== -->
@@ -808,6 +901,7 @@ class="tab-content">
 🚀 Mes candidatures
 
 </h2>
+
 <div class="kpi-grid">
 
 <div class="kpi-card">
@@ -892,17 +986,9 @@ class="kpi-value">
 
 </h3>
 
-<p>
+<p>3 candidatures par semaine</p>
 
-3 candidatures par semaine
-
-</p>
-
-<p>
-
-12 candidatures par mois
-
-</p>
+<p>12 candidatures par mois</p>
 
 </div>
 
@@ -917,10 +1003,7 @@ id="applicationsBoard">
 
 </div>
 
-<div
-id="sentApplications">
-
-</div>
+<div id="sentApplications"></div>
 
 </div>
 
@@ -932,10 +1015,7 @@ id="sentApplications">
 
 </div>
 
-<div
-id="receivedResponses">
-
-</div>
+<div id="receivedResponses"></div>
 
 </div>
 
@@ -947,10 +1027,7 @@ id="receivedResponses">
 
 </div>
 
-<div
-id="scheduledInterviews">
-
-</div>
+<div id="scheduledInterviews"></div>
 
 </div>
 
@@ -962,10 +1039,7 @@ id="scheduledInterviews">
 
 </div>
 
-<div
-id="successfulApplications">
-
-</div>
+<div id="successfulApplications"></div>
 
 </div>
 
@@ -974,7 +1048,7 @@ id="successfulApplications">
 </section>
 
 <!-- ==========================================
-IA PREMIUM
+IA PREMIUM V14.1.0
 ========================================== -->
 
 <section
@@ -1083,11 +1157,12 @@ id="interviewResult">
 </div>
 
 </div>
+
 <div class="objectives-card">
 
 <h3>
 
-✉️ Lettre de motivation IA
+✉️ Générateur de lettres IA
 
 </h3>
 
@@ -1100,17 +1175,87 @@ placeholder="Collez ici une offre d'emploi">
 <br><br>
 
 <button
-id="generateLetterBtn"
+id="generateShortLetter"
 class="action-btn">
 
-✉️ Générer la lettre
+✉️ Lettre courte
 
 </button>
 
-<div
-id="letterResult">
+<button
+id="generateStandardLetter"
+class="action-btn">
+
+✉️ Lettre standard
+
+</button>
+
+<button
+id="generatePremiumLetter"
+class="action-btn">
+
+✉️ Lettre premium
+
+</button>
 
 </div>
+<div class="objectives-card">
+
+<h3>
+
+📝 Éditeur de lettre Premium
+
+</h3>
+
+<div
+id="letterResult"
+class="letter-editor">
+
+Votre lettre apparaîtra ici...
+
+</div>
+
+<br>
+
+<button
+id="saveLetterBtn"
+class="action-btn">
+
+💾 Sauvegarder
+
+</button>
+
+<button
+id="copyLetterBtn"
+class="action-btn">
+
+📋 Copier
+
+</button>
+
+<button
+id="pdfLetterBtn"
+class="action-btn">
+
+📄 PDF
+
+</button>
+
+<button
+id="wordLetterBtn"
+class="action-btn">
+
+📝 Word
+
+</button>
+
+<button
+id="emailLetterBtn"
+class="action-btn">
+
+📧 E-mail
+
+</button>
 
 </div>
 
@@ -1118,7 +1263,7 @@ id="letterResult">
 
 <h3>
 
-📋 Structure de lettre V14.0.0
+📋 Structure de lettre V14.1.0
 
 </h3>
 
@@ -1135,9 +1280,13 @@ NPA Ville<br><br>
 
 Lieu, date<br><br>
 
-Votre annonce parue pour un poste de ...<br><br>
+Objet : Candidature au poste de ...<br><br>
 
-Madame, Monsieur,
+Madame, Monsieur,<br><br>
+
+Texte généré par IA...<br><br>
+
+Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
 
 </div>
 
@@ -1216,6 +1365,45 @@ Suggestions IA
 </div>
 
 </div>
+
+</div>
+
+</section>
+
+<!-- ==========================================
+HISTORIQUE LETTRES
+========================================== -->
+
+<section
+id="lettersHistory"
+class="tab-content">
+
+<h2 class="section-title">
+
+📚 Historique des lettres
+
+</h2>
+
+<div class="objectives-card">
+
+<h3>
+
+📚 Lettres sauvegardées
+
+</h3>
+
+<p>
+
+Retrouvez toutes vos lettres générées par l'IA.
+
+</p>
+
+</div>
+
+<div
+id="lettersHistoryContainer">
+
+Aucune lettre sauvegardée.
 
 </div>
 
@@ -1325,7 +1513,6 @@ id="applicationsChart">
 </canvas>
 
 </div>
-
 <div class="objectives-card">
 
 <h3>
@@ -1357,6 +1544,7 @@ id="sectorsChart">
 </div>
 
 </section>
+
 <!-- ==========================================
 PARAMETRES
 ========================================== -->
@@ -1402,7 +1590,10 @@ Notifications activées
 <h3>
 
 📤 Export
- <p>
+
+</h3>
+
+<p>
 
 Exporter les favoris, candidatures et statistiques.
 
@@ -1634,80 +1825,92 @@ title="Retour haut">
 </button>
 
 </div>
+
 <!-- ==========================================
-TEMPLATE CARTE OFFRE V14
+TEMPLATE CARTE OFFRE V14.1.0
 ========================================== -->
 
 <template
 id="offerTemplate">
 
-<div
-class="offer-card">
+<div class="offer-card">
 
-<div
-class="offer-title">
-
-👔 Gestionnaire de dossier
-
-</div>
-
-<div
-class="offer-company">
-
-🏢 Entreprise
-
-</div>
-
-<div
-class="offer-location">
-
-📍 Lausanne
-
-</div>
-
-<div
-class="offer-meta">
-
-⏱️ 80% | 📄 CDI
-
-</div>
-
- <div
-class="offer-sector">
-
-🏢 Administration publique
-
-</div>
-
-<div
-class="offer-date">
-
-📅 Aujourd'hui
-
-</div>
-
-<div
-class="offer-match">
+<div class="offer-match">
 
 🤖 Match IA : 97%
 
 </div>
 
-<div
-class="offer-reasons">
+<div class="offer-title">
+
+💼 Gestionnaire de dossier
+
+</div>
+
+<div class="offer-company">
+
+🏢 Etat de Vaud
+
+</div>
+
+<div class="offer-address">
+
+📮 Adresse employeur
+
+</div>
+
+<div class="offer-location">
+
+📍 Lausanne
+
+</div>
+
+<div class="offer-meta">
+
+📈 80%
+
+</div>
+
+<div class="offer-meta">
+
+📄 CDI
+
+</div>
+
+<div class="offer-sector">
+
+🏭 Administration publique
+
+</div>
+
+<div class="offer-salary">
+
+💰 CHF 75'000
+
+</div>
+
+<div class="offer-source">
+
+🔎 Site employeur
+
+</div>
+
+<div class="offer-date">
+
+📅 Aujourd'hui
+
+</div>
+
+<div class="offer-reasons">
 
 ✓ Métier compatible<br>
-
 ✓ Secteur compatible<br>
-
 ✓ Région compatible<br>
-
 ✓ Taux compatible
 
 </div>
 
-<div
-class="offer-actions">
+<div class="offer-actions">
 
 <button
 class="offer-btn favorite-btn"
@@ -1743,7 +1946,7 @@ title="Lettre IA">
 
 <button
 class="offer-btn link-btn"
-title="Voir l'offre">
+title="Offre originale">
 
 🔗
 
@@ -1759,7 +1962,6 @@ title="Voir l'offre">
 
 <script
 src="app.js">
-
 </script>
 
 </body>
