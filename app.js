@@ -113,8 +113,7 @@ let currentLetter = "";
 
 /* OFFRE SÉLECTIONNÉE */
 let selectedOffer = null;
-/* OFFRE SÉLECTIONNÉE */
-let selectedOffer = null;
+
 
 /* ==========================================
 V14.2.0 IA ENGINE
