@@ -440,7 +440,16 @@ behavior: "smooth"
 INITIALISATION UI
 ========================================== */
 
-function initUI(){
+function initUI(){document.querySelectorAll(".main-tabs button").forEach(button => {
+button.addEventListener("click", () => {
+const tab = button.dataset.tab;
+
+if(tab){
+openTab(tab);
+}
+
+});
+});
 const navButtons = [
 { button:"btnDashboard", tab:"dashboard" },
 { button:"btnFilters", tab:"filters" },
