@@ -543,7 +543,6 @@ employerFilter.addEventListener("change", applyFilters);
 if(sortFilter){
 sortFilter.addEventListener("change", applyFilters);
 }
-}
 
 document
 .querySelectorAll("input[type='checkbox']")
@@ -551,6 +550,7 @@ document
 checkbox.addEventListener("change", applyFilters);
 });
 
+}
 
 /* ==========================================
 MATCH IA - DETAILS
