@@ -450,6 +450,30 @@ openTab(tab);
 
 });
 });
+ /* BOUTONS FLOTTANTS */
+
+document.getElementById("floatingFavorites")
+?.addEventListener("click", () => {
+openTab("favorites");
+});
+
+document.getElementById("floatingApplications")
+?.addEventListener("click", () => {
+openTab("applications");
+});
+
+document.getElementById("floatingAI")
+?.addEventListener("click", () => {
+openTab("ai");
+});
+
+document.getElementById("floatingTop")
+?.addEventListener("click", () => {
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+});                 
 const navButtons = [
 { button:"btnDashboard", tab:"dashboard" },
 { button:"btnFilters", tab:"filters" },
