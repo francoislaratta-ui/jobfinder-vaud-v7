@@ -31,13 +31,20 @@ letters:
 function safeArray(arr){
 return Array.isArray(arr) ? arr : [];
 }
-
 /* ==========================================
-INITIALISATION
+INITIALISATION SAFE V14.1.1
 ========================================== */
 
+/* SAFE ARRAY (DOIT ÊTRE DÉCLARÉ AVANT UTILISATION) */
+
+function safeArray(arr){
+return Array.isArray(arr) ? arr : [];
+}
+
+/* OFFRES */
 let offers = [];
 
+/* FAVORIS */
 let favorites =
 safeArray(
 JSON.parse(
@@ -47,6 +54,7 @@ STORAGE_KEYS.favorites
 )
 );
 
+/* CANDIDATURES */
 let applications =
 safeArray(
 JSON.parse(
@@ -56,6 +64,7 @@ STORAGE_KEYS.applications
 )
 );
 
+/* SETTINGS */
 let settings =
 JSON.parse(
 localStorage.getItem(
@@ -63,19 +72,25 @@ STORAGE_KEYS.settings
 ) || "{}"
 );
 
-
+/* LETTRES IA */
 let lettersHistory =
+safeArray(
 JSON.parse(
 localStorage.getItem(
 STORAGE_KEYS.letters
-) || "[]"
+)
+)
 );
 
+/* CV */
 let currentCV = null;
 
+/* LETTRE ACTIVE */
 let currentLetter = "";
 
+/* OFFRE SÉLECTIONNÉE */
 let selectedOffer = null;
+
 
 /* ==========================================
 ETAT APPLICATION
