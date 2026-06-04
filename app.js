@@ -31,22 +31,29 @@ letters:
 function safeArray(arr){
 return Array.isArray(arr) ? arr : [];
 }
+
 /* ==========================================
-INITIALISATION SAFE V14.1.1
+INITIALISATION SAFE V14.1.1 (FINAL FIX)
 ========================================== */
 
-/* SAFE HELPERS (IMMÉDIATEMENT DISPONIBLES) */
+/* SAFE HELPERS */
 
 function safeArray(arr){
 return Array.isArray(arr) ? arr : [];
 }
 
 function safeJSON(value, fallback){
+
+if(value === null || value === undefined){
+return fallback;
+}
+
 try{
-return JSON.parse(value) || fallback;
+return JSON.parse(value);
 }catch(e){
 return fallback;
 }
+
 }
 
 /* OFFRES */
