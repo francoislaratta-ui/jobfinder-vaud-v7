@@ -28,10 +28,6 @@ letters:
 "jobfinder_letters"
 
 };
-function safeArray(arr){
-return Array.isArray(arr) ? arr : [];
-}
-
 
 /* ==========================================
 INITIALISATION SAFE V14.1.1 (OFFICIAL CLEAN)
