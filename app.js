@@ -441,7 +441,27 @@ INITIALISATION UI
 ========================================== */
 
 function initUI(){
-if(notificationToggle){
+const navButtons = [
+{ button:"btnDashboard", tab:"dashboard" },
+{ button:"btnFilters", tab:"filters" },
+{ button:"btnFavorites", tab:"favorites" },
+{ button:"btnApplications", tab:"applications" },
+{ button:"btnAI", tab:"ai" },
+{ button:"btnStats", tab:"stats" },
+{ button:"btnSettings", tab:"settings" },
+{ button:"btnNotifications", tab:"notifications" }
+];
+
+navButtons.forEach(item => {
+const btn = document.getElementById(item.button);
+
+if(btn){
+btn.addEventListener("click", () => {
+openTab(item.tab);
+});
+}
+});
+  if(notificationToggle){
 notificationToggle.addEventListener("click", () => {
 notificationsEnabled = !notificationsEnabled;
 
