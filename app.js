@@ -981,6 +981,7 @@ const filters = readFilters();
 
 let result =
 offers.filter(offer => {
+
 const match = calculateMatch(offer);
 
 if(!offerPassesArrayFilter(offer, filters.jobs)){
@@ -1003,9 +1004,15 @@ if(!offerPassesArrayFilter(offer, filters.regions)){
 return false;
 }
 
-if(filters.source &&
-!containsNormalized(offer.source, filters.source)){
+if(filters.sources && filters.sources.length > 0){
+const sourceOk =
+filters.sources.some(source =>
+containsNormalized(offer.source, source)
+);
+
+if(!sourceOk){
 return false;
+}
 }
 
 if(filters.employer &&
@@ -1013,8 +1020,11 @@ normalizeText(offer.company) !== normalizeText(filters.employer)){
 return false;
 }
 
-if(filters.minimumMatch){
-const minimum = parseInt(filters.minimumMatch, 10);
+if(filters.matches && filters.matches.length > 0){
+const minimum =
+Math.min(
+...filters.matches.map(value => parseInt(value, 10))
+);
 
 if(!isNaN(minimum) && match < minimum){
 return false;
@@ -1022,6 +1032,7 @@ return false;
 }
 
 return true;
+
 });
 
 result = sortOffers(result, filters.sort);
@@ -1034,7 +1045,6 @@ updateBestMatch();
 updateNotifications();
 updateStatistics();
 }
-
 function sortOffers(data, sortType){
 const list = [...safeArray(data)];
 
@@ -1068,9 +1078,9 @@ sectors: [],
 rates: [],
 contracts: [],
 regions: [],
-source: "",
+sources: [],
 employer: "",
-minimumMatch: "",
+matches: [],
 sort: "match"
 };
 
