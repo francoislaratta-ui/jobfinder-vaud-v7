@@ -28,6 +28,9 @@ letters:
 "jobfinder_letters"
 
 };
+function safeArray(arr){
+return Array.isArray(arr) ? arr : [];
+}
 
 /* ==========================================
 INITIALISATION
@@ -36,17 +39,21 @@ INITIALISATION
 let offers = [];
 
 let favorites =
+safeArray(
 JSON.parse(
 localStorage.getItem(
 STORAGE_KEYS.favorites
-) || "[]"
+)
+)
 );
 
 let applications =
+safeArray(
 JSON.parse(
 localStorage.getItem(
 STORAGE_KEYS.applications
-) || "[]"
+)
+)
 );
 
 let settings =
@@ -55,6 +62,7 @@ localStorage.getItem(
 STORAGE_KEYS.settings
 ) || "{}"
 );
+
 
 let lettersHistory =
 JSON.parse(
