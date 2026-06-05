@@ -622,11 +622,11 @@ alert("Impossible d'analyser le contenu du CV.");
 
 }
 
+}
 
 /* ==========================================
 FILTRES AVANCES
 ========================================== */
-
 const employerFilter =
 document.getElementById("employerFilter");
 
