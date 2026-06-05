@@ -2857,7 +2857,6 @@ if(!saved){
 return;
 }
 
-/* Compatibilité ancienne sauvegarde */
 if(saved.name){
 
 currentCV = saved;
@@ -2894,7 +2893,6 @@ currentCV.size
 ? Math.round(currentCV.size / 1024)
 : 0;
 
-/* CV déjà analysé */
 if(
 currentCVText &&
 currentCVAnalysis
@@ -2915,7 +2913,7 @@ cvAnalysisResult.innerHTML = `
 
 <p class="cv-name"><strong>${cvName}</strong></p>
 
-<p class="cv-meta">PDF : ${cvSize} Ko</p>
+<p class="cv-meta">📄 ${cvExtension} : ${cvSize} Ko</p>
 
 <p class="cv-meta">📝 ${currentCVAnalysis.wordCount || 0} mots détectés</p>
 
@@ -2930,7 +2928,6 @@ return;
 
 }
 
-/* CV simplement chargé */
 if(cvAnalysisResult){
 
 cvAnalysisResult.innerHTML = `
@@ -2940,13 +2937,9 @@ cvAnalysisResult.innerHTML = `
 
 <p class="cv-name">${cvName}</p>
 
-<p class="cv-meta">
-📄 ${cvExtension} : ${cvSize} Ko • ✅ Prêt
-</p>
+<p class="cv-meta">📄 ${cvExtension} : ${cvSize} Ko • ✅ Prêt</p>
 
-<p class="cv-meta">
-ℹ️ Réimporte le fichier uniquement si tu veux lancer une nouvelle analyse.
-</p>
+<p class="cv-meta">ℹ️ Réimporte le fichier uniquement si tu veux lancer une nouvelle analyse.</p>
 
 </div>
 `;
@@ -2954,6 +2947,7 @@ cvAnalysisResult.innerHTML = `
 }
 
 }
+
 window.addEventListener("DOMContentLoaded", () => {
 
 initUI();
