@@ -2030,7 +2030,7 @@ CV ANALYSIS CARD
 ========================================== */
 
 /* ==========================================
-CV ANALYSIS CARD
+CV ANALYSIS CARD V14.2.4 COMPACT
 ========================================== */
 
 .cv-analysis-card{
@@ -2039,46 +2039,104 @@ background:#1b1b1b;
 
 border:1px solid #c28b14;
 
-border-radius:6px;
+border-radius:8px;
 
-padding:6px 10px;
+padding:8px 12px;
 
 margin-top:6px;
 
-color:#fff;
+color:#ffffff;
 
-font-size:0.85rem;
+font-size:0.82rem;
 
-line-height:1.15;
+line-height:1;
+
+display:flex;
+
+flex-direction:column;
+
+gap:2px;
 
 }
 
 .cv-analysis-card h3{
 
-margin:0 0 4px 0;
+margin:0 0 3px 0;
 
 font-size:0.95rem;
 
+font-weight:700;
+
 color:#c28b14;
 
-line-height:1.1;
-
-font-weight:600;
+line-height:1;
 
 }
 
 .cv-analysis-card p{
 
-margin:1px 0;
+margin:0;
 
-line-height:1.15;
+padding:0;
+
+line-height:1;
 
 }
 
+.cv-analysis-card strong{
+
+color:#ffffff;
+
+}
+
+.cv-analysis-card ul{
+
+margin:2px 0 0 12px;
+
+padding:0;
+
+line-height:1;
+
+}
+
+.cv-analysis-card li{
+
+margin:0;
+
+padding:0;
+
+line-height:1;
+
+}
+
+.cv-analysis-card .cv-name{
+
+font-weight:600;
+
+color:#ffffff;
+
+}
+
+.cv-analysis-card .cv-meta{
+
+color:#d8d8d8;
+
+font-size:0.78rem;
+
+}
+
+.cv-analysis-card .cv-skills{
+
+color:#f1f1f1;
+
+font-size:0.80rem;
+
+word-break:break-word;
+
+}
+
+
 /* ==========================================
-FIN DU FICHIER
-STYLE.CSS V14.2.0
-========================================== *//* ==========================================
 FIN DU FICHIER
 STYLE.CSS V14.2.0
 ========================================== */
