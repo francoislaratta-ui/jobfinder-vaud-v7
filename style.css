@@ -214,6 +214,11 @@ NAVIGATION
 
 .main-tabs{
 
+position:sticky;
+top:0;
+
+z-index:9999;
+
 display:flex;
 
 gap:8px;
@@ -223,6 +228,8 @@ overflow-x:auto;
 padding:10px;
 
 background:#111;
+
+}
 
 border-bottom:
 1px solid rgba(
