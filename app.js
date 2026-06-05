@@ -2101,11 +2101,11 @@ card.innerHTML = `
 🏢 ${escapeHTML(app.company)}
 </div>
 <div class="offer-meta">
-⏱️ Taux : ${escapeHTML(offer.rate)}
+<div class="offer-meta">
+📌 ${escapeHTML(app.status)}
 &nbsp;&nbsp;|&nbsp;&nbsp;
-📄 Contrat : ${escapeHTML(offer.contract)}
-</div>
-<div class="offer-actions">
+🤖 ${calculateMatch(app)}%
+</div><div class="offer-actions">
 <button class="offer-btn status">🔄</button>
 <button class="offer-btn open">🔗</button>
 <button class="offer-btn delete">🗑️</button>
