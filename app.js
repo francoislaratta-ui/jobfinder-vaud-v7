@@ -1017,9 +1017,15 @@ return false;
 }
 }
 
-if(filters.employer &&
-normalizeText(offer.company) !== normalizeText(filters.employer)){
+if(filters.employers && filters.employers.length > 0){
+const employerOk =
+filters.employers.some(employer =>
+normalizeText(offer.company) === normalizeText(employer)
+);
+
+if(!employerOk){
 return false;
+}
 }
 
 if(filters.matches && filters.matches.length > 0){
