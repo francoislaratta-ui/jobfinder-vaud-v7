@@ -2100,12 +2100,14 @@ card.innerHTML = `
 <div class="offer-company">
 🏢 ${escapeHTML(app.company)}
 </div>
-<div class="offer-meta">
+
 <div class="offer-meta">
 📌 ${escapeHTML(app.status)}
 &nbsp;&nbsp;|&nbsp;&nbsp;
 🤖 ${calculateMatch(app)}%
-</div><div class="offer-actions">
+</div>
+
+<div class="offer-actions">
 <button class="offer-btn status">🔄</button>
 <button class="offer-btn open">🔗</button>
 <button class="offer-btn delete">🗑️</button>
@@ -3029,6 +3031,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 initUI();
 
+loadSavedCV();
+
 loadOffers();
 
 renderFavorites();
@@ -3044,6 +3048,7 @@ updateApplicationCounters();
 updateBestMatch();
 
 updateStatistics();
+
 
 loadSavedCV();
 
