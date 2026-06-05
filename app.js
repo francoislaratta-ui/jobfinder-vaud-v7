@@ -636,11 +636,6 @@ document.getElementById("sortFilter");
 /* ==========================================
 NOTIFICATIONS
 ========================================== */
-
-const notificationToggle =
-document.getElementById("notificationToggle");
-
-
 /* ==========================================
 UTILITAIRES
 ========================================== */
@@ -656,6 +651,7 @@ return new Date(date).toLocaleDateString("fr-CH");
 return String(date);
 }
 
+}
 
 function generateId(){
 return Date.now().toString() +
@@ -681,6 +677,7 @@ alert("ℹ️ " + message);
 function showError(message){
 alert("❌ " + message);
 }
+
 
 /* ==========================================
 TAB NAVIGATION
