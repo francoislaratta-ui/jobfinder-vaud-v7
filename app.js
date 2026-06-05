@@ -2023,7 +2023,7 @@ card.innerHTML = `
 🏢 ${escapeHTML(app.company)}
 </div>
 <div class="offer-meta">
-📌 ${escapeHTML(app.status)} | 🤖 ${calculateMatch(app)}%
+⏱️ Taux : ${escapeHTML(offer.rate)} | 📄 Contrat : ${escapeHTML(offer.contract)}
 </div>
 <div class="offer-actions">
 <button class="offer-btn status">🔄</button>
