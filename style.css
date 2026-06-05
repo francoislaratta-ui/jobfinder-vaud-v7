@@ -1361,19 +1361,20 @@ line-height:1.8;
 
 margin-top:6px;
 
-padding:6px;
+padding:0;
 
-background:#222;
+background:transparent;
 
-border-radius:8px;
+border-radius:0;
 
 line-height:1.2;
 
-white-space:pre-wrap;
+white-space:normal;
 
-overflow:auto;
+overflow:visible;
 
 }
+
 /* ==========================================
 LETTRES IA
 ========================================== */

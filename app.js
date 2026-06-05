@@ -405,17 +405,12 @@ cvAnalysisResult.innerHTML = `
 
 <h3>📄 CV chargé</h3>
 
-<p><strong>Nom :</strong> ${currentCV.name}</p>
+<p>${currentCV.name}</p>
 
-<p><strong>Format :</strong> ${currentCV.extension.toUpperCase()}</p>
-
-<p><strong>Taille :</strong> ${Math.round(currentCV.size / 1024)} Ko</p>
-
-<p>✅ Prêt pour l'analyse IA</p>
+<p>${currentCV.extension.toUpperCase()} • ${Math.round(currentCV.size / 1024)} Ko • ✅ Prêt</p>
 
 </div>
 `;
-}
 
 /* ==========================================
 FILTRES AVANCES
