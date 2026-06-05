@@ -462,27 +462,22 @@ normalizeText(text);
 const skills = [];
 
 const keywords = [
-
 "excel",
 "word",
 "outlook",
 "sap",
 "erp",
 "crm",
-
 "gestion administrative",
 "gestion de dossiers",
 "facturation",
 "service client",
-
 "support informatique",
 "helpdesk",
 "windows",
-
 "anglais",
 "allemand",
 "français"
-
 ];
 
 keywords.forEach(keyword => {
@@ -498,15 +493,12 @@ skills.push(keyword);
 });
 
 return {
-
 wordCount:
 text
 .split(/\s+/)
 .filter(Boolean)
 .length,
-
 skills
-
 };
 
 }
@@ -519,25 +511,18 @@ if(
 cvFile.files.length === 0
 ){
 
-console.log(
-"currentCV =",
-currentCV
-);
 if(currentCV){
 
 alert(
-`CV déjà chargé : ${
-currentCV?.name || "CV sauvegardé"
-}`
+"CV déjà chargé : " +
+(currentCV.name || "CV sauvegardé")
 );
 
 return;
 
 }
 
-alert(
-"Veuillez d'abord importer votre CV."
-);
+alert("Veuillez d'abord importer votre CV.");
 
 return;
 
@@ -566,23 +551,17 @@ fileName.endsWith(extension)
 
 if(!isAllowed){
 
-alert(
-"Format non accepté. Merci d'importer un CV en PDF, DOCX ou TXT."
-);
+alert("Format non accepté. Merci d'importer un CV en PDF, DOCX ou TXT.");
 
 return;
 
 }
 
 currentCV = {
-
-name:file.name,
-type:file.type,
-size:file.size,
-extension:fileName
-.split(".")
-.pop()
-
+name: file.name,
+type: file.type,
+size: file.size,
+extension: fileName.split(".").pop()
 };
 
 if(cvAnalysisResult){
@@ -592,7 +571,7 @@ cvAnalysisResult.innerHTML = `
 
 <h3>⏳ Analyse du CV</h3>
 
-<p>Extraction du contenu en cours...</p>
+<p class="cv-meta">Extraction du contenu en cours...</p>
 
 </div>
 `;
@@ -603,9 +582,7 @@ currentCVText =
 await extractCVContent(file);
 
 currentCVAnalysis =
-analyzeExtractedText(
-currentCVText
-);
+analyzeExtractedText(currentCVText);
 
 saveCurrentCV();
 
@@ -621,21 +598,13 @@ cvAnalysisResult.innerHTML = `
 
 <h3>📄 CV analysé</h3>
 
-<p class="cv-name">
-<strong>${currentCV.name}</strong>
-</p>
+<p class="cv-name"><strong>${currentCV.name}</strong></p>
 
-<p class="cv-meta">
-📄 ${currentCV.extension.toUpperCase()} : ${Math.round(currentCV.size / 1024)} Ko
-</p>
+<p class="cv-meta">📄 ${currentCV.extension.toUpperCase()} : ${Math.round(currentCV.size / 1024)} Ko</p>
 
-<p class="cv-meta">
-📝 ${currentCVAnalysis.wordCount} mots détectés
-</p>
+<p class="cv-meta">📝 ${currentCVAnalysis.wordCount} mots détectés</p>
 
-<p class="cv-skills">
-🎯 ${skillsText}
-</p>
+<p class="cv-skills">🎯 ${skillsText}</p>
 
 </div>
 `;
@@ -648,15 +617,12 @@ console.error(
 "Erreur analyse CV :",
 error
 );
-}
 
-alert(
-"Impossible d'analyser le contenu du CV."
-);
+alert("Impossible d'analyser le contenu du CV.");
 
 }
 
-}
+
 /* ==========================================
 FILTRES AVANCES
 ========================================== */
@@ -689,7 +655,7 @@ return new Date(date).toLocaleDateString("fr-CH");
 }catch(e){
 return String(date);
 }
-}
+
 
 function generateId(){
 return Date.now().toString() +
@@ -1097,6 +1063,7 @@ setStorage(
 STORAGE_KEYS.settings,
 settings
 );
+
 }/* ==========================================
 CHARGEMENT OFFRES
 ========================================== */
