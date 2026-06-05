@@ -20,7 +20,7 @@ letters: "jobfinder_letters"
 CONFIGURATION
 ========================================== */
 
-const APP_VERSION = "14.2.0";
+const APP_VERSION = "14.2.4";
 
 const WEEKLY_TARGET = 3;
 const MONTHLY_TARGET = 12;
@@ -339,7 +339,7 @@ const emailLetterBtn =
 document.getElementById("emailLetterBtn");
 
 /* ==========================================
-CV
+CV V14.2.4 - EXTRACTION REELLE
 ========================================== */
 
 const cvFile =
@@ -349,32 +349,196 @@ const analyzeCVBtn =
 document.getElementById("analyzeCVBtn");
 
 const cvAnalysisResult =
-document.getElementById("cvAnalysisResult");if(analyzeCVBtn){
+document.getElementById("cvAnalysisResult");
 
-analyzeCVBtn.addEventListener("click", analyzeCV);
+if(analyzeCVBtn){
+
+analyzeCVBtn.addEventListener(
+"click",
+analyzeCV
+);
 
 }
 
-function analyzeCV(){
+function saveCurrentCV(){
 
-if(!cvFile || !cvFile.files || cvFile.files.length === 0){
+localStorage.setItem(
+"jobfinder_current_cv",
+JSON.stringify({
+cv: currentCV,
+text: currentCVText,
+analysis: currentCVAnalysis
+})
+);
+
+}
+
+async function extractTXT(file){
+
+return await file.text();
+
+}
+
+async function extractPDF(file){
+
+const buffer =
+await file.arrayBuffer();
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const pdf =
+await pdfjsLib.getDocument({
+data: buffer
+}).promise;
+
+let text = "";
+
+for(
+let page = 1;
+page <= pdf.numPages;
+page++
+){
+
+const currentPage =
+await pdf.getPage(page);
+
+const content =
+await currentPage.getTextContent();
+
+const pageText =
+content.items
+.map(item => item.str)
+.join(" ");
+
+text += pageText + "\n";
+
+}
+
+return text;
+
+}
+
+async function extractDOCX(file){
+
+const buffer =
+await file.arrayBuffer();
+
+const result =
+await mammoth.extractRawText({
+arrayBuffer: buffer
+});
+
+return result.value || "";
+
+}
+
+async function extractCVContent(file){
+
+const fileName =
+file.name.toLowerCase();
+
+if(fileName.endsWith(".txt")){
+return await extractTXT(file);
+}
+
+if(fileName.endsWith(".pdf")){
+return await extractPDF(file);
+}
+
+if(fileName.endsWith(".docx")){
+return await extractDOCX(file);
+}
+
+return "";
+
+}
+
+function analyzeExtractedText(text){
+
+const normalized =
+normalizeText(text);
+
+const skills = [];
+
+const keywords = [
+
+"excel",
+"word",
+"outlook",
+"sap",
+"erp",
+"crm",
+
+"gestion administrative",
+"gestion de dossiers",
+"facturation",
+"service client",
+
+"support informatique",
+"helpdesk",
+"windows",
+
+"anglais",
+"allemand",
+"français"
+
+];
+
+keywords.forEach(keyword => {
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
+skills.push(keyword);
+}
+
+});
+
+return {
+
+wordCount:
+text
+.split(/\s+/)
+.filter(Boolean)
+.length,
+
+skills
+
+};
+
+}
+
+async function analyzeCV(){
+
+if(
+!cvFile ||
+!cvFile.files ||
+cvFile.files.length === 0
+){
 
 if(currentCV){
 
 alert(
-"CV déjà chargé : " + currentCV.name +
-"\n\nLe fichier original doit être réimporté uniquement pour une nouvelle analyse."
+"CV déjà chargé : " +
+currentCV.name
 );
 
 return;
 
 }
 
-alert("Veuillez d'abord importer votre CV.");
+alert(
+"Veuillez d'abord importer votre CV."
+);
 
 return;
 
 }
+
+try{
 
 const file =
 cvFile.files[0];
@@ -383,59 +547,114 @@ const fileName =
 file.name.toLowerCase();
 
 const allowedExtensions =
-[".pdf",".docx",".txt"];
+[
+".pdf",
+".docx",
+".txt"
+];
 
 const isAllowed =
-allowedExtensions.some(extension => fileName.endsWith(extension));
+allowedExtensions.some(
+extension =>
+fileName.endsWith(extension)
+);
 
 if(!isAllowed){
 
-alert("Format non accepté. Merci d'importer un CV en PDF, DOCX ou TXT.");
+alert(
+"Format non accepté. Merci d'importer un CV en PDF, DOCX ou TXT."
+);
 
 return;
 
 }
 
 currentCV = {
+
 name:file.name,
 type:file.type,
 size:file.size,
-extension:fileName.split(".").pop()
-};
+extension:fileName
+.split(".")
+.pop()
 
-localStorage.setItem(
-"jobfinder_current_cv",
-JSON.stringify(currentCV)
-);
+};
 
 if(cvAnalysisResult){
 
 cvAnalysisResult.innerHTML = `
 <div class="cv-analysis-card">
 
-<h3>📄 CV chargé</h3>
+<h3>⏳ Analyse du CV</h3>
 
-<p>${currentCV.name}</p>
-
-<p>${currentCV.extension.toUpperCase()} • ${Math.round(currentCV.size / 1024)} Ko • ✅ Prêt</p>
+<p>Extraction du contenu en cours...</p>
 
 </div>
 `;
 
-}else{
+}
+
+currentCVText =
+await extractCVContent(file);
+
+currentCVAnalysis =
+analyzeExtractedText(
+currentCVText
+);
+
+saveCurrentCV();
+
+const skillsText =
+currentCVAnalysis.skills.length
+? currentCVAnalysis.skills.join(", ")
+: "Aucune compétence détectée";
+
+if(cvAnalysisResult){
+
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
+
+<h3>📄 CV analysé</h3>
+
+<p><strong>${currentCV.name}</strong></p>
+
+<p>
+${currentCV.extension.toUpperCase()}
+•
+${Math.round(currentCV.size / 1024)}
+Ko
+</p>
+
+<p>
+📝
+${currentCVAnalysis.wordCount}
+mots détectés
+</p>
+
+<p>
+🎯
+${skillsText}
+</p>
+
+</div>
+`;
+
+}
+
+}catch(error){
+
+console.error(
+"Erreur analyse CV :",
+error
+);
 
 alert(
-"CV détecté : " + currentCV.name +
-"\nFormat : " + currentCV.extension.toUpperCase() +
-"\nTaille : " + Math.round(currentCV.size / 1024) + " Ko"
+"Impossible d'analyser le contenu du CV."
 );
 
 }
 
-
 }
-
-
 /* ==========================================
 FILTRES AVANCES
 ========================================== */
