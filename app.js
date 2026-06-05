@@ -922,12 +922,19 @@ a.localeCompare(b, "fr")
 employersList = employers;
 
 employerFilter.innerHTML =
-`<option value="">Tous les employeurs</option>` +
-employers.map(company =>
-`<option value="${escapeHTML(company)}">${escapeHTML(company)}</option>`
-).join("");
-}
+employers.map(company => `
+<label>
+<input type="checkbox" name="employers" value="${escapeHTML(company)}">
+${escapeHTML(company)}
+</label>
+`).join("");
 
+document
+.querySelectorAll('input[name="employers"]')
+.forEach(cb => {
+cb.addEventListener("change", applyFilters);
+});
+}
 /* ==========================================
 LECTURE FILTRES
 ========================================== */
