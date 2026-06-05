@@ -363,6 +363,15 @@ document.getElementById("analyzeCVBtn");
 const cvAnalysisResult =
 document.getElementById("cvAnalysisResult");
 
+if(cvFile){
+
+cvFile.addEventListener(
+"change",
+handleCVFileSelected
+);
+
+}
+
 if(analyzeCVBtn){
 
 analyzeCVBtn.addEventListener(
@@ -371,6 +380,73 @@ analyzeCV
 );
 
 }
+
+function handleCVFileSelected(){
+
+if(
+!cvFile ||
+!cvFile.files ||
+cvFile.files.length === 0
+){
+return;
+}
+
+const file =
+cvFile.files[0];
+
+const fileName =
+file.name.toLowerCase();
+
+const allowedExtensions =
+[
+".pdf",
+".docx",
+".txt"
+];
+
+const isAllowed =
+allowedExtensions.some(
+extension =>
+fileName.endsWith(extension)
+);
+
+if(!isAllowed){
+
+alert("Format non accepté. Merci d'importer un CV en PDF, DOCX ou TXT.");
+
+return;
+
+}
+
+currentCV = {
+name: file.name,
+type: file.type,
+size: file.size,
+extension: fileName.split(".").pop()
+};
+
+saveCurrentCV();
+
+if(cvAnalysisResult){
+
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
+
+<h3>📄 CV chargé</h3>
+
+<p class="cv-name">${currentCV.name}</p>
+
+<p class="cv-meta">📄 ${currentCV.extension.toUpperCase()} : ${Math.round(currentCV.size / 1024)} Ko • ✅ Prêt</p>
+
+<p class="cv-meta">ℹ️ Clique sur Analyser mon CV pour extraire le contenu.</p>
+
+</div>
+`;
+
+}
+
+}
+
 
 function saveCurrentCV(){
 
