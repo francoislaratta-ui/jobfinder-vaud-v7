@@ -354,11 +354,12 @@ document.getElementById("analyzeCVBtn");
 
 if(analyzeCVBtn){
 
-analyzeCVBtn.addEventListener("click", () => {
+analyzeCVBtn.addEventListener("click", analyzeCV);
 
-alert("Analyse CV lancée");
+}
+function analyzeCV(){
 
-});
+alert("Fonction analyse CV en cours de développement");
 
 }
 /* ==========================================
