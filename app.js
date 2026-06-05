@@ -264,7 +264,7 @@ rates: [],
 contracts: [],
 regions: [],
 sources: [],
-employer: "",
+employers: "",
 matches: [],
 sort: "match"
 };
@@ -536,9 +536,11 @@ document.querySelectorAll('input[name="matches"]')
 cb.addEventListener("change", applyFilters);
 });
 
-if(employerFilter){
-employerFilter.addEventListener("change", applyFilters);
-}
+document
+.querySelectorAll('#employerFilter input[type="checkbox"]')
+.forEach(cb => {
+cb.addEventListener("change", applyFilters);
+});
 
 if(sortFilter){
 sortFilter.addEventListener("change", applyFilters);
@@ -954,7 +956,7 @@ regions: getCheckedValues("regions"),
 
 sources: getCheckedValues("sources"),
 
-employer: safeGetValue(employerFilter),
+employers: getCheckedValues("employers"),
 
 matches: getCheckedValues("matches"),
 
@@ -1079,7 +1081,7 @@ rates: [],
 contracts: [],
 regions: [],
 sources: [],
-employer: "",
+employers: "",
 matches: [],
 sort: "match"
 };
