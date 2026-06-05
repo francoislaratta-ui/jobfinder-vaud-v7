@@ -519,11 +519,16 @@ if(
 cvFile.files.length === 0
 ){
 
+console.log(
+"currentCV =",
+currentCV
+);
 if(currentCV){
 
 alert(
-"CV déjà chargé : " +
-currentCV.name
+`CV déjà chargé : ${
+currentCV?.name || "CV sauvegardé"
+}`
 );
 
 return;
