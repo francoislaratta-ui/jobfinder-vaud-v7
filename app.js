@@ -354,6 +354,7 @@ document.getElementById("cvAnalysisResult");if(analyzeCVBtn){
 analyzeCVBtn.addEventListener("click", analyzeCV);
 
 }
+
 function analyzeCV(){
 
 if(!cvFile || !cvFile.files || cvFile.files.length === 0){
@@ -2439,7 +2440,33 @@ updateStatistics();
 /* ==========================================
 INITIALISATION FINALE
 ========================================== */
+function loadSavedCV(){
 
+const savedCV =
+safeJSON(localStorage.getItem("jobfinder_current_cv"), null);
+
+if(!savedCV){
+return;
+}
+
+
+if(cvAnalysisResult){
+
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
+
+<h3>📄 CV chargé</h3>
+
+<p>${currentCV.name}</p>
+
+<p>${currentCV.extension.toUpperCase()} • ${Math.round(currentCV.size / 1024)} Ko • ✅ Prêt</p>
+
+</div>
+`;
+
+}
+
+}
 window.addEventListener("DOMContentLoaded", () => {
 initUI();
 loadOffers();
@@ -2450,13 +2477,15 @@ updateDashboard();
 updateApplicationCounters();
 updateBestMatch();
 updateStatistics();
+loadSavedCV();
 
 console.log("==================================");
 console.log("JOB FINDER VAUD");
-console.log("V14.2.0 PREMIUM IA");
+console.log("V14.2.3 PREMIUM IA");
 console.log("Créateur F. Laratta");
 console.log("==================================");
 });
+
 
 /* ==========================================
 WINDOW EXPORTS
