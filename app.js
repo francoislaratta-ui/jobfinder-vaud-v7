@@ -2948,6 +2948,7 @@ cvAnalysisResult.innerHTML = `
 
 }
 
+
 window.addEventListener("DOMContentLoaded", () => {
 
 initUI();
