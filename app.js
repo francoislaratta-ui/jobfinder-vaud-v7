@@ -352,7 +352,8 @@ document.getElementById("cvFile");
 const analyzeCVBtn =
 document.getElementById("analyzeCVBtn");
 
-if(analyzeCVBtn){
+const cvAnalysisResult =
+document.getElementById("cvAnalysisResult");if(analyzeCVBtn){
 
 analyzeCVBtn.addEventListener("click", analyzeCV);
 
@@ -399,13 +400,21 @@ localStorage.setItem(
 JSON.stringify(currentCV)
 );
 
-alert(
-"CV détecté : " + currentCV.name +
-"\nFormat : " + currentCV.extension.toUpperCase() +
-"\nTaille : " + Math.round(currentCV.size / 1024) + " Ko" +
-"\n\nLe CV est prêt pour l'analyse IA."
-);
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
 
+<h3>📄 CV chargé</h3>
+
+<p><strong>Nom :</strong> ${currentCV.name}</p>
+
+<p><strong>Format :</strong> ${currentCV.extension.toUpperCase()}</p>
+
+<p><strong>Taille :</strong> ${Math.round(currentCV.size / 1024)} Ko</p>
+
+<p>✅ Prêt pour l'analyse IA</p>
+
+</div>
+`;
 }
 
 /* ==========================================

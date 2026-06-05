@@ -2015,14 +2015,54 @@ display:grid !important;
 grid-template-columns:repeat(2,minmax(0,1fr)) !important;
 gap:16px !important;
 }
+
 @media (max-width:480px){
-  
+
 .kpi-grid,
 #offersContainer{
 grid-template-columns:1fr !important;
 }
+
 }
+
 /* ==========================================
+CV ANALYSIS CARD
+========================================== */
+
+.cv-analysis-card{
+
+background:#1b1b1b;
+
+border:1px solid #c28b14;
+
+border-radius:12px;
+
+padding:15px;
+
+margin-top:15px;
+
+color:#fff;
+
+}
+
+.cv-analysis-card h3{
+
+margin-top:0;
+
+color:#c28b14;
+
+}
+
+.cv-analysis-card p{
+
+margin:8px 0;
+
+}
+
+/* ==========================================
+FIN DU FICHIER
+STYLE.CSS V14.2.0
+========================================== *//* ==========================================
 FIN DU FICHIER
 STYLE.CSS V14.2.0
 ========================================== */
