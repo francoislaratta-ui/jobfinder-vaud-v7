@@ -1762,7 +1762,15 @@ ${offer.address ? `
 </button>
 
 <div class="offer-description hidden">
-${escapeHTML(offer.description || "Descriptif non disponible.")}
+${escapeHTML(
+offer.description ||
+offer.details ||
+offer.summary ||
+offer.tasks ||
+offer.text ||
+offer.content ||
+"Descriptif non disponible."
+)}
 </div>
 
 <div class="offer-actions">
