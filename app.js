@@ -2449,6 +2449,7 @@ if(!savedCV){
 return;
 }
 
+currentCV = savedCV;
 
 if(cvAnalysisResult){
 
