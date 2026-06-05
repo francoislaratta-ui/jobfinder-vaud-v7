@@ -1622,11 +1622,40 @@ getMatchClass(match);
 const badge =
 getMatchBadge(match);
 
-const reasonsHTML =
-details.reasons.length
-? details.reasons
+const cvReasons =
+details.reasons.filter(reason =>
+reason.startsWith("CV compatible") ||
+reason.startsWith("Langues CV")
+);
+
+const standardReasons =
+details.reasons.filter(reason =>
+!reason.startsWith("CV compatible") &&
+!reason.startsWith("Langues CV")
+);
+
+const standardReasonsHTML =
+standardReasons.length
+? standardReasons
 .map(reason => `✓ ${escapeHTML(reason)}`)
 .join("<br>")
+: "";
+
+const cvReasonsHTML =
+cvReasons.length
+? `
+<div class="offer-cv-reasons">
+${cvReasons
+.map(reason => `🧠 ${escapeHTML(reason)}`)
+.join("<br>")}
+</div>
+`
+: "";
+
+const reasonsHTML =
+standardReasonsHTML ||
+cvReasonsHTML
+? standardReasonsHTML + cvReasonsHTML
 : "À analyser manuellement";
 
 const missingHTML =
@@ -1707,6 +1736,7 @@ const linkBtn =
 card.querySelector(".link-btn");
 
 favBtn?.addEventListener("click", () => addFavorite(offer));
+
 applyBtn?.addEventListener("click", () => addApplication(offer));
 
 aiBtn?.addEventListener("click", () => {
@@ -1724,7 +1754,10 @@ showInfo("Offre sélectionnée pour lettre");
 linkBtn?.addEventListener("click", () => openOffer(offer));
 
 return card;
-}/* ==========================================
+}
+
+
+/* ==========================================
 OUVRIR OFFRE
 ========================================== */
 
