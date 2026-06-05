@@ -1698,54 +1698,9 @@ getMatchClass(match);
 const badge =
 getMatchBadge(match);
 
-const cvReasons =
-details.reasons.filter(reason =>
-reason.startsWith("CV compatible") ||
-reason.startsWith("Langues CV")
-);
-
-const standardReasons =
-details.reasons.filter(reason =>
-!reason.startsWith("CV compatible") &&
-!reason.startsWith("Langues CV")
-);
-
-const standardReasonsHTML =
-standardReasons.length
-? standardReasons
-.map(reason => `✓ ${escapeHTML(reason)}`)
-.join("<br>")
-: "";
-
-const cvReasonsHTML =
-cvReasons.length
-? `
-<div class="offer-cv-reasons">
-${cvReasons
-.map(reason => `🧠 ${escapeHTML(reason)}`)
-.join("<br>")}
-</div>
-`
-: "";
-
-const reasonsHTML =
-standardReasonsHTML ||
-cvReasonsHTML
-? standardReasonsHTML + cvReasonsHTML
-: "À analyser manuellement";
-
-const missingHTML =
-details.missing.length
-? `<br><small>À vérifier : ${details.missing.map(escapeHTML).join(", ")}</small>`
-: "";
-
 card.innerHTML = `
-<div class="offer-match ${matchClass}">
-🤖 Match IA : ${match}% — ${escapeHTML(badge)}
-</div>
-
 <div class="offer-title">
-${escapeHTML(offer.title)}
+💼 ${escapeHTML(offer.title)}
 </div>
 
 <div class="offer-company">
@@ -1763,13 +1718,7 @@ ${offer.address ? `
 ` : ""}
 
 <div class="offer-meta">
-⏱️ Taux : ${escapeHTML(offer.rate)}
-&nbsp;&nbsp;|&nbsp;&nbsp;
-📄 Contrat : ${escapeHTML(offer.contract)}
-</div>
-
-<div class="offer-sector">
-🏭 ${escapeHTML(offer.sector)}
+⏰ ${escapeHTML(offer.rate)} • 📄 ${escapeHTML(offer.contract)}
 </div>
 
 <div class="offer-salary">
@@ -1784,17 +1733,44 @@ ${offer.address ? `
 📅 ${escapeHTML(offer.date)}
 </div>
 
+<div class="offer-match ${matchClass}">
+🤖 Match IA : ${match}% = ${escapeHTML(badge)}
+</div>
+
 <div class="offer-reasons">
-${reasonsHTML}
-${missingHTML}
+
+<div class="ia-reasons-grid">
+<div>✓ Métier compatible</div>
+<div>✓ Contrat compatible</div>
+<div>✓ Secteur intéressant</div>
+<div>✓ Salaire intéressant</div>
+<div>✓ Expérience cohérente</div>
+</div>
+
+<div class="ia-check-block">
+<strong>🧐 Points à vérifier :</strong>
+<ul>
+<li>Compétences spécifiques à confirmer</li>
+<li>Compétences CV peu visibles</li>
+</ul>
+</div>
+
+</div>
+
+<button class="description-toggle">
+▼ Voir le descriptif complet
+</button>
+
+<div class="offer-description hidden">
+${escapeHTML(offer.description || "Descriptif non disponible.")}
 </div>
 
 <div class="offer-actions">
-<button class="offer-btn favorite-btn" title="Ajouter aux favoris">⭐</button>
-<button class="offer-btn apply-btn" title="Ajouter aux candidatures">🚀</button>
-<button class="offer-btn ai-btn" title="Analyse IA">🤖</button>
-<button class="offer-btn letter-btn" title="Générer une lettre">✉️</button>
-<button class="offer-btn link-btn" title="Ouvrir l'offre">🔗</button>
+<button class="offer-btn favorite-btn">⭐ Favori</button>
+<button class="offer-btn apply-btn">🚀 Postuler</button>
+<button class="offer-btn ai-btn">🤖 Lettre IA</button>
+<button class="offer-btn letter-btn">📧 Email</button>
+<button class="offer-btn link-btn">🔗 Offre</button>
 </div>
 `;
 
@@ -1813,27 +1789,46 @@ card.querySelector(".letter-btn");
 const linkBtn =
 card.querySelector(".link-btn");
 
+const descriptionToggle =
+card.querySelector(".description-toggle");
+
+const descriptionBlock =
+card.querySelector(".offer-description");
+
 favBtn?.addEventListener("click", () => addFavorite(offer));
+
+descriptionToggle?.addEventListener("click", () => {
+
+descriptionBlock.classList.toggle("hidden");
+
+const isHidden =
+descriptionBlock.classList.contains("hidden");
+
+descriptionToggle.innerHTML =
+isHidden
+? "▼ Voir le descriptif complet"
+: "▲ Masquer le descriptif";
+
+});
 
 applyBtn?.addEventListener("click", () => addApplication(offer));
 
 aiBtn?.addEventListener("click", () => {
 selectedOffer = offer;
 openTab("ai");
-showInfo("Analyse IA disponible");
+showInfo("Offre sélectionnée pour lettre IA");
 });
 
 letterBtn?.addEventListener("click", () => {
 selectedOffer = offer;
-openTab("ai");
-showInfo("Offre sélectionnée pour lettre");
+openTab("letters");
+showInfo("Offre sélectionnée pour email");
 });
 
 linkBtn?.addEventListener("click", () => openOffer(offer));
 
 return card;
 }
-
 
 /* ==========================================
 OUVRIR OFFRE
