@@ -621,31 +621,24 @@ cvAnalysisResult.innerHTML = `
 
 <h3>📄 CV analysé</h3>
 
-<p><strong>${currentCV.name}</strong></p>
-
-<p>
-${currentCV.extension.toUpperCase()}
-•
-${Math.round(currentCV.size / 1024)}
-Ko
+<p class="cv-name">
+<strong>${currentCV.name}</strong>
 </p>
 
-<p>
-📝
-${currentCVAnalysis.wordCount}
-mots détectés
+<p class="cv-meta">
+📄 ${currentCV.extension.toUpperCase()} : ${Math.round(currentCV.size / 1024)} Ko
 </p>
 
-<p>
-🎯
-${skillsText}
+<p class="cv-meta">
+📝 ${currentCVAnalysis.wordCount} mots détectés
+</p>
+
+<p class="cv-skills">
+🎯 ${skillsText}
 </p>
 
 </div>
 `;
-
-}
-
 }catch(error){
 
 console.error(
@@ -2771,9 +2764,13 @@ cvAnalysisResult.innerHTML = `
 
 <p class="cv-name">${cvName}</p>
 
-<p class="cv-meta">${cvExtension} : ${cvSize} Ko • ✅ Prêt</p>
+<p class="cv-meta">
+📄 ${cvExtension} : ${cvSize} Ko • ✅ Prêt
+</p>
 
-<p class="cv-meta">Réimporte le fichier uniquement si tu veux lancer une nouvelle analyse.</p>
+<p class="cv-meta">
+ℹ️ Réimporte le fichier uniquement si tu veux lancer une nouvelle analyse.
+</p>
 
 </div>
 `;
@@ -2781,7 +2778,6 @@ cvAnalysisResult.innerHTML = `
 }
 
 }
-
 window.addEventListener("DOMContentLoaded", () => {
 
 initUI();
