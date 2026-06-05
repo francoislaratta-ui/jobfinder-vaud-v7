@@ -639,12 +639,16 @@ cvAnalysisResult.innerHTML = `
 
 </div>
 `;
+
+}
+
 }catch(error){
 
 console.error(
 "Erreur analyse CV :",
 error
 );
+}
 
 alert(
 "Impossible d'analyser le contenu du CV."
