@@ -976,6 +976,11 @@ let score = 0;
 const reasons = [];
 const missing = [];
 
+const offerText =
+normalizeText(
+getOfferText(offer)
+);
+
 /* METIER */
 const jobOk =
 matchAnyOfferField(
@@ -1047,6 +1052,78 @@ score += IA_WEIGHTS.contractBonus;
 reasons.push("Contrat compatible");
 }else{
 missing.push("Contrat à vérifier");
+}
+
+/* BONUS CV - COMPETENCES */
+if(
+currentCVAnalysis &&
+currentCVAnalysis.skills &&
+currentCVAnalysis.skills.length
+){
+
+const matchingSkills =
+currentCVAnalysis.skills.filter(skill =>
+offerText.includes(
+normalizeText(skill)
+)
+);
+
+if(matchingSkills.length > 0){
+
+const skillBonus =
+Math.min(
+IA_WEIGHTS.cvSkillsBonus,
+matchingSkills.length * 5
+);
+
+score += skillBonus;
+
+reasons.push(
+"CV compatible : " + matchingSkills.join(", ")
+);
+
+}else{
+
+missing.push("Compétences CV peu visibles dans l'offre");
+
+}
+
+}else{
+
+missing.push("CV non analysé");
+
+}
+
+/* BONUS CV - LANGUES */
+if(
+currentCVAnalysis &&
+currentCVAnalysis.languages &&
+currentCVAnalysis.languages.length
+){
+
+const matchingLanguages =
+currentCVAnalysis.languages.filter(language =>
+offerText.includes(
+normalizeText(language)
+)
+);
+
+if(matchingLanguages.length > 0){
+
+const languageBonus =
+Math.min(
+IA_WEIGHTS.cvLanguagesBonus,
+matchingLanguages.length * 5
+);
+
+score += languageBonus;
+
+reasons.push(
+"Langues CV utiles : " + matchingLanguages.join(", ")
+);
+
+}
+
 }
 
 /* BONUS SALAIRE */
@@ -1124,7 +1201,6 @@ sum + calculateMatch(offer), 0
 
 return Math.round(total / list.length);
 }
-
 /* ==========================================
 STORAGE SAVE
 ========================================== */
