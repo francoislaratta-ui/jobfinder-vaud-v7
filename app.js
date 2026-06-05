@@ -359,6 +359,17 @@ function analyzeCV(){
 
 if(!cvFile || !cvFile.files || cvFile.files.length === 0){
 
+if(currentCV){
+
+alert(
+"CV déjà chargé : " + currentCV.name +
+"\n\nLe fichier original doit être réimporté uniquement pour une nouvelle analyse."
+);
+
+return;
+
+}
+
 alert("Veuillez d'abord importer votre CV.");
 
 return;
