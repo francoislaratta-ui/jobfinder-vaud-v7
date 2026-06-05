@@ -2744,22 +2744,13 @@ cvAnalysisResult.innerHTML = `
 
 <h3>📄 CV analysé restauré</h3>
 
-<p><strong>${cvName}</strong></p>
+<p class="cv-name"><strong>${cvName}</strong></p>
 
-<p>
-${cvExtension}
-•
-${cvSize}
-Ko
-</p>
+<p class="cv-meta">PDF : ${cvSize} Ko</p>
 
-<p>
-📝 ${currentCVAnalysis.wordCount || 0} mots détectés
-</p>
+<p class="cv-meta">📝 ${currentCVAnalysis.wordCount || 0} mots détectés</p>
 
-<p>
-🎯 ${skillsText}
-</p>
+<p class="cv-skills">🎯 ${skillsText}</p>
 
 </div>
 `;
@@ -2778,20 +2769,11 @@ cvAnalysisResult.innerHTML = `
 
 <h3>📄 CV chargé</h3>
 
-<p>${cvName}</p>
+<p class="cv-name">${cvName}</p>
 
-<p>
-${cvExtension}
-•
-${cvSize}
-Ko
-•
-✅ Prêt
-</p>
+<p class="cv-meta">${cvExtension} : ${cvSize} Ko • ✅ Prêt</p>
 
-<p>
-Réimporte le fichier uniquement si tu veux lancer une nouvelle analyse.
-</p>
+<p class="cv-meta">Réimporte le fichier uniquement si tu veux lancer une nouvelle analyse.</p>
 
 </div>
 `;
@@ -2830,6 +2812,7 @@ console.log("Créateur F. Laratta");
 console.log("==================================");
 
 });
+
 
 /* ==========================================
 WINDOW EXPORTS
