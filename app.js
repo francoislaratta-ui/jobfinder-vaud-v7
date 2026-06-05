@@ -158,9 +158,11 @@ getStorage(STORAGE_KEYS.letters),
 );
 
 let currentCV = null;
+let currentCVText = "";
+let currentCVAnalysis = null;
+
 let currentLetter = "";
 let selectedOffer = null;
-
 let notificationsEnabled = true;
 let deferredPrompt = null;
 
@@ -240,11 +242,21 @@ preferredContracts: [
 };
 
 const IA_WEIGHTS = {
-jobMatch: 35,
-sectorMatch: 20,
-regionMatch: 20,
-rateMatch: 15,
-contractBonus: 10
+
+jobMatch: 25,
+
+sectorMatch: 15,
+
+regionMatch: 15,
+
+rateMatch: 10,
+
+contractBonus: 5,
+
+cvSkillsBonus: 20,
+
+cvLanguagesBonus: 10
+
 };
 
 const MATCH_LEVELS = {
@@ -459,46 +471,126 @@ function analyzeExtractedText(text){
 const normalized =
 normalizeText(text);
 
-const skills = [];
+const software = [];
 
-const keywords = [
+const languages = [];
+
+const adminSkills = [];
+
+const supportSkills = [];
+
+const softwareKeywords = [
 "excel",
 "word",
 "outlook",
+"powerpoint",
 "sap",
 "erp",
 "crm",
+"windows",
+"office"
+];
+
+const languageKeywords = [
+"français",
+"anglais",
+"allemand",
+"italien"
+];
+
+const adminKeywords = [
 "gestion administrative",
 "gestion de dossiers",
 "facturation",
+"comptabilité",
+"classement",
+"archivage",
+"correspondance",
 "service client",
-"support informatique",
-"helpdesk",
-"windows",
-"anglais",
-"allemand",
-"français"
+"téléphone",
+"email",
+"planification",
+"organisation"
 ];
 
-keywords.forEach(keyword => {
+const supportKeywords = [
+"support informatique",
+"helpdesk",
+"technicien informatique",
+"installation",
+"maintenance",
+"dépannage"
+];
+
+softwareKeywords.forEach(keyword => {
 
 if(
 normalized.includes(
 normalizeText(keyword)
 )
 ){
-skills.push(keyword);
+software.push(keyword);
 }
 
 });
 
+languageKeywords.forEach(keyword => {
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
+languages.push(keyword);
+}
+
+});
+
+adminKeywords.forEach(keyword => {
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
+adminSkills.push(keyword);
+}
+
+});
+
+supportKeywords.forEach(keyword => {
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
+supportSkills.push(keyword);
+}
+
+});
+
+const skills = [
+...software,
+...adminSkills,
+...supportSkills,
+...languages
+];
+
 return {
+
 wordCount:
 text
 .split(/\s+/)
 .filter(Boolean)
 .length,
-skills
+
+skills,
+software,
+languages,
+adminSkills,
+supportSkills
+
 };
 
 }
@@ -622,7 +714,7 @@ alert("Impossible d'analyser le contenu du CV.");
 
 }
 
-}
+
 
 /* ==========================================
 FILTRES AVANCES
