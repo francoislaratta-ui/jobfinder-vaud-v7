@@ -1766,7 +1766,7 @@ ${offer.address ? `
 ⏱️ Taux : ${escapeHTML(offer.rate)}
 &nbsp;&nbsp;|&nbsp;&nbsp;
 📄 Contrat : ${escapeHTML(offer.contract)}
-</div>>
+</div>
 
 <div class="offer-sector">
 🏭 ${escapeHTML(offer.sector)}
