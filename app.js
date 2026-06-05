@@ -342,12 +342,25 @@ document.getElementById("emailLetterBtn");
 CV
 ========================================== */
 
+/* ==========================================
+CV
+========================================== */
+
 const cvFile =
 document.getElementById("cvFile");
 
 const analyzeCVBtn =
 document.getElementById("analyzeCVBtn");
 
+if(analyzeCVBtn){
+
+analyzeCVBtn.addEventListener("click", () => {
+
+alert("Analyse CV lancée");
+
+});
+
+}
 /* ==========================================
 FILTRES AVANCES
 ========================================== */
