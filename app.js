@@ -342,10 +342,6 @@ document.getElementById("emailLetterBtn");
 CV
 ========================================== */
 
-/* ==========================================
-CV
-========================================== */
-
 const cvFile =
 document.getElementById("cvFile");
 
@@ -400,6 +396,8 @@ localStorage.setItem(
 JSON.stringify(currentCV)
 );
 
+if(cvAnalysisResult){
+
 cvAnalysisResult.innerHTML = `
 <div class="cv-analysis-card">
 
@@ -411,7 +409,21 @@ cvAnalysisResult.innerHTML = `
 
 </div>
 `;
+
+}else{
+
+alert(
+"CV détecté : " + currentCV.name +
+"\nFormat : " + currentCV.extension.toUpperCase() +
+"\nTaille : " + Math.round(currentCV.size / 1024) + " Ko"
+);
+
 }
+
+
+}
+
+
 /* ==========================================
 FILTRES AVANCES
 ========================================== */
@@ -427,7 +439,10 @@ NOTIFICATIONS
 ========================================== */
 
 const notificationToggle =
-document.getElementById("notificationToggle");/* ==========================================
+document.getElementById("notificationToggle");
+
+
+/* ==========================================
 UTILITAIRES
 ========================================== */
 
