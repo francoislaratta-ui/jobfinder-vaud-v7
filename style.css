@@ -1359,19 +1359,19 @@ line-height:1.8;
 #interviewResult,
 #letterResult{
 
-margin-top:6px;
+margin-top:15px;
 
-padding:0;
+padding:15px;
 
-background:transparent;
+background:#222;
 
-border-radius:0;
+border-radius:12px;
 
-line-height:1.2;
+line-height:1.8;
 
-white-space:normal;
+white-space:pre-wrap;
 
-overflow:visible;
+overflow:auto;
 
 }
 
