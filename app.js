@@ -2675,17 +2675,102 @@ updateStatistics();
 /* ==========================================
 INITIALISATION FINALE
 ========================================== */
+
 function loadSavedCV(){
 
-const savedCV =
-safeJSON(localStorage.getItem("jobfinder_current_cv"), null);
+const saved =
+safeJSON(
+localStorage.getItem("jobfinder_current_cv"),
+null
+);
 
-if(!savedCV){
+if(!saved){
 return;
 }
 
-currentCV = savedCV;
+/* Compatibilité ancienne sauvegarde */
+if(saved.name){
 
+currentCV = saved;
+currentCVText = "";
+currentCVAnalysis = null;
+
+}else{
+
+currentCV =
+saved.cv || null;
+
+currentCVText =
+saved.text || "";
+
+currentCVAnalysis =
+saved.analysis || null;
+
+}
+
+if(!currentCV){
+return;
+}
+
+const cvName =
+currentCV.name || "CV sauvegardé";
+
+const cvExtension =
+currentCV.extension
+? currentCV.extension.toUpperCase()
+: "FORMAT";
+
+const cvSize =
+currentCV.size
+? Math.round(currentCV.size / 1024)
+: 0;
+
+/* CV déjà analysé */
+if(
+currentCVText &&
+currentCVAnalysis
+){
+
+const skillsText =
+currentCVAnalysis.skills &&
+currentCVAnalysis.skills.length
+? currentCVAnalysis.skills.join(", ")
+: "Aucune compétence détectée";
+
+if(cvAnalysisResult){
+
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
+
+<h3>📄 CV analysé restauré</h3>
+
+<p><strong>${cvName}</strong></p>
+
+<p>
+${cvExtension}
+•
+${cvSize}
+Ko
+</p>
+
+<p>
+📝 ${currentCVAnalysis.wordCount || 0} mots détectés
+</p>
+
+<p>
+🎯 ${skillsText}
+</p>
+
+</div>
+`;
+
+}
+
+return;
+
+}
+
+/* CV simplement chargé */
 if(cvAnalysisResult){
 
 cvAnalysisResult.innerHTML = `
@@ -2693,9 +2778,20 @@ cvAnalysisResult.innerHTML = `
 
 <h3>📄 CV chargé</h3>
 
-<p>${currentCV.name}</p>
+<p>${cvName}</p>
 
-<p>${currentCV.extension.toUpperCase()} • ${Math.round(currentCV.size / 1024)} Ko • ✅ Prêt</p>
+<p>
+${cvExtension}
+•
+${cvSize}
+Ko
+•
+✅ Prêt
+</p>
+
+<p>
+Réimporte le fichier uniquement si tu veux lancer une nouvelle analyse.
+</p>
 
 </div>
 `;
@@ -2703,25 +2799,37 @@ cvAnalysisResult.innerHTML = `
 }
 
 }
+
 window.addEventListener("DOMContentLoaded", () => {
+
 initUI();
+
 loadOffers();
+
 renderFavorites();
+
 renderApplications();
+
 renderLettersHistory();
+
 updateDashboard();
+
 updateApplicationCounters();
+
 updateBestMatch();
+
 updateStatistics();
+
 loadSavedCV();
 
 console.log("==================================");
 console.log("JOB FINDER VAUD");
-console.log("V14.2.3 PREMIUM IA");
+console.log("V14.2.4 PREMIUM IA");
+console.log("Extraction CV PDF / DOCX / TXT");
 console.log("Créateur F. Laratta");
 console.log("==================================");
-});
 
+});
 
 /* ==========================================
 WINDOW EXPORTS
