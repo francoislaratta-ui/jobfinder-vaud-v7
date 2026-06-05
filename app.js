@@ -359,9 +359,55 @@ analyzeCVBtn.addEventListener("click", analyzeCV);
 }
 function analyzeCV(){
 
-alert("Fonction analyse CV en cours de développement");
+if(!cvFile || !cvFile.files || cvFile.files.length === 0){
+
+alert("Veuillez d'abord importer votre CV.");
+
+return;
 
 }
+
+const file =
+cvFile.files[0];
+
+const fileName =
+file.name.toLowerCase();
+
+const allowedExtensions =
+[".pdf",".docx",".txt"];
+
+const isAllowed =
+allowedExtensions.some(extension => fileName.endsWith(extension));
+
+if(!isAllowed){
+
+alert("Format non accepté. Merci d'importer un CV en PDF, DOCX ou TXT.");
+
+return;
+
+}
+
+currentCV = {
+name:file.name,
+type:file.type,
+size:file.size,
+extension:fileName.split(".").pop()
+};
+
+localStorage.setItem(
+"jobfinder_current_cv",
+JSON.stringify(currentCV)
+);
+
+alert(
+"CV détecté : " + currentCV.name +
+"\nFormat : " + currentCV.extension.toUpperCase() +
+"\nTaille : " + Math.round(currentCV.size / 1024) + " Ko" +
+"\n\nLe CV est prêt pour l'analyse IA."
+);
+
+}
+
 /* ==========================================
 FILTRES AVANCES
 ========================================== */
