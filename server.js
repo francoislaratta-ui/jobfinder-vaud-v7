@@ -1125,6 +1125,8 @@ __dirname,
 }
 );
 
+
+
 /* ==========================================
 DECOUVERTE URL REELLE ANNONCE
 ========================================== */
@@ -1141,41 +1143,6 @@ req.body?.offer || {};
 const originalUrl =
 offer.offerUrl || offer.url || "";
 
-if(!originalUrl){
-
-return res.json({
-success:false,
-message:"URL source absente",
-originalUrl:"",
-discoveredUrl:""
-});
-
-}
-
-if(isRealOfferUrl(originalUrl)){
-
-return res.json({
-success:true,
-message:"URL déjà réelle",
-originalUrl,
-discoveredUrl:originalUrl,
-changed:false
-});
-
-}
-
-if(!isGenericSourceUrl(originalUrl)){
-
-return res.json({
-success:false,
-message:"URL non générique mais non reconnue comme annonce réelle",
-originalUrl,
-discoveredUrl:"",
-changed:false
-});
-
-}
-
 return res.json({
 success:false,
 message:"Découverte automatique pas encore activée pour cette source",
@@ -1183,7 +1150,8 @@ originalUrl,
 discoveredUrl:"",
 changed:false,
 company:offer.company || "",
-title:offer.title || ""
+title:offer.title || "",
+source:getEmployerSource(originalUrl)
 });
 
 }catch(error){
@@ -1197,8 +1165,48 @@ error:error.message
 }
 
 }
-
 );
+
+/* ==========================================
+TEST DECOUVERTE URL GET TEMPORAIRE
+========================================== */
+
+app.get(
+"/api/test-discover-offer-url",
+async (req,res)=>{
+
+try{
+
+const offer = {
+title:req.query.title || "Offre test",
+company:req.query.company || "Etat de Vaud",
+offerUrl:req.query.url || "https://www.vd.ch"
+};
+
+res.json({
+success:false,
+message:"Découverte automatique pas encore activée pour cette source",
+originalUrl:offer.offerUrl,
+discoveredUrl:"",
+changed:false,
+company:offer.company,
+title:offer.title,
+source:getEmployerSource(offer.offerUrl)
+});
+
+}catch(error){
+
+res.status(500).json({
+success:false,
+message:"Erreur test-discover-offer-url",
+error:error.message
+});
+
+}
+
+}
+);
+
 
 
 /* ==========================================
