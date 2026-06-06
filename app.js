@@ -1322,6 +1322,138 @@ settings
 /* ==========================================
 CHARGEMENT OFFRES
 ========================================== */
+async function enrichOffersDescriptions(list){
+
+if(!Array.isArray(list)){
+return [];
+}
+
+const enriched = [];
+
+for(const offer of list){
+
+const hasDescription =
+offer.description &&
+offer.description !== "Descriptif non disponible.";
+
+if(hasDescription || !offer.offerUrl){
+enriched.push(offer);
+continue;
+}
+
+try{
+
+const response =
+await fetch("/api/extract-description", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+url: offer.offerUrl,
+source: offer.source || ""
+})
+});
+
+if(!response.ok){
+throw new Error("HTTP " + response.status);
+}
+
+const data =
+await response.json();
+
+enriched.push({
+...offer,
+description:
+data.description ||
+offer.description ||
+"Descriptif non disponible."
+});
+
+}catch(error){
+
+console.warn(
+"Description non rapatriée pour :",
+offer.title,
+error
+);
+
+enriched.push(offer);
+
+}
+
+}
+
+return enriched;
+
+}
+
+async function enrichOffersDescriptions(list){
+
+if(!Array.isArray(list)){
+return [];
+}
+
+const enrichedOffers = [];
+
+for(const offer of list){
+
+const descriptionMissing =
+!offer.description ||
+offer.description === "Descriptif non disponible.";
+
+if(!descriptionMissing || !offer.offerUrl){
+
+enrichedOffers.push(offer);
+continue;
+
+}
+
+try{
+
+const response =
+await fetch("/api/extract-description", {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+url:offer.offerUrl
+})
+});
+
+if(!response.ok){
+throw new Error("HTTP " + response.status);
+}
+
+const data =
+await response.json();
+
+enrichedOffers.push({
+...offer,
+description:
+data.description ||
+"Descriptif non disponible."
+});
+
+}
+catch(error){
+
+console.warn(
+"Description non récupérée :",
+offer.title,
+error
+);
+
+enrichedOffers.push(offer);
+
+}
+
+}
+
+return enrichedOffers;
+
+}
 
 async function loadOffers(){
 try{
@@ -1410,6 +1542,9 @@ offer.mission ||
 offer.responsibilities ||
 "Descriptif non disponible."
 }));
+
+offers =
+await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
 
@@ -1750,8 +1885,13 @@ ${offer.address ? `
 <div class="offer-address">
 📮 ${escapeHTML(offer.address)}
 </div>
-` : ""}
 
+` : `
+<div class="offer-address empty-address">
+📮 Adresse non renseignée
+</div>
+
+`}
 <div class="offer-meta">
 ⏰ ${escapeHTML(offer.rate)} • 📄 ${escapeHTML(offer.contract)}
 </div>

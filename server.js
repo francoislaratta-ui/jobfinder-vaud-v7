@@ -1,5 +1,5 @@
 /* ==========================================
-JOB FINDER VAUD V14.1.0 PREMIUM IA
+JOB FINDER VAUD V14.3.1 PREMIUM IA
 Créateur : F. Laratta
 ========================================== */
 
@@ -110,6 +110,78 @@ return false;
 }
 
 /* ==========================================
+NETTOYAGE HTML DESCRIPTION
+========================================== */
+
+function cleanHtmlText(html){
+
+if(!html){
+return "";
+}
+
+return html
+.replace(/<script[\s\S]*?<\/script>/gi, " ")
+.replace(/<style[\s\S]*?<\/style>/gi, " ")
+.replace(/<nav[\s\S]*?<\/nav>/gi, " ")
+.replace(/<header[\s\S]*?<\/header>/gi, " ")
+.replace(/<footer[\s\S]*?<\/footer>/gi, " ")
+.replace(/<[^>]+>/g, " ")
+.replace(/&nbsp;/g, " ")
+.replace(/&amp;/g, "&")
+.replace(/&quot;/g, "\"")
+.replace(/&#39;/g, "'")
+.replace(/\s+/g, " ")
+.trim();
+
+}
+
+function extractUsefulDescription(html){
+
+const text =
+cleanHtmlText(html);
+
+if(!text){
+return "";
+}
+
+const keywords = [
+"Votre mission",
+"Vos missions",
+"Vos tâches",
+"Votre profil",
+"Profil recherché",
+"Responsabilités",
+"Description du poste",
+"Ce que vous faites",
+"Nous offrons",
+"Votre rôle"
+];
+
+let startIndex = -1;
+
+for(const keyword of keywords){
+
+const index =
+text.toLowerCase().indexOf(
+keyword.toLowerCase()
+);
+
+if(index !== -1){
+startIndex = index;
+break;
+}
+
+}
+
+if(startIndex === -1){
+return text.substring(0, 2500);
+}
+
+return text.substring(startIndex, startIndex + 3500);
+
+}
+
+/* ==========================================
 API HEALTH
 ========================================== */
 
@@ -121,7 +193,7 @@ res.json({
 
 status:"OK",
 
-version:"14.1.0",
+version:"14.3.1",
 
 application:
 "Job Finder Vaud",
@@ -133,6 +205,110 @@ new Date().toISOString()
 
 }
 );
+
+/* ==========================================
+API EXTRACTION DESCRIPTION URL
+========================================== */
+
+app.post(
+"/api/extract-description",
+async (req,res)=>{
+
+try{
+
+const url =
+req.body?.url;
+
+if(!url){
+
+return res.status(400)
+.json({
+
+success:false,
+
+description:"",
+
+message:
+"URL manquante"
+
+});
+
+}
+
+const response =
+await fetch(url, {
+
+headers: {
+
+"User-Agent":
+"Mozilla/5.0 Job Finder Vaud",
+
+"Accept":
+"text/html,application/xhtml+xml"
+
+}
+
+});
+
+if(!response.ok){
+
+return res.status(response.status)
+.json({
+
+success:false,
+
+description:"",
+
+message:
+"Impossible de lire la page source"
+
+});
+
+}
+
+const html =
+await response.text();
+
+const description =
+extractUsefulDescription(html);
+
+res.json({
+
+success:true,
+
+url,
+
+description:
+description ||
+"Descriptif non disponible."
+
+});
+
+}
+catch(error){
+
+console.error(
+"Erreur extraction description :",
+error
+);
+
+res.status(500)
+.json({
+
+success:false,
+
+description:"",
+
+message:
+"Erreur extraction description"
+
+});
+
+}
+
+}
+);
+
 
 /* ==========================================
 API OFFRES
@@ -667,7 +843,7 @@ console.log(
 );
 
 console.log(
-"JOB FINDER VAUD V14.1.0 PREMIUM IA"
+"JOB FINDER VAUD V14.3.1 PREMIUM IA"
 );
 
 console.log(
