@@ -1479,63 +1479,121 @@ String(offer.location || "").toLowerCase();
 const value =
 String(url || "").toLowerCase();
 
+if(isBadDiscoveryUrl(value)){
+return 0;
+}
+
 let score = 0;
+
+/* TITRE */
 
 const titleWords =
 title
 .split(/\s+/)
 .filter(word => word.length >= 4);
 
+let titleMatches = 0;
+
 titleWords.forEach(word => {
 if(value.includes(word)){
-score += 0.25;
+titleMatches++;
 }
 });
+
+if(titleWords.length){
+score += Math.min(
+0.50,
+(titleMatches / titleWords.length) * 0.50
+);
+}
+
+/* ENTREPRISE */
 
 const companyWords =
 company
 .split(/\s+/)
 .filter(word => word.length >= 3);
 
+let companyMatches = 0;
+
 companyWords.forEach(word => {
 if(value.includes(word)){
-score += 0.15;
+companyMatches++;
 }
 });
+
+if(companyWords.length){
+score += Math.min(
+0.20,
+(companyMatches / companyWords.length) * 0.20
+);
+}
+
+/* LOCALISATION */
 
 if(location && value.includes(location)){
 score += 0.15;
 }
 
-if(value.includes("emploi") || value.includes("offre")){
-score += 0.25;
+/* MOTS POSITIFS */
+
+if(value.includes("offre")){
+score += 0.15;
 }
 
-if(value.includes("job") || value.includes("jobs")){
-score += 0.25;
+if(value.includes("emploi")){
+score += 0.10;
 }
 
-if(value.includes("career") || value.includes("carriere")){
-score += 0.2;
+if(value.includes("job")){
+score += 0.10;
 }
 
-if(value.includes("postuler") || value.includes("apply")){
-score += 0.2;
+if(value.includes("poste")){
+score += 0.10;
 }
 
-if(isBadDiscoveryUrl(value)){
-score -= 1;
+if(value.includes("recrutement")){
+score += 0.10;
+}
+
+if(value.includes("postuler")){
+score += 0.10;
+}
+
+if(value.includes("apply")){
+score += 0.10;
+}
+
+/* PENALITES PAGES GENERIQUES */
+
+if(value.includes("carriere")){
+score -= 0.10;
+}
+
+if(value.includes("career")){
+score -= 0.10;
+}
+
+if(value.includes("etat-employeur")){
+score -= 0.30;
+}
+
+if(value.includes("travailler-pour")){
+score -= 0.20;
+}
+
+if(value.includes("ressources-humaines")){
+score -= 0.20;
 }
 
 if(isGenericSourceUrl(value)){
-score -= 0.5;
+score -= 0.30;
 }
 
-return Math.max(0,score);
+return Math.max(0, Number(score.toFixed(2)));
 
 }
-
-async function discoverGenericOfferUrl(offer, domain){
 
 const searchPages =
 getDiscoverySearchPages(domain);
