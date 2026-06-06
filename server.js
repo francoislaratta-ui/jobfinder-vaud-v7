@@ -1045,18 +1045,12 @@ VALIDATION URL OFFRE
 
 app.get("/api/validate-offer-url", (req, res) => {
 
-const url =
-req.query.url || "";
-
 res.json({
 success: true,
-url,
-isGeneric: isGenericSourceUrl(url),
-isRealOffer: isRealOfferUrl(url)
+test: "OK"
 });
 
 });
-
 
 /* ==========================================
 GESTION ERREURS
