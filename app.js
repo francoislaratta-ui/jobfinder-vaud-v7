@@ -1694,9 +1694,17 @@ CREATION CARTE OFFRE
 ========================================== */
 
 function createOfferCard(offer){
-console.log("OFFRE COMPLETE :", offer);
+
 const card =
 document.createElement("div");
+card.className = "offer-card";
+
+const details =
+calculateMatchDetails(offer);
+
+const match =
+details.score;
+
 
 card.className = "offer-card";
 

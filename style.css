@@ -1843,6 +1843,7 @@ bottom:15px;
 
 }
 
+
 /* ==========================================
 PETITS SMARTPHONES
 ========================================== */
@@ -1905,6 +1906,8 @@ font-size:18px;
 
 }
 
+}
+
 .description-toggle{
 
 width:100%;
@@ -1966,76 +1969,6 @@ padding-top:8px;
 border-top:1px solid rgba(255,255,255,0.12);
 
 }
-
-}
-.description-toggle{
-
-width:100%;
-
-margin-top:10px;
-
-margin-bottom:10px;
-
-padding:9px;
-
-border:none;
-
-border-radius:10px;
-
-background:#1f2937;
-
-color:white;
-
-font-weight:600;
-
-cursor:pointer;
-
-}
-
-.offer-description{
-
-margin:8px 0 10px 0;
-
-padding:10px;
-
-border-radius:10px;
-
-background:#202020;
-
-line-height:1.5;
-
-white-space:pre-line;
-
-}
-
-.hidden{
-
-display:none;
-
-}
-
-.ia-reasons-grid{
-
-display:grid;
-
-grid-template-columns:repeat(2,1fr);
-
-gap:6px 14px;
-
-margin-bottom:10px;
-
-}
-
-.ia-check-block{
-
-margin-top:8px;
-
-padding-top:8px;
-
-border-top:1px solid rgba(255,255,255,0.12);
-
-}
-
 /* ==========================================
 ANIMATIONS
 ========================================== */
