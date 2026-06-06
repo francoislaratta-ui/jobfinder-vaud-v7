@@ -1286,6 +1286,7 @@ sum + calculateMatch(offer), 0
 
 return Math.round(total / list.length);
 }
+
 /* ==========================================
 STORAGE SAVE
 ========================================== */
@@ -1319,28 +1320,7 @@ settings
 
 }
 
-/* ==========================================
-CHARGEMENT OFFRES
-========================================== */
-async function enrichOffersDescriptions(list){
-
-if(!Array.isArray(list)){
-return [];
-}
-
-const enriched = [];
-
-for(const offer of list){
-
-const hasDescription =
-offer.description &&
-offer.description !== "Descriptif non disponible.";
-
-if(hasDescription || !offer.offerUrl){
-enriched.push(offer);
-continue;
-}
-
+async function enrichOffersDescriptions(
 try{
 
 const response =
@@ -1388,6 +1368,41 @@ return enriched;
 
 }
 
+function isRealOfferUrlClient(url){
+
+if(!url){
+return false;
+}
+
+const cleanUrl =
+url.toLowerCase().trim();
+
+const genericUrls = [
+"https://www.vd.ch",
+"https://vd.ch",
+"https://www.jobup.ch",
+"https://jobup.ch",
+"https://www.indeed.com",
+"https://indeed.com",
+"https://www.jobscout24.ch",
+"https://jobscout24.ch",
+"https://www.linkedin.com",
+"https://linkedin.com"
+];
+
+if(genericUrls.includes(cleanUrl)){
+return false;
+}
+
+return (
+cleanUrl.includes("/emplois/detail/") ||
+cleanUrl.includes("/jobs/view/") ||
+cleanUrl.includes("/rc/clk") ||
+cleanUrl.includes("/job/")
+);
+
+}
+
 async function enrichOffersDescriptions(list){
 
 if(!Array.isArray(list)){
@@ -1402,7 +1417,10 @@ const descriptionMissing =
 !offer.description ||
 offer.description === "Descriptif non disponible.";
 
-if(!descriptionMissing || !offer.offerUrl){
+const realOfferUrl =
+isRealOfferUrlClient(offer.offerUrl);
+
+if(!descriptionMissing || !realOfferUrl){
 
 enrichedOffers.push(offer);
 continue;
@@ -1418,7 +1436,8 @@ headers:{
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-url:offer.offerUrl
+url:offer.offerUrl,
+source:offer.source || ""
 })
 });
 
@@ -1456,6 +1475,11 @@ return enrichedOffers;
 }
 
 async function loadOffers(){
+
+try{
+const response =
+await fetch("./offers.json?v=" + APP_VERSION);
+
 try{
 const response =
 await fetch("./offers.json?v=" + APP_VERSION);
