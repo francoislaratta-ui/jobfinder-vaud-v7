@@ -1277,7 +1277,7 @@ const location =
 offer.location || "";
 
 const query =
-`${title} ${company} ${location} site:${domain} emploi job recrutement`;
+`"${title}" "${company}" ${location} ${domain} emploi poste recrutement`;
 
 const searchUrl =
 "https://duckduckgo.com/html/?q=" + encodeURIComponent(query);
@@ -1299,7 +1299,7 @@ links.filter(link => {
 const value =
 String(link).toLowerCase();
 
-return value.includes(domain) &&
+return value.includes(domain);
 !isGenericSourceUrl(value);
 
 });
