@@ -340,6 +340,7 @@ message:
 }
 catch(error){
 
+
 console.error(
 "Erreur extraction description :",
 error
