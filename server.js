@@ -1265,19 +1265,64 @@ DECOUVERTE URL REELLE ANNONCE V14.3.2
 Recherche ciblée title + company + location
 ========================================== */
 
+async function isBadDiscoveryUrl(url){
+
+const value =
+String(url || "").toLowerCase();
+
+return (
+value.includes("apprentissage") ||
+value.includes("apprenti") ||
+value.includes("places-dapprentissage") ||
+value.includes("stage") ||
+value.includes("stagiaire") ||
+value.includes("formation") ||
+value.includes("ecole") ||
+value.includes("ecoles") ||
+value.includes("campus") ||
+value.includes("newsletter") ||
+value.includes("login") ||
+value.includes("connexion")
+);
+
+}
+
+function scoreDiscoveryUrlV1433(url, offer){
+
+let score =
+scoreDiscoveryMatch(
+`${offer.title || ""} ${offer.company || ""} ${offer.location || ""}`,
+url
+);
+
+const value =
+String(url || "").toLowerCase();
+
+if(value.includes("job") || value.includes("jobs")){
+score += 0.25;
+}
+
+if(value.includes("emploi") || value.includes("offre")){
+score += 0.25;
+}
+
+if(value.includes("career") || value.includes("carriere")){
+score += 0.2;
+}
+
+if(value.includes("postuler") || value.includes("apply")){
+score += 0.2;
+}
+
+if(isBadDiscoveryUrl(url)){
+score -= 1;
+}
+
+return Math.max(0,score);
+
+}
+
 async function discoverGenericOfferUrl(offer, domain){
-
-const title =
-offer.title || "";
-
-const company =
-offer.company || "";
-
-const location =
-offer.location || "";
-
-const keywords =
-`${title} ${company} ${location}`;
 
 const searchPagesMap = {
 "vd.ch":[
@@ -1340,14 +1385,18 @@ links.filter(link => {
 const value =
 String(link).toLowerCase();
 
-return value.includes(domain);
+return (
+value.includes(domain) &&
+!isGenericSourceUrl(value) &&
+!isBadDiscoveryUrl(value)
+);
 
 });
 
 for(const link of candidateLinks){
 
 const score =
-scoreDiscoveryMatch(keywords, link);
+scoreDiscoveryUrlV1433(link, offer);
 
 if(score > bestScore){
 
