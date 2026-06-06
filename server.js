@@ -261,26 +261,138 @@ return genericUrls.includes(cleanUrl);
 
 }
 
-function isRealOfferUrl(url){
+function isRealOfferUrlClient(url){
 
 if(!url){
 return false;
 }
 
-const cleanUrl =
-url.toLowerCase();
+const value =
+String(url).toLowerCase().trim();
 
-if(isGenericSourceUrl(cleanUrl)){
+/* URLs génériques à ignorer */
+const genericUrls = [
+"https://www.vd.ch",
+"http://www.vd.ch",
+"https://vd.ch",
+"http://vd.ch",
+
+"https://www.lausanne.ch",
+"http://www.lausanne.ch",
+"https://lausanne.ch",
+"http://lausanne.ch",
+
+"https://www.retraitespopulaires.ch",
+"http://www.retraitespopulaires.ch",
+"https://retraitespopulaires.ch",
+"http://retraitespopulaires.ch",
+
+"https://www.epfl.ch/fr",
+"https://www.epfl.ch",
+"http://www.epfl.ch",
+"https://epfl.ch",
+"http://epfl.ch",
+
+"https://www.migros.ch/fr",
+"https://www.migros.ch",
+"http://www.migros.ch",
+"https://migros.ch",
+"http://migros.ch",
+
+"https://www.chuv.ch/fr",
+"https://www.chuv.ch",
+"http://www.chuv.ch",
+"https://chuv.ch",
+"http://chuv.ch"
+];
+
+if(genericUrls.includes(value.replace(/\/$/, ""))){
 return false;
 }
 
-return (
-cleanUrl.includes("/emplois/detail/") ||
-cleanUrl.includes("/jobs/view/") ||
-cleanUrl.includes("/rc/clk") ||
-cleanUrl.includes("/job/")
-);
+/* JOBUP */
+if(value.includes("jobup.ch") &&
+(value.includes("/emplois/detail/") ||
+value.includes("/jobs/detail/"))){
+return true;
+}
 
+/* INDEED */
+if(value.includes("indeed.") &&
+(value.includes("/viewjob") ||
+value.includes("jk="))){
+return true;
+}
+
+/* JOBSCOUT24 */
+if(value.includes("jobscout24.ch") &&
+(value.includes("/job/") ||
+value.includes("/jobs/") ||
+value.includes("/detail/"))){
+return true;
+}
+
+/* LINKEDIN */
+if(value.includes("linkedin.com") &&
+(value.includes("/jobs/view/") ||
+value.includes("currentjobid="))){
+return true;
+}
+
+/* SITES EMPLOYEURS */
+if(value.includes("vd.ch") &&
+(value.includes("/offres-demploi/") ||
+value.includes("/emploi/") ||
+value.includes("/jobs/") ||
+value.includes("jobid=") ||
+value.includes("offre="))){
+return true;
+}
+
+if(value.includes("lausanne.ch") &&
+(value.includes("/emploi/") ||
+value.includes("/offres-demploi/") ||
+value.includes("/postes-vacants/") ||
+value.includes("/jobs/"))){
+return true;
+}
+
+if(value.includes("retraitespopulaires.ch") &&
+(value.includes("/emploi/") ||
+value.includes("/carrieres/") ||
+value.includes("/offres-demploi/") ||
+value.includes("/jobs/"))){
+return true;
+}
+
+if(value.includes("epfl.ch") &&
+(value.includes("/about/working/") ||
+value.includes("/careers/") ||
+value.includes("/jobs/") ||
+value.includes("/emploi/") ||
+value.includes("jobid="))){
+return true;
+}
+
+if(value.includes("migros.ch") &&
+(value.includes("/jobs/") ||
+value.includes("/career/") ||
+value.includes("/carriere/") ||
+value.includes("/emploi/") ||
+value.includes("jobid="))){
+return true;
+}
+
+if(value.includes("chuv.ch") &&
+(value.includes("/emploi/") ||
+value.includes("/jobs/") ||
+value.includes("/carrieres/") ||
+value.includes("/offres-demploi/") ||
+value.includes("jobid="))){
+return true;
+}
+
+return false;
 }
 
 /* ==========================================

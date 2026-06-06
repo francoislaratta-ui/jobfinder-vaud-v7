@@ -1350,12 +1350,52 @@ return false;
 }
 
 return (
-cleanUrl.includes("/emplois/detail/") ||
-cleanUrl.includes("/jobs/view/") ||
-cleanUrl.includes("/rc/clk") ||
-cleanUrl.includes("/job/")
-);
 
+/* JOBUP */
+cleanUrl.includes("jobup.ch/fr/emplois/detail/") ||
+cleanUrl.includes("jobup.ch/de/jobs/detail/") ||
+
+/* JOBSCOUT24 */
+cleanUrl.includes("jobscout24.ch/fr/job/") ||
+cleanUrl.includes("jobscout24.ch/de/job/") ||
+
+/* INDEED */
+cleanUrl.includes("indeed.com/viewjob") ||
+cleanUrl.includes("indeed.ch/viewjob") ||
+
+/* LINKEDIN */
+cleanUrl.includes("linkedin.com/jobs/view/") ||
+
+/* ETAT DE VAUD */
+(cleanUrl.includes("vd.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* VILLE DE LAUSANNE */
+(cleanUrl.includes("lausanne.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* RETRAITES POPULAIRES */
+(cleanUrl.includes("retraitespopulaires.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* EPFL */
+(cleanUrl.includes("epfl.ch") &&
+cleanUrl.includes("job")) ||
+
+/* MIGROS */
+(cleanUrl.includes("migros.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* CHUV */
+(cleanUrl.includes("chuv.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* GENERIQUE */
+cleanUrl.includes("/jobs/view/") ||
+cleanUrl.includes("/job/") ||
+cleanUrl.includes("/emploi/") ||
+cleanUrl.includes("/offre/")
+);
 }
 
 /* ==========================================
