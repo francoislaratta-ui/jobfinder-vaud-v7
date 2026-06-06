@@ -962,7 +962,15 @@ openTab("settings");
 }
 
 if(btnReset){
-btnReset.addEventListener("click", resetFilters);
+
+btnReset.addEventListener("click", async () => {
+
+resetFilters();
+
+await refreshOffers();
+
+});
+
 }
 
 if(resetFiltersBtn){
@@ -1437,6 +1445,20 @@ Ouvre la console du navigateur pour voir le détail technique.
 }
 
 /* ==========================================
+ACTUALISER OFFRES V14.3.0
+========================================== */
+
+async function refreshOffers(){
+
+showInfo("Actualisation des offres en cours...");
+
+await loadOffers();
+
+showInfo("Offres actualisées avec succès");
+
+}
+
+/* ==========================================
 FILTRE EMPLOYEURS
 ========================================== */
 
@@ -1858,20 +1880,23 @@ return card;
 }
 
 /* ==========================================
-OUVRIR OFFRE
+OUVRIR OFFRE V14.3.0
 ========================================== */
 
 function openOffer(offer){
+
 if(!offer){
 showInfo("Aucune offre sélectionnée");
 return;
 }
 
 const url =
+String(
 offer.offerUrl ||
 offer.url ||
 offer.link ||
-"";
+""
+).trim();
 
 if(!url){
 showInfo("Aucun lien disponible pour cette offre");
@@ -1883,7 +1908,9 @@ url,
 "_blank",
 "noopener,noreferrer"
 );
+
 }
+
 
 /* ==========================================
 BEST MATCH
@@ -3106,6 +3133,8 @@ window.exportJSON = exportJSON;
 window.exportCSV = exportCSV;
 window.applyFilters = applyFilters;
 window.resetFilters = resetFilters;
+window.refreshOffers = refreshOffers;
+
 
 /* ==========================================
 FIN APP.JS V14.2.0 PREMIUM IA
