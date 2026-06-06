@@ -1595,6 +1595,8 @@ return Math.max(0, Number(score.toFixed(2)));
 
 }
 
+async function discoverGenericOfferUrl(offer, domain){
+
 const searchPages =
 getDiscoverySearchPages(domain);
 
@@ -1658,7 +1660,6 @@ error.message
 }
 
 }
-
 if(bestUrl && bestScore >= 0.4){
 
 return {
