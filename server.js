@@ -1271,18 +1271,34 @@ const value =
 String(url || "").toLowerCase();
 
 return (
+
+/* Apprentissage */
 value.includes("apprentissage") ||
 value.includes("apprenti") ||
 value.includes("places-dapprentissage") ||
+
+/* Stages */
 value.includes("stage") ||
 value.includes("stagiaire") ||
+
+/* Formation */
 value.includes("formation") ||
 value.includes("ecole") ||
 value.includes("ecoles") ||
 value.includes("campus") ||
+
+/* Programmes spéciaux VD */
+value.includes("arc-emploi") ||
+value.includes("programme-demploi") ||
+value.includes("emploi-temporaire") ||
+value.includes("mesure") ||
+value.includes("insertion") ||
+
+/* Pages non utiles */
 value.includes("newsletter") ||
 value.includes("login") ||
 value.includes("connexion")
+
 );
 
 }
