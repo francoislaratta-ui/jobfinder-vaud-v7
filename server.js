@@ -1559,7 +1559,7 @@ offerUrl:req.query.url || "https://www.vd.ch"
 };
 
 const discovery =
-await discoverRealOfferUrlBySearch(offer);
+await discoverRealOfferUrl(offer);
 
 res.json({
 success:discovery.success,
