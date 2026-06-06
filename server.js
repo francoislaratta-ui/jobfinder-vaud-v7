@@ -184,7 +184,7 @@ result = text.substring(startIndex, startIndex + 3500);
 const index1 =
 result.indexOf("Autres recherches");
 
-if(index1 !== -1){
+if(index1 > 300){
 result =
 result.substring(0,index1);
 }
@@ -192,7 +192,7 @@ result.substring(0,index1);
 const index2 =
 result.indexOf("Catégories :");
 
-if(index2 !== -1){
+if(index2 > 300){
 result =
 result.substring(0,index2);
 }
@@ -200,11 +200,10 @@ result.substring(0,index2);
 const index3 =
 result.indexOf("Estimateur de salaire");
 
-if(index3 !== -1){
+if(index3 > 300){
 result =
 result.substring(0,index3);
 }
-
 return result.trim();
 }
 
