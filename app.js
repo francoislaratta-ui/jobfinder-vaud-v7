@@ -280,6 +280,7 @@ employers: "",
 matches: [],
 sort: "match"
 };
+
 /* ==========================================
 DOM - REFERENCES PRINCIPALES
 ========================================== */
@@ -1308,7 +1309,9 @@ STORAGE_KEYS.settings,
 settings
 );
 
-}/* ==========================================
+}
+
+/* ==========================================
 CHARGEMENT OFFRES
 ========================================== */
 
@@ -1387,7 +1390,17 @@ offer.publishedAt ||
 "",
 
 description:
-offer.description || ""
+offer.description ||
+offer.details ||
+offer.summary ||
+offer.tasks ||
+offer.text ||
+offer.content ||
+offer.body ||
+offer.profile ||
+offer.mission ||
+offer.responsibilities ||
+"Descriptif non disponible."
 }));
 
 filteredOffers = [...offers];
