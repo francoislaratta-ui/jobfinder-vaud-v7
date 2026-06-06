@@ -403,6 +403,8 @@ app.get(
 "/api/validate-offer-url",
 (req,res)=>{
 
+try{
+
 const url =
 req.query.url || "";
 
@@ -420,9 +422,22 @@ isRealOfferUrl(url)
 
 });
 
+}catch(error){
+
+res.status(500).json({
+
+success:false,
+
+message:"Erreur validate-offer-url",
+
+error:error.message
+
+});
+
+}
+
 }
 );
-
 
 /* ==========================================
 API EXTRACTION DESCRIPTION URL
