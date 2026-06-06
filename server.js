@@ -1322,7 +1322,12 @@ return Math.max(0,score);
 
 }
 
-async function discoverGenericOfferUrl(offer, domain){
+/* ==========================================
+DECOUVERTE URL REELLE ANNONCE V14.4
+Recherche précise + fallback carrière fiable
+========================================== */
+
+function getDiscoverySearchPages(domain){
 
 const searchPagesMap = {
 "vd.ch":[
@@ -1357,8 +1362,116 @@ const searchPagesMap = {
 ]
 };
 
+return searchPagesMap[domain] || [];
+
+}
+
+function getDiscoveryFallbackUrl(domain){
+
+const pages =
+getDiscoverySearchPages(domain);
+
+return pages[0] || "";
+
+}
+
+function isBadDiscoveryUrl(url){
+
+const value =
+String(url || "").toLowerCase();
+
+return (
+value.includes("apprentissage") ||
+value.includes("apprenti") ||
+value.includes("places-dapprentissage") ||
+value.includes("stage") ||
+value.includes("stagiaire") ||
+value.includes("formation") ||
+value.includes("ecole") ||
+value.includes("newsletter") ||
+value.includes("login") ||
+value.includes("connexion")
+);
+
+}
+
+function scoreDiscoveryUrlV144(url, offer){
+
+const title =
+String(offer.title || "").toLowerCase();
+
+const company =
+String(offer.company || "").toLowerCase();
+
+const location =
+String(offer.location || "").toLowerCase();
+
+const value =
+String(url || "").toLowerCase();
+
+let score = 0;
+
+const titleWords =
+title
+.split(/\s+/)
+.filter(word => word.length >= 4);
+
+titleWords.forEach(word => {
+if(value.includes(word)){
+score += 0.25;
+}
+});
+
+const companyWords =
+company
+.split(/\s+/)
+.filter(word => word.length >= 3);
+
+companyWords.forEach(word => {
+if(value.includes(word)){
+score += 0.15;
+}
+});
+
+if(location && value.includes(location)){
+score += 0.15;
+}
+
+if(value.includes("emploi") || value.includes("offre")){
+score += 0.25;
+}
+
+if(value.includes("job") || value.includes("jobs")){
+score += 0.25;
+}
+
+if(value.includes("career") || value.includes("carriere")){
+score += 0.2;
+}
+
+if(value.includes("postuler") || value.includes("apply")){
+score += 0.2;
+}
+
+if(isBadDiscoveryUrl(value)){
+score -= 1;
+}
+
+if(isGenericSourceUrl(value)){
+score -= 0.5;
+}
+
+return Math.max(0,score);
+
+}
+
+async function discoverGenericOfferUrl(offer, domain){
+
 const searchPages =
-searchPagesMap[domain] || [];
+getDiscoverySearchPages(domain);
+
+const fallbackUrl =
+getDiscoveryFallbackUrl(domain);
 
 let bestUrl = "";
 let bestScore = 0;
@@ -1370,14 +1483,14 @@ try{
 const html =
 await fetchExternalText(pageUrl);
 
-console.log("DIRECT SEARCH PAGE:", pageUrl);
-console.log("HTML LENGTH:", html ? html.length : 0);
+console.log("V14.4 SEARCH PAGE:", pageUrl);
+console.log("V14.4 HTML LENGTH:", html ? html.length : 0);
 
 const links =
 extractLinksFromHtml(html, pageUrl);
 
-console.log("DIRECT LINKS FOUND:", links.length);
-console.log("DIRECT FIRST LINKS:", links.slice(0,10));
+console.log("V14.4 LINKS FOUND:", links.length);
+console.log("V14.4 FIRST LINKS:", links.slice(0,10));
 
 const candidateLinks =
 links.filter(link => {
@@ -1387,7 +1500,6 @@ String(link).toLowerCase();
 
 return (
 value.includes(domain) &&
-!isGenericSourceUrl(value) &&
 !isBadDiscoveryUrl(value)
 );
 
@@ -1396,7 +1508,7 @@ value.includes(domain) &&
 for(const link of candidateLinks){
 
 const score =
-scoreDiscoveryUrlV1433(link, offer);
+scoreDiscoveryUrlV144(link, offer);
 
 if(score > bestScore){
 
@@ -1410,7 +1522,7 @@ bestUrl = link;
 }catch(error){
 
 console.warn(
-"Découverte directe impossible :",
+"Découverte V14.4 impossible :",
 domain,
 error.message
 );
@@ -1419,12 +1531,24 @@ error.message
 
 }
 
-if(bestUrl && bestScore >= 0.3){
+if(bestUrl && bestScore >= 0.4){
 
 return {
 success:true,
 discoveredUrl:bestUrl,
-score:bestScore
+score:bestScore,
+fallback:false
+};
+
+}
+
+if(fallbackUrl){
+
+return {
+success:true,
+discoveredUrl:fallbackUrl,
+score:0.25,
+fallback:true
 };
 
 }
@@ -1432,7 +1556,8 @@ score:bestScore
 return {
 success:false,
 discoveredUrl:"",
-score:bestScore
+score:bestScore,
+fallback:false
 };
 
 }
