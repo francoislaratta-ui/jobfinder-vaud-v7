@@ -1472,6 +1472,83 @@ return enrichedOffers;
 }
 
 /* ==========================================
+DECOUVERTE URLS REELLES
+========================================== */
+
+async function discoverRealOfferUrls(list){
+
+const safeList =
+Array.isArray(list) ? list : [];
+
+const updatedOffers = [];
+
+for(const offer of safeList){
+
+try{
+
+if(!offer || !offer.offerUrl){
+updatedOffers.push(offer);
+continue;
+}
+
+if(isRealOfferUrlClient(offer.offerUrl)){
+updatedOffers.push(offer);
+continue;
+}
+
+const response =
+await fetch("/api/discover-offer-url", {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+offer
+})
+});
+
+if(!response.ok){
+updatedOffers.push(offer);
+continue;
+}
+
+const result =
+await response.json();
+
+if(result.success && result.discoveredUrl){
+
+updatedOffers.push({
+...offer,
+offerUrl:result.discoveredUrl,
+originalOfferUrl:offer.offerUrl,
+urlDiscovered:true
+});
+
+}else{
+
+updatedOffers.push(offer);
+
+}
+
+}catch(error){
+
+console.warn(
+"Découverte URL impossible :",
+offer?.title || "",
+error
+);
+
+updatedOffers.push(offer);
+
+}
+
+}
+
+return updatedOffers;
+
+}
+
+/* ==========================================
 CHARGEMENT OFFRES
 ========================================== */
 
@@ -1566,6 +1643,9 @@ offer.responsibilities ||
 }));
 
 offers =
+await discoverRealOfferUrls(offers);
+
+offers =
 await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
@@ -1604,7 +1684,6 @@ Ouvre la console du navigateur pour voir le détail technique.
 }
 
 }
-
 
 /* ==========================================
 ACTUALISER OFFRES V14.3.0
