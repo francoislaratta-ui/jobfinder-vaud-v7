@@ -1595,7 +1595,7 @@ return Math.max(0, Number(score.toFixed(2)));
 
 }
 
-aasync function discoverGenericOfferUrl(offer, domain){
+async function discoverGenericOfferUrl(offer, domain){
 
 const searchPages =
 getDiscoverySearchPages(domain);
