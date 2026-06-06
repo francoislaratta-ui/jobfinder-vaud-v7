@@ -7,6 +7,8 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
+const https = require("https");
+const http = require("http");
 
 const app = express();
 
@@ -232,10 +234,9 @@ new Date().toISOString()
 /* ==========================================
 API EXTRACTION DESCRIPTION URL
 ========================================== */
-
 app.post(
 "/api/extract-description",
-async (req,res)=>{
+(req,res)=>{
 
 try{
 
@@ -244,53 +245,35 @@ req.body?.url;
 
 if(!url){
 
-return res.status(400)
-.json({
-
+return res.status(400).json({
 success:false,
-
 description:"",
-
-message:
-"URL manquante"
-
+message:"URL manquante"
 });
 
 }
 
-const response =
-await fetch(url, {
+const client =
+url.startsWith("https")
+? https
+: http;
 
-headers: {
+client.get(url,(response)=>{
 
-"User-Agent":
-"Mozilla/5.0 Job Finder Vaud",
+let html = "";
 
-"Accept":
-"text/html,application/xhtml+xml"
-
+response.on(
+"data",
+chunk => {
+html += chunk;
 }
+);
 
-});
+response.on(
+"end",
+()=>{
 
-if(!response.ok){
-
-return res.status(response.status)
-.json({
-
-success:false,
-
-description:"",
-
-message:
-"Impossible de lire la page source"
-
-});
-
-}
-
-const html =
-await response.text();
+try{
 
 const description =
 extractUsefulDescription(html);
@@ -311,12 +294,58 @@ description ||
 catch(error){
 
 console.error(
+"Erreur analyse HTML :",
+error
+);
+
+res.status(500).json({
+
+success:false,
+
+description:"",
+
+message:
+"Erreur analyse HTML"
+
+});
+
+}
+
+});
+
+}).on(
+"error",
+(error)=>{
+
+console.error(
+"Erreur téléchargement :",
+error
+);
+
+res.status(500).json({
+
+success:false,
+
+description:"",
+
+message:
+"Erreur téléchargement page"
+
+});
+
+}
+
+);
+
+}
+catch(error){
+
+console.error(
 "Erreur extraction description :",
 error
 );
 
-res.status(500)
-.json({
+res.status(500).json({
 
 success:false,
 
