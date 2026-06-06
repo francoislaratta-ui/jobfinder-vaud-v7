@@ -1265,45 +1265,64 @@ DECOUVERTE URL REELLE ANNONCE V14.3.2
 Recherche ciblée title + company + location
 ========================================== */
 
-async function isBadDiscoveryUrl(url){
+function isBadDiscoveryUrl(url){
 
 const value =
-String(url || "").toLowerCase();
+String(url || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "");
 
-return (
+const blockedPatterns = [
+"arc-emploi",
+"arc emploi",
+"programme-demploi",
+"programme-emploi",
+"programme emploi",
+"emploi-temporaire",
+"emploi temporaire",
+"mesure",
+"insertion",
+"reinsertion",
+"apprentissage",
+"apprenti",
+"places-dapprentissage",
+"stage",
+"stagiaire",
+"formation",
+"ecole",
+"ecoles",
+"campus",
+"newsletter",
+"agenda",
+"actualite",
+"actualites",
+"communique",
+"media",
+"medias",
+"portrait",
+"temoignage",
+"benevolat"
+];
 
-/* Apprentissage */
-value.includes("apprentissage") ||
-value.includes("apprenti") ||
-value.includes("places-dapprentissage") ||
-
-/* Stages */
-value.includes("stage") ||
-value.includes("stagiaire") ||
-
-/* Formation */
-value.includes("formation") ||
-value.includes("ecole") ||
-value.includes("ecoles") ||
-value.includes("campus") ||
-
-/* Programmes spéciaux VD */
-value.includes("arc-emploi") ||
-value.includes("programme-demploi") ||
-value.includes("emploi-temporaire") ||
-value.includes("mesure") ||
-value.includes("insertion") ||
-
-/* Pages non utiles */
-value.includes("newsletter") ||
-value.includes("login") ||
-value.includes("connexion")
-
+return blockedPatterns.some(pattern =>
+value.includes(pattern)
 );
 
 }
 
+
 function scoreDiscoveryUrlV1433(url, offer){
+
+const value =
+String(url || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "");
+
+if(isBadDiscoveryUrl(url)){
+return 0;
+}
 
 let score =
 scoreDiscoveryMatch(
@@ -1311,32 +1330,38 @@ scoreDiscoveryMatch(
 url
 );
 
-const value =
-String(url || "").toLowerCase();
-
 if(value.includes("job") || value.includes("jobs")){
 score += 0.25;
 }
 
-if(value.includes("emploi") || value.includes("offre")){
+if(value.includes("emploi") || value.includes("emplois")){
+score += 0.2;
+}
+
+if(value.includes("offre") || value.includes("offres")){
 score += 0.25;
 }
 
-if(value.includes("career") || value.includes("carriere")){
+if(value.includes("poste") || value.includes("postes")){
 score += 0.2;
+}
+
+if(value.includes("recrutement")){
+score += 0.2;
+}
+
+if(value.includes("career") || value.includes("carriere")){
+score += 0.15;
 }
 
 if(value.includes("postuler") || value.includes("apply")){
-score += 0.2;
-}
-
-if(isBadDiscoveryUrl(url)){
-score -= 1;
+score += 0.25;
 }
 
 return Math.max(0,score);
 
 }
+
 
 /* ==========================================
 DECOUVERTE URL REELLE ANNONCE V14.4
@@ -1394,19 +1419,48 @@ return pages[0] || "";
 function isBadDiscoveryUrl(url){
 
 const value =
-String(url || "").toLowerCase();
+String(url || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "");
 
-return (
-value.includes("apprentissage") ||
-value.includes("apprenti") ||
-value.includes("places-dapprentissage") ||
-value.includes("stage") ||
-value.includes("stagiaire") ||
-value.includes("formation") ||
-value.includes("ecole") ||
-value.includes("newsletter") ||
-value.includes("login") ||
-value.includes("connexion")
+const blockedPatterns = [
+"arc-emploi",
+"arc emploi",
+"programme-demploi",
+"programme-emploi",
+"programme emploi",
+"emploi-temporaire",
+"emploi temporaire",
+"mesure",
+"mesures",
+"insertion",
+"reinsertion",
+"apprentissage",
+"apprenti",
+"places-dapprentissage",
+"stage",
+"stagiaire",
+"formation",
+"ecole",
+"ecoles",
+"campus",
+"newsletter",
+"agenda",
+"actualite",
+"actualites",
+"communique",
+"media",
+"medias",
+"portrait",
+"temoignage",
+"benevolat",
+"login",
+"connexion"
+];
+
+return blockedPatterns.some(pattern =>
+value.includes(pattern)
 );
 
 }
