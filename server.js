@@ -1128,6 +1128,243 @@ __dirname,
 
 
 /* ==========================================
+OUTILS DECOUVERTE URL REELLE
+========================================== */
+
+function normalizeDiscoveryText(value){
+
+return String(value || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "")
+.replace(/[^a-z0-9]+/g, " ")
+.trim();
+
+}
+
+function scoreDiscoveryMatch(title, text){
+
+const cleanTitle =
+normalizeDiscoveryText(title);
+
+const cleanText =
+normalizeDiscoveryText(text);
+
+if(!cleanTitle || !cleanText){
+return 0;
+}
+
+const words =
+cleanTitle
+.split(" ")
+.filter(word => word.length >= 4);
+
+if(words.length === 0){
+return 0;
+}
+
+let hits = 0;
+
+for(const word of words){
+
+if(cleanText.includes(word)){
+hits++;
+}
+
+}
+
+return hits / words.length;
+
+}
+
+function fetchExternalText(url){
+
+return new Promise((resolve,reject)=>{
+
+try{
+
+const parsedUrl =
+new URL(url);
+
+const client =
+parsedUrl.protocol === "https:"
+? require("https")
+: require("http");
+
+const request =
+client.get(
+url,
+{
+headers:{
+"User-Agent":"Mozilla/5.0 JobFinderVaud/14.3.1",
+"Accept":"text/html,application/xhtml+xml"
+}
+},
+response=>{
+
+let data = "";
+
+response.on("data", chunk => {
+data += chunk;
+});
+
+response.on("end", () => {
+resolve(data);
+});
+
+}
+);
+
+request.on("error", reject);
+
+request.setTimeout(10000, () => {
+request.destroy();
+reject(new Error("Timeout récupération page"));
+});
+
+}catch(error){
+
+reject(error);
+
+}
+
+});
+
+}
+
+function extractLinksFromHtml(html, baseUrl){
+
+const links = [];
+
+const regex =
+/href=["']([^"']+)["']/gi;
+
+let match;
+
+while((match = regex.exec(html)) !== null){
+
+try{
+
+const absoluteUrl =
+new URL(match[1], baseUrl).href;
+
+links.push(absoluteUrl);
+
+}catch(error){
+
+}
+
+}
+
+return [...new Set(links)];
+
+}
+
+async function discoverVdOfferUrl(offer){
+
+const title =
+offer.title || "";
+
+const searchPages = [
+"https://www.vd.ch/etat-droit-finances/etat-employeur/offres-demploi"
+];
+
+let bestUrl = "";
+let bestScore = 0;
+
+for(const pageUrl of searchPages){
+
+try{
+
+const html =
+await fetchExternalText(pageUrl);
+
+const links =
+extractLinksFromHtml(html, pageUrl);
+
+const candidateLinks =
+links.filter(link => {
+
+const value =
+String(link).toLowerCase();
+
+return value.includes("vd.ch") &&
+(
+value.includes("offres-demploi") ||
+value.includes("emploi") ||
+value.includes("postuler") ||
+value.includes("job") ||
+value.includes("jobs")
+);
+
+});
+
+for(const link of candidateLinks){
+
+const candidateScore =
+scoreDiscoveryMatch(title, link);
+
+if(candidateScore > bestScore){
+
+bestScore = candidateScore;
+bestUrl = link;
+
+}
+
+}
+
+}catch(error){
+
+console.warn(
+"Découverte VD impossible :",
+error.message
+);
+
+}
+
+}
+
+if(bestUrl && bestScore >= 0.5){
+
+return {
+success:true,
+discoveredUrl:bestUrl,
+score:bestScore
+};
+
+}
+
+return {
+success:false,
+discoveredUrl:"",
+score:bestScore
+};
+
+}
+
+async function discoverRealOfferUrl(offer){
+
+const originalUrl =
+offer.offerUrl || offer.url || "";
+
+const source =
+getEmployerSource(originalUrl);
+
+if(source === "vd"){
+
+return await discoverVdOfferUrl(offer);
+
+}
+
+return {
+success:false,
+discoveredUrl:"",
+score:0
+};
+
+}
+
+/* ==========================================
 DECOUVERTE URL REELLE ANNONCE
 ========================================== */
 
@@ -1143,12 +1380,70 @@ req.body?.offer || {};
 const originalUrl =
 offer.offerUrl || offer.url || "";
 
+if(!originalUrl){
+
 return res.json({
 success:false,
-message:"Découverte automatique pas encore activée pour cette source",
+message:"URL source absente",
+originalUrl:"",
+discoveredUrl:"",
+changed:false
+});
+
+}
+
+if(isRealOfferUrl(originalUrl)){
+
+return res.json({
+success:true,
+message:"URL déjà réelle",
+originalUrl,
+discoveredUrl:originalUrl,
+changed:false,
+source:getEmployerSource(originalUrl)
+});
+
+}
+
+if(!isGenericSourceUrl(originalUrl)){
+
+return res.json({
+success:false,
+message:"URL non générique mais non reconnue comme annonce réelle",
 originalUrl,
 discoveredUrl:"",
 changed:false,
+source:getEmployerSource(originalUrl)
+});
+
+}
+
+const discovery =
+await discoverRealOfferUrl(offer);
+
+if(discovery.success && discovery.discoveredUrl){
+
+return res.json({
+success:true,
+message:"URL réelle trouvée",
+originalUrl,
+discoveredUrl:discovery.discoveredUrl,
+changed:true,
+score:discovery.score,
+company:offer.company || "",
+title:offer.title || "",
+source:getEmployerSource(originalUrl)
+});
+
+}
+
+return res.json({
+success:false,
+message:"Aucune URL réelle trouvée pour cette source",
+originalUrl,
+discoveredUrl:"",
+changed:false,
+score:discovery.score || 0,
 company:offer.company || "",
 title:offer.title || "",
 source:getEmployerSource(originalUrl)
@@ -1178,17 +1473,21 @@ async (req,res)=>{
 try{
 
 const offer = {
-title:req.query.title || "Offre test",
+title:req.query.title || "Gestionnaire",
 company:req.query.company || "Etat de Vaud",
 offerUrl:req.query.url || "https://www.vd.ch"
 };
 
+const discovery =
+await discoverRealOfferUrl(offer);
+
 res.json({
-success:false,
-message:"Découverte automatique pas encore activée pour cette source",
+success:discovery.success,
+message:discovery.success ? "URL réelle trouvée" : "Aucune URL réelle trouvée pour cette source",
 originalUrl:offer.offerUrl,
-discoveredUrl:"",
-changed:false,
+discoveredUrl:discovery.discoveredUrl || "",
+changed:!!discovery.discoveredUrl,
+score:discovery.score || 0,
 company:offer.company,
 title:offer.title,
 source:getEmployerSource(offer.offerUrl)
@@ -1206,8 +1505,6 @@ error:error.message
 
 }
 );
-
-
 
 /* ==========================================
 GESTION ERREURS
