@@ -1628,12 +1628,37 @@ links.filter(link => {
 const value =
 String(link).toLowerCase();
 
+const blockedTechnicalLinks = [
+".css",
+".js",
+".png",
+".jpg",
+".jpeg",
+".svg",
+".ico",
+".webmanifest",
+"favicon",
+"typo3conf",
+"typo3temp",
+"assets",
+"resources/public"
+];
+
+const isTechnicalLink =
+blockedTechnicalLinks.some(pattern =>
+value.includes(pattern)
+);
+
 return (
 value.includes(domain) &&
+!isTechnicalLink &&
 !isBadDiscoveryUrl(value)
 );
 
 });
+
+console.log("V14.4 CANDIDATE LINKS:", candidateLinks.length);
+console.log("V14.4 FIRST CANDIDATES:", candidateLinks.slice(0,10));
 
 for(const link of candidateLinks){
 
