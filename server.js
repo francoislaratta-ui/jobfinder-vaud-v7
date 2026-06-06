@@ -1388,14 +1388,6 @@ score:bestScore
 
 }
 
-return {
-success:false,
-discoveredUrl:"",
-score:bestScore
-};
-
-
-
 async function discoverVdOfferUrl(offer){
 return await discoverGenericOfferUrl(offer,"vd.ch");
 }
