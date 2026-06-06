@@ -1290,8 +1290,14 @@ try{
 const html =
 await fetchExternalText(searchUrl);
 
+console.log("SEARCH URL:", searchUrl);
+console.log("HTML LENGTH:", html ? html.length : 0);
+
 const links =
 extractLinksFromHtml(html, searchUrl);
+
+console.log("LINKS FOUND:", links.length);
+console.log("FIRST LINKS:", links.slice(0,10));
 
 const candidateLinks =
 links.filter(link => {
