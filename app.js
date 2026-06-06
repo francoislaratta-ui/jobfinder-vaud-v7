@@ -1747,6 +1747,12 @@ ${offer.address ? `
 📅 ${escapeHTML(offer.date)}
 </div>
 
+${offer.offerUrl ? `
+<div class="offer-url">
+🌐 URL disponible
+</div>
+` : ""}
+
 <div class="offer-match ${matchClass}">
 🤖 Match IA : ${match}% = ${escapeHTML(badge)}
 </div>
