@@ -1371,8 +1371,9 @@ Recherche précise + fallback carrière fiable
 function getDiscoverySearchPages(domain){
 
 const searchPagesMap = {
+const searchPagesMap = {
 "vd.ch":[
-"https://www.vd.ch/etat-droit-finances/etat-employeur/offres-demploi"
+"https://offres-emploi.vd.ch/#fr/sites/CX_1"
 ],
 "lausanne.ch":[
 "https://www.lausanne.ch/portrait/travailler-pour-la-ville/offres-emploi.html"
