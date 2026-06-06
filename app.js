@@ -1681,6 +1681,7 @@ CREATION CARTE OFFRE
 ========================================== */
 
 function createOfferCard(offer){
+console.log("OFFRE COMPLETE :", offer);
 const card =
 document.createElement("div");
 
