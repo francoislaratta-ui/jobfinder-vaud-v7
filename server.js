@@ -261,7 +261,7 @@ return genericUrls.includes(cleanUrl);
 
 }
 
-function isRealOfferUrlClient(url){
+function isRealOfferUrl(url){
 
 if(!url){
 return false;
@@ -399,12 +399,12 @@ return false;
 API VALIDATION URL ANNONCE
 ========================================== */
 
-app.post(
+app.get(
 "/api/validate-offer-url",
 (req,res)=>{
 
 const url =
-req.body?.url || "";
+req.query.url || "";
 
 res.json({
 
@@ -422,7 +422,6 @@ isRealOfferUrl(url)
 
 }
 );
-
 
 
 /* ==========================================
@@ -1045,9 +1044,14 @@ VALIDATION URL OFFRE
 
 app.get("/api/validate-offer-url", (req, res) => {
 
+const url =
+req.query.url || "";
+
 res.json({
 success: true,
-test: "OK"
+url,
+isGeneric: isGenericSourceUrl(url),
+isRealOffer: isRealOfferUrl(url)
 });
 
 });
