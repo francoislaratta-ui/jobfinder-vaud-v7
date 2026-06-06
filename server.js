@@ -148,9 +148,9 @@ const keywords = [
 "Votre mission",
 "Vos missions",
 "Vos tâches",
+"Vos responsabilités",
 "Votre profil",
 "Profil recherché",
-"Responsabilités",
 "Description du poste",
 "Ce que vous faites",
 "Nous offrons",
@@ -162,9 +162,7 @@ let startIndex = -1;
 for(const keyword of keywords){
 
 const index =
-text.toLowerCase().indexOf(
-keyword.toLowerCase()
-);
+text.toLowerCase().indexOf(keyword.toLowerCase());
 
 if(index !== -1){
 startIndex = index;
@@ -172,39 +170,38 @@ break;
 }
 
 }
-let result = "";
 
-if(startIndex === -1){
-result = text.substring(0, 2500);
-}
-else{
-result = text.substring(startIndex, startIndex + 3500);
-}
+let result =
+startIndex === -1
+? text.substring(0, 3500)
+: text.substring(startIndex, startIndex + 4500);
 
-const index1 =
-result.indexOf("Autres recherches");
+const stopWords = [
+"Autres recherches",
+"Catégories :",
+"Estimateur de salaire",
+"Offres similaires",
+"Emplois similaires"
+];
 
-if(index1 > 300){
+for(const stopWord of stopWords){
+
+const index =
+result.toLowerCase().indexOf(stopWord.toLowerCase());
+
+if(index > 800){
 result =
-result.substring(0,index1);
+result.substring(0, index).trim();
 }
 
-const index2 =
-result.indexOf("Catégories :");
-
-if(index2 > 300){
-result =
-result.substring(0,index2);
 }
 
-const index3 =
-result.indexOf("Estimateur de salaire");
-
-if(index3 > 300){
-result =
-result.substring(0,index3);
+if(result.length < 300){
+return text.substring(0, 3500).trim();
 }
+
 return result.trim();
+
 }
 
 /* ==========================================
