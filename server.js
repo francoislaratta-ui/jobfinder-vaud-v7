@@ -232,6 +232,88 @@ new Date().toISOString()
 );
 
 /* ==========================================
+VALIDATION URL ANNONCE
+========================================== */
+
+function isGenericSourceUrl(url){
+
+if(!url){
+return true;
+}
+
+const cleanUrl =
+url.toLowerCase().trim();
+
+const genericUrls = [
+"https://www.vd.ch",
+"https://vd.ch",
+"https://www.jobup.ch",
+"https://jobup.ch",
+"https://www.indeed.com",
+"https://indeed.com",
+"https://www.jobscout24.ch",
+"https://jobscout24.ch",
+"https://www.linkedin.com",
+"https://linkedin.com"
+];
+
+return genericUrls.includes(cleanUrl);
+
+}
+
+function isRealOfferUrl(url){
+
+if(!url){
+return false;
+}
+
+const cleanUrl =
+url.toLowerCase();
+
+if(isGenericSourceUrl(cleanUrl)){
+return false;
+}
+
+return (
+cleanUrl.includes("/emplois/detail/") ||
+cleanUrl.includes("/jobs/view/") ||
+cleanUrl.includes("/rc/clk") ||
+cleanUrl.includes("/job/")
+);
+
+}
+
+/* ==========================================
+API VALIDATION URL ANNONCE
+========================================== */
+
+app.post(
+"/api/validate-offer-url",
+(req,res)=>{
+
+const url =
+req.body?.url || "";
+
+res.json({
+
+success:true,
+
+url,
+
+isGeneric:
+isGenericSourceUrl(url),
+
+isRealOffer:
+isRealOfferUrl(url)
+
+});
+
+}
+);
+
+
+
+/* ==========================================
 API EXTRACTION DESCRIPTION URL
 ========================================== */
 app.post(
