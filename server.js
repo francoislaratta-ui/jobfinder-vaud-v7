@@ -242,35 +242,8 @@ return true;
 }
 
 const cleanUrl =
-url.toLowerCase().trim();
+String(url).toLowerCase().trim().replace(/\/$/, "");
 
-const genericUrls = [
-"https://www.vd.ch",
-"https://vd.ch",
-"https://www.jobup.ch",
-"https://jobup.ch",
-"https://www.indeed.com",
-"https://indeed.com",
-"https://www.jobscout24.ch",
-"https://jobscout24.ch",
-"https://www.linkedin.com",
-"https://linkedin.com"
-];
-
-return genericUrls.includes(cleanUrl);
-
-}
-
-function isRealOfferUrl(url){
-
-if(!url){
-return false;
-}
-
-const value =
-String(url).toLowerCase().trim();
-
-/* URLs génériques à ignorer */
 const genericUrls = [
 "https://www.vd.ch",
 "http://www.vd.ch",
@@ -303,10 +276,43 @@ const genericUrls = [
 "https://www.chuv.ch",
 "http://www.chuv.ch",
 "https://chuv.ch",
-"http://chuv.ch"
+"http://chuv.ch",
+
+"https://www.jobup.ch",
+"http://www.jobup.ch",
+"https://jobup.ch",
+"http://jobup.ch",
+
+"https://www.indeed.com",
+"http://www.indeed.com",
+"https://indeed.com",
+"http://indeed.com",
+
+"https://www.jobscout24.ch",
+"http://www.jobscout24.ch",
+"https://jobscout24.ch",
+"http://jobscout24.ch",
+
+"https://www.linkedin.com",
+"http://www.linkedin.com",
+"https://linkedin.com",
+"http://linkedin.com"
 ];
 
-if(genericUrls.includes(value.replace(/\/$/, ""))){
+return genericUrls.includes(cleanUrl);
+
+}
+
+function isRealOfferUrl(url){
+
+if(!url){
+return false;
+}
+
+const value =
+String(url).toLowerCase().trim();
+
+if(isGenericSourceUrl(value)){
 return false;
 }
 
@@ -339,7 +345,7 @@ value.includes("currentjobid="))){
 return true;
 }
 
-/* SITES EMPLOYEURS */
+/* VD.CH */
 if(value.includes("vd.ch") &&
 (value.includes("/offres-demploi/") ||
 value.includes("/emploi/") ||
@@ -349,6 +355,7 @@ value.includes("offre="))){
 return true;
 }
 
+/* LAUSANNE.CH */
 if(value.includes("lausanne.ch") &&
 (value.includes("/emploi/") ||
 value.includes("/offres-demploi/") ||
@@ -357,6 +364,7 @@ value.includes("/jobs/"))){
 return true;
 }
 
+/* RETRAITES POPULAIRES */
 if(value.includes("retraitespopulaires.ch") &&
 (value.includes("/emploi/") ||
 value.includes("/carrieres/") ||
@@ -365,6 +373,7 @@ value.includes("/jobs/"))){
 return true;
 }
 
+/* EPFL */
 if(value.includes("epfl.ch") &&
 (value.includes("/about/working/") ||
 value.includes("/careers/") ||
@@ -374,6 +383,7 @@ value.includes("jobid="))){
 return true;
 }
 
+/* MIGROS */
 if(value.includes("migros.ch") &&
 (value.includes("/jobs/") ||
 value.includes("/career/") ||
@@ -383,6 +393,7 @@ value.includes("jobid="))){
 return true;
 }
 
+/* CHUV */
 if(value.includes("chuv.ch") &&
 (value.includes("/emploi/") ||
 value.includes("/jobs/") ||
@@ -393,6 +404,63 @@ return true;
 }
 
 return false;
+}
+
+/* ==========================================
+DETECTION SOURCE EMPLOYEUR
+========================================== */
+
+function getEmployerSource(url){
+
+if(!url){
+return "";
+}
+
+const value =
+String(url).toLowerCase();
+
+if(value.includes("vd.ch")){
+return "vd";
+}
+
+if(value.includes("lausanne.ch")){
+return "lausanne";
+}
+
+if(value.includes("retraitespopulaires.ch")){
+return "retraitespopulaires";
+}
+
+if(value.includes("epfl.ch")){
+return "epfl";
+}
+
+if(value.includes("migros.ch")){
+return "migros";
+}
+
+if(value.includes("chuv.ch")){
+return "chuv";
+}
+
+if(value.includes("jobup.ch")){
+return "jobup";
+}
+
+if(value.includes("indeed")){
+return "indeed";
+}
+
+if(value.includes("jobscout24")){
+return "jobscout24";
+}
+
+if(value.includes("linkedin")){
+return "linkedin";
+}
+
+return "";
+
 }
 
 /* ==========================================
@@ -418,7 +486,10 @@ isGeneric:
 isGenericSourceUrl(url),
 
 isRealOffer:
-isRealOfferUrl(url)
+isRealOfferUrl(url),
+
+source:
+getEmployerSource(url)
 
 });
 
@@ -438,6 +509,7 @@ error:error.message
 
 }
 );
+
 
 /* ==========================================
 API EXTRACTION DESCRIPTION URL
@@ -1054,22 +1126,80 @@ __dirname,
 );
 
 /* ==========================================
-VALIDATION URL OFFRE
+DECOUVERTE URL REELLE ANNONCE
 ========================================== */
 
-app.get("/api/validate-offer-url", (req, res) => {
+app.post(
+"/api/discover-offer-url",
+async (req,res)=>{
 
-const url =
-req.query.url || "";
+try{
 
-res.json({
-success: true,
-url,
-isGeneric: isGenericSourceUrl(url),
-isRealOffer: isRealOfferUrl(url)
+const offer =
+req.body?.offer || {};
+
+const originalUrl =
+offer.offerUrl || offer.url || "";
+
+if(!originalUrl){
+
+return res.json({
+success:false,
+message:"URL source absente",
+originalUrl:"",
+discoveredUrl:""
 });
 
+}
+
+if(isRealOfferUrl(originalUrl)){
+
+return res.json({
+success:true,
+message:"URL déjà réelle",
+originalUrl,
+discoveredUrl:originalUrl,
+changed:false
 });
+
+}
+
+if(!isGenericSourceUrl(originalUrl)){
+
+return res.json({
+success:false,
+message:"URL non générique mais non reconnue comme annonce réelle",
+originalUrl,
+discoveredUrl:"",
+changed:false
+});
+
+}
+
+return res.json({
+success:false,
+message:"Découverte automatique pas encore activée pour cette source",
+originalUrl,
+discoveredUrl:"",
+changed:false,
+company:offer.company || "",
+title:offer.title || ""
+});
+
+}catch(error){
+
+res.status(500).json({
+success:false,
+message:"Erreur discover-offer-url",
+error:error.message
+});
+
+}
+
+}
+
+);
+
 
 /* ==========================================
 GESTION ERREURS
