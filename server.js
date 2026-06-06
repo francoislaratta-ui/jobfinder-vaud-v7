@@ -1394,7 +1394,7 @@ discoveredUrl:"",
 score:bestScore
 };
 
-}
+
 
 async function discoverVdOfferUrl(offer){
 return await discoverGenericOfferUrl(offer,"vd.ch");
