@@ -172,13 +172,40 @@ break;
 }
 
 }
+let result = "";
 
 if(startIndex === -1){
-return text.substring(0, 2500);
+result = text.substring(0, 2500);
+}
+else{
+result = text.substring(startIndex, startIndex + 3500);
 }
 
-return text.substring(startIndex, startIndex + 3500);
+const index1 =
+result.indexOf("Autres recherches");
 
+if(index1 !== -1){
+result =
+result.substring(0,index1);
+}
+
+const index2 =
+result.indexOf("Catégories :");
+
+if(index2 !== -1){
+result =
+result.substring(0,index2);
+}
+
+const index3 =
+result.indexOf("Estimateur de salaire");
+
+if(index3 !== -1){
+result =
+result.substring(0,index3);
+}
+
+return result.trim();
 }
 
 /* ==========================================
