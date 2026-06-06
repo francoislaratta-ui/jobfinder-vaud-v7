@@ -1595,7 +1595,7 @@ return Math.max(0, Number(score.toFixed(2)));
 
 }
 
-async function discoverGenericOfferUrl(offer, domain){
+aasync function discoverGenericOfferUrl(offer, domain){
 
 const searchPages =
 getDiscoverySearchPages(domain);
@@ -1685,42 +1685,6 @@ error.message
 }
 
 }
-
-if(bestUrl && bestScore >= 0.65 && !isBadDiscoveryUrl(bestUrl)){
-
-return {
-success:true,
-discoveredUrl:bestUrl,
-score:bestScore,
-fallback:false
-};
-
-}
-
-if(fallbackUrl){
-
-return {
-success:true,
-message:"Aucune annonce précise trouvée, retour vers la page officielle des offres",
-discoveredUrl:fallbackUrl,
-score:0.25,
-fallback:true
-};
-
-}
-
-return {
-success:false,
-message:"Aucune annonce réelle trouvée",
-discoveredUrl:"",
-score:bestScore,
-fallback:false
-};
-
-}
-
-
-}catch(error){
 
 if(bestUrl && bestScore >= 0.65 && !isBadDiscoveryUrl(bestUrl)){
 
