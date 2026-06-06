@@ -1276,28 +1276,63 @@ offer.company || "";
 const location =
 offer.location || "";
 
-const query =
-`"${title}" "${company}" ${location} ${domain} emploi poste recrutement`;
+const keywords =
+`${title} ${company} ${location}`;
 
-const searchUrl =
-"https://duckduckgo.com/html/?q=" + encodeURIComponent(query);
+const searchPagesMap = {
+"vd.ch":[
+"https://www.vd.ch/etat-droit-finances/etat-employeur/offres-demploi"
+],
+"lausanne.ch":[
+"https://www.lausanne.ch/portrait/travailler-pour-la-ville/offres-emploi.html"
+],
+"chuv.ch":[
+"https://www.chuv.ch/fr/chuv-home/carrieres/emplois"
+],
+"epfl.ch":[
+"https://www.epfl.ch/about/working/fr/offres-emploi/"
+],
+"migros.ch":[
+"https://jobs.migros.ch/fr"
+],
+"retraitespopulaires.ch":[
+"https://www.retraitespopulaires.ch/emploi"
+],
+"jobup.ch":[
+"https://www.jobup.ch/fr/emploi/"
+],
+"indeed.com":[
+"https://ch.indeed.com/jobs"
+],
+"jobscout24.ch":[
+"https://www.jobscout24.ch/fr/jobs/"
+],
+"linkedin.com":[
+"https://www.linkedin.com/jobs/"
+]
+};
+
+const searchPages =
+searchPagesMap[domain] || [];
 
 let bestUrl = "";
 let bestScore = 0;
 
+for(const pageUrl of searchPages){
+
 try{
 
 const html =
-await fetchExternalText(searchUrl);
+await fetchExternalText(pageUrl);
 
-console.log("SEARCH URL:", searchUrl);
+console.log("DIRECT SEARCH PAGE:", pageUrl);
 console.log("HTML LENGTH:", html ? html.length : 0);
 
 const links =
-extractLinksFromHtml(html, searchUrl);
+extractLinksFromHtml(html, pageUrl);
 
-console.log("LINKS FOUND:", links.length);
-console.log("FIRST LINKS:", links.slice(0,10));
+console.log("DIRECT LINKS FOUND:", links.length);
+console.log("DIRECT FIRST LINKS:", links.slice(0,10));
 
 const candidateLinks =
 links.filter(link => {
@@ -1306,17 +1341,13 @@ const value =
 String(link).toLowerCase();
 
 return value.includes(domain);
-!isGenericSourceUrl(value);
 
 });
 
 for(const link of candidateLinks){
 
 const score =
-scoreDiscoveryMatch(
-`${title} ${company} ${location}`,
-link
-);
+scoreDiscoveryMatch(keywords, link);
 
 if(score > bestScore){
 
@@ -1330,9 +1361,12 @@ bestUrl = link;
 }catch(error){
 
 console.warn(
-"Découverte URL impossible :",
+"Découverte directe impossible :",
+domain,
 error.message
 );
+
+}
 
 }
 
@@ -1341,6 +1375,14 @@ if(bestUrl && bestScore >= 0.3){
 return {
 success:true,
 discoveredUrl:bestUrl,
+score:bestScore
+};
+
+}
+
+return {
+success:false,
+discoveredUrl:"",
 score:bestScore
 };
 
