@@ -1317,56 +1317,11 @@ setStorage(
 STORAGE_KEYS.settings,
 settings
 );
-
 }
 
-async function enrichOffersDescriptions(
-try{
-
-const response =
-await fetch("/api/extract-description", {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify({
-url: offer.offerUrl,
-source: offer.source || ""
-})
-});
-
-if(!response.ok){
-throw new Error("HTTP " + response.status);
-}
-
-const data =
-await response.json();
-
-enriched.push({
-...offer,
-description:
-data.description ||
-offer.description ||
-"Descriptif non disponible."
-});
-
-}catch(error){
-
-console.warn(
-"Description non rapatriée pour :",
-offer.title,
-error
-);
-
-enriched.push(offer);
-
-}
-
-}
-
-return enriched;
-
-}
+/* ==========================================
+VALIDATION URL SOURCE
+========================================== */
 
 function isRealOfferUrlClient(url){
 
@@ -1403,6 +1358,10 @@ cleanUrl.includes("/job/")
 
 }
 
+/* ==========================================
+RAPATRIEMENT DESCRIPTIFS
+========================================== */
+
 async function enrichOffersDescriptions(list){
 
 if(!Array.isArray(list)){
@@ -1421,10 +1380,8 @@ const realOfferUrl =
 isRealOfferUrlClient(offer.offerUrl);
 
 if(!descriptionMissing || !realOfferUrl){
-
 enrichedOffers.push(offer);
 continue;
-
 }
 
 try{
@@ -1474,13 +1431,14 @@ return enrichedOffers;
 
 }
 
+/* ==========================================
+CHARGEMENT OFFRES
+========================================== */
+
 async function loadOffers(){
 
 try{
-const response =
-await fetch("./offers.json?v=" + APP_VERSION);
 
-try{
 const response =
 await fetch("./offers.json?v=" + APP_VERSION);
 
@@ -1579,7 +1537,9 @@ updateBestMatch();
 updateNotifications();
 updateStatistics();
 
-}catch(error){
+}
+catch(error){
+
 console.error(
 "Erreur chargement offres :",
 error
@@ -1600,8 +1560,11 @@ Ouvre la console du navigateur pour voir le détail technique.
 </div>
 `;
 }
+
 }
+
 }
+
 
 /* ==========================================
 ACTUALISER OFFRES V14.3.0
