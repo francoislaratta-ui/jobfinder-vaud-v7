@@ -1260,27 +1260,38 @@ return [...new Set(links)];
 
 }
 
-async function discoverVdOfferUrl(offer){
+/* ==========================================
+DECOUVERTE URL REELLE ANNONCE V14.3.2
+Recherche ciblée title + company + location
+========================================== */
+
+async function discoverGenericOfferUrl(offer, domain){
 
 const title =
 offer.title || "";
 
-const searchPages = [
-"https://www.vd.ch/etat-droit-finances/etat-employeur/offres-demploi"
-];
+const company =
+offer.company || "";
+
+const location =
+offer.location || "";
+
+const query =
+`${title} ${company} ${location} site:${domain} emploi job recrutement`;
+
+const searchUrl =
+"https://duckduckgo.com/html/?q=" + encodeURIComponent(query);
 
 let bestUrl = "";
 let bestScore = 0;
 
-for(const pageUrl of searchPages){
-
 try{
 
 const html =
-await fetchExternalText(pageUrl);
+await fetchExternalText(searchUrl);
 
 const links =
-extractLinksFromHtml(html, pageUrl);
+extractLinksFromHtml(html, searchUrl);
 
 const candidateLinks =
 links.filter(link => {
@@ -1288,25 +1299,22 @@ links.filter(link => {
 const value =
 String(link).toLowerCase();
 
-return value.includes("vd.ch") &&
-(
-value.includes("offres-demploi") ||
-value.includes("emploi") ||
-value.includes("postuler") ||
-value.includes("job") ||
-value.includes("jobs")
-);
+return value.includes(domain) &&
+!isGenericSourceUrl(value);
 
 });
 
 for(const link of candidateLinks){
 
-const candidateScore =
-scoreDiscoveryMatch(title, link);
+const score =
+scoreDiscoveryMatch(
+`${title} ${company} ${location}`,
+link
+);
 
-if(candidateScore > bestScore){
+if(score > bestScore){
 
-bestScore = candidateScore;
+bestScore = score;
 bestUrl = link;
 
 }
@@ -1316,15 +1324,13 @@ bestUrl = link;
 }catch(error){
 
 console.warn(
-"Découverte VD impossible :",
+"Découverte URL impossible :",
 error.message
 );
 
 }
 
-}
-
-if(bestUrl && bestScore >= 0.5){
+if(bestUrl && bestScore >= 0.3){
 
 return {
 success:true,
@@ -1342,6 +1348,46 @@ score:bestScore
 
 }
 
+async function discoverVdOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"vd.ch");
+}
+
+async function discoverLausanneOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"lausanne.ch");
+}
+
+async function discoverChuvOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"chuv.ch");
+}
+
+async function discoverEpflOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"epfl.ch");
+}
+
+async function discoverMigrosOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"migros.ch");
+}
+
+async function discoverRetraitesOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"retraitespopulaires.ch");
+}
+
+async function discoverJobupOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"jobup.ch");
+}
+
+async function discoverIndeedOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"indeed.com");
+}
+
+async function discoverJobScoutOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"jobscout24.ch");
+}
+
+async function discoverLinkedInOfferUrl(offer){
+return await discoverGenericOfferUrl(offer,"linkedin.com");
+}
+
 async function discoverRealOfferUrl(offer){
 
 const originalUrl =
@@ -1350,12 +1396,39 @@ offer.offerUrl || offer.url || "";
 const source =
 getEmployerSource(originalUrl);
 
-if(source === "vd"){
+switch(source){
 
+case "vd":
 return await discoverVdOfferUrl(offer);
 
-}
+case "lausanne":
+return await discoverLausanneOfferUrl(offer);
 
+case "chuv":
+return await discoverChuvOfferUrl(offer);
+
+case "epfl":
+return await discoverEpflOfferUrl(offer);
+
+case "migros":
+return await discoverMigrosOfferUrl(offer);
+
+case "retraites":
+return await discoverRetraitesOfferUrl(offer);
+
+case "jobup":
+return await discoverJobupOfferUrl(offer);
+
+case "indeed":
+return await discoverIndeedOfferUrl(offer);
+
+case "jobscout24":
+return await discoverJobScoutOfferUrl(offer);
+
+case "linkedin":
+return await discoverLinkedInOfferUrl(offer);
+
+default:
 return {
 success:false,
 discoveredUrl:"",
@@ -1364,8 +1437,11 @@ score:0
 
 }
 
+}
+
 /* ==========================================
-DECOUVERTE URL REELLE ANNONCE
+DECOUVERTE URL REELLE ANNONCE V14.3.2
+Recherche par title + company + location
 ========================================== */
 
 app.post(
@@ -1432,6 +1508,7 @@ changed:true,
 score:discovery.score,
 company:offer.company || "",
 title:offer.title || "",
+location:offer.location || "",
 source:getEmployerSource(originalUrl)
 });
 
@@ -1439,13 +1516,14 @@ source:getEmployerSource(originalUrl)
 
 return res.json({
 success:false,
-message:"Aucune URL réelle trouvée pour cette source",
+message:"Aucune URL réelle trouvée",
 originalUrl,
 discoveredUrl:"",
 changed:false,
 score:discovery.score || 0,
 company:offer.company || "",
 title:offer.title || "",
+location:offer.location || "",
 source:getEmployerSource(originalUrl)
 });
 
@@ -1462,8 +1540,9 @@ error:error.message
 }
 );
 
+
 /* ==========================================
-TEST DECOUVERTE URL GET TEMPORAIRE
+TEST DECOUVERTE URL GET TEMPORAIRE V14.3.2
 ========================================== */
 
 app.get(
@@ -1473,23 +1552,25 @@ async (req,res)=>{
 try{
 
 const offer = {
-title:req.query.title || "Gestionnaire",
+title:req.query.title || "Gestionnaire de dossiers",
 company:req.query.company || "Etat de Vaud",
+location:req.query.location || "Lausanne",
 offerUrl:req.query.url || "https://www.vd.ch"
 };
 
 const discovery =
-await discoverRealOfferUrl(offer);
+await discoverRealOfferUrlBySearch(offer);
 
 res.json({
 success:discovery.success,
-message:discovery.success ? "URL réelle trouvée" : "Aucune URL réelle trouvée pour cette source",
+message:discovery.success ? "URL réelle trouvée par recherche ciblée" : "Aucune URL réelle trouvée",
 originalUrl:offer.offerUrl,
 discoveredUrl:discovery.discoveredUrl || "",
 changed:!!discovery.discoveredUrl,
 score:discovery.score || 0,
 company:offer.company,
 title:offer.title,
+location:offer.location,
 source:getEmployerSource(offer.offerUrl)
 });
 
@@ -1505,6 +1586,7 @@ error:error.message
 
 }
 );
+
 
 /* ==========================================
 GESTION ERREURS
