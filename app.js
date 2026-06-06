@@ -1697,14 +1697,6 @@ function createOfferCard(offer){
 
 const card =
 document.createElement("div");
-card.className = "offer-card";
-
-const details =
-calculateMatchDetails(offer);
-
-const match =
-details.score;
-
 
 card.className = "offer-card";
 
@@ -1719,7 +1711,6 @@ getMatchClass(match);
 
 const badge =
 getMatchBadge(match);
-
 card.innerHTML = `
 <div class="offer-title">
 💼 ${escapeHTML(offer.title)}
