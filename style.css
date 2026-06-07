@@ -229,8 +229,6 @@ padding:10px;
 
 background:#111;
 
-}
-
 border-bottom:
 1px solid rgba(
 194,
@@ -281,6 +279,52 @@ transform:scale(0.98);
 
 }
 
+.refresh-nav-btn{
+
+margin-left:auto;
+
+border:
+1px solid rgba(
+0,
+170,
+255,
+0.65
+) !important;
+
+background:
+linear-gradient(
+135deg,
+rgba(0,170,255,0.16),
+rgba(0,80,160,0.10)
+) !important;
+
+color:#38bdf8 !important;
+
+box-shadow:
+0 0 18px rgba(
+0,
+170,
+255,
+0.22
+);
+
+}
+
+.refresh-nav-btn:hover{
+
+background:#0284c7 !important;
+
+color:white !important;
+
+}
+
+.refresh-nav-btn:disabled{
+
+opacity:0.75;
+
+cursor:wait;
+
+}
 /* ==========================================
 SECTIONS
 ========================================== */

@@ -893,6 +893,47 @@ openTab(tab);
 });
 });
 
+/* BOUTON ACTUALISER NAVIGATION */
+
+const refreshOffersBtn =
+document.getElementById("refreshOffersBtn");
+
+if(refreshOffersBtn){
+refreshOffersBtn.addEventListener("click", async () => {
+
+refreshOffersBtn.disabled = true;
+
+refreshOffersBtn.innerHTML = `
+🔄 Actualisation des offres...<br>
+⏳ Veuillez patienter...
+`;
+
+try{
+
+await refreshOffers();
+
+updateDashboard();
+updateBestMatch();
+updateStatistics();
+updateApplicationCounters();
+
+}catch(error){
+
+console.error("Erreur actualisation manuelle :", error);
+
+}finally{
+
+refreshOffersBtn.disabled = false;
+
+refreshOffersBtn.innerHTML = `
+🔄 Actualiser
+`;
+
+}
+
+});
+}
+
 /* CARTES DASHBOARD CLIQUABLES */
 
 document.querySelectorAll(".clickable-card").forEach(card => {
@@ -1035,7 +1076,6 @@ checkbox.addEventListener("change", applyFilters);
 });
 
 }
-
 /* ==========================================
 MATCH IA - DETAILS
 ========================================== */
