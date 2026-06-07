@@ -2015,7 +2015,7 @@ const searchUrl =
 "https://www.lausanne.ch/officiel/travailler-a-la-ville/nous-rejoindre/offres-emploi.html";
 
 const fallbackUrl =
-"https://www.lausanne.ch/officiel/travailler-a-la-ville/nous-rejoindre/offres-emploi.html";
+searchUrl;
 
 const title =
 offer.title || offer.jobTitle || "";
@@ -2030,6 +2030,9 @@ String(value || "")
 .trim();
 
 try{
+
+const html =
+await fetchExternalText(searchUrl);
 
 const links =
 extractLinksFromHtml(html, searchUrl);
@@ -2089,10 +2092,8 @@ score += 0.1;
 }
 
 if(score > bestScore){
-
 bestScore = score;
 bestUrl = link;
-
 }
 
 }catch(error){
@@ -2222,193 +2223,6 @@ score:0
 }
 
 /* ==========================================
-DECOUVERTE URL REELLE ANNONCE V14.3.2
-Recherche par title + company + location
-========================================== */
-
-app.post(
-"/api/discover-offer-url",
-async (req,res)=>{
-
-try{
-
-const offer =
-req.body?.offer || {};
-
-const originalUrl =
-offer.offerUrl || offer.url || "";
-
-if(!originalUrl){
-
-return res.json({
-success:false,
-message:"URL source absente",
-originalUrl:"",
-discoveredUrl:"",
-changed:false
-});
-
-}
-
-if(isRealOfferUrl(originalUrl)){
-
-return res.json({
-success:true,
-message:"URL déjà réelle",
-originalUrl,
-discoveredUrl:originalUrl,
-changed:false,
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-if(!isGenericSourceUrl(originalUrl)){
-
-return res.json({
-success:false,
-message:"URL non générique mais non reconnue comme annonce réelle",
-originalUrl,
-discoveredUrl:"",
-changed:false,
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-const discovery =
-await discoverRealOfferUrl(offer);
-
-if(discovery.success && discovery.discoveredUrl){
-
-return res.json({
-success:true,
-message:"URL réelle trouvée",
-originalUrl,
-discoveredUrl:discovery.discoveredUrl,
-changed:true,
-score:discovery.score,
-company:offer.company || "",
-title:offer.title || "",
-location:offer.location || "",
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-return res.json({
-success:false,
-message:"Aucune URL réelle trouvée",
-originalUrl,
-discoveredUrl:"",
-changed:false,
-score:discovery.score || 0,
-company:offer.company || "",
-title:offer.title || "",
-location:offer.location || "",
-source:getEmployerSource(originalUrl)
-});
-
-}catch(error){
-
-res.status(500).json({
-success:false,
-message:"Erreur discover-offer-url",
-error:error.message
-});
-
-}
-
-}
-);
-
-
-/* ==========================================
-TEST DECOUVERTE URL GET TEMPORAIRE V14.3.2
-========================================== */
-
-app.get(
-"/api/test-discover-offer-url",
-async (req,res)=>{
-
-try{
-
-const offer = {
-title:req.query.title || "Gestionnaire de dossiers",
-company:req.query.company || "Etat de Vaud",
-location:req.query.location || "Lausanne",
-offerUrl:req.query.url || "https://www.vd.ch"
-};
-
-const discovery =
-await discoverRealOfferUrl(offer);
-
-res.json({
-success:discovery.success,
-message:discovery.success ? "URL réelle trouvée par recherche ciblée" : "Aucune URL réelle trouvée",
-originalUrl:offer.offerUrl,
-discoveredUrl:discovery.discoveredUrl || "",
-changed:!!discovery.discoveredUrl,
-score:discovery.score || 0,
-company:offer.company,
-title:offer.title,
-location:offer.location,
-source:getEmployerSource(offer.offerUrl)
-});
-
-}catch(error){
-
-res.status(500).json({
-success:false,
-message:"Erreur test-discover-offer-url",
-error:error.message
-});
-
-}
-
-}
-);
-
-
-/* ==========================================
-GESTION ERREURS
-========================================== */
-
-app.use(
-(req,res)=>{
-
-res.status(404)
-.json({
-
-success:false,
-
-message:
-"Route introuvable"
-
-});
-
-}
-);
-
-app.use(
-(error,req,res,next)=>{
-
-console.error(error);
-
-res.status(500)
-.json({
-
-success:false,
-
-message:
-"Erreur interne serveur"
-
-});
-
-}
-);
-
-/* ==========================================
 DEMARRAGE SERVEUR
 ========================================== */
 
@@ -2421,7 +2235,7 @@ console.log(
 );
 
 console.log(
-"JOB FINDER VAUD V14.3.1 PREMIUM IA"
+"JOB FINDER VAUD V14.5 PREMIUM IA"
 );
 
 console.log(
