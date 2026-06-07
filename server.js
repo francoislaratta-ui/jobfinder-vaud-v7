@@ -2168,7 +2168,30 @@ return await discoverGenericOfferUrl(offer,"jobscout24.ch");
 }
 
 async function discoverLinkedInOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"linkedin.com");
+
+const discovery =
+await discoverGenericOfferUrl(offer,"linkedin.com");
+
+const url =
+String(discovery?.discoveredUrl || "");
+
+const match =
+url.match(/[?&]currentJobId=([0-9]+)/i);
+
+if(match && match[1]){
+
+return {
+...discovery,
+success:true,
+discoveredUrl:`https://www.linkedin.com/jobs/view/${match[1]}`,
+changed:true,
+score:Math.max(Number(discovery?.score || 0),0.85)
+};
+
+}
+
+return discovery;
+
 }
 
 async function discoverRealOfferUrl(offer){
