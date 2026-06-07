@@ -3240,33 +3240,66 @@ NOTIFICATIONS
 ========================================== */
 
 function updateNotifications(){
-safeSetText(
-document.getElementById("newOffersNotifications"),
+
+const sourceCounts = {};
+
+offers.forEach(offer => {
+const source =
+offer.source || offer.company || "Autre";
+
+sourceCounts[source] =
+(sourceCounts[source] || 0) + 1;
+});
+
+const sourceLines =
+Object.entries(sourceCounts)
+.slice(0, 6)
+.map(([source,count]) => {
+return `
+<div class="alert-source-line">
+<span>• ${escapeHTML(source)}</span>
+<span>: ${count}</span>
+</div>
+`;
+})
+.join("");
+
+const newOffersBox =
+document.getElementById("newOffersNotifications");
+
+if(newOffersBox){
+newOffersBox.innerHTML =
 offers.length
-? offers.length + " offres"
-: "Aucune nouvelle offre"
-);
+? `
+<div class="alert-line">
+• ${offers.length} nouvelles offres
+</div>
+${sourceLines}
+`
+: "Aucune nouvelle offre";
+}
 
 safeSetText(
 document.getElementById("favoritesNotifications"),
 favorites.length
-? favorites.length + " favoris"
-: "Aucun favori"
+? "• " + favorites.length + " favoris mis à jour"
+: "Aucun favori suivi"
 );
 
 safeSetText(
 document.getElementById("applicationsNotifications"),
 applications.length
-? applications.length + " candidatures"
+? "• " + applications.length + " candidatures à suivre"
 : "Aucune relance"
 );
 
 safeSetText(
 document.getElementById("aiNotifications"),
 offers.length
-? "IA active V" + APP_VERSION
+? "• " + offers.filter(offer => Number(offer.match || offer.score || 0) >= 90).length + " offres avec Match > 90%"
 : "Aucune alerte IA"
 );
+
 }
 
 /* ==========================================
