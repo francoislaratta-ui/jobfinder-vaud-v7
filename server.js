@@ -2016,17 +2016,28 @@ String(value || "")
 
 try{
 
-const html =
-await fetchExternalText(searchUrl);
-
 const links =
 extractLinksFromHtml(html, searchUrl);
 
+const raw =
+String(html || "");
+
+const directMatches =
+raw.match(/detail-offre-emploi\/pj[0-9]+\.html/g) || [];
+
+const directLinks =
+directMatches.map(path =>
+new URL(path, searchUrl).href
+);
+
 const candidates =
-[...new Set(links)]
+[...new Set([
+...links,
+...directLinks
+])]
 .filter(link =>
 String(link || "").includes("detail-offre-emploi/pj") &&
-String(link || "").endsWith(".html")
+String(link || "").includes(".html")
 );
 
 console.log("V14.5 LAUSANNE CANDIDATES:", candidates.length);
