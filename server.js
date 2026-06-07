@@ -1810,7 +1810,91 @@ fallback:false
 }
 
 async function discoverVdOfferUrl(offer){
+
+const title =
+offer.title || offer.jobTitle || "";
+
+const location =
+offer.location || "";
+
+const keyword =
+encodeURIComponent(`"${title}"`);
+
+const oracleUrl =
+`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations,requisitionList.secondaryLocations,flexFieldsFacet.values,requisitionList.requisitionFlexFields&finder=findReqs;siteNumber=CX_1,facetsList=LOCATIONS%3BWORK_LOCATIONS%3BWORKPLACE_TYPES%3BTITLES%3BCATEGORIES%3BORGANIZATIONS%3BPOSTING_DATES%3BFLEX_FIELDS,limit=25,keyword=${keyword},sortBy=RELEVANCY`;
+
+try{
+
+const jsonText =
+await fetchExternalText(oracleUrl);
+
+const data =
+JSON.parse(jsonText);
+
+const requisitions =
+data?.items?.[0]?.requisitionList || [];
+
+console.log("V14.5 VD ORACLE JOBS FOUND:", requisitions.length);
+
+let bestJob = null;
+let bestScore = 0;
+
+for(const job of requisitions){
+
+const jobTitle =
+job.Title || "";
+
+const jobLocation =
+job.PrimaryLocation || "";
+
+const shortDescription =
+job.ShortDescriptionStr || "";
+
+let score = 0;
+
+score += textSimilarityScore(jobTitle, title) * 0.7;
+score += textSimilarityScore(jobLocation, location) * 0.2;
+score += textSimilarityScore(shortDescription, offer.company || "Etat de Vaud") * 0.1;
+
+if(score > bestScore){
+
+bestScore = score;
+bestJob = job;
+
+}
+
+}
+
+if(bestJob && bestJob.Id){
+
+const discoveredUrl =
+`https://offres-emploi.vd.ch/#fr/sites/CX_1/job/${bestJob.Id}`;
+
+return {
+success:true,
+message:"Annonce VD trouvée via Oracle Recruiting Cloud",
+discoveredUrl,
+score:bestScore,
+fallback:false,
+oracleId:bestJob.Id,
+title:bestJob.Title || "",
+location:bestJob.PrimaryLocation || "",
+description:bestJob.ShortDescriptionStr || ""
+};
+
+}
+
+}catch(error){
+
+console.warn(
+"Découverte VD Oracle impossible :",
+error.message
+);
+
+}
+
 return await discoverGenericOfferUrl(offer,"vd.ch");
+
 }
 
 async function discoverLausanneOfferUrl(offer){
