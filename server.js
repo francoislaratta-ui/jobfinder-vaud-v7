@@ -1918,9 +1918,31 @@ job.ShortDescriptionStr || "";
 
 let score = 0;
 
-score += scoreTextMatch(jobTitle, title) * 0.7;
-score += scoreTextMatch(jobLocation, location) * 0.2;
-score += scoreTextMatch(shortDescription, offer.company || "Etat de Vaud") * 0.1;
+const cleanA =
+normalizeText(jobTitle + " " + jobLocation + " " + shortDescription);
+
+const cleanTitle =
+normalizeText(title);
+
+const cleanLocation =
+normalizeText(location);
+
+const cleanCompany =
+normalizeText(offer.company || "Etat de Vaud");
+
+if(cleanTitle && cleanA.includes(cleanTitle)){
+score += 0.7;
+}
+
+if(cleanLocation && cleanA.includes(cleanLocation)){
+score += 0.2;
+}
+
+if(cleanCompany && cleanA.includes(cleanCompany)){
+score += 0.1;
+}
+
+score += Number(job.Relevancy || 0) / 100;
 
 if(score > bestScore){
 
