@@ -1370,7 +1370,6 @@ Recherche précise + fallback carrière fiable
 
 function getDiscoverySearchPages(domain){
 
-
 const searchPagesMap = {
 "vd.ch":[
 "https://offres-emploi.vd.ch/#fr/sites/CX_1"
@@ -1604,8 +1603,58 @@ getDiscoverySearchPages(domain);
 const fallbackUrl =
 getDiscoveryFallbackUrl(domain);
 
+const isVd =
+domain === "vd.ch";
+
+const allowedDomains =
+isVd
+? [
+"vd.ch",
+"offres-emploi.vd.ch",
+"oraclecloud.com",
+"oraclecloud.eu"
+]
+: [domain];
+
 let bestUrl = "";
 let bestScore = 0;
+
+function extractExtraUrlsFromHtml(html, baseUrl){
+
+const results = [];
+
+const raw =
+String(html || "");
+
+const absoluteMatches =
+raw.match(/https?:\/\/[^"' <>()\\]+/g) || [];
+
+for(const url of absoluteMatches){
+results.push(url);
+}
+
+const relativeMatches =
+raw.match(/["'](\/[^"']+)["']/g) || [];
+
+for(const item of relativeMatches){
+
+try{
+
+const clean =
+item.replace(/^["']|["']$/g,"");
+
+const absolute =
+new URL(clean, baseUrl).href;
+
+results.push(absolute);
+
+}catch(error){}
+
+}
+
+return [...new Set(results)];
+
+}
 
 for(const pageUrl of searchPages){
 
@@ -1614,20 +1663,26 @@ try{
 const html =
 await fetchExternalText(pageUrl);
 
-console.log("V14.4 SEARCH PAGE:", pageUrl);
-console.log("V14.4 HTML LENGTH:", html ? html.length : 0);
+console.log("V14.4.3 SEARCH PAGE:", pageUrl);
+console.log("V14.4.3 HTML LENGTH:", html ? html.length : 0);
 
 const links =
-extractLinksFromHtml(html, pageUrl);
+[
+...extractLinksFromHtml(html, pageUrl),
+...extractExtraUrlsFromHtml(html, pageUrl)
+];
 
-console.log("V14.4 LINKS FOUND:", links.length);
-console.log("V14.4 FIRST LINKS:", links.slice(0,10));
+const uniqueLinks =
+[...new Set(links)];
+
+console.log("V14.4.3 LINKS FOUND:", uniqueLinks.length);
+console.log("V14.4.3 FIRST LINKS:", uniqueLinks.slice(0,10));
 
 const candidateLinks =
-links.filter(link => {
+uniqueLinks.filter(link => {
 
 const value =
-String(link).toLowerCase();
+String(link || "").toLowerCase();
 
 const blockedTechnicalLinks = [
 ".css",
@@ -1642,7 +1697,13 @@ const blockedTechnicalLinks = [
 "typo3conf",
 "typo3temp",
 "assets",
-"resources/public"
+"resources/public",
+"fonts",
+"analytics",
+"matomo",
+"cookie",
+"privacy",
+"mentions-legales"
 ];
 
 const isTechnicalLink =
@@ -1650,16 +1711,36 @@ blockedTechnicalLinks.some(pattern =>
 value.includes(pattern)
 );
 
+const isAllowedDomain =
+allowedDomains.some(allowed =>
+value.includes(allowed)
+);
+
+const looksLikeJobUrl =
+value.includes("job") ||
+value.includes("emploi") ||
+value.includes("offer") ||
+value.includes("offre") ||
+value.includes("requisition") ||
+value.includes("requisitions") ||
+value.includes("posting") ||
+value.includes("career") ||
+value.includes("cx_1");
+
 return (
-value.includes(domain) &&
+isAllowedDomain &&
 !isTechnicalLink &&
-!isBadDiscoveryUrl(value)
+!isBadDiscoveryUrl(value) &&
+(
+!isVd ||
+looksLikeJobUrl
+)
 );
 
 });
 
-console.log("V14.4 CANDIDATE LINKS:", candidateLinks.length);
-console.log("V14.4 FIRST CANDIDATES:", candidateLinks.slice(0,10));
+console.log("V14.4.3 CANDIDATE LINKS:", candidateLinks.length);
+console.log("V14.4.3 FIRST CANDIDATES:", candidateLinks.slice(0,20));
 
 for(const link of candidateLinks){
 
@@ -1678,7 +1759,7 @@ bestUrl = link;
 }catch(error){
 
 console.warn(
-"Découverte V14.4 impossible :",
+"Découverte V14.4.3 impossible :",
 domain,
 error.message
 );
@@ -1691,6 +1772,7 @@ if(bestUrl && bestScore >= 0.65 && !isBadDiscoveryUrl(bestUrl)){
 
 return {
 success:true,
+message:"URL réelle trouvée par recherche ciblée V14.4.3",
 discoveredUrl:bestUrl,
 score:bestScore,
 fallback:false
