@@ -1918,9 +1918,9 @@ job.ShortDescriptionStr || "";
 
 let score = 0;
 
-score += textSimilarityScore(jobTitle, title) * 0.7;
-score += textSimilarityScore(jobLocation, location) * 0.2;
-score += textSimilarityScore(shortDescription, offer.company || "Etat de Vaud") * 0.1;
+score += scoreTextMatch(jobTitle, title) * 0.7;
+score += scoreTextMatch(jobLocation, location) * 0.2;
+score += scoreTextMatch(shortDescription, offer.company || "Etat de Vaud") * 0.1;
 
 if(score > bestScore){
 
