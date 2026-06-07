@@ -373,41 +373,123 @@ KPI CARDS
 
 .kpi-card{
 
-background:var(--card);
+background:
+linear-gradient(
+135deg,
+rgba(124,58,237,0.20),
+rgba(15,23,42,0.96) 45%,
+rgba(2,6,23,0.98)
+);
 
-padding:15px;
+padding:22px 15px;
 
-border-radius:var(--radius);
+border-radius:18px;
 
 text-align:center;
 
 border:
 1px solid rgba(
-194,
 139,
-20,
-0.10
+92,
+246,
+0.32
 );
 
-transition:0.2s;
+transition:0.25s ease;
+
+box-shadow:
+0 10px 26px rgba(
+0,
+0,
+0,
+0.28
+);
+
+}
+
+.kpi-card:nth-child(1){
+
+background:
+linear-gradient(
+135deg,
+rgba(37,99,235,0.34),
+rgba(15,23,42,0.96) 50%,
+rgba(2,6,23,0.98)
+);
+
+border-color:rgba(59,130,246,0.38);
+
+}
+
+.kpi-card:nth-child(2){
+
+background:
+linear-gradient(
+135deg,
+rgba(22,163,74,0.34),
+rgba(15,23,42,0.96) 50%,
+rgba(2,6,23,0.98)
+);
+
+border-color:rgba(34,197,94,0.38);
+
+}
+
+.kpi-card:nth-child(3){
+
+background:
+linear-gradient(
+135deg,
+rgba(124,58,237,0.36),
+rgba(15,23,42,0.96) 50%,
+rgba(2,6,23,0.98)
+);
+
+border-color:rgba(168,85,247,0.42);
+
+}
+
+.kpi-card:nth-child(4){
+
+background:
+linear-gradient(
+135deg,
+rgba(194,139,20,0.36),
+rgba(15,23,42,0.96) 50%,
+rgba(2,6,23,0.98)
+);
+
+border-color:rgba(245,158,11,0.42);
 
 }
 
 .kpi-value{
 
-font-size:28px;
+font-size:38px;
 
 font-weight:800;
 
-color:var(--gold);
+color:#f8fafc;
+
+line-height:1.1;
+
+text-shadow:
+0 3px 14px rgba(
+0,
+0,
+0,
+0.45
+);
 
 }
 
 .kpi-label{
 
-font-size:13px;
+font-size:14px;
 
-margin-top:6px;
+font-weight:700;
+
+margin-top:10px;
 
 color:var(--soft);
 
@@ -429,22 +511,21 @@ transform:translateY(-3px);
 
 border-color:
 rgba(
-194,
-139,
-20,
-0.50
+168,
+85,
+247,
+0.60
 );
 
 box-shadow:
-0 6px 16px rgba(
-194,
-139,
-20,
-0.20
+0 12px 28px rgba(
+124,
+58,
+237,
+0.26
 );
 
 }
-
 /* ==========================================
 OBJECTIFS
 ========================================== */
