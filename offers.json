@@ -682,20 +682,39 @@
   },
   {
   "id": "offer039",
-  "title": "Gestionnaire de dossiers",
+  "title": "AI Business Specialist",
   "company": "LinkedIn Test",
   "address": "",
   "location": "Lausanne",
   "rate": "100%",
   "contract": "CDI",
-  "sector": "Administration",
-  "salary": "CHF 95'000",
+  "sector": "Intelligence Artificielle",
+  "salary": "CHF 110'000",
   "source": "LinkedIn",
   "offerUrl": "https://www.linkedin.com/jobs/view/4424267126",
   "externalId": "4424267126",
   "url": "https://www.linkedin.com/jobs/view/4424267126",
   "date": "Aujourd'hui",
-  "language": "Français"
+  "language": "Français",
+  "description": "Nous recherchons un AI Business Specialist chargé d'accompagner les équipes métier dans l'intégration de solutions d'intelligence artificielle. Vous analysez les besoins, formalisez les cas d'usage, coordonnez les projets IA et accompagnez les utilisateurs dans l'adoption des nouveaux outils."
+},
+{
+  "id": "offer040",
+  "title": "Gestionnaire de dossiers",
+  "company": "Indeed Test",
+  "address": "",
+  "location": "Lausanne",
+  "rate": "80% - 100%",
+  "contract": "CDI",
+  "sector": "Administration",
+  "salary": "CHF 88'000",
+  "source": "Indeed",
+  "offerUrl": "https://ch.indeed.com/viewjob?jk=test0039indeed",
+  "externalId": "test0039indeed",
+  "url": "https://ch.indeed.com/viewjob?jk=test0039indeed",
+  "date": "Aujourd'hui",
+  "language": "Français",
+  "description": "Nous recherchons une personne organisée pour gérer des dossiers administratifs, assurer le suivi des demandes, préparer les documents nécessaires et collaborer avec différents services. Maîtrise du français, rigueur, sens du service et bonnes compétences informatiques souhaités."
 }
 
 ]
