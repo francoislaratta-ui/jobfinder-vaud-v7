@@ -1995,7 +1995,121 @@ return await discoverGenericOfferUrl(offer,"vd.ch");
 }
 
 async function discoverLausanneOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"lausanne.ch");
+
+const searchUrl =
+"https://www.lausanne.ch/officiel/travailler-a-la-ville/nous-rejoindre/offres-emploi.html";
+
+const fallbackUrl =
+"https://www.lausanne.ch/officiel/travailler-a-la-ville/nous-rejoindre/offres-emploi.html";
+
+const title =
+offer.title || offer.jobTitle || "";
+
+const cleanTextLocal = value =>
+String(value || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g,"")
+.replace(/[^a-z0-9\s]/g," ")
+.replace(/\s+/g," ")
+.trim();
+
+try{
+
+const html =
+await fetchExternalText(searchUrl);
+
+const links =
+extractLinksFromHtml(html, searchUrl);
+
+const candidates =
+[...new Set(links)]
+.filter(link =>
+String(link || "").includes("detail-offre-emploi/pj") &&
+String(link || "").endsWith(".html")
+);
+
+console.log("V14.5 LAUSANNE CANDIDATES:", candidates.length);
+console.log("V14.5 LAUSANNE FIRST CANDIDATES:", candidates.slice(0,10));
+
+let bestUrl = "";
+let bestScore = 0;
+
+for(const link of candidates){
+
+try{
+
+const detailHtml =
+await fetchExternalText(link);
+
+const cleanPage =
+cleanTextLocal(detailHtml);
+
+const cleanTitle =
+cleanTextLocal(title);
+
+let score = 0;
+
+if(cleanTitle && cleanPage.includes(cleanTitle)){
+score += 0.8;
+}
+
+if(cleanPage.includes("lausanne")){
+score += 0.1;
+}
+
+if(cleanPage.includes("ville de lausanne")){
+score += 0.1;
+}
+
+if(score > bestScore){
+
+bestScore = score;
+bestUrl = link;
+
+}
+
+}catch(error){
+
+console.warn(
+"Lecture annonce Lausanne impossible :",
+link,
+error.message
+);
+
+}
+
+}
+
+if(bestUrl && bestScore >= 0.7){
+
+return {
+success:true,
+message:"Annonce Lausanne trouvée via page officielle",
+discoveredUrl:bestUrl,
+score:bestScore,
+fallback:false
+};
+
+}
+
+}catch(error){
+
+console.warn(
+"Découverte Lausanne impossible :",
+error.message
+);
+
+}
+
+return {
+success:true,
+message:"Aucune annonce Lausanne précise trouvée, retour vers la page officielle des offres",
+discoveredUrl:fallbackUrl,
+score:0.25,
+fallback:true
+};
+
 }
 
 async function discoverChuvOfferUrl(offer){
