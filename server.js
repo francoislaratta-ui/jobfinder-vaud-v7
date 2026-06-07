@@ -1191,25 +1191,91 @@ parsedUrl.protocol === "https:"
 ? require("https")
 : require("http");
 
+const zlib =
+require("zlib");
+
 const request =
 client.get(
 url,
 {
 headers:{
-"User-Agent":"Mozilla/5.0 JobFinderVaud/14.3.1",
-"Accept":"text/html,application/xhtml+xml"
+"User-Agent":"Mozilla/5.0 JobFinderVaud/14.5",
+"Accept":"application/json,text/html,application/xhtml+xml,*/*",
+"Accept-Language":"fr",
+"Origin":"https://offres-emploi.vd.ch",
+"Referer":"https://offres-emploi.vd.ch/",
+"ora-irc-language":"fr"
 }
 },
 response=>{
 
-let data = "";
+const chunks = [];
 
 response.on("data", chunk => {
-data += chunk;
+chunks.push(chunk);
 });
 
 response.on("end", () => {
-resolve(data);
+
+const buffer =
+Buffer.concat(chunks);
+
+const encoding =
+String(response.headers["content-encoding"] || "").toLowerCase();
+
+if(encoding.includes("gzip")){
+
+zlib.gunzip(buffer, (error, decoded) => {
+
+if(error){
+reject(error);
+return;
+}
+
+resolve(decoded.toString("utf8"));
+
+});
+
+return;
+
+}
+
+if(encoding.includes("deflate")){
+
+zlib.inflate(buffer, (error, decoded) => {
+
+if(error){
+reject(error);
+return;
+}
+
+resolve(decoded.toString("utf8"));
+
+});
+
+return;
+
+}
+
+if(encoding.includes("br")){
+
+zlib.brotliDecompress(buffer, (error, decoded) => {
+
+if(error){
+reject(error);
+return;
+}
+
+resolve(decoded.toString("utf8"));
+
+});
+
+return;
+
+}
+
+resolve(buffer.toString("utf8"));
+
 });
 
 }
