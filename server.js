@@ -1732,14 +1732,29 @@ await fetchExternalText(pageUrl);
 console.log("V14.4.3 SEARCH PAGE:", pageUrl);
 console.log("V14.4.3 HTML LENGTH:", html ? html.length : 0);
 
+const directMatches =
+String(html || "")
+.match(/detail-offre-emploi\/pj[0-9]+\.html/g) || [];
+
+const directLinks =
+directMatches.map(path =>
+new URL(path, pageUrl).href
+);
+
 const links =
 [
 ...extractLinksFromHtml(html, pageUrl),
-...extractExtraUrlsFromHtml(html, pageUrl)
+...extractExtraUrlsFromHtml(html, pageUrl),
+...directLinks
 ];
 
 const uniqueLinks =
 [...new Set(links)];
+
+console.log(
+"V14.5 DIRECT LAUSANNE LINKS:",
+directLinks.length
+);
 
 console.log("V14.4.3 LINKS FOUND:", uniqueLinks.length);
 console.log("V14.4.3 FIRST LINKS:", uniqueLinks.slice(0,10));
