@@ -880,7 +880,9 @@ behavior: "smooth"
 INITIALISATION UI
 ========================================== */
 
-function initUI(){document.querySelectorAll(".main-tabs button").forEach(button => {
+function initUI(){
+
+document.querySelectorAll(".main-tabs button").forEach(button => {
 button.addEventListener("click", () => {
 const tab = button.dataset.tab;
 
@@ -890,7 +892,27 @@ openTab(tab);
 
 });
 });
- /* BOUTONS FLOTTANTS */
+
+/* CARTES DASHBOARD CLIQUABLES */
+
+document.querySelectorAll(".clickable-card").forEach(card => {
+card.addEventListener("click", () => {
+const target =
+card.dataset.target;
+
+if(target){
+openTab(target);
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+}
+
+});
+});
+
+/* BOUTONS FLOTTANTS */
 
 document.getElementById("floatingFavorites")
 ?.addEventListener("click", () => {
@@ -913,7 +935,8 @@ window.scrollTo({
 top:0,
 behavior:"smooth"
 });
-});                 
+});
+
 const navButtons = [
 { button:"btnDashboard", tab:"dashboard" },
 { button:"btnFilters", tab:"filters" },
@@ -933,8 +956,10 @@ btn.addEventListener("click", () => {
 openTab(item.tab);
 });
 }
+
 });
-  if(notificationToggle){
+
+if(notificationToggle){
 notificationToggle.addEventListener("click", () => {
 notificationsEnabled = !notificationsEnabled;
 
@@ -950,11 +975,13 @@ btnNotifications.addEventListener("click", () => {
 openTab("notifications");
 });
 }
+
 if(btnFilters){
 btnFilters.addEventListener("click", () => {
 openTab("filters");
 });
 }
+
 if(btnSettings){
 btnSettings.addEventListener("click", () => {
 openTab("settings");
