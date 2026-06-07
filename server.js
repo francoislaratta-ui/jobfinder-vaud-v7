@@ -1370,7 +1370,7 @@ Recherche précise + fallback carrière fiable
 
 function getDiscoverySearchPages(domain){
 
-const searchPagesMap = {
+
 const searchPagesMap = {
 "vd.ch":[
 "https://offres-emploi.vd.ch/#fr/sites/CX_1"
