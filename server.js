@@ -1918,17 +1918,26 @@ job.ShortDescriptionStr || "";
 
 let score = 0;
 
+const cleanTextLocal = value =>
+String(value || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g,"")
+.replace(/[^a-z0-9\s]/g," ")
+.replace(/\s+/g," ")
+.trim();
+
 const cleanA =
-normalizeText(jobTitle + " " + jobLocation + " " + shortDescription);
+cleanTextLocal(jobTitle + " " + jobLocation + " " + shortDescription);
 
 const cleanTitle =
-normalizeText(title);
+cleanTextLocal(title);
 
 const cleanLocation =
-normalizeText(location);
+cleanTextLocal(location);
 
 const cleanCompany =
-normalizeText(offer.company || "Etat de Vaud");
+cleanTextLocal(offer.company || "Etat de Vaud");
 
 if(cleanTitle && cleanA.includes(cleanTitle)){
 score += 0.7;
