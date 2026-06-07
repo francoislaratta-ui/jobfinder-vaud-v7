@@ -2223,6 +2223,158 @@ score:0
 }
 
 /* ==========================================
+DECOUVERTE URL REELLE ANNONCE V14.5
+========================================== */
+
+app.post(
+"/api/discover-offer-url",
+async (req,res)=>{
+
+try{
+
+const offer =
+req.body?.offer || {};
+
+const originalUrl =
+offer.offerUrl || offer.url || "";
+
+if(!originalUrl){
+
+return res.json({
+success:false,
+message:"URL source absente",
+originalUrl:"",
+discoveredUrl:"",
+changed:false
+});
+
+}
+
+if(isRealOfferUrl(originalUrl)){
+
+return res.json({
+success:true,
+message:"URL déjà réelle",
+originalUrl,
+discoveredUrl:originalUrl,
+changed:false,
+source:getEmployerSource(originalUrl)
+});
+
+}
+
+if(!isGenericSourceUrl(originalUrl)){
+
+return res.json({
+success:false,
+message:"URL non générique mais non reconnue comme annonce réelle",
+originalUrl,
+discoveredUrl:"",
+changed:false,
+source:getEmployerSource(originalUrl)
+});
+
+}
+
+const discovery =
+await discoverRealOfferUrl(offer);
+
+if(discovery.success && discovery.discoveredUrl){
+
+return res.json({
+success:true,
+message:"URL réelle trouvée",
+originalUrl,
+discoveredUrl:discovery.discoveredUrl,
+changed:true,
+score:discovery.score,
+company:offer.company || "",
+title:offer.title || "",
+location:offer.location || "",
+source:getEmployerSource(originalUrl)
+});
+
+}
+
+return res.json({
+success:false,
+message:"Aucune URL réelle trouvée",
+originalUrl,
+discoveredUrl:"",
+changed:false,
+score:discovery.score || 0,
+company:offer.company || "",
+title:offer.title || "",
+location:offer.location || "",
+source:getEmployerSource(originalUrl)
+});
+
+}catch(error){
+
+res.status(500).json({
+success:false,
+message:"Erreur discover-offer-url",
+error:error.message
+});
+
+}
+
+}
+);
+
+
+/* ==========================================
+TEST DECOUVERTE URL GET TEMPORAIRE V14.5
+========================================== */
+
+app.get(
+"/api/test-discover-offer-url",
+async (req,res)=>{
+
+try{
+
+const offer = {
+title:req.query.title || "Gestionnaire de dossiers",
+company:req.query.company || "Etat de Vaud",
+location:req.query.location || "Lausanne",
+offerUrl:req.query.url || "https://www.vd.ch"
+};
+
+const discovery =
+await discoverRealOfferUrl(offer);
+
+res.json({
+success:discovery.success,
+message:discovery.success ? "URL réelle trouvée par recherche ciblée" : "Aucune URL réelle trouvée",
+originalUrl:offer.offerUrl,
+discoveredUrl:discovery.discoveredUrl || "",
+changed:!!discovery.discoveredUrl,
+score:discovery.score || 0,
+company:offer.company,
+title:offer.title,
+location:offer.location,
+source:getEmployerSource(offer.offerUrl),
+oracleId:discovery.oracleId || "",
+detailTitle:discovery.title || "",
+detailLocation:discovery.location || "",
+detailDescription:discovery.description || ""
+});
+
+}catch(error){
+
+res.status(500).json({
+success:false,
+message:"Erreur test-discover-offer-url",
+error:error.message
+});
+
+}
+
+}
+);
+
+
+/* ==========================================
 DEMARRAGE SERVEUR
 ========================================== */
 
