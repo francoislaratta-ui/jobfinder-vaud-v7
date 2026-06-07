@@ -1768,6 +1768,13 @@ error.message
 
 }
 
+console.log(
+"V14.4.3 BEST URL:",
+bestUrl,
+"BEST SCORE:",
+bestScore
+);
+
 if(bestUrl && bestScore >= 0.65 && !isBadDiscoveryUrl(bestUrl)){
 
 return {
