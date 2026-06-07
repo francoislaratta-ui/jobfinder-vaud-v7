@@ -680,4 +680,22 @@
     "date": "Aujourd'hui",
     "language": "Français"
   }
+  {
+  "id": "offer039",
+  "title": "Gestionnaire de dossiers",
+  "company": "LinkedIn Test",
+  "address": "",
+  "location": "Lausanne",
+  "rate": "100%",
+  "contract": "CDI",
+  "sector": "Administration",
+  "salary": "CHF 95'000",
+  "source": "LinkedIn",
+  "offerUrl": "https://www.linkedin.com/jobs/view/4424267126",
+  "externalId": "4424267126",
+  "url": "https://www.linkedin.com/jobs/view/4424267126",
+  "date": "Aujourd'hui",
+  "language": "Français"
+}
+
 ]
