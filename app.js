@@ -3349,7 +3349,7 @@ loadSavedCV();
 
 console.log("==================================");
 console.log("JOB FINDER VAUD");
-console.log("V14.2.4 PREMIUM IA");
+console.log("V14.6 PREMIUM IA");
 console.log("Extraction CV PDF / DOCX / TXT");
 console.log("Créateur F. Laratta");
 console.log("==================================");
