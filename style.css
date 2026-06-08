@@ -374,6 +374,11 @@ KPI CARDS
 
 .kpi-grid{
 
+display:grid;
+
+grid-template-columns:
+repeat(4,1fr);
+
 gap:12px;
 
 }
@@ -601,6 +606,21 @@ margin-top:0;
 line-height:1.2;
 
 color:var(--soft);
+
+}
+
+/* ==========================================
+KPI RESPONSIVE
+========================================== */
+
+@media (max-width:768px){
+
+.kpi-grid{
+
+grid-template-columns:
+repeat(2,1fr);
+
+}
 
 }
 
