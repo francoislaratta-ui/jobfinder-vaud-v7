@@ -367,9 +367,6 @@ grid-template-columns:repeat(2,1fr);
 gap:16px;
 }
 
-/* ==========================================
-KPI CARDS
-========================================== */
 
 /* ==========================================
 KPI CARDS
@@ -385,15 +382,15 @@ gap:12px;
 
 background:
 linear-gradient(
-135deg,
-rgba(124,58,237,0.18),
-rgba(15,23,42,0.96) 48%,
-rgba(2,6,23,0.98)
+90deg,
+rgba(124,58,237,0.18) 0%,
+rgba(15,23,42,0.96) 55%,
+rgba(2,6,23,0.98) 100%
 );
 
 min-height:82px;
 
-padding:12px 14px;
+padding:12px 18px;
 
 border-radius:16px;
 
@@ -403,9 +400,9 @@ flex-direction:row;
 
 align-items:center;
 
-justify-content:center;
+justify-content:flex-start;
 
-gap:12px;
+gap:16px;
 
 text-align:left;
 
@@ -433,10 +430,10 @@ box-shadow:
 
 background:
 linear-gradient(
-135deg,
-rgba(37,99,235,0.36),
+90deg,
+rgba(37,99,235,0.38) 0%,
 rgba(15,23,42,0.96) 55%,
-rgba(2,6,23,0.98)
+rgba(2,6,23,0.98) 100%
 );
 
 border-color:rgba(59,130,246,0.45);
@@ -447,10 +444,10 @@ border-color:rgba(59,130,246,0.45);
 
 background:
 linear-gradient(
-135deg,
-rgba(22,163,74,0.36),
+90deg,
+rgba(22,163,74,0.38) 0%,
 rgba(15,23,42,0.96) 55%,
-rgba(2,6,23,0.98)
+rgba(2,6,23,0.98) 100%
 );
 
 border-color:rgba(34,197,94,0.45);
@@ -461,10 +458,10 @@ border-color:rgba(34,197,94,0.45);
 
 background:
 linear-gradient(
-135deg,
-rgba(124,58,237,0.38),
+90deg,
+rgba(124,58,237,0.40) 0%,
 rgba(15,23,42,0.96) 55%,
-rgba(2,6,23,0.98)
+rgba(2,6,23,0.98) 100%
 );
 
 border-color:rgba(168,85,247,0.48);
@@ -475,10 +472,10 @@ border-color:rgba(168,85,247,0.48);
 
 background:
 linear-gradient(
-135deg,
-rgba(194,139,20,0.38),
+90deg,
+rgba(194,139,20,0.40) 0%,
 rgba(15,23,42,0.96) 55%,
-rgba(2,6,23,0.98)
+rgba(2,6,23,0.98) 100%
 );
 
 border-color:rgba(245,158,11,0.48);
@@ -487,9 +484,9 @@ border-color:rgba(245,158,11,0.48);
 
 .kpi-icon{
 
-width:48px;
+width:58px;
 
-height:48px;
+height:58px;
 
 border-radius:50%;
 
@@ -499,7 +496,7 @@ align-items:center;
 
 justify-content:center;
 
-font-size:24px;
+font-size:28px;
 
 flex-shrink:0;
 
@@ -567,11 +564,13 @@ align-items:flex-start;
 
 justify-content:center;
 
+flex:1;
+
 }
 
 .kpi-value{
 
-font-size:28px;
+font-size:34px;
 
 font-weight:800;
 
@@ -593,7 +592,7 @@ text-shadow:
 
 .kpi-label{
 
-font-size:12px;
+font-size:14px;
 
 font-weight:700;
 
@@ -604,6 +603,7 @@ line-height:1.2;
 color:var(--soft);
 
 }
+
 
 /* ==========================================
 KPI CLIQUABLES V14.1.0
