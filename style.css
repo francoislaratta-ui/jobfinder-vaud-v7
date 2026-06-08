@@ -166,47 +166,6 @@ margin-top:2px;
 
 }
 
-/* ==========================================
-HEADER ACTIONS
-========================================== */
-
-.header-actions{
-
-display:flex;
-
-gap:8px;
-
-}
-
-.top-btn{
-
-width:36px;
-
-height:36px;
-
-border:none;
-
-border-radius:10px;
-
-background:#222;
-
-color:white;
-
-font-size:15px;
-
-transition:0.2s;
-
-}
-
-.top-btn:hover{
-
-background:var(--gold);
-
-color:black;
-
-transform:scale(1.05);
-
-}
 
 /* ==========================================
 NAVIGATION
