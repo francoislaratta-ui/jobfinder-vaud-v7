@@ -116,11 +116,11 @@ z-index:1000;
 
 display:flex;
 
-justify-content:space-between;
+justify-content:center;
 
 align-items:center;
 
-padding:12px 16px;
+padding:12px 14px;
 
 background:#111;
 
@@ -136,13 +136,45 @@ backdrop-filter:blur(8px);
 
 }
 
-.logo-area h1{
+.logo-area{
+
+width:100%;
+
+text-align:center;
+
+}
+
+.app-title{
+
+margin:0;
 
 font-size:24px;
 
-font-weight:800;
+font-weight:900;
 
-line-height:1.2;
+line-height:1.15;
+
+display:flex;
+
+flex-wrap:wrap;
+
+justify-content:center;
+
+align-items:center;
+
+gap:6px;
+
+}
+
+.title-main{
+
+color:#a855f7;
+
+}
+
+.title-vaud{
+
+color:#ffffff;
 
 }
 
@@ -152,7 +184,7 @@ font-size:12px;
 
 color:var(--gold);
 
-margin-top:4px;
+margin-top:5px;
 
 }
 
@@ -166,6 +198,35 @@ margin-top:2px;
 
 }
 
+@media (max-width:480px){
+
+.app-header{
+
+padding:11px 10px;
+
+}
+
+.app-title{
+
+font-size:21px;
+
+gap:5px;
+
+}
+
+.app-version{
+
+font-size:11px;
+
+}
+
+.app-author{
+
+font-size:10px;
+
+}
+
+}
 
 /* ==========================================
 NAVIGATION
