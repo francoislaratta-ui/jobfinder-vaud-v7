@@ -796,9 +796,30 @@ border:
 
 margin-bottom:10px;
 
-color:var(--gold);
-
 font-size:18px;
+
+font-weight:800;
+
+background:linear-gradient(
+90deg,
+#f8d56b 0%,
+#d4a73a 45%,
+#f59e0b 100%
+);
+
+-webkit-background-clip:text;
+
+-webkit-text-fill-color:transparent;
+
+background-clip:text;
+
+text-shadow:
+0 0 12px rgba(
+245,
+158,
+11,
+0.20
+);
 
 }
 
@@ -895,6 +916,8 @@ font-weight:700;
 color:white;
 
 }
+
+
 /* ==========================================
 PROGRESS BAR
 ========================================== */
