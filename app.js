@@ -1852,253 +1852,50 @@ a.localeCompare(b, "fr")
 employersList = employers;
 
 employerFilter.innerHTML =
+
 employers.map(company => `
 <label>
 <input type="checkbox" name="employers" value="${escapeHTML(company)}">
 ${escapeHTML(company)}
 </label>
-`).join("");
+`).join("")
+
++
+
+`
+<label>
+<input type="checkbox" id="selectAllEmployers">
+☑ Tout sélectionner
+</label>
+`;
 
 document
 .querySelectorAll('input[name="employers"]')
 .forEach(cb => {
 cb.addEventListener("change", applyFilters);
 });
-}
-/* ==========================================
-LECTURE FILTRES
-========================================== */
 
-function getCheckedValues(name){
-return Array.from(
-document.querySelectorAll(`input[name="${name}"]:checked`)
-)
-.map(input => input.value)
-.filter(Boolean);
-}
+const selectAllEmployers =
+document.getElementById("selectAllEmployers");
 
-function saveFilters(){
-setStorage(
-STORAGE_KEYS.filters,
-activeFilters
-);
-}
+if(selectAllEmployers){
 
-function loadSavedFilters(){
-
-const savedFilters =
-safeJSON(
-localStorage.getItem(STORAGE_KEYS.filters),
-null
-);
-
-if(!savedFilters){
-return;
-}
-
-activeFilters = savedFilters;
-
-[
-"jobs",
-"sectors",
-"rates",
-"contracts",
-"regions",
-"sources",
-"employers",
-"matches"
-].forEach(name => {
+selectAllEmployers.addEventListener("change", () => {
 
 document
-.querySelectorAll(`input[name="${name}"]`)
-.forEach(input => {
-input.checked =
-Array.isArray(savedFilters[name]) &&
-savedFilters[name].includes(input.value);
+.querySelectorAll('input[name="employers"]')
+.forEach(cb => {
+cb.checked =
+selectAllEmployers.checked;
 });
 
-});
-
-if(sortFilter){
-sortFilter.value = savedFilters.sort || "match";
-}
-
-}
-
-function readFilters(){
-
-activeFilters = {
-
-jobs: getCheckedValues("jobs"),
-
-sectors: getCheckedValues("sectors"),
-
-rates: getCheckedValues("rates"),
-
-contracts: getCheckedValues("contracts"),
-
-regions: getCheckedValues("regions"),
-
-sources: getCheckedValues("sources"),
-
-employers: getCheckedValues("employers"),
-
-matches: getCheckedValues("matches"),
-
-sort: safeGetValue(sortFilter) || "match"
-
-};
-
-saveFilters();
-
-return activeFilters;
-
-}
-
-function offerPassesArrayFilter(offer, values){
-if(!values || values.length === 0){
-return true;
-}
-
-return values.some(value =>
-matchAnyOfferField(offer, [value])
-);
-}
-
-function applyFilters(){
-const filters = readFilters();
-
-let result =
-offers.filter(offer => {
-
-const match = calculateMatch(offer);
-
-if(!offerPassesArrayFilter(offer, filters.jobs)){
-return false;
-}
-
-if(!offerPassesArrayFilter(offer, filters.sectors)){
-return false;
-}
-
-if(!offerPassesArrayFilter(offer, filters.rates)){
-return false;
-}
-
-if(!offerPassesArrayFilter(offer, filters.contracts)){
-return false;
-}
-
-if(!offerPassesArrayFilter(offer, filters.regions)){
-return false;
-}
-
-if(filters.sources && filters.sources.length > 0){
-const sourceOk =
-filters.sources.some(source =>
-containsNormalized(offer.source, source)
-);
-
-if(!sourceOk){
-return false;
-}
-}
-
-if(filters.employers && filters.employers.length > 0){
-const employerOk =
-filters.employers.some(employer =>
-normalizeText(offer.company) === normalizeText(employer)
-);
-
-if(!employerOk){
-return false;
-}
-}
-
-if(filters.matches && filters.matches.length > 0){
-const minimum =
-Math.min(
-...filters.matches.map(value => parseInt(value, 10))
-);
-
-if(!isNaN(minimum) && match < minimum){
-return false;
-}
-}
-
-return true;
+applyFilters();
 
 });
 
-result = sortOffers(result, filters.sort);
-
-filteredOffers = result;
-
-renderOffers(filteredOffers);
-updateDashboard();
-updateBestMatch();
-updateNotifications();
-updateStatistics();
 }
 
-function sortOffers(data, sortType){
-const list = [...safeArray(data)];
-
-if(sortType === "date"){
-return list.sort((a, b) =>
-String(b.date || "").localeCompare(String(a.date || ""))
-);
 }
-
-if(sortType === "company"){
-return list.sort((a, b) =>
-String(a.company || "").localeCompare(String(b.company || ""), "fr")
-);
-}
-
-if(sortType === "title"){
-return list.sort((a, b) =>
-String(a.title || "").localeCompare(String(b.title || ""), "fr")
-);
-}
-
-return list.sort((a, b) =>
-calculateMatch(b) - calculateMatch(a)
-);
-}
-
-function resetFilters(){
-activeFilters = {
-jobs: [],
-sectors: [],
-rates: [],
-contracts: [],
-regions: [],
-sources: [],
-employers: [],
-matches: [],
-sort: "match"
-};
-
-localStorage.removeItem(STORAGE_KEYS.filters);
-
-document
-.querySelectorAll("input[type='checkbox']")
-.forEach(input => {
-input.checked = false;
-});
-
-if(employerFilter) employerFilter.value = "";
-if(sortFilter) sortFilter.value = "match";
-
-filteredOffers = sortOffers([...offers], "match");
-
-renderOffers(filteredOffers);
-updateAll();
-
-showInfo("Filtres réinitialisés");
-}
-
 
 /* ==========================================
 RENDER OFFRES
@@ -3535,15 +3332,23 @@ cvAnalysisResult.innerHTML = `
 }
 
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
 
 initUI();
 
 loadSavedCV();
 
-loadSavedFilters();
-
+const offersLoad =
 loadOffers();
+
+if(
+offersLoad &&
+typeof offersLoad.then === "function"
+){
+await offersLoad;
+}
+
+loadSavedFilters();
 
 renderFavorites();
 
