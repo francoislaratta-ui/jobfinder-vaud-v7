@@ -1851,6 +1851,8 @@ a.localeCompare(b, "fr")
 
 employersList = employers;
 
+console.log("EMPLOYEURS", employers);
+
 employerFilter.innerHTML =
 
 employers.map(company => `
@@ -1896,7 +1898,6 @@ applyFilters();
 }
 
 }
-
 /* ==========================================
 RENDER OFFRES
 ========================================== */
