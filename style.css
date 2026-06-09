@@ -245,9 +245,9 @@ display:grid;
 grid-template-columns:
 repeat(4,1fr);
 
-gap:8px;
+gap:6px;
 
-padding:8px 8px;
+padding:6px 8px;
 
 background:#0b0f16;
 
@@ -277,9 +277,9 @@ border:
 0.14
 );
 
-padding:9px 12px;
+padding:7px 10px;
 
-border-radius:10px;
+border-radius:9px;
 
 background:
 linear-gradient(
@@ -290,7 +290,7 @@ rgba(2,6,23,0.98)
 
 color:#f8fafc;
 
-font-size:14px;
+font-size:13px;
 
 font-weight:700;
 
@@ -299,11 +299,11 @@ white-space:nowrap;
 transition:0.2s ease;
 
 box-shadow:
-0 4px 12px rgba(
+0 3px 8px rgba(
 0,
 0,
 0,
-0.20
+0.18
 );
 
 }
@@ -373,11 +373,11 @@ rgba(2,6,23,0.98)
 color:#a855f7 !important;
 
 box-shadow:
-0 4px 14px rgba(
+0 3px 10px rgba(
 124,
 58,
 237,
-0.16
+0.14
 );
 
 }
@@ -418,19 +418,19 @@ cursor:wait;
 grid-template-columns:
 repeat(2,1fr);
 
-gap:7px;
+gap:5px;
 
-padding:7px 7px;
+padding:5px 6px;
 
 }
 
 .main-tabs button{
 
-padding:8px 10px;
+padding:6px 8px;
 
-font-size:13px;
+font-size:12px;
 
-border-radius:10px;
+border-radius:8px;
 
 }
 
