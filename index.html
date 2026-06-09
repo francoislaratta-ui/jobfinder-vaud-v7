@@ -893,20 +893,6 @@ class="checkbox-grid">
 
 </div>
 
-
-/* ==========================================
-TOGGLE SELECT ALL
-========================================== */
-
-function toggleSelectAll(masterCheckbox, groupName){
-    document.querySelectorAll(`input[name="${groupName}"]`)
-        .forEach(cb => {
-            cb.checked = masterCheckbox.checked;
-        });
-    applyFilters();
-}
-
-
 <!-- ==========================================
 MATCH IA V14.6
 ========================================== -->
