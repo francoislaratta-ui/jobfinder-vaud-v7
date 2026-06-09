@@ -978,6 +978,70 @@ behavior:"smooth"
 });
 });
 
+const floatingActions =
+document.querySelector(".floating-actions");
+
+const floatingToggle =
+document.getElementById("floatingToggle");
+
+if(floatingActions && floatingToggle){
+
+let floatingButtonsVisible = true;
+
+floatingToggle.addEventListener("click", () => {
+
+const favoritesBtn =
+document.getElementById("floatingFavorites");
+
+const applicationsBtn =
+document.getElementById("floatingApplications");
+
+const aiBtn =
+document.getElementById("floatingAI");
+
+const topBtn =
+document.getElementById("floatingTop");
+
+floatingButtonsVisible =
+!floatingButtonsVisible;
+
+if(favoritesBtn){
+favoritesBtn.style.display =
+floatingButtonsVisible
+? "flex"
+: "none";
+}
+
+if(applicationsBtn){
+applicationsBtn.style.display =
+floatingButtonsVisible
+? "flex"
+: "none";
+}
+
+if(aiBtn){
+aiBtn.style.display =
+floatingButtonsVisible
+? "flex"
+: "none";
+}
+
+if(topBtn){
+topBtn.style.display =
+floatingButtonsVisible
+? "flex"
+: "none";
+}
+
+floatingToggle.innerHTML =
+floatingButtonsVisible
+? "👁"
+: "☰";
+
+});
+
+}
+
 const navButtons = [
 { button:"btnDashboard", tab:"dashboard" },
 { button:"btnFilters", tab:"filters" },
@@ -1076,6 +1140,8 @@ checkbox.addEventListener("change", applyFilters);
 });
 
 }
+
+
 /* ==========================================
 MATCH IA - DETAILS
 ========================================== */
