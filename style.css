@@ -774,149 +774,105 @@ OBJECTIFS
 
 .objectives-card{
 
-background:var(--card);
+background:
+linear-gradient(
+90deg,
+rgba(15,23,42,0.96) 0%,
+rgba(2,6,23,0.98) 100%
+);
 
-padding:15px;
+padding:14px 16px;
 
-border-radius:var(--radius);
+border-radius:16px;
 
-margin-bottom:15px;
+margin-bottom:14px;
 
 border:
 1px solid rgba(
-194,
-139,
+59,
+130,
+246,
+0.42
+);
+
+box-shadow:
+0 8px 20px rgba(
+0,
+0,
+0,
+0.24
+);
+
+}
+
+.objectives-card:nth-child(2){
+
+border-color:
+rgba(
 20,
-0.10
+184,
+166,
+0.45
+);
+
+background:
+linear-gradient(
+90deg,
+rgba(20,184,166,0.18) 0%,
+rgba(15,23,42,0.96) 55%,
+rgba(2,6,23,0.98) 100%
 );
 
 }
 
 .objectives-card h3{
 
-margin-bottom:10px;
+margin-bottom:8px;
 
 font-size:18px;
 
-font-weight:800;
+font-weight:900;
 
-background:linear-gradient(
-90deg,
-#f8d56b 0%,
-#d4a73a 45%,
-#f59e0b 100%
-);
+color:#f8fafc;
 
--webkit-background-clip:text;
-
--webkit-text-fill-color:transparent;
-
-background-clip:text;
+line-height:1.2;
 
 text-shadow:
-0 0 12px rgba(
-245,
-158,
-11,
-0.20
+0 2px 10px rgba(
+0,
+0,
+0,
+0.45
 );
 
 }
 
 .objectives-card p{
 
-line-height:1.8;
+line-height:1.5;
 
-color:var(--soft);
+font-size:15px;
 
-}
+color:#e5e7eb;
 
-/* ALERTES V14.6 */
-
-.alerts-summary-card{
-
-display:flex;
-
-align-items:center;
-
-gap:15px;
-
-background:
-linear-gradient(
-135deg,
-rgba(0,170,255,0.14),
-rgba(194,139,20,0.08)
-);
-
-padding:16px;
-
-border-radius:var(--radius);
-
-margin-bottom:15px;
-
-border:
-1px solid rgba(
-0,
-170,
-255,
-0.25
-);
+margin-bottom:10px;
 
 }
 
-.alerts-summary-icon{
+.objectives-card progress,
+.objectives-card .progress-bar{
 
-font-size:34px;
+width:100%;
 
-}
+height:10px;
 
-.alerts-summary-card h3{
+border-radius:999px;
 
-margin-bottom:6px;
+overflow:hidden;
 
-color:#38bdf8;
-
-}
-
-.alerts-summary-card p{
-
-color:var(--soft);
-
-line-height:1.6;
+background:#1f2937;
 
 }
-
-.alert-line{
-
-margin-bottom:8px;
-
-color:var(--soft);
-
-}
-
-.alert-source-line{
-
-display:grid;
-
-grid-template-columns:
-120px auto;
-
-gap:8px;
-
-margin-bottom:6px;
-
-color:var(--soft);
-
-}
-
-.alert-source-line span:last-child{
-
-font-weight:700;
-
-color:white;
-
-}
-
 
 /* ==========================================
 PROGRESS BAR
