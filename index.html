@@ -806,6 +806,13 @@ SOURCE V14.6
 
 <div class="filter-content">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllSources" onchange="toggleSelectAll(this, 'sources')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <div class="checkbox-grid">
 
 <label>
@@ -847,11 +854,13 @@ Carrière employeur
 <input type="checkbox" name="sources" value="Autre">
 Autre
 </label>
-</div>
 
 </div>
 
 </div>
+
+</div>
+
 
 <!-- ==========================================
 EMPLOYEUR V.14.6
@@ -866,6 +875,13 @@ EMPLOYEUR V.14.6
 </div>
 
 <div class="filter-content">
+
+<label class="select-all-label">
+<input type="checkbox" id="selectAllEmployeurs" onchange="toggleSelectAll(this, 'employers')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
 
 <div
 id="employerFilter"
@@ -905,6 +921,13 @@ MATCH IA V14.6
 
 <div class="filter-content">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllMatches" onchange="toggleSelectAll(this, 'matches')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <div class="checkbox-grid">
 
 <label>
@@ -932,6 +955,7 @@ MATCH IA V14.6
 </div>
 
 </div>
+
 
 <!-- ==========================================
 TRI V14.6
