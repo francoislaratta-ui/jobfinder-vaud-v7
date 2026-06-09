@@ -430,53 +430,60 @@ METIERS
 
 <div class="filter-content active-filter">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllMetiers" onchange="toggleSelectAll(this, 'metiers')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <label>
-<input type="checkbox" value="Employé de commerce">
+<input type="checkbox" name="metiers" value="Employé de commerce">
 Employé de commerce
 </label>
 
 <label>
-<input type="checkbox" value="Employé administratif">
+<input type="checkbox" name="metiers" value="Employé administratif">
 Employé administratif
 </label>
 
 <label>
-<input type="checkbox" value="Assistant administratif">
+<input type="checkbox" name="metiers" value="Assistant administratif">
 Assistant administratif
 </label>
 
 <label>
-<input type="checkbox" value="Assistant de direction">
+<input type="checkbox" name="metiers" value="Assistant de direction">
 Assistant de direction
 </label>
 
 <label>
-<input type="checkbox" value="Gestionnaire de dossier">
+<input type="checkbox" name="metiers" value="Gestionnaire de dossier">
 Gestionnaire de dossier
 </label>
 
 <label>
-<input type="checkbox" value="Coordinateur administratif">
+<input type="checkbox" name="metiers" value="Coordinateur administratif">
 Coordinateur administratif
 </label>
 
 <label>
-<input type="checkbox" value="Assistant RH">
+<input type="checkbox" name="metiers" value="Assistant RH">
 Assistant RH
 </label>
 
 <label>
-<input type="checkbox" value="Conseiller clientèle">
+<input type="checkbox" name="metiers" value="Conseiller clientèle">
 Conseiller clientèle
 </label>
 
 <label>
-<input type="checkbox" value="Support utilisateur">
+<input type="checkbox" name="metiers" value="Support utilisateur">
 Support utilisateur
 </label>
 
 <label>
-<input type="checkbox" value="Technicien informatique">
+<input type="checkbox" name="metiers" value="Technicien informatique">
 Technicien informatique
 </label>
 
@@ -498,73 +505,80 @@ SECTEURS
 
 <div class="filter-content active-filter">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllSecteurs" onchange="toggleSelectAll(this, 'secteurs')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <label>
-<input type="checkbox" value="Administration">
+<input type="checkbox" name="secteurs" value="Administration">
 Administration
 </label>
 
 <label>
-<input type="checkbox" value="Administration publique">
+<input type="checkbox" name="secteurs" value="Administration publique">
 Administration publique
 </label>
 
 <label>
-<input type="checkbox" value="Fondation">
+<input type="checkbox" name="secteurs" value="Fondation">
 Fondation
 </label>
 
 <label>
-<input type="checkbox" value="Informatique">
+<input type="checkbox" name="secteurs" value="Informatique">
 Informatique
 </label>
 
 <label>
-<input type="checkbox" value="Immobilier">
+<input type="checkbox" name="secteurs" value="Immobilier">
 Immobilier
 </label>
 
 <label>
-<input type="checkbox" value="Assurance">
+<input type="checkbox" name="secteurs" value="Assurance">
 Assurance
 </label>
 
 <label>
-<input type="checkbox" value="Ressource humaine">
+<input type="checkbox" name="secteurs" value="Ressource humaine">
 Ressource humaine
 </label>
 
 <label>
-<input type="checkbox" value="Service client">
+<input type="checkbox" name="secteurs" value="Service client">
 Service client
 </label>
 
 <label>
-<input type="checkbox" value="Support utilisateur">
+<input type="checkbox" name="secteurs" value="Support utilisateur">
 Support utilisateur
 </label>
 
 <label>
-<input type="checkbox" value="Secrétariat">
+<input type="checkbox" name="secteurs" value="Secrétariat">
 Secrétariat
 </label>
 
 <label>
-<input type="checkbox" value="Secrétariat médical">
+<input type="checkbox" name="secteurs" value="Secrétariat médical">
 Secrétariat médical
 </label>
 
 <label>
-<input type="checkbox" value="Santé">
+<input type="checkbox" name="secteurs" value="Santé">
 Santé
 </label>
 
 <label>
-<input type="checkbox" value="Fiduciaire">
+<input type="checkbox" name="secteurs" value="Fiduciaire">
 Fiduciaire
 </label>
 
 <label>
-<input type="checkbox" value="Banque">
+<input type="checkbox" name="secteurs" value="Banque">
 Banque
 </label>
 
@@ -586,50 +600,57 @@ TAUX
 
 <div class="filter-content active-filter">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllTaux" onchange="toggleSelectAll(this, 'taux')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <div class="rate-grid">
 
 <label>
-<input type="checkbox" value="20">
+<input type="checkbox" name="taux" value="20">
 20%
 </label>
 
 <label>
-<input type="checkbox" value="30">
+<input type="checkbox" name="taux" value="30">
 30%
 </label>
 
 <label>
-<input type="checkbox" value="40">
+<input type="checkbox" name="taux" value="40">
 40%
 </label>
 
 <label>
-<input type="checkbox" value="50">
+<input type="checkbox" name="taux" value="50">
 50%
 </label>
 
 <label>
-<input type="checkbox" value="60">
+<input type="checkbox" name="taux" value="60">
 60%
 </label>
 
 <label>
-<input type="checkbox" value="70">
+<input type="checkbox" name="taux" value="70">
 70%
 </label>
 
 <label>
-<input type="checkbox" value="80">
+<input type="checkbox" name="taux" value="80">
 80%
 </label>
 
 <label>
-<input type="checkbox" value="90">
+<input type="checkbox" name="taux" value="90">
 90%
 </label>
 
 <label>
-<input type="checkbox" value="100">
+<input type="checkbox" name="taux" value="100">
 100%
 </label>
 
@@ -638,18 +659,19 @@ TAUX
 <hr class="filter-separator">
 
 <label>
-<input type="checkbox" value="Temps plein">
+<input type="checkbox" name="taux" value="Temps plein">
 Temps plein
 </label>
 
 <label>
-<input type="checkbox" value="Temps partiel">
+<input type="checkbox" name="taux" value="Temps partiel">
 Temps partiel
 </label>
 
 </div>
 
 </div>
+
 <!-- ==========================================
 CONTRATS
 ========================================== -->
@@ -664,23 +686,30 @@ CONTRATS
 
 <div class="filter-content active-filter">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllContrats" onchange="toggleSelectAll(this, 'contrats')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <label>
-<input type="checkbox" value="CDI">
+<input type="checkbox" name="contrats" value="CDI">
 CDI
 </label>
 
 <label>
-<input type="checkbox" value="CDD">
+<input type="checkbox" name="contrats" value="CDD">
 CDD
 </label>
 
 <label>
-<input type="checkbox" value="Temporaire">
+<input type="checkbox" name="contrats" value="Temporaire">
 Temporaire
 </label>
 
 <label>
-<input type="checkbox" value="Stage">
+<input type="checkbox" name="contrats" value="Stage">
 Stage
 </label>
 
@@ -702,53 +731,60 @@ REGIONS
 
 <div class="filter-content active-filter">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllRegions" onchange="toggleSelectAll(this, 'regions')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <label>
-<input type="checkbox" value="Lausanne">
+<input type="checkbox" name="regions" value="Lausanne">
 Lausanne
 </label>
 
 <label>
-<input type="checkbox" value="Ouest lausannois">
+<input type="checkbox" name="regions" value="Ouest lausannois">
 Ouest lausannois
 </label>
 
 <label>
-<input type="checkbox" value="Morges">
+<input type="checkbox" name="regions" value="Morges">
 Morges
 </label>
 
 <label>
-<input type="checkbox" value="Nyon">
+<input type="checkbox" name="regions" value="Nyon">
 Nyon
 </label>
 
 <label>
-<input type="checkbox" value="Riviera">
+<input type="checkbox" name="regions" value="Riviera">
 Riviera
 </label>
 
 <label>
-<input type="checkbox" value="Aigle">
+<input type="checkbox" name="regions" value="Aigle">
 Aigle
 </label>
 
 <label>
-<input type="checkbox" value="Broye-Vully">
+<input type="checkbox" name="regions" value="Broye-Vully">
 Broye-Vully
 </label>
 
 <label>
-<input type="checkbox" value="Jura-Nord vaudois">
+<input type="checkbox" name="regions" value="Jura-Nord vaudois">
 Jura-Nord vaudois
 </label>
 
 <label>
-<input type="checkbox" value="Gros-de-Vaud">
+<input type="checkbox" name="regions" value="Gros-de-Vaud">
 Gros-de-Vaud
 </label>
 
 <label>
-<input type="checkbox" value="Lavaux-Oron">
+<input type="checkbox" name="regions" value="Lavaux-Oron">
 Lavaux-Oron
 </label>
 
@@ -840,6 +876,20 @@ class="checkbox-grid">
 </div>
 
 </div>
+
+
+/* ==========================================
+TOGGLE SELECT ALL
+========================================== */
+
+function toggleSelectAll(masterCheckbox, groupName){
+    document.querySelectorAll(`input[name="${groupName}"]`)
+        .forEach(cb => {
+            cb.checked = masterCheckbox.checked;
+        });
+    applyFilters();
+}
+
 
 <!-- ==========================================
 MATCH IA V14.6
