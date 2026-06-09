@@ -1,5 +1,5 @@
 /* ==========================================
-JOB FINDER VAUD V14.2.0 PREMIUM IA
+JOB FINDER VAUD V14.6.0 PREMIUM IA
 Créateur : F. Laratta
 ========================================== */
 
@@ -13,7 +13,8 @@ applications: "jobfinder_applications",
 settings: "jobfinder_settings",
 stats: "jobfinder_stats",
 offers: "jobfinder_offers",
-letters: "jobfinder_letters"
+letters: "jobfinder_letters",
+filters: "jobfinder_filters"
 };
 
 /* ==========================================
@@ -171,7 +172,7 @@ let filteredOffers = [];
 let employersList = [];
 
 /* ==========================================
-PROFIL IA V14.2.0
+PROFIL IA V14.6.0
 ========================================== */
 
 const userProfile = {
@@ -352,7 +353,7 @@ const emailLetterBtn =
 document.getElementById("emailLetterBtn");
 
 /* ==========================================
-CV V14.2.4 - EXTRACTION REELLE
+CV V14.6 - EXTRACTION REELLE
 ========================================== */
 
 const cvFile =
@@ -793,9 +794,6 @@ alert("Impossible d'analyser le contenu du CV.");
 
 }
 
-/* ==========================================
-FILTRES AVANCES
-========================================== */
 /* ==========================================
 FILTRES AVANCES
 ========================================== */
@@ -1819,7 +1817,7 @@ Ouvre la console du navigateur pour voir le détail technique.
 }
 
 /* ==========================================
-ACTUALISER OFFRES V14.3.0
+ACTUALISER OFFRES V14.6
 ========================================== */
 
 async function refreshOffers(){
@@ -1879,6 +1877,54 @@ document.querySelectorAll(`input[name="${name}"]:checked`)
 .filter(Boolean);
 }
 
+function saveFilters(){
+setStorage(
+STORAGE_KEYS.filters,
+activeFilters
+);
+}
+
+function loadSavedFilters(){
+
+const savedFilters =
+safeJSON(
+localStorage.getItem(STORAGE_KEYS.filters),
+null
+);
+
+if(!savedFilters){
+return;
+}
+
+activeFilters = savedFilters;
+
+[
+"jobs",
+"sectors",
+"rates",
+"contracts",
+"regions",
+"sources",
+"employers",
+"matches"
+].forEach(name => {
+
+document
+.querySelectorAll(`input[name="${name}"]`)
+.forEach(input => {
+input.checked =
+Array.isArray(savedFilters[name]) &&
+savedFilters[name].includes(input.value);
+});
+
+});
+
+if(sortFilter){
+sortFilter.value = savedFilters.sort || "match";
+}
+
+}
+
 function readFilters(){
 
 activeFilters = {
@@ -1902,6 +1948,8 @@ matches: getCheckedValues("matches"),
 sort: safeGetValue(sortFilter) || "match"
 
 };
+
+saveFilters();
 
 return activeFilters;
 
@@ -1992,6 +2040,7 @@ updateBestMatch();
 updateNotifications();
 updateStatistics();
 }
+
 function sortOffers(data, sortType){
 const list = [...safeArray(data)];
 
@@ -2026,10 +2075,12 @@ rates: [],
 contracts: [],
 regions: [],
 sources: [],
-employers: "",
+employers: [],
 matches: [],
 sort: "match"
 };
+
+localStorage.removeItem(STORAGE_KEYS.filters);
 
 document
 .querySelectorAll("input[type='checkbox']")
@@ -2040,12 +2091,6 @@ input.checked = false;
 if(employerFilter) employerFilter.value = "";
 if(sortFilter) sortFilter.value = "match";
 
-document.querySelectorAll('input[name="sources"]')
-.forEach(cb => cb.checked = false);
-
-document.querySelectorAll('input[name="matches"]')
-.forEach(cb => cb.checked = false);
-
 filteredOffers = sortOffers([...offers], "match");
 
 renderOffers(filteredOffers);
@@ -2053,6 +2098,7 @@ updateAll();
 
 showInfo("Filtres réinitialisés");
 }
+
 
 /* ==========================================
 RENDER OFFRES
@@ -2259,7 +2305,7 @@ return card;
 }
 
 /* ==========================================
-OUVRIR OFFRE V14.3.0
+OUVRIR OFFRE V14.6
 ========================================== */
 
 function openOffer(offer){
@@ -3495,6 +3541,8 @@ initUI();
 
 loadSavedCV();
 
+loadSavedFilters();
+
 loadOffers();
 
 renderFavorites();
@@ -3503,16 +3551,9 @@ renderApplications();
 
 renderLettersHistory();
 
-updateDashboard();
+applyFilters();
 
 updateApplicationCounters();
-
-updateBestMatch();
-
-updateStatistics();
-
-
-loadSavedCV();
 
 console.log("==================================");
 console.log("JOB FINDER VAUD");
@@ -3523,32 +3564,6 @@ console.log("==================================");
 
 });
 
-
 /* ==========================================
-WINDOW EXPORTS
-========================================== */
-
-window.openTab = openTab;
-window.openOffer = openOffer;
-window.addFavorite = addFavorite;
-window.addApplication = addApplication;
-window.changeStatus = changeStatus;
-window.removeApplication = removeApplication;
-window.generateShortLetter = generateShortLetter;
-window.generateStandardLetter = generateStandardLetter;
-window.generatePremiumLetter = generatePremiumLetter;
-window.saveCurrentLetter = saveCurrentLetter;
-window.copyCurrentLetter = copyCurrentLetter;
-window.exportPDF = exportPDF;
-window.exportWord = exportWord;
-window.exportEmail = exportEmail;
-window.exportJSON = exportJSON;
-window.exportCSV = exportCSV;
-window.applyFilters = applyFilters;
-window.resetFilters = resetFilters;
-window.refreshOffers = refreshOffers;
-
-
-/* ==========================================
-FIN APP.JS V14.2.0 PREMIUM IA
+FIN APP.JS V14.6 PREMIUM IA
 ========================================== */
