@@ -488,7 +488,7 @@ display:grid;
 grid-template-columns:
 repeat(4,1fr);
 
-gap:12px;
+gap:10px;
 
 }
 
@@ -502,11 +502,11 @@ rgba(15,23,42,0.96) 55%,
 rgba(2,6,23,0.98) 100%
 );
 
-min-height:82px;
+min-height:62px;
 
-padding:12px 18px;
+padding:8px 14px;
 
-border-radius:16px;
+border-radius:14px;
 
 display:flex;
 
@@ -516,7 +516,7 @@ align-items:center;
 
 justify-content:flex-start;
 
-gap:16px;
+gap:12px;
 
 text-align:left;
 
@@ -531,11 +531,11 @@ border:
 transition:0.25s ease;
 
 box-shadow:
-0 8px 20px rgba(
+0 6px 14px rgba(
 0,
 0,
 0,
-0.24
+0.22
 );
 
 }
@@ -598,9 +598,9 @@ border-color:rgba(245,158,11,0.48);
 
 .kpi-icon{
 
-width:58px;
+width:44px;
 
-height:58px;
+height:44px;
 
 border-radius:50%;
 
@@ -610,16 +610,16 @@ align-items:center;
 
 justify-content:center;
 
-font-size:28px;
+font-size:22px;
 
 flex-shrink:0;
 
 box-shadow:
-0 8px 18px rgba(
+0 6px 12px rgba(
 0,
 0,
 0,
-0.30
+0.26
 );
 
 }
@@ -684,7 +684,7 @@ flex:1;
 
 .kpi-value{
 
-font-size:34px;
+font-size:26px;
 
 font-weight:800;
 
@@ -692,31 +692,32 @@ color:#f8fafc;
 
 line-height:1;
 
-margin-bottom:4px;
+margin-bottom:2px;
 
 text-shadow:
-0 3px 12px rgba(
+0 3px 10px rgba(
 0,
 0,
 0,
-0.42
+0.38
 );
 
 }
 
 .kpi-label{
 
-font-size:14px;
+font-size:12px;
 
 font-weight:700;
 
 margin-top:0;
 
-line-height:1.2;
+line-height:1.15;
 
 color:var(--soft);
 
 }
+
 
 /* ==========================================
 KPI RESPONSIVE
