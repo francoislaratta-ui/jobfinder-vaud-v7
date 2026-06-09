@@ -1851,53 +1851,22 @@ a.localeCompare(b, "fr")
 
 employersList = employers;
 
-console.log("EMPLOYEURS", employers);
-
 employerFilter.innerHTML =
-
 employers.map(company => `
 <label>
 <input type="checkbox" name="employers" value="${escapeHTML(company)}">
 ${escapeHTML(company)}
 </label>
-`).join("")
-
-+
-
-`
-<label>
-<input type="checkbox" id="selectAllEmployers">
-☑ Tout sélectionner
-</label>
-`;
+`).join("");
 
 document
 .querySelectorAll('input[name="employers"]')
 .forEach(cb => {
 cb.addEventListener("change", applyFilters);
 });
-
-const selectAllEmployers =
-document.getElementById("selectAllEmployers");
-
-if(selectAllEmployers){
-
-selectAllEmployers.addEventListener("change", () => {
-
-document
-.querySelectorAll('input[name="employers"]')
-.forEach(cb => {
-cb.checked =
-selectAllEmployers.checked;
-});
-
-applyFilters();
-
-});
-
 }
 
-}
+
 /* ==========================================
 RENDER OFFRES
 ========================================== */
