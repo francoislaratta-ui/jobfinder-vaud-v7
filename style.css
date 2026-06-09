@@ -2087,6 +2087,8 @@ margin-top:10px;
 margin-bottom:10px;
 
 }
+
+
 /* ==========================================
 BOUTONS FLOTTANTS
 ========================================== */
@@ -2106,6 +2108,14 @@ flex-direction:column;
 gap:10px;
 
 z-index:999;
+
+transition:0.25s ease;
+
+}
+
+.floating-actions.is-hidden .floating-btn:not(.floating-toggle){
+
+display:none;
 
 }
 
@@ -2148,6 +2158,22 @@ background:
 var(--gold-dark);
 
 color:white;
+
+}
+
+.floating-toggle{
+
+background:#111827;
+
+color:#f8fafc;
+
+border:
+1px solid rgba(
+245,
+158,
+11,
+0.45
+);
 
 }
 
