@@ -245,9 +245,9 @@ display:grid;
 grid-template-columns:
 repeat(4,1fr);
 
-gap:10px;
+gap:8px;
 
-padding:12px 8px;
+padding:8px 8px;
 
 background:#0b0f16;
 
@@ -277,9 +277,9 @@ border:
 0.14
 );
 
-padding:13px 14px;
+padding:9px 12px;
 
-border-radius:12px;
+border-radius:10px;
 
 background:
 linear-gradient(
@@ -290,7 +290,7 @@ rgba(2,6,23,0.98)
 
 color:#f8fafc;
 
-font-size:15px;
+font-size:14px;
 
 font-weight:700;
 
@@ -299,11 +299,11 @@ white-space:nowrap;
 transition:0.2s ease;
 
 box-shadow:
-0 6px 16px rgba(
+0 4px 12px rgba(
 0,
 0,
 0,
-0.22
+0.20
 );
 
 }
@@ -373,11 +373,11 @@ rgba(2,6,23,0.98)
 color:#a855f7 !important;
 
 box-shadow:
-0 6px 18px rgba(
+0 4px 14px rgba(
 124,
 58,
 237,
-0.18
+0.16
 );
 
 }
@@ -418,9 +418,24 @@ cursor:wait;
 grid-template-columns:
 repeat(2,1fr);
 
+gap:7px;
+
+padding:7px 7px;
+
+}
+
+.main-tabs button{
+
+padding:8px 10px;
+
+font-size:13px;
+
+border-radius:10px;
+
 }
 
 }
+
 
 /* ==========================================
 SECTIONS
