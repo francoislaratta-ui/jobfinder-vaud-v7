@@ -3301,7 +3301,6 @@ cvAnalysisResult.innerHTML = `
 
 }
 
-
 window.addEventListener("DOMContentLoaded", async () => {
 
 initUI();
@@ -3318,15 +3317,11 @@ typeof offersLoad.then === "function"
 await offersLoad;
 }
 
-loadSavedFilters();
-
 renderFavorites();
 
 renderApplications();
 
 renderLettersHistory();
-
-applyFilters();
 
 updateApplicationCounters();
 
@@ -3338,6 +3333,7 @@ console.log("Créateur F. Laratta");
 console.log("==================================");
 
 });
+
 
 /* ==========================================
 FIN APP.JS V14.6 PREMIUM IA
