@@ -277,7 +277,7 @@ rates: [],
 contracts: [],
 regions: [],
 sources: [],
-employers: "",
+employers: [],
 matches: [],
 sort: "match"
 };
@@ -1139,6 +1139,101 @@ checkbox.addEventListener("change", applyFilters);
 
 }
 
+
+/* ==========================================
+APPLY FILTERS
+========================================== */
+
+function applyFilters(){
+
+    const selectedEmployers = [
+        ...document.querySelectorAll('input[name="employers"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedSources = [
+        ...document.querySelectorAll('input[name="sources"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedMatches = [
+        ...document.querySelectorAll('input[name="matches"]:checked')
+    ].map(cb => cb.value);
+
+    activeFilters.employers = selectedEmployers;
+    activeFilters.sources = selectedSources;
+    activeFilters.matches = selectedMatches;
+    activeFilters.sort = sortFilter ? sortFilter.value : "match";
+
+    let result = [...offers];
+
+    if(activeFilters.employers.length > 0){
+        result = result.filter(offer =>
+            activeFilters.employers.includes(offer.company)
+        );
+    }
+
+    if(activeFilters.sources.length > 0){
+        result = result.filter(offer =>
+            activeFilters.sources.some(s =>
+                containsNormalized(offer.source, s)
+            )
+        );
+    }
+
+    if(activeFilters.matches.length > 0){
+        const minMatch = Math.min(
+            ...activeFilters.matches.map(m => parseInt(m))
+        );
+        result = result.filter(offer =>
+            calculateMatch(offer) >= minMatch
+        );
+    }
+
+    if(activeFilters.sort === "match"){
+        result.sort((a, b) =>
+            calculateMatch(b) - calculateMatch(a)
+        );
+    }else if(activeFilters.sort === "date"){
+        result.sort((a, b) =>
+            new Date(b.date) - new Date(a.date)
+        );
+    }else if(activeFilters.sort === "company"){
+        result.sort((a, b) =>
+            (a.company || "").localeCompare(b.company || "", "fr")
+        );
+    }
+
+    filteredOffers = result;
+    renderOffers(filteredOffers);
+    updateBestMatch();
+    updateStatistics();
+}
+
+/* ==========================================
+RESET FILTERS
+========================================== */
+
+function resetFilters(){
+
+    activeFilters = {
+        jobs: [],
+        sectors: [],
+        rates: [],
+        contracts: [],
+        regions: [],
+        sources: [],
+        employers: [],
+        matches: [],
+        sort: "match"
+    };
+
+    document.querySelectorAll('input[type="checkbox"]')
+        .forEach(cb => cb.checked = false);
+
+    filteredOffers = [...offers];
+    renderOffers(filteredOffers);
+    updateBestMatch();
+    updateStatistics();
+}
 
 /* ==========================================
 MATCH IA - DETAILS
