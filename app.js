@@ -2326,7 +2326,7 @@ container.innerHTML = `
 🔥 ${escapeHTML(best.title)}
 </div>
 <div class="offer-company">
-🏢 ${escapeHTML(best.company)}
+🏢 ${escapeHTML(best.company)} • 🔥 Top Match
 </div>
 <div class="offer-match ${getMatchClass(calculateMatch(best))}">
 🤖 ${calculateMatch(best)}% — ${escapeHTML(getMatchBadge(calculateMatch(best)))}
@@ -2334,6 +2334,7 @@ container.innerHTML = `
 </div>
 `;
 }
+
 
 /* ==========================================
 RESULTS SUMMARY
