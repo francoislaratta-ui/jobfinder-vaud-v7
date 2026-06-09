@@ -2326,7 +2326,7 @@ container.innerHTML = `
 🔥 ${escapeHTML(best.title)}
 </div>
 <div class="offer-company">
-🏢 ${escapeHTML(best.company)} • 🔥 Top Match
+🏢 ${escapeHTML(best.company)}
 </div>
 <div class="offer-match ${getMatchClass(calculateMatch(best))}">
 🤖 ${calculateMatch(best)}% — ${escapeHTML(getMatchBadge(calculateMatch(best)))}
