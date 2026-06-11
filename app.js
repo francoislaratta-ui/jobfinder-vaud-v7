@@ -1867,7 +1867,6 @@ await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
 
-populateEmployersFilter();
 renderOffers(filteredOffers);
 updateDashboard();
 updateBestMatch();
@@ -1915,43 +1914,6 @@ await loadOffers();
 showInfo("Offres actualisées avec succès");
 
 }
-
-/* ==========================================
-FILTRE EMPLOYEURS
-========================================== */
-
-function populateEmployersFilter(){
-if(!employerFilter){
-return;
-}
-
-const employers =
-[...new Set(
-offers
-.map(offer => offer.company)
-.filter(Boolean)
-)]
-.sort((a, b) =>
-a.localeCompare(b, "fr")
-);
-
-employersList = employers;
-
-employerFilter.innerHTML =
-employers.map(company => `
-<label>
-<input type="checkbox" name="employers" value="${escapeHTML(company)}">
-${escapeHTML(company)}
-</label>
-`).join("");
-
-document
-.querySelectorAll('input[name="employers"]')
-.forEach(cb => {
-cb.addEventListener("change", applyFilters);
-});
-}
-
 
 /* ==========================================
 RENDER OFFRES
