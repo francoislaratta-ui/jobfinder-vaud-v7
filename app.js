@@ -1137,8 +1137,24 @@ APPLY FILTERS
 
 function applyFilters(){
 
-    const selectedEmployers = [
-        ...document.querySelectorAll('input[name="employers"]:checked')
+    const selectedMetiers = [
+        ...document.querySelectorAll('input[name="metiers"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedSecteurs = [
+        ...document.querySelectorAll('input[name="secteurs"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedTaux = [
+        ...document.querySelectorAll('input[name="taux"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedContrats = [
+        ...document.querySelectorAll('input[name="contrats"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedRegions = [
+        ...document.querySelectorAll('input[name="regions"]:checked')
     ].map(cb => cb.value);
 
     const selectedSources = [
@@ -1149,30 +1165,61 @@ function applyFilters(){
         ...document.querySelectorAll('input[name="matches"]:checked')
     ].map(cb => cb.value);
 
-    activeFilters.employers = selectedEmployers;
-    activeFilters.sources = selectedSources;
-    activeFilters.matches = selectedMatches;
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
     let result = [...offers];
 
-    if(activeFilters.employers.length > 0){
+    if(selectedMetiers.length > 0){
         result = result.filter(offer =>
-            activeFilters.employers.includes(offer.company)
+            selectedMetiers.some(m =>
+                containsNormalized(offer.title, m)
+            )
         );
     }
 
-    if(activeFilters.sources.length > 0){
+    if(selectedSecteurs.length > 0){
         result = result.filter(offer =>
-            activeFilters.sources.some(s =>
+            selectedSecteurs.some(s =>
+                containsNormalized(offer.sector, s)
+            )
+        );
+    }
+
+    if(selectedTaux.length > 0){
+        result = result.filter(offer =>
+            selectedTaux.some(t =>
+                containsNormalized(offer.rate, t)
+            )
+        );
+    }
+
+    if(selectedContrats.length > 0){
+        result = result.filter(offer =>
+            selectedContrats.some(c =>
+                containsNormalized(offer.contract, c)
+            )
+        );
+    }
+
+    if(selectedRegions.length > 0){
+        result = result.filter(offer =>
+            selectedRegions.some(r =>
+                containsNormalized(offer.location, r)
+            )
+        );
+    }
+
+    if(selectedSources.length > 0){
+        result = result.filter(offer =>
+            selectedSources.some(s =>
                 containsNormalized(offer.source, s)
             )
         );
     }
 
-    if(activeFilters.matches.length > 0){
+    if(selectedMatches.length > 0){
         const minMatch = Math.min(
-            ...activeFilters.matches.map(m => parseInt(m))
+            ...selectedMatches.map(m => parseInt(m))
         );
         result = result.filter(offer =>
             calculateMatch(offer) >= minMatch
@@ -1224,176 +1271,6 @@ function resetFilters(){
     renderOffers(filteredOffers);
     updateBestMatch();
     updateStatistics();
-}
-
-/* ==========================================
-MATCH IA - DETAILS
-========================================== */
-
-function getOfferText(offer){
-return [
-offer.title,
-offer.company,
-offer.sector,
-offer.location,
-offer.address,
-offer.rate,
-offer.contract,
-offer.source,
-offer.description
-]
-.join(" ");
-}
-
-function matchAnyOfferField(offer, values){
-const text = getOfferText(offer);
-
-return safeArray(values).some(value =>
-containsNormalized(text, value)
-);
-}
-
-function matchExactOrContains(value, values){
-const source = normalizeText(value);
-
-return safeArray(values).some(item => {
-const target = normalizeText(item);
-
-return source === target ||
-source.includes(target) ||
-target.includes(source);
-});
-}
-
-function calculateMatchDetails(offer){
-if(!offer){
-return {
-score: 0,
-reasons: [],
-missing: []
-};
-}
-
-let score = 0;
-const reasons = [];
-const missing = [];
-
-const offerText =
-normalizeText(
-getOfferText(offer)
-);
-
-/* METIER */
-const jobOk =
-matchAnyOfferField(
-offer,
-userProfile.targetJobs
-);
-
-if(jobOk){
-score += IA_WEIGHTS.jobMatch;
-reasons.push("Métier compatible");
-}else{
-missing.push("Métier peu ciblé");
-}
-
-/* SECTEUR */
-const sectorOk =
-matchAnyOfferField(
-offer,
-userProfile.preferredSectors
-);
-
-if(sectorOk){
-score += IA_WEIGHTS.sectorMatch;
-reasons.push("Secteur intéressant");
-}else{
-missing.push("Secteur moins prioritaire");
-}
-
-/* REGION */
-const regionOk =
-matchAnyOfferField(
-offer,
-userProfile.preferredRegions
-);
-
-if(regionOk){
-score += IA_WEIGHTS.regionMatch;
-reasons.push("Région compatible");
-}else{
-missing.push("Région à vérifier");
-}
-
-/* TAUX */
-const rateText =
-String(offer.rate || "");
-
-const rateOk =
-userProfile.preferredRates.some(rate =>
-containsNormalized(rateText, rate)
-) ||
-/50|60|70/.test(rateText);
-
-if(rateOk){
-score += IA_WEIGHTS.rateMatch;
-reasons.push("Taux compatible");
-}else{
-missing.push("Taux à vérifier");
-}
-
-/* CONTRAT */
-const contractOk =
-matchExactOrContains(
-offer.contract,
-userProfile.preferredContracts
-);
-
-if(contractOk){
-score += IA_WEIGHTS.contractBonus;
-reasons.push("Contrat compatible");
-}else{
-missing.push("Contrat à vérifier");
-}
-
-/* BONUS CV - COMPETENCES */
-if(
-currentCVAnalysis &&
-currentCVAnalysis.skills &&
-currentCVAnalysis.skills.length
-){
-
-const matchingSkills =
-currentCVAnalysis.skills.filter(skill =>
-offerText.includes(
-normalizeText(skill)
-)
-);
-
-if(matchingSkills.length > 0){
-
-const skillBonus =
-Math.min(
-IA_WEIGHTS.cvSkillsBonus,
-matchingSkills.length * 5
-);
-
-score += skillBonus;
-
-reasons.push(
-"CV compatible : " + matchingSkills.join(", ")
-);
-
-}else{
-
-missing.push("Compétences CV peu visibles dans l'offre");
-
-}
-
-}else{
-
-missing.push("CV non analysé");
-
 }
 
 /* BONUS CV - LANGUES */
