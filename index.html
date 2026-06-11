@@ -655,7 +655,7 @@ TAUX
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="100">
+<input type="checkbox" id="taux100" name="taux" value="100">
 100%
 </label>
 
@@ -664,7 +664,7 @@ TAUX
 <hr class="filter-separator">
 
 <label>
-<input type="checkbox" name="taux" value="Temps plein">
+<input type="checkbox" name="taux" value="Temps plein" id="tempsPlein" onchange="if(this.checked) document.getElementById('taux100').checked = true;">
 Temps plein
 </label>
 
@@ -676,6 +676,7 @@ Temps partiel
 </div>
 
 </div>
+
 
 <!-- ==========================================
 CONTRATS
