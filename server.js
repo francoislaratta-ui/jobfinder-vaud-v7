@@ -1363,6 +1363,8 @@ links.push(absoluteUrl);
 
 }
 
+}
+
 return [...new Set(links)];
 
 }
