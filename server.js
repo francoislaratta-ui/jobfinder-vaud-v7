@@ -2395,7 +2395,240 @@ error:error.message
 
 }
 );
+/* ==========================================
+SCRAPING OFFRES AU DEMARRAGE
+========================================== */
 
+const SEARCH_KEYWORDS = [
+"employé de commerce",
+"assistant administratif",
+"gestionnaire de dossier",
+"technicien informatique",
+"support informatique",
+"helpdesk",
+"back-office",
+"collaborateur administratif"
+];
+
+const VAUD_REGIONS = [
+"Vaud",
+"Lausanne",
+"Morges",
+"Nyon",
+"Vevey",
+"Renens",
+"Yverdon",
+"Aigle",
+"Broye-Vully",
+"Gros-de-Vaud",
+"Jura-Nord vaudois",
+"Lavaux-Oron",
+"Riviera-Pays-d'Enhaut",
+"Ouest lausannois"
+];
+
+async function fetchJobupOffers(){
+
+const offers = [];
+
+try{
+
+for(const keyword of SEARCH_KEYWORDS){
+
+const encodedKeyword =
+encodeURIComponent(keyword);
+
+const url =
+`https://www.jobup.ch/api/v1/jobs?term=${encodedKeyword}&location=vaud&limit=20`;
+
+const html =
+await fetchExternalText(url);
+
+const data =
+JSON.parse(html);
+
+const jobs =
+data?.documents || [];
+
+for(const job of jobs){
+
+offers.push({
+id: String(job.job_id || generateServerId()),
+title: job.title || "",
+company: job.company_name || "",
+location: job.place || "",
+sector: job.function || "",
+rate: job.workload || "",
+contract: job.contract_type || "",
+source: "Jobup",
+offerUrl: job.job_id
+? `https://www.jobup.ch/fr/emplois/detail/${job.job_id}/`
+: "",
+date: job.publication_date || new Date().toISOString().split("T")[0],
+description: job.lead || "Descriptif non disponible.",
+salary: ""
+});
+
+}
+
+}
+
+}catch(error){
+
+console.warn("Erreur scraping Jobup :", error.message);
+
+}
+
+return offers;
+
+}
+
+async function fetchJobScout24Offers(){
+
+const offers = [];
+
+try{
+
+for(const keyword of SEARCH_KEYWORDS){
+
+const encodedKeyword =
+encodeURIComponent(keyword);
+
+const url =
+`https://api.jobscout24.ch/api/v1/jobs?query=${encodedKeyword}&location=vaud&rows=20`;
+
+const html =
+await fetchExternalText(url);
+
+const data =
+JSON.parse(html);
+
+const jobs =
+data?.jobs || data?.results || [];
+
+for(const job of jobs){
+
+offers.push({
+id: String(job.id || generateServerId()),
+title: job.title || "",
+company: job.company || "",
+location: job.location || "",
+sector: job.category || "",
+rate: job.workload || "",
+contract: job.contractType || "",
+source: "JobScout24",
+offerUrl: job.id
+? `https://www.jobscout24.ch/fr/job/${job.id}/`
+: "",
+date: job.publicationDate || new Date().toISOString().split("T")[0],
+description: job.description || "Descriptif non disponible.",
+salary: job.salary || ""
+});
+
+}
+
+}
+
+}catch(error){
+
+console.warn("Erreur scraping JobScout24 :", error.message);
+
+}
+
+return offers;
+
+}
+
+async function fetchVdOffers(){
+
+const offers = [];
+
+try{
+
+for(const keyword of SEARCH_KEYWORDS){
+
+const encodedKeyword =
+encodeURIComponent(`"${keyword}"`);
+
+const url =
+`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations&finder=findReqs;siteNumber=CX_1,limit=20,keyword=${encodedKeyword},sortBy=RELEVANCY`;
+
+const html =
+await fetchExternalText(url);
+
+const data =
+JSON.parse(html);
+
+const jobs =
+data?.items?.[0]?.requisitionList || [];
+
+for(const job of jobs){
+
+offers.push({
+id: String(job.Id || generateServerId()),
+title: job.Title || "",
+company: "État de Vaud",
+location: job.PrimaryLocation || "Vaud",
+sector: "Administration publique",
+rate: "",
+contract: "",
+source: "État de Vaud",
+offerUrl: job.Id
+? `https://offres-emploi.vd.ch/#fr/sites/CX_1/job/${job.Id}`
+: "",
+date: job.PostedDate || new Date().toISOString().split("T")[0],
+description: job.ShortDescriptionStr || "Descriptif non disponible.",
+salary: ""
+});
+
+}
+
+}
+
+}catch(error){
+
+console.warn("Erreur scraping État de Vaud :", error.message);
+
+}
+
+return offers;
+
+}
+
+function generateServerId(){
+return Date.now().toString() +
+Math.random().toString(36).substring(2, 8);
+}
+
+function deduplicateOffers(offers){
+
+const seen = new Set();
+const result = [];
+
+for(const offer of offers){
+
+const key =
+`${offer.title}-${offer.company}-${offer.location}`
+.toLowerCase()
+.replace(/\s+/g, "");
+
+if(!seen.has(key)){
+seen.add(key);
+result.push(offer);
+}
+
+}
+
+return result;
+
+}
+
+async function scrapeAllOffers(){
+
+console.log("🔄 Scraping des offres en cours...");
+
+const [
+j
 
 /* ==========================================
 DEMARRAGE SERVEUR
@@ -2403,7 +2636,7 @@ DEMARRAGE SERVEUR
 
 app.listen(
 PORT,
-()=>{
+async ()=>{
 
 console.log(
 "=================================="
@@ -2414,13 +2647,14 @@ console.log(
 );
 
 console.log(
-`Serveur démarré :
-http://localhost:${PORT}`
+`Serveur démarré : http://localhost:${PORT}`
 );
 
 console.log(
 "=================================="
 );
+
+await scrapeAllOffers();
 
 }
 );
