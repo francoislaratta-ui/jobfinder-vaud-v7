@@ -2440,107 +2440,60 @@ const encodedKeyword =
 encodeURIComponent(keyword);
 
 const url =
-`https://www.jobup.ch/api/v1/jobs?term=${encodedKeyword}&canton=VD&limit=20&language=fr`;
+`https://www.jobup.ch/fr/emplois/rss/?term=${encodedKeyword}&region=vd`;
 
-const html =
+const xml =
 await fetchExternalText(url);
 
-console.log(`Jobup RAW "${keyword}":`, html.substring(0, 200));
+console.log(`Jobup RSS RAW "${keyword}":`, xml.substring(0, 200));
 
-const data =
-JSON.parse(html);
+const items =
+xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
 
-const jobs =
-data?.documents || [];
+console.log(`Jobup RSS "${keyword}": ${items.length} offres`);
 
-console.log(`Jobup keyword "${keyword}": ${jobs.length} offres`);
+for(const item of items){
 
-for(const job of jobs){
+const title =
+(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] ||
+(item.match(/<title>(.*?)<\/title>/) || [])[1] || "";
 
-offers.push({
-id: String(job.job_id || generateServerId()),
-title: job.title || "",
-company: job.company_name || "",
-location: job.place || "",
-sector: job.function_label || "",
-rate: job.workload || "",
-contract: job.employment_type_label || "",
-source: "Jobup",
-offerUrl: job.job_id
-? `https://www.jobup.ch/fr/emplois/detail/${job.job_id}/`
-: "",
-date: job.publication_date
-? job.publication_date.split("T")[0]
-: new Date().toISOString().split("T")[0],
-description: job.lead || "Descriptif non disponible.",
-salary: ""
-});
+const company =
+(item.match(/<author>(.*?)<\/author>/) ||
+item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) || [])[1] || "";
 
-}
+const link =
+(item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
 
-}
+const description =
+(item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
 
-}catch(error){
+const pubDate =
+(item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
 
-console.warn("Erreur scraping Jobup :", error.message);
-
-}
-
-return offers;
-
-}
-
-async function fetchJobupOffers(){
-
-const offers = [];
-
-try{
-
-for(const keyword of SEARCH_KEYWORDS){
-
-const encodedKeyword =
-encodeURIComponent(keyword);
-
-const url =
-`https://www.jobup.ch/api/v1/jobs?term=${encodedKeyword}&region=vd&language=fr&limit=25`;
-
-const html =
-await fetchExternalText(url);
-
-console.log(`Jobup RAW "${keyword}":`, html.substring(0, 300));
-
-const data =
-JSON.parse(html);
-
-const jobs =
-data?.documents || [];
-
-console.log(`Jobup "${keyword}": ${jobs.length} offres`);
-
-for(const job of jobs){
+const location =
+(item.match(/<city>(.*?)<\/city>/) ||
+item.match(/<region>(.*?)<\/region>/) || [])[1] || "Vaud";
 
 const jobId =
-job.job_id ||
-job.id ||
-job.uuid ||
-"";
+link.match(/detail\/([^/]+)\//)?.[1] || generateServerId();
+
+if(!title) continue;
 
 offers.push({
-id: String(jobId || generateServerId()),
-title: job.title || "",
-company: job.company_name || "",
-location: job.place || job.city || "",
-sector: job.function_label || job.domain || "",
-rate: job.workload || "",
-contract: job.employment_type_label || "",
+id: String(jobId),
+title: title.trim(),
+company: company.trim(),
+location: location.trim(),
+sector: "",
+rate: "",
+contract: "",
 source: "Jobup",
-offerUrl: jobId
-? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
-: "",
-date: job.publication_date
-? job.publication_date.split("T")[0]
+offerUrl: link.trim(),
+date: pubDate
+? new Date(pubDate).toISOString().split("T")[0]
 : new Date().toISOString().split("T")[0],
-description: job.lead || "Descriptif non disponible.",
+description: description || "Descriptif non disponible.",
 salary: ""
 });
 
@@ -2550,7 +2503,7 @@ salary: ""
 
 }catch(error){
 
-console.warn("Erreur scraping Jobup :", error.message);
+console.warn("Erreur scraping Jobup RSS :", error.message);
 
 }
 
@@ -2570,48 +2523,58 @@ const encodedKeyword =
 encodeURIComponent(keyword);
 
 const url =
-`https://www.jobscout24.ch/fr/jobs/${encodedKeyword}/vaud/?sort=date&rows=20`;
+`https://www.jobscout24.ch/fr/jobs/rss/${encodedKeyword}/vaud/`;
 
-const html =
+const xml =
 await fetchExternalText(url);
 
-const jsonMatch =
-html.match(/<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/i);
+console.log(`JobScout24 RSS RAW "${keyword}":`, xml.substring(0, 200));
 
-if(!jsonMatch){
-console.log(`JobScout24 "${keyword}": aucun JSON trouvé`);
-continue;
-}
+const items =
+xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
 
-const data =
-JSON.parse(jsonMatch[1]);
+console.log(`JobScout24 RSS "${keyword}": ${items.length} offres`);
 
-const jobs =
-data?.props?.pageProps?.jobs ||
-data?.jobs ||
-[];
+for(const item of items){
 
-console.log(`JobScout24 "${keyword}": ${jobs.length} offres`);
+const title =
+(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] ||
+(item.match(/<title>(.*?)<\/title>/) || [])[1] || "";
 
-for(const job of jobs){
+const company =
+(item.match(/<author>(.*?)<\/author>/) ||
+item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) || [])[1] || "";
+
+const link =
+(item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
+
+const description =
+(item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
+
+const pubDate =
+(item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
+
+const location =
+(item.match(/<city>(.*?)<\/city>/) ||
+item.match(/<region>(.*?)<\/region>/) || [])[1] || "Vaud";
+
+if(!title) continue;
 
 offers.push({
-id: String(job.id || generateServerId()),
-title: job.title || "",
-company: job.company || "",
-location: job.location || "",
-sector: job.category || "",
-rate: job.workload || "",
-contract: job.contractType || "",
+id: generateServerId(),
+title: title.trim(),
+company: company.trim(),
+location: location.trim(),
+sector: "",
+rate: "",
+contract: "",
 source: "JobScout24",
-offerUrl: job.id
-? `https://www.jobscout24.ch/fr/job/${job.id}/`
-: "",
-date: job.publicationDate
-? job.publicationDate.split("T")[0]
+offerUrl: link.trim(),
+date: pubDate
+? new Date(pubDate).toISOString().split("T")[0]
 : new Date().toISOString().split("T")[0],
-description: job.description || "Descriptif non disponible.",
-salary: job.salary || ""
+description: description || "Descriptif non disponible.",
+salary: ""
 });
 
 }
@@ -2620,7 +2583,7 @@ salary: job.salary || ""
 
 }catch(error){
 
-console.warn("Erreur scraping JobScout24 :", error.message);
+console.warn("Erreur scraping JobScout24 RSS :", error.message);
 
 }
 
