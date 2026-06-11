@@ -1273,6 +1273,176 @@ function resetFilters(){
     updateStatistics();
 }
 
+/* ==========================================
+MATCH IA - DETAILS
+========================================== */
+
+function getOfferText(offer){
+return [
+offer.title,
+offer.company,
+offer.sector,
+offer.location,
+offer.address,
+offer.rate,
+offer.contract,
+offer.source,
+offer.description
+]
+.join(" ");
+}
+
+function matchAnyOfferField(offer, values){
+const text = getOfferText(offer);
+
+return safeArray(values).some(value =>
+containsNormalized(text, value)
+);
+}
+
+function matchExactOrContains(value, values){
+const source = normalizeText(value);
+
+return safeArray(values).some(item => {
+const target = normalizeText(item);
+
+return source === target ||
+source.includes(target) ||
+target.includes(source);
+});
+}
+
+function calculateMatchDetails(offer){
+if(!offer){
+return {
+score: 0,
+reasons: [],
+missing: []
+};
+}
+
+let score = 0;
+const reasons = [];
+const missing = [];
+
+const offerText =
+normalizeText(
+getOfferText(offer)
+);
+
+/* METIER */
+const jobOk =
+matchAnyOfferField(
+offer,
+userProfile.targetJobs
+);
+
+if(jobOk){
+score += IA_WEIGHTS.jobMatch;
+reasons.push("Métier compatible");
+}else{
+missing.push("Métier peu ciblé");
+}
+
+/* SECTEUR */
+const sectorOk =
+matchAnyOfferField(
+offer,
+userProfile.preferredSectors
+);
+
+if(sectorOk){
+score += IA_WEIGHTS.sectorMatch;
+reasons.push("Secteur intéressant");
+}else{
+missing.push("Secteur moins prioritaire");
+}
+
+/* REGION */
+const regionOk =
+matchAnyOfferField(
+offer,
+userProfile.preferredRegions
+);
+
+if(regionOk){
+score += IA_WEIGHTS.regionMatch;
+reasons.push("Région compatible");
+}else{
+missing.push("Région à vérifier");
+}
+
+/* TAUX */
+const rateText =
+String(offer.rate || "");
+
+const rateOk =
+userProfile.preferredRates.some(rate =>
+containsNormalized(rateText, rate)
+) ||
+/50|60|70/.test(rateText);
+
+if(rateOk){
+score += IA_WEIGHTS.rateMatch;
+reasons.push("Taux compatible");
+}else{
+missing.push("Taux à vérifier");
+}
+
+/* CONTRAT */
+const contractOk =
+matchExactOrContains(
+offer.contract,
+userProfile.preferredContracts
+);
+
+if(contractOk){
+score += IA_WEIGHTS.contractBonus;
+reasons.push("Contrat compatible");
+}else{
+missing.push("Contrat à vérifier");
+}
+
+/* BONUS CV - COMPETENCES */
+if(
+currentCVAnalysis &&
+currentCVAnalysis.skills &&
+currentCVAnalysis.skills.length
+){
+
+const matchingSkills =
+currentCVAnalysis.skills.filter(skill =>
+offerText.includes(
+normalizeText(skill)
+)
+);
+
+if(matchingSkills.length > 0){
+
+const skillBonus =
+Math.min(
+IA_WEIGHTS.cvSkillsBonus,
+matchingSkills.length * 5
+);
+
+score += skillBonus;
+
+reasons.push(
+"CV compatible : " + matchingSkills.join(", ")
+);
+
+}else{
+
+missing.push("Compétences CV peu visibles dans l'offre");
+
+}
+
+}else{
+
+missing.push("CV non analysé");
+
+}
+
 /* BONUS CV - LANGUES */
 if(
 currentCVAnalysis &&
@@ -1380,6 +1550,7 @@ sum + calculateMatch(offer), 0
 
 return Math.round(total / list.length);
 }
+
 
 /* ==========================================
 STORAGE SAVE
@@ -3013,6 +3184,7 @@ updateDashboard();
 
 showSuccess("Reset terminé");
 });
+
 
 /* ==========================================
 DASHBOARD
