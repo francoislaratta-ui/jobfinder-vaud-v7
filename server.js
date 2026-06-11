@@ -2628,7 +2628,43 @@ async function scrapeAllOffers(){
 console.log("🔄 Scraping des offres en cours...");
 
 const [
-j
+jobupOffers,
+jobscoutOffers,
+vdOffers
+] = await Promise.all([
+fetchJobupOffers(),
+fetchJobScout24Offers(),
+fetchVdOffers()
+]);
+
+const allOffers =
+deduplicateOffers([
+...jobupOffers,
+...jobscoutOffers,
+...vdOffers
+]);
+
+if(allOffers.length > 0){
+
+writeJson(OFFERS_FILE, allOffers);
+
+console.log(
+`✅ ${allOffers.length} offres scrapées et sauvegardées`
+);
+
+console.log(
+`📊 Jobup: ${jobupOffers.length} | JobScout24: ${jobscoutOffers.length} | VD: ${vdOffers.length}`
+);
+
+}else{
+
+console.warn(
+"⚠️ Aucune offre récupérée — offers.json conservé"
+);
+
+}
+
+}
 
 /* ==========================================
 DEMARRAGE SERVEUR
