@@ -9,6 +9,7 @@ const path = require("path");
 const cors = require("cors");
 const https = require("https");
 const http = require("http");
+const axios = require("axios");
 
 const app = express();
 
@@ -1178,31 +1179,12 @@ return hits / words.length;
 
 }
 
-function fetchExternalText(url, maxRedirects = 5){
+async function fetchExternalText(url){
 
-return new Promise((resolve, reject) => {
+const isJobup = url.includes("jobup.ch");
+const isJobScout = url.includes("jobscout24.ch");
 
-try{
-
-const parsedUrl =
-new URL(url);
-
-const client =
-parsedUrl.protocol === "https:"
-? require("https")
-: require("http");
-
-const zlib =
-require("zlib");
-
-const isJobup =
-url.includes("jobup.ch");
-
-const isJobScout =
-url.includes("jobscout24.ch");
-
-const headers =
-isJobup ? {
+const headers = isJobup ? {
 "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 "Accept-Language":"fr-CH,fr;q=0.9",
@@ -1223,122 +1205,15 @@ isJobup ? {
 "ora-irc-language":"fr"
 };
 
-const request =
-client.get(
-url,
-{ headers },
-response => {
-
-/* GESTION REDIRECTIONS */
-if(
-response.statusCode >= 300 &&
-response.statusCode < 400 &&
-response.headers.location &&
-maxRedirects > 0
-){
-
-const redirectUrl =
-new URL(
-response.headers.location,
-url
-).href;
-
-response.resume();
-
-resolve(
-fetchExternalText(redirectUrl, maxRedirects - 1)
-);
-
-return;
-
-}
-
-const chunks = [];
-
-response.on("data", chunk => {
-chunks.push(chunk);
+const response = await axios.get(url, {
+headers,
+timeout: 10000,
+maxRedirects: 5,
+responseType: "text",
+decompress: true
 });
 
-response.on("end", () => {
-
-const buffer =
-Buffer.concat(chunks);
-
-const encoding =
-String(response.headers["content-encoding"] || "").toLowerCase();
-
-if(encoding.includes("gzip")){
-
-zlib.gunzip(buffer, (error, decoded) => {
-
-if(error){
-reject(error);
-return;
-}
-
-resolve(decoded.toString("utf8"));
-
-});
-
-return;
-
-}
-
-if(encoding.includes("deflate")){
-
-zlib.inflate(buffer, (error, decoded) => {
-
-if(error){
-reject(error);
-return;
-}
-
-resolve(decoded.toString("utf8"));
-
-});
-
-return;
-
-}
-
-if(encoding.includes("br")){
-
-zlib.brotliDecompress(buffer, (error, decoded) => {
-
-if(error){
-reject(error);
-return;
-}
-
-resolve(decoded.toString("utf8"));
-
-});
-
-return;
-
-}
-
-resolve(buffer.toString("utf8"));
-
-});
-
-}
-);
-
-request.on("error", reject);
-
-request.setTimeout(10000, () => {
-request.destroy();
-reject(new Error("Timeout récupération page"));
-});
-
-}catch(error){
-
-reject(error);
-
-}
-
-});
+return response.data;
 
 }
 
@@ -1369,7 +1244,6 @@ links.push(absoluteUrl);
 return [...new Set(links)];
 
 }
-
 
 /* ==========================================
 DECOUVERTE URL REELLE ANNONCE V14.3.2
