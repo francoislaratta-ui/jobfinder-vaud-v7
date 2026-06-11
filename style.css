@@ -1184,9 +1184,9 @@ margin-bottom:20px;
 
 .action-btn{
 
-background:var(--gold);
+background:#534AB7;
 
-color:black;
+color:#fff;
 
 border:none;
 
@@ -1198,15 +1198,19 @@ font-weight:700;
 
 transition:0.2s;
 
+box-shadow:0 0 16px rgba(127,119,221,0.5);
+
 }
 
 .action-btn:hover{
 
 transform:translateY(-2px);
 
-background:var(--gold-dark);
+background:#7F77DD;
 
 color:white;
+
+box-shadow:0 0 22px rgba(127,119,221,0.7);
 
 }
 
@@ -1216,11 +1220,15 @@ background:#2a2a2a;
 
 color:white;
 
+box-shadow:none;
+
 }
 
 .secondary-btn:hover{
 
 background:#3a3a3a;
+
+box-shadow:none;
 
 }
 
@@ -1230,11 +1238,15 @@ background:var(--danger);
 
 color:white;
 
+box-shadow:none;
+
 }
 
 .danger-btn:hover{
 
 opacity:0.9;
+
+box-shadow:none;
 
 }
 
