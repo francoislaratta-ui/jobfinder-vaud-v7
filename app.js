@@ -2011,13 +2011,113 @@ Ouvre la console du navigateur pour voir le détail technique.
 ACTUALISER OFFRES V14.6
 ========================================== */
 
+async function fetchJobupFromBrowser(){
+
+const offers = [];
+
+const keywords = [
+"employé de commerce",
+"assistant administratif",
+"gestionnaire de dossier",
+"technicien informatique",
+"support informatique",
+"helpdesk",
+"back-office",
+"collaborateur administratif"
+];
+
+for(const keyword of keywords){
+
+try{
+
+const encoded = encodeURIComponent(keyword);
+const url = `https://www.jobup.ch/fr/emplois/rss/?term=${encoded}&region=vd`;
+
+const response = await fetch(url);
+const xml = await response.text();
+
+const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
+
+console.log(`Jobup browser "${keyword}": ${items.length} offres`);
+
+for(const item of items){
+
+const title = (item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] || "";
+const link = (item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
+const description = (item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
+const pubDate = (item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
+const company = (item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) || [])[1] || "";
+
+if(!title) continue;
+
+const jobId = link.match(/detail\/([^/]+)\//)?.[1] || generateId();
+
+offers.push({
+id: String(jobId),
+title: title.trim(),
+company: company.trim(),
+location: "Vaud",
+sector: "",
+rate: "",
+contract: "",
+source: "Jobup",
+offerUrl: link.trim(),
+date: pubDate ? new Date(pubDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+description: description || "Descriptif non disponible.",
+salary: ""
+});
+
+}
+
+}catch(error){
+console.warn(`Erreur Jobup browser "${keyword}":`, error.message);
+}
+
+}
+
+return offers;
+
+}
+
 async function refreshOffers(){
 
 showInfo("Actualisation des offres en cours...");
 
-await loadOffers();
+try{
 
-showInfo("Offres actualisées avec succès");
+const jobupOffers = await fetchJobupFromBrowser();
+
+console.log(`Jobup browser: ${jobupOffers.length} offres trouvées`);
+
+if(jobupOffers.length > 0){
+
+const existingOffers = offers.filter(o => o.source !== "Jobup");
+
+offers = [...existingOffers, ...jobupOffers];
+
+filteredOffers = [...offers];
+
+renderOffers(filteredOffers);
+updateDashboard();
+updateBestMatch();
+updateStatistics();
+
+showSuccess(`${jobupOffers.length} offres Jobup chargées !`);
+
+}else{
+
+await loadOffers();
+showInfo("Offres actualisées");
+
+}
+
+}catch(error){
+
+console.error("Erreur refresh:", error);
+await loadOffers();
+showInfo("Offres actualisées");
+
+}
 
 }
 
