@@ -1167,6 +1167,17 @@ function applyFilters(){
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
+    localStorage.setItem("jobfinder_filters", JSON.stringify({
+        metiers: selectedMetiers,
+        secteurs: selectedSecteurs,
+        taux: selectedTaux,
+        contrats: selectedContrats,
+        regions: selectedRegions,
+        sources: selectedSources,
+        matches: selectedMatches,
+        sort: activeFilters.sort
+    }));
+
     let result = [...offers];
 
     if(selectedMetiers.length > 0){
@@ -1264,6 +1275,8 @@ function resetFilters(){
         sort: "match"
     };
 
+    localStorage.removeItem("jobfinder_filters");
+
     document.querySelectorAll('input[type="checkbox"]')
         .forEach(cb => cb.checked = false);
 
@@ -1271,6 +1284,51 @@ function resetFilters(){
     renderOffers(filteredOffers);
     updateBestMatch();
     updateStatistics();
+}
+
+/* ==========================================
+RESTAURATION FILTRES
+========================================== */
+
+function restoreSavedFilters(){
+
+    const saved = safeJSON(
+        localStorage.getItem("jobfinder_filters"),
+        null
+    );
+
+    if(!saved) return;
+
+    const groups = [
+        "metiers",
+        "secteurs",
+        "taux",
+        "contrats",
+        "regions",
+        "sources",
+        "matches"
+    ];
+
+    groups.forEach(group => {
+        const values = saved[group] || [];
+        values.forEach(value => {
+            const cb = document.querySelector(
+                `input[name="${group}"][value="${value}"]`
+            );
+            if(cb) cb.checked = true;
+        });
+    });
+
+    if(saved.sort && sortFilter){
+        sortFilter.value = saved.sort;
+    }
+
+    if(
+        groups.some(g => (saved[g] || []).length > 0) ||
+        saved.sort !== "match"
+    ){
+        applyFilters();
+    }
 }
 
 /* ==========================================
@@ -3413,6 +3471,8 @@ typeof offersLoad.then === "function"
 ){
 await offersLoad;
 }
+
+restoreSavedFilters();
 
 renderFavorites();
 
