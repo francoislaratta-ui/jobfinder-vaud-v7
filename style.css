@@ -597,6 +597,24 @@ border-color:rgba(245,158,11,0.48);
 
 }
 
+.kpi-card:hover{
+
+transform:translateY(-2px);
+
+border-color:rgba(127,119,221,0.9);
+
+box-shadow:0 0 18px rgba(127,119,221,0.4);
+
+}
+
+.kpi-card:active{
+
+border-color:rgba(127,119,221,1);
+
+box-shadow:0 0 24px rgba(127,119,221,0.6);
+
+}
+
 .kpi-icon{
 
 width:44px;
@@ -750,21 +768,17 @@ cursor:pointer;
 
 transform:translateY(-2px);
 
-border-color:
-rgba(
-168,
-85,
-247,
-0.55
-);
+border-color:rgba(127,119,221,0.9);
 
-box-shadow:
-0 10px 24px rgba(
-124,
-58,
-237,
-0.22
-);
+box-shadow:0 0 18px rgba(127,119,221,0.4);
+
+}
+
+.clickable-card:active{
+
+border-color:rgba(127,119,221,1);
+
+box-shadow:0 0 24px rgba(127,119,221,0.6);
 
 }
 
@@ -805,6 +819,24 @@ box-shadow:
 0,
 0.24
 );
+
+transition:0.25s ease;
+
+}
+
+.objectives-card:hover{
+
+border-color:rgba(127,119,221,0.9);
+
+box-shadow:0 0 18px rgba(127,119,221,0.4);
+
+}
+
+.objectives-card:active{
+
+border-color:rgba(127,119,221,1);
+
+box-shadow:0 0 24px rgba(127,119,221,0.6);
 
 }
 
@@ -1014,13 +1046,17 @@ margin-bottom:20px;
 
 line-height:2;
 
-border:
-1px solid rgba(
-194,
-139,
-20,
-0.10
-);
+border:2px solid rgba(127,119,221,0.7);
+
+transition:0.25s ease;
+
+}
+
+.results-summary:hover{
+
+border-color:rgba(127,119,221,0.9);
+
+box-shadow:0 0 18px rgba(127,119,221,0.4);
 
 }
 
@@ -1029,7 +1065,6 @@ border:
 margin-bottom:5px;
 
 }
-
 
 /* ==========================================
 FILTRES
