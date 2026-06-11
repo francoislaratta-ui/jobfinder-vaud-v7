@@ -2490,6 +2490,74 @@ return offers;
 
 }
 
+async function fetchJobupOffers(){
+
+const offers = [];
+
+try{
+
+for(const keyword of SEARCH_KEYWORDS){
+
+const encodedKeyword =
+encodeURIComponent(keyword);
+
+const url =
+`https://www.jobup.ch/api/v1/jobs?term=${encodedKeyword}&region=vd&language=fr&limit=25`;
+
+const html =
+await fetchExternalText(url);
+
+console.log(`Jobup RAW "${keyword}":`, html.substring(0, 300));
+
+const data =
+JSON.parse(html);
+
+const jobs =
+data?.documents || [];
+
+console.log(`Jobup "${keyword}": ${jobs.length} offres`);
+
+for(const job of jobs){
+
+const jobId =
+job.job_id ||
+job.id ||
+job.uuid ||
+"";
+
+offers.push({
+id: String(jobId || generateServerId()),
+title: job.title || "",
+company: job.company_name || "",
+location: job.place || job.city || "",
+sector: job.function_label || job.domain || "",
+rate: job.workload || "",
+contract: job.employment_type_label || "",
+source: "Jobup",
+offerUrl: jobId
+? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
+: "",
+date: job.publication_date
+? job.publication_date.split("T")[0]
+: new Date().toISOString().split("T")[0],
+description: job.lead || "Descriptif non disponible.",
+salary: ""
+});
+
+}
+
+}
+
+}catch(error){
+
+console.warn("Erreur scraping Jobup :", error.message);
+
+}
+
+return offers;
+
+}
+
 async function fetchJobScout24Offers(){
 
 const offers = [];
@@ -2507,8 +2575,6 @@ const url =
 const html =
 await fetchExternalText(url);
 
-console.log(`JobScout24 RAW "${keyword}":`, html.substring(0, 200));
-
 const jsonMatch =
 html.match(/<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/i);
 
@@ -2525,7 +2591,7 @@ data?.props?.pageProps?.jobs ||
 data?.jobs ||
 [];
 
-console.log(`JobScout24 keyword "${keyword}": ${jobs.length} offres`);
+console.log(`JobScout24 "${keyword}": ${jobs.length} offres`);
 
 for(const job of jobs){
 
