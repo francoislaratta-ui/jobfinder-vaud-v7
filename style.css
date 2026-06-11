@@ -1105,6 +1105,12 @@ padding:15px;
 
 }
 
+.active-filter{
+
+border:none;
+
+}
+
 .filter-content label{
 
 display:block;
