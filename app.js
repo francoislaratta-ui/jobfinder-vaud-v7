@@ -2031,7 +2031,7 @@ for(const keyword of keywords){
 try{
 
 const encoded = encodeURIComponent(keyword);
-const url = `https://www.jobup.ch/fr/emplois/rss/?term=${encoded}&region=vd`;
+const url = `/api/proxy-rss?term=${encoded}&region=vd`;
 
 const response = await fetch(url);
 const xml = await response.text();

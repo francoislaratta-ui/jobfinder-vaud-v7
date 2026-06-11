@@ -2316,6 +2316,54 @@ error:error.message
 );
 
 /* ==========================================
+PROXY RSS JOBUP
+========================================== */
+
+app.get(
+"/api/proxy-rss",
+async (req,res)=>{
+
+try{
+
+const term = req.query.term || "";
+const region = req.query.region || "vd";
+
+const url =
+`https://www.jobup.ch/fr/emplois/rss/?term=${encodeURIComponent(term)}&region=${region}`;
+
+const response =
+await axios.get(url, {
+headers:{
+"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+"Accept":"application/rss+xml, text/xml, */*",
+"Accept-Language":"fr-CH,fr;q=0.9",
+"Referer":"https://www.jobup.ch/fr/emplois/",
+"Origin":"https://www.jobup.ch"
+},
+timeout: 10000,
+responseType: "text"
+});
+
+res.set("Content-Type", "application/xml");
+res.set("Access-Control-Allow-Origin", "*");
+res.send(response.data);
+
+}catch(error){
+
+console.warn("Erreur proxy RSS Jobup :", error.message);
+
+res.status(500).json({
+success:false,
+message:"Erreur proxy RSS",
+error:error.message
+});
+
+}
+
+}
+);
+
+/* ==========================================
 SCRAPING OFFRES AU DEMARRAGE
 ========================================== */
 
