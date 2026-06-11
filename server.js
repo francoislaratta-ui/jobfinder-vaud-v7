@@ -20,7 +20,6 @@ MIDDLEWARES
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
 
 /* ==========================================
 FICHIERS
@@ -1110,6 +1109,8 @@ message:
 /* ==========================================
 ROUTE PRINCIPALE
 ========================================== */
+
+app.use(express.static(path.join(__dirname)));
 
 app.get(
 "/",
