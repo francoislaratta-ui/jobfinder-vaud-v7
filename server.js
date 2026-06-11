@@ -1375,7 +1375,7 @@ DECOUVERTE URL REELLE ANNONCE V14.3.2
 Recherche ciblée title + company + location
 ========================================== */
 
-function isBadDiscoveryUrl(url){
+function isBadDiscoveryUrlV1433(url){
 
 const value =
 String(url || "")
@@ -1430,7 +1430,7 @@ String(url || "")
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "");
 
-if(isBadDiscoveryUrl(url)){
+if(isBadDiscoveryUrlV1433(url)){
 return 0;
 }
 
