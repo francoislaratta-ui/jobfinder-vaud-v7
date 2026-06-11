@@ -3472,6 +3472,8 @@ typeof offersLoad.then === "function"
 await offersLoad;
 }
 
+await new Promise(resolve => setTimeout(resolve, 300));
+
 restoreSavedFilters();
 
 renderFavorites();
