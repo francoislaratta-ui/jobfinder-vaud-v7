@@ -2546,6 +2546,135 @@ return offers;
 
 }
 
+async function fetchJobupOffers(){
+
+const offers = [];
+
+try{
+
+for(const keyword of SEARCH_KEYWORDS){
+
+const encodedKeyword =
+encodeURIComponent(keyword);
+
+const url =
+`https://www.jobup.ch/api/v1/jobs?term=${encodedKeyword}&canton=VD&limit=20&language=fr`;
+
+const html =
+await fetchExternalText(url);
+
+const data =
+JSON.parse(html);
+
+const jobs =
+data?.documents || [];
+
+console.log(`Jobup keyword "${keyword}": ${jobs.length} offres`);
+
+for(const job of jobs){
+
+offers.push({
+id: String(job.job_id || generateServerId()),
+title: job.title || "",
+company: job.company_name || "",
+location: job.place || "",
+sector: job.function_label || "",
+rate: job.workload || "",
+contract: job.employment_type_label || "",
+source: "Jobup",
+offerUrl: job.job_id
+? `https://www.jobup.ch/fr/emplois/detail/${job.job_id}/`
+: "",
+date: job.publication_date
+? job.publication_date.split("T")[0]
+: new Date().toISOString().split("T")[0],
+description: job.lead || "Descriptif non disponible.",
+salary: ""
+});
+
+}
+
+}
+
+}catch(error){
+
+console.warn("Erreur scraping Jobup :", error.message);
+
+}
+
+return offers;
+
+}
+
+async function fetchJobScout24Offers(){
+
+const offers = [];
+
+try{
+
+for(const keyword of SEARCH_KEYWORDS){
+
+const encodedKeyword =
+encodeURIComponent(keyword);
+
+const url =
+`https://www.jobscout24.ch/fr/jobs/${encodedKeyword}/vaud/?sort=date&rows=20`;
+
+const html =
+await fetchExternalText(url);
+
+const jsonMatch =
+html.match(/<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/i);
+
+if(!jsonMatch){
+continue;
+}
+
+const data =
+JSON.parse(jsonMatch[1]);
+
+const jobs =
+data?.props?.pageProps?.jobs ||
+data?.jobs ||
+[];
+
+console.log(`JobScout24 keyword "${keyword}": ${jobs.length} offres`);
+
+for(const job of jobs){
+
+offers.push({
+id: String(job.id || generateServerId()),
+title: job.title || "",
+company: job.company || "",
+location: job.location || "",
+sector: job.category || "",
+rate: job.workload || "",
+contract: job.contractType || "",
+source: "JobScout24",
+offerUrl: job.id
+? `https://www.jobscout24.ch/fr/job/${job.id}/`
+: "",
+date: job.publicationDate
+? job.publicationDate.split("T")[0]
+: new Date().toISOString().split("T")[0],
+description: job.description || "Descriptif non disponible.",
+salary: job.salary || ""
+});
+
+}
+
+}
+
+}catch(error){
+
+console.warn("Erreur scraping JobScout24 :", error.message);
+
+}
+
+return offers;
+
+}
+
 async function fetchVdOffers(){
 
 const offers = [];
