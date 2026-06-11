@@ -1177,9 +1177,9 @@ return hits / words.length;
 
 }
 
-function fetchExternalText(url){
+function fetchExternalText(url, maxRedirects = 5){
 
-return new Promise((resolve,reject)=>{
+return new Promise((resolve, reject) => {
 
 try{
 
@@ -1226,7 +1226,31 @@ const request =
 client.get(
 url,
 { headers },
-response=>{
+response => {
+
+/* GESTION REDIRECTIONS */
+if(
+response.statusCode >= 300 &&
+response.statusCode < 400 &&
+response.headers.location &&
+maxRedirects > 0
+){
+
+const redirectUrl =
+new URL(
+response.headers.location,
+url
+).href;
+
+response.resume();
+
+resolve(
+fetchExternalText(redirectUrl, maxRedirects - 1)
+);
+
+return;
+
+}
 
 const chunks = [];
 
@@ -1336,8 +1360,6 @@ new URL(match[1], baseUrl).href;
 links.push(absoluteUrl);
 
 }catch(error){
-
-}
 
 }
 
