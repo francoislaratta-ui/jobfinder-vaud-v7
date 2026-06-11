@@ -2096,12 +2096,6 @@ transition:0.25s ease;
 
 }
 
-.floating-actions.is-hidden .floating-btn:not(.floating-toggle){
-
-display:none;
-
-}
-
 .floating-btn{
 
 width:50px;
@@ -2196,6 +2190,7 @@ color:#f8fafc;
 outline:none;
 
 }
+
 
 /* ==========================================
 UTILITAIRES
