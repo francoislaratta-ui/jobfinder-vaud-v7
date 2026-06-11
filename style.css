@@ -2168,6 +2168,33 @@ border:
 0.45
 );
 
+font-size:9px;
+
+font-weight:500;
+
+flex-direction:column;
+
+gap:2px;
+
+}
+
+.floating-toggle:hover{
+
+background:#111827;
+
+color:#f8fafc;
+
+}
+
+.floating-toggle:active,
+.floating-toggle:focus{
+
+background:#111827;
+
+color:#f8fafc;
+
+outline:none;
+
 }
 
 
