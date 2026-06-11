@@ -1033,8 +1033,8 @@ floatingButtonsVisible
 
 floatingToggle.innerHTML =
 floatingButtonsVisible
-? "👁"
-: "☰";
+? `<i class="ti ti-eye-off" style="font-size: 14px;"></i><br>Masquer`
+: `<i class="ti ti-eye" style="font-size: 14px;"></i><br>Afficher`;
 
 });
 
