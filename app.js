@@ -891,8 +891,6 @@ openTab(tab);
 });
 });
 
-/* BOUTON ACTUALISER NAVIGATION */
-
 const refreshOffersBtn =
 document.getElementById("refreshOffersBtn");
 
@@ -932,8 +930,6 @@ refreshOffersBtn.innerHTML = `
 });
 }
 
-/* CARTES DASHBOARD CLIQUABLES */
-
 document.querySelectorAll(".clickable-card").forEach(card => {
 card.addEventListener("click", () => {
 const target =
@@ -950,85 +946,6 @@ behavior:"smooth"
 
 });
 });
-
-/* ==========================================
-INITIALISATION UI
-========================================== */
-
-function initUI(){
-
-document.querySelectorAll(".main-tabs button").forEach(button => {
-button.addEventListener("click", () => {
-const tab = button.dataset.tab;
-
-if(tab){
-openTab(tab);
-}
-
-});
-});
-
-/* BOUTON ACTUALISER NAVIGATION */
-
-const refreshOffersBtn =
-document.getElementById("refreshOffersBtn");
-
-if(refreshOffersBtn){
-refreshOffersBtn.addEventListener("click", async () => {
-
-refreshOffersBtn.disabled = true;
-
-refreshOffersBtn.innerHTML = `
-🔄 Actualisation des offres...<br>
-⏳ Veuillez patienter...
-`;
-
-try{
-
-await refreshOffers();
-
-updateDashboard();
-updateBestMatch();
-updateStatistics();
-updateApplicationCounters();
-
-}catch(error){
-
-console.error("Erreur actualisation manuelle :", error);
-
-}finally{
-
-refreshOffersBtn.disabled = false;
-
-refreshOffersBtn.innerHTML = `
-🔄 Actualiser
-`;
-
-}
-
-});
-}
-
-/* CARTES DASHBOARD CLIQUABLES */
-
-document.querySelectorAll(".clickable-card").forEach(card => {
-card.addEventListener("click", () => {
-const target =
-card.dataset.target;
-
-if(target){
-openTab(target);
-
-window.scrollTo({
-top:0,
-behavior:"smooth"
-});
-}
-
-});
-});
-
-/* BOUTONS FLOTTANTS */
 
 document.getElementById("floatingFavorites")
 ?.addEventListener("click", () => {
@@ -1180,6 +1097,23 @@ checkbox.addEventListener("change", applyFilters);
 });
 
 }
+
+/* ==========================================
+TOGGLE SELECT ALL
+========================================== */
+
+function toggleSelectAll(masterCheckbox, groupName){
+const checkboxes = masterCheckbox
+.closest('.filter-content')
+.querySelectorAll(`input[name="${groupName}"]`);
+
+checkboxes.forEach(cb => {
+cb.checked = masterCheckbox.checked;
+});
+
+applyFilters();
+}
+
 
 /* ==========================================
 TOGGLE SELECT ALL
