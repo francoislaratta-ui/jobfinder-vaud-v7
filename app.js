@@ -951,94 +951,42 @@ behavior:"smooth"
 });
 });
 
-/* BOUTONS FLOTTANTS */
+<head>
 
-document.getElementById("floatingFavorites")
-?.addEventListener("click", () => {
-openTab("favorites");
-});
+<meta charset="UTF-8">
 
-document.getElementById("floatingApplications")
-?.addEventListener("click", () => {
-openTab("applications");
-});
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-document.getElementById("floatingAI")
-?.addEventListener("click", () => {
-openTab("ai");
-});
+<meta
+name="description"
+content="V14.6.0 Premium IA">
 
-document.getElementById("floatingTop")
-?.addEventListener("click", () => {
-window.scrollTo({
-top:0,
-behavior:"smooth"
-});
-});
+<meta
+name="theme-color"
+content="#c28b14">
 
-const floatingActions =
-document.querySelector(".floating-actions");
+<title>
+Job Finder Vaud V14.6 PREMIUM IA
+</title>
 
-const floatingToggle =
-document.getElementById("floatingToggle");
+<link
+rel="manifest"
+href="manifest.json">
 
-if(floatingActions && floatingToggle){
+<link
+rel="stylesheet"
+href="style.css">
 
-let floatingButtonsVisible = true;
+<link
+rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 
-floatingToggle.addEventListener("click", () => {
+<script
+src="https://cdn.jsdelivr.net/npm/chart.js">
+</script>
 
-const favoritesBtn =
-document.getElementById("floatingFavorites");
-
-const applicationsBtn =
-document.getElementById("floatingApplications");
-
-const aiBtn =
-document.getElementById("floatingAI");
-
-const topBtn =
-document.getElementById("floatingTop");
-
-floatingButtonsVisible =
-!floatingButtonsVisible;
-
-if(favoritesBtn){
-favoritesBtn.style.display =
-floatingButtonsVisible
-? "flex"
-: "none";
-}
-
-if(applicationsBtn){
-applicationsBtn.style.display =
-floatingButtonsVisible
-? "flex"
-: "none";
-}
-
-if(aiBtn){
-aiBtn.style.display =
-floatingButtonsVisible
-? "flex"
-: "none";
-}
-
-if(topBtn){
-topBtn.style.display =
-floatingButtonsVisible
-? "flex"
-: "none";
-}
-
-floatingToggle.innerHTML =
-floatingButtonsVisible
-? `<i class="ti ti-eye-off" style="font-size: 14px;"></i><br>Masquer`
-: `<i class="ti ti-eye" style="font-size: 14px;"></i><br>Afficher`;
-
-});
-
-}
 
 const navButtons = [
 { button:"btnDashboard", tab:"dashboard" },
