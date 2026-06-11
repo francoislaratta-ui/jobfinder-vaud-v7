@@ -1376,16 +1376,15 @@ padding:15px;
 
 border-radius:var(--radius);
 
-border-left:
-4px solid var(--gold);
+border-left:4px solid #7F77DD;
 
-border:
-1px solid rgba(
-194,
-139,
-20,
-0.10
-);
+border-top:2px solid rgba(127,119,221,0.7);
+
+border-right:2px solid rgba(127,119,221,0.7);
+
+border-bottom:2px solid rgba(127,119,221,0.7);
+
+box-shadow:0 0 14px rgba(127,119,221,0.25);
 
 transition:0.25s;
 
@@ -1396,14 +1395,10 @@ transition:0.25s;
 transform:translateY(-2px);
 
 box-shadow:
-0 6px 16px rgba(
-194,
-139,
-20,
-0.15
-);
+0 6px 16px rgba(127,119,221,0.35);
 
 }
+
 
 /* ==========================================
 TITRE OFFRE
