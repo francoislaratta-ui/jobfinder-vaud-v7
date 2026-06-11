@@ -2395,6 +2395,7 @@ error:error.message
 
 }
 );
+
 /* ==========================================
 SCRAPING OFFRES AU DEMARRAGE
 ========================================== */
@@ -2439,7 +2440,7 @@ const encodedKeyword =
 encodeURIComponent(keyword);
 
 const url =
-`https://www.jobup.ch/api/v1/jobs?term=${encodedKeyword}&location=vaud&limit=20`;
+`https://www.jobup.ch/api/v2/jobs?term=${encodedKeyword}&region=vd&limit=20&language=fr`;
 
 const html =
 await fetchExternalText(url);
@@ -2448,25 +2449,27 @@ const data =
 JSON.parse(html);
 
 const jobs =
-data?.documents || [];
+data?.documents || data?.jobs || [];
 
 for(const job of jobs){
 
 offers.push({
-id: String(job.job_id || generateServerId()),
+id: String(job.job_id || job.id || generateServerId()),
 title: job.title || "",
-company: job.company_name || "",
-location: job.place || "",
-sector: job.function || "",
+company: job.company_name || job.company || "",
+location: job.place || job.location || "",
+sector: job.function || job.sector || "",
 rate: job.workload || "",
 contract: job.contract_type || "",
 source: "Jobup",
 offerUrl: job.job_id
 ? `https://www.jobup.ch/fr/emplois/detail/${job.job_id}/`
+: job.id
+? `https://www.jobup.ch/fr/emplois/detail/${job.id}/`
 : "",
-date: job.publication_date || new Date().toISOString().split("T")[0],
-description: job.lead || "Descriptif non disponible.",
-salary: ""
+date: job.publication_date || job.date || new Date().toISOString().split("T")[0],
+description: job.lead || job.description || "Descriptif non disponible.",
+salary: job.salary || ""
 });
 
 }
@@ -2495,7 +2498,7 @@ const encodedKeyword =
 encodeURIComponent(keyword);
 
 const url =
-`https://api.jobscout24.ch/api/v1/jobs?query=${encodedKeyword}&location=vaud&rows=20`;
+`https://www.jobscout24.ch/api/search?query=${encodedKeyword}&location=vaud&language=fr&rows=20`;
 
 const html =
 await fetchExternalText(url);
@@ -2504,24 +2507,28 @@ const data =
 JSON.parse(html);
 
 const jobs =
-data?.jobs || data?.results || [];
+data?.jobs ||
+data?.results ||
+data?.documents ||
+data?.hits ||
+[];
 
 for(const job of jobs){
 
 offers.push({
-id: String(job.id || generateServerId()),
-title: job.title || "",
-company: job.company || "",
-location: job.location || "",
-sector: job.category || "",
-rate: job.workload || "",
-contract: job.contractType || "",
+id: String(job.id || job.job_id || generateServerId()),
+title: job.title || job.jobTitle || "",
+company: job.company || job.companyName || "",
+location: job.location || job.place || "",
+sector: job.category || job.sector || "",
+rate: job.workload || job.workRate || "",
+contract: job.contractType || job.contract || "",
 source: "JobScout24",
 offerUrl: job.id
 ? `https://www.jobscout24.ch/fr/job/${job.id}/`
 : "",
-date: job.publicationDate || new Date().toISOString().split("T")[0],
-description: job.description || "Descriptif non disponible.",
+date: job.publicationDate || job.date || new Date().toISOString().split("T")[0],
+description: job.description || job.lead || "Descriptif non disponible.",
 salary: job.salary || ""
 });
 
