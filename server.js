@@ -1194,19 +1194,38 @@ parsedUrl.protocol === "https:"
 const zlib =
 require("zlib");
 
-const request =
-client.get(
-url,
-{
-headers:{
+const isJobup =
+url.includes("jobup.ch");
+
+const isJobScout =
+url.includes("jobscout24.ch");
+
+const headers =
+isJobup ? {
+"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+"Accept-Language":"fr-CH,fr;q=0.9",
+"Referer":"https://www.jobup.ch/fr/emplois/",
+"Origin":"https://www.jobup.ch"
+} : isJobScout ? {
+"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+"Accept-Language":"fr-CH,fr;q=0.9",
+"Referer":"https://www.jobscout24.ch/fr/jobs/",
+"Origin":"https://www.jobscout24.ch"
+} : {
 "User-Agent":"Mozilla/5.0 JobFinderVaud/14.5",
 "Accept":"application/json,text/html,application/xhtml+xml,*/*",
 "Accept-Language":"fr",
 "Origin":"https://offres-emploi.vd.ch",
 "Referer":"https://offres-emploi.vd.ch/",
 "ora-irc-language":"fr"
-}
-},
+};
+
+const request =
+client.get(
+url,
+{ headers },
 response=>{
 
 const chunks = [];
@@ -1325,6 +1344,7 @@ links.push(absoluteUrl);
 return [...new Set(links)];
 
 }
+
 
 /* ==========================================
 DECOUVERTE URL REELLE ANNONCE V14.3.2
