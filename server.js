@@ -2495,6 +2495,13 @@ const titleLower = (job.title || "").toLowerCase();
 const keywordLower = keyword.toLowerCase();
 if(!titleLower.includes(keywordLower)) continue;
 
+const apprentiKeywords = [
+"apprenti","apprentie","apprenant",
+"préapprentissage","préapprenti",
+"cfc en cours","stage","stagiaire"
+];
+if(apprentiKeywords.some(a => titleLower.includes(a))) continue;
+
 offers.push({
 id: String(jobId || generateServerId()),
 title: job.title || "",
