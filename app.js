@@ -2107,13 +2107,15 @@ ${offer.address ? `
 </div>
 ` : ""}
 
-<<div class="offer-meta">
+<div class="offer-meta">
 ${offer.rate ? `⏰ ${escapeHTML(offer.rate)}` : ""}${offer.rate && offer.contract ? " • " : ""}${offer.contract ? `📄 ${escapeHTML(offer.contract)}` : ""}
 </div>
 
+${offer.salary ? `
 <div class="offer-salary">
 💰 ${escapeHTML(offer.salary)}
 </div>
+` : ""}
 
 <div class="offer-source">
 🔎 ${escapeHTML(offer.source)}
