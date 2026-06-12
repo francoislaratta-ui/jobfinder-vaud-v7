@@ -2395,6 +2395,17 @@ const VAUD_REGIONS = [
 "Ouest lausannois"
 ];
 
+const VAUD_PLACES = [
+"lausanne","morges","nyon","vevey","renens",
+"yverdon","aigle","montreux","pully","prilly",
+"bussigny","crissier","gland","rolle","aubonne",
+"cossonay","echallens","moudon","oron","payerne",
+"ste-croix","vallorbe","orbe","grandson","avenches",
+"cudrefin","estavayer","lucens","romont","bulle",
+"villeneuve","bex","ollon","leysin","gryon",
+"vd","vaud","west lausanne","lausanne district"
+];
+
 async function fetchJobupOffers(){
 
 const offers = [];
@@ -2431,6 +2442,20 @@ for(const job of results){
 
 const jobId = job.id || "";
 const place = job.place || "";
+
+const isVaud =
+job.regions?.some(r =>
+String(r).includes("52") ||
+String(r).toLowerCase().includes("vaud")
+) ||
+VAUD_PLACES.some(v =>
+place.toLowerCase().includes(v)
+) ||
+job.locations?.some(l =>
+l.cantonCode === "VD"
+);
+
+if(!isVaud) continue;
 
 offers.push({
 id: String(jobId || generateServerId()),
