@@ -115,11 +115,12 @@ function containsNormalized(source, search){
 const s = normalizeText(source);
 const q = normalizeText(search);
 
-if(!s || !q){
-return false;
-}
+if(!s || !q) return false;
 
-return s.includes(q);
+if(s.includes(q)) return true;
+
+const words = q.split(" ").filter(w => w.length > 3);
+return words.every(w => s.includes(w));
 }
 
 /* ==========================================
