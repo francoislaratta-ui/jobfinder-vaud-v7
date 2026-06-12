@@ -1880,7 +1880,7 @@ async function loadOffers(){
 try{
 
 const response =
-await fetch("./offers.json?v=" + APP_VERSION);
+await fetch("/api/offers");
 
 if(!response.ok){
 throw new Error("HTTP " + response.status);
@@ -2006,7 +2006,6 @@ Ouvre la console du navigateur pour voir le détail technique.
 }
 
 }
-
 /* ==========================================
 ACTUALISER OFFRES V14.6
 ========================================== */
