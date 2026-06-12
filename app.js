@@ -1189,28 +1189,31 @@ function applyFilters(){
     }
 
     if(selectedSecteurs.length > 0){
-        result = result.filter(offer =>
-            selectedSecteurs.some(s =>
-                containsNormalized(offer.sector, s)
-            )
-        );
-    }
+    result = result.filter(offer =>
+        !offer.sector ||
+        selectedSecteurs.some(s =>
+            containsNormalized(offer.sector, s)
+        )
+    );
+}
 
-    if(selectedTaux.length > 0){
-        result = result.filter(offer =>
-            selectedTaux.some(t =>
-                containsNormalized(offer.rate, t)
-            )
-        );
-    }
+if(selectedTaux.length > 0){
+    result = result.filter(offer =>
+        !offer.rate ||
+        selectedTaux.some(t =>
+            containsNormalized(offer.rate, t)
+        )
+    );
+}
 
-    if(selectedContrats.length > 0){
-        result = result.filter(offer =>
-            selectedContrats.some(c =>
-                containsNormalized(offer.contract, c)
-            )
-        );
-    }
+if(selectedContrats.length > 0){
+    result = result.filter(offer =>
+        !offer.contract ||
+        selectedContrats.some(c =>
+            containsNormalized(offer.contract, c)
+        )
+    );
+}
 
     if(selectedRegions.length > 0){
         result = result.filter(offer =>
