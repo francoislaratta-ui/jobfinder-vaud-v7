@@ -2407,60 +2407,70 @@ const encodedKeyword =
 encodeURIComponent(keyword);
 
 const url =
-`https://www.jobup.ch/fr/emplois/rss/?term=${encodedKeyword}&region=vd`;
+`https://www.jobup.ch/fr/emplois/?term=${encodedKeyword}&region=vd`;
 
-const xml =
+const html =
 await fetchExternalText(url);
 
-console.log(`Jobup RSS RAW "${keyword}":`, xml.substring(0, 200));
+console.log(`Jobup HTML RAW "${keyword}":`, html.substring(0, 100));
 
-const items =
-xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
+const match =
+html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*\n/);
 
-console.log(`Jobup RSS "${keyword}": ${items.length} offres`);
+if(!match){
+console.log(`Jobup "${keyword}": __INIT__ non trouvé`);
+continue;
+}
 
-for(const item of items){
+let data;
 
-const title =
-(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] ||
-(item.match(/<title>(.*?)<\/title>/) || [])[1] || "";
+try{
+data = JSON.parse(match[1]);
+}catch(e){
+console.log(`Jobup "${keyword}": JSON invalide`);
+continue;
+}
 
-const company =
-(item.match(/<author>(.*?)<\/author>/) ||
-item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) || [])[1] || "";
+const results =
+data?.vacancy?.results?.main?.results || [];
 
-const link =
-(item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
+console.log(`Jobup "${keyword}": ${results.length} offres`);
 
-const description =
-(item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
+for(const job of results){
 
-const pubDate =
-(item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
+const jobId = job.id || "";
+const place = job.place || "";
 
-const location =
-(item.match(/<city>(.*?)<\/city>/) ||
-item.match(/<region>(.*?)<\/region>/) || [])[1] || "Vaud";
+const vaudRegions = [
+"vaud","lausanne","morges","nyon","vevey",
+"renens","yverdon","aigle","montreux","pully",
+"prilly","bussigny","crissier","gland","rolle"
+];
 
-const jobId =
-link.match(/detail\/([^/]+)\//)?.[1] || generateServerId();
+const isVaud = vaudRegions.some(r =>
+place.toLowerCase().includes(r)
+);
 
-if(!title) continue;
+if(!isVaud) continue;
 
 offers.push({
 id: String(jobId),
-title: title.trim(),
-company: company.trim(),
-location: location.trim(),
+title: job.title || "",
+company: job.company?.name || "",
+location: place,
 sector: "",
-rate: "",
+rate: job.employmentGrades
+? `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
+: "",
 contract: "",
 source: "Jobup",
-offerUrl: link.trim(),
-date: pubDate
-? new Date(pubDate).toISOString().split("T")[0]
+offerUrl: jobId
+? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
+: "",
+date: job.publicationDate
+? job.publicationDate.split("T")[0]
 : new Date().toISOString().split("T")[0],
-description: description || "Descriptif non disponible.",
+description: "Descriptif non disponible.",
 salary: ""
 });
 
@@ -2470,7 +2480,7 @@ salary: ""
 
 }catch(error){
 
-console.warn("Erreur scraping Jobup RSS :", error.message);
+console.warn("Erreur scraping Jobup :", error.message);
 
 }
 
