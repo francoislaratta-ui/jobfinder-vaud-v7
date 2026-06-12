@@ -1217,12 +1217,13 @@ if(selectedContrats.length > 0){
 }
 
     if(selectedRegions.length > 0){
-        result = result.filter(offer =>
-            selectedRegions.some(r =>
-                containsNormalized(offer.location, r)
-            )
-        );
-    }
+    result = result.filter(offer =>
+        !offer.location ||
+        selectedRegions.some(r =>
+            containsNormalized(offer.location, r)
+        )
+    );
+}
 
     if(selectedSources.length > 0){
         result = result.filter(offer =>
