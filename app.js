@@ -1181,52 +1181,53 @@ function applyFilters(){
     let result = [...offers];
 
     if(selectedMetiers.length > 0){
-    result = result.filter(offer =>
-        !offer.title ||
-        selectedMetiers.some(m =>
-            containsNormalized(offer.title, m)
-        )
-    );
-}
+        result = result.filter(offer =>
+            !offer.title ||
+            selectedMetiers.some(m =>
+                containsNormalized(offer.title, m)
+            )
+        );
+    }
 
     if(selectedSecteurs.length > 0){
-    result = result.filter(offer =>
-        !offer.sector ||
-        selectedSecteurs.some(s =>
-            containsNormalized(offer.sector, s)
-        )
-    );
-}
+        result = result.filter(offer =>
+            !offer.sector ||
+            selectedSecteurs.some(s =>
+                containsNormalized(offer.sector, s)
+            )
+        );
+    }
 
-if(selectedTaux.length > 0){
-    result = result.filter(offer =>
-        !offer.rate ||
-        selectedTaux.some(t =>
-            containsNormalized(offer.rate, t)
-        )
-    );
-}
+    if(selectedTaux.length > 0){
+        result = result.filter(offer =>
+            !offer.rate ||
+            selectedTaux.some(t =>
+                containsNormalized(offer.rate, t)
+            )
+        );
+    }
 
-if(selectedContrats.length > 0){
-    result = result.filter(offer =>
-        !offer.contract ||
-        selectedContrats.some(c =>
-            containsNormalized(offer.contract, c)
-        )
-    );
-}
+    if(selectedContrats.length > 0){
+        result = result.filter(offer =>
+            !offer.contract ||
+            selectedContrats.some(c =>
+                containsNormalized(offer.contract, c)
+            )
+        );
+    }
 
     if(selectedRegions.length > 0){
-    result = result.filter(offer =>
-        !offer.location ||
-        selectedRegions.some(r =>
-            containsNormalized(offer.location, r)
-        )
-    );
-}
+        result = result.filter(offer =>
+            !offer.location ||
+            selectedRegions.some(r =>
+                containsNormalized(offer.location, r)
+            )
+        );
+    }
 
     if(selectedSources.length > 0){
         result = result.filter(offer =>
+            !offer.source ||
             selectedSources.some(s =>
                 containsNormalized(offer.source, s)
             )
