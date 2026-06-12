@@ -2191,15 +2191,10 @@ ${offer.address ? `
 <div class="offer-address">
 📮 ${escapeHTML(offer.address)}
 </div>
+` : ""}
 
-` : `
-<div class="offer-address empty-address">
-📮 Adresse non renseignée
-</div>
-
-`}
-<div class="offer-meta">
-⏰ ${escapeHTML(offer.rate)} • 📄 ${escapeHTML(offer.contract)}
+<<div class="offer-meta">
+${offer.rate ? `⏰ ${escapeHTML(offer.rate)}` : ""}${offer.rate && offer.contract ? " • " : ""}${offer.contract ? `📄 ${escapeHTML(offer.contract)}` : ""}
 </div>
 
 <div class="offer-salary">
