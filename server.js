@@ -2412,24 +2412,15 @@ const url =
 const html =
 await fetchExternalText(url);
 
-console.log(`Jobup HTML RAW "${keyword}":`, html.substring(0, 100));
+const initMatch =
+html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__)/);
 
-const match =
-html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*\n/);
-
-if(!match){
+if(!initMatch){
 console.log(`Jobup "${keyword}": __INIT__ non trouvé`);
 continue;
 }
 
-let data;
-
-try{
-data = JSON.parse(match[1]);
-}catch(e){
-console.log(`Jobup "${keyword}": JSON invalide`);
-continue;
-}
+const data = JSON.parse(initMatch[1]);
 
 const results =
 data?.vacancy?.results?.main?.results || [];
@@ -2441,20 +2432,8 @@ for(const job of results){
 const jobId = job.id || "";
 const place = job.place || "";
 
-const vaudRegions = [
-"vaud","lausanne","morges","nyon","vevey",
-"renens","yverdon","aigle","montreux","pully",
-"prilly","bussigny","crissier","gland","rolle"
-];
-
-const isVaud = vaudRegions.some(r =>
-place.toLowerCase().includes(r)
-);
-
-if(!isVaud) continue;
-
 offers.push({
-id: String(jobId),
+id: String(jobId || generateServerId()),
 title: job.title || "",
 company: job.company?.name || "",
 location: place,
@@ -2504,8 +2483,6 @@ const url =
 
 const xml =
 await fetchExternalText(url);
-
-console.log(`JobScout24 RSS RAW "${keyword}":`, xml.substring(0, 200));
 
 const items =
 xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
