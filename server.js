@@ -2418,7 +2418,7 @@ const encodedKeyword =
 encodeURIComponent(keyword);
 
 const url =
-`https://www.jobup.ch/fr/emplois/?term=${encodedKeyword}&region=vd`;
+`https://www.jobup.ch/fr/emplois/?term=${encodedKeyword}&regionIds=52`;
 
 const html =
 await fetchExternalText(url);
@@ -2696,6 +2696,7 @@ console.warn(
 }
 
 }
+
 
 /* ==========================================
 DEMARRAGE SERVEUR
