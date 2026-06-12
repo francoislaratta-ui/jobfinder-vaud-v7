@@ -2507,13 +2507,16 @@ id: String(jobId || generateServerId()),
 title: job.title || "",
 company: job.company?.name || "",
 location: place,
+address: job.street
+? `${job.street}, ${job.zipCode || ""} ${place}`.trim()
+: "",
 sector: "",
 rate: job.employmentGrades
 ? job.employmentGrades[0] === job.employmentGrades[1]
 ? `${job.employmentGrades[0]}%`
 : `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
 : "",
-contract: "",
+contract: job.contractType || "",
 source: "Jobup",
 offerUrl: jobId
 ? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
@@ -2521,8 +2524,10 @@ offerUrl: jobId
 date: job.publicationDate
 ? job.publicationDate.split("T")[0]
 : new Date().toISOString().split("T")[0],
-description: "Descriptif non disponible.",
-salary: ""
+description: job.lead || "Descriptif non disponible.",
+salary: job.salary
+? `CHF ${job.salary}`
+: "",
 });
 
 }
