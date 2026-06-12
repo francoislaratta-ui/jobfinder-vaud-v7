@@ -1181,12 +1181,13 @@ function applyFilters(){
     let result = [...offers];
 
     if(selectedMetiers.length > 0){
-        result = result.filter(offer =>
-            selectedMetiers.some(m =>
-                containsNormalized(offer.title, m)
-            )
-        );
-    }
+    result = result.filter(offer =>
+        !offer.title ||
+        selectedMetiers.some(m =>
+            containsNormalized(offer.title, m)
+        )
+    );
+}
 
     if(selectedSecteurs.length > 0){
     result = result.filter(offer =>
