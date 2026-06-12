@@ -2316,6 +2316,40 @@ error:error.message
 );
 
 /* ==========================================
+API SCRAPE ON DEMAND
+========================================== */
+
+app.post(
+"/api/scrape",
+async (req,res)=>{
+
+try{
+
+await scrapeAllOffers();
+
+const offers = readJson(OFFERS_FILE);
+
+res.json({
+success:true,
+count:offers.length,
+message:`${offers.length} offres récupérées`
+});
+
+}catch(error){
+
+res.status(500).json({
+success:false,
+message:"Erreur scraping",
+error:error.message
+});
+
+}
+
+}
+);
+
+
+/* ==========================================
 PROXY RSS JOBUP
 ========================================== */
 

@@ -2017,17 +2017,22 @@ showInfo("Actualisation des offres en cours...");
 
 try{
 
+const response = await fetch("/api/scrape", { method: "POST" });
+const data = await response.json();
+
 await loadOffers();
-showSuccess("Offres actualisées !");
+showSuccess(`${data.count} offres récupérées !`);
 
 }catch(error){
 
 console.error("Erreur refresh:", error);
+await loadOffers();
 showInfo("Offres actualisées");
 
 }
 
 }
+
 /* ==========================================
 RENDER OFFRES
 ========================================== */
