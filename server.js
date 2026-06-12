@@ -2491,6 +2491,10 @@ l.cantonCode === "VD"
 
 if(!isVaud) continue;
 
+const titleLower = (job.title || "").toLowerCase();
+const keywordLower = keyword.toLowerCase();
+if(!titleLower.includes(keywordLower)) continue;
+
 offers.push({
 id: String(jobId || generateServerId()),
 title: job.title || "",
