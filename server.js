@@ -2492,8 +2492,8 @@ l.cantonCode === "VD"
 if(!isVaud) continue;
 
 const titleLower = (job.title || "").toLowerCase();
-const keywordLower = keyword.toLowerCase();
-if(!titleLower.includes(keywordLower)) continue;
+const keywordWords = keyword.toLowerCase().split(" ");
+if(!keywordWords.some(w => w.length > 4 && titleLower.includes(w))) continue;
 
 const apprentiKeywords = [
 "apprenti","apprentie","apprenant",
