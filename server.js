@@ -2509,7 +2509,9 @@ company: job.company?.name || "",
 location: place,
 sector: "",
 rate: job.employmentGrades
-? `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
+? job.employmentGrades[0] === job.employmentGrades[1]
+? `${job.employmentGrades[0]}%`
+: `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
 : "",
 contract: "",
 source: "Jobup",
