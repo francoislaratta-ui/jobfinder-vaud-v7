@@ -1339,6 +1339,12 @@ function restoreSavedFilters(){
 
     if(!saved) return;
 
+    const hasAny = Object.keys(saved)
+        .filter(k => k !== "sort")
+        .some(k => (saved[k] || []).length > 0);
+
+    if(!hasAny) return;
+
     const groups = [
         "metiers",
         "secteurs",
@@ -1370,6 +1376,7 @@ function restoreSavedFilters(){
         applyFilters();
     }
 }
+
 
 /* ==========================================
 MATCH IA - DETAILS
