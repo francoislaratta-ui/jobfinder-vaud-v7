@@ -918,6 +918,7 @@ updateBestMatch();
 updateStatistics();
 updateApplicationCounters();
 applyFilters();
+openTab("filters");
 
 }catch(error){
 
