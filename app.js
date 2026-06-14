@@ -2362,6 +2362,9 @@ setTimeout(() => fullCard.style.outline = "", 2000);
 }, 400);
 });
 
+container.appendChild(card);
+});
+
 }
 
 
