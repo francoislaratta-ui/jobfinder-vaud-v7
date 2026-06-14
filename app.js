@@ -1183,13 +1183,16 @@ function applyFilters(){
 "conseiller clientele"
 ];
 
-if(selectedMetiers.length > 0 && selectedMetiers.length < totalMetiers){
+const selectAllMetiers = document.getElementById("selectAllMetiers");
+
+if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
         const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
             k.split(" ").filter(w => w.length > 4)
             .some(w => titleNorm.includes(w))
         );
+        if(selectAllMetiers?.checked) return matchesKeyword;
         const matchesMetier = selectedMetiers.some(m =>
             containsNormalized(offer.title, m)
         );
