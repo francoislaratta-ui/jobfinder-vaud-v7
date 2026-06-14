@@ -1129,6 +1129,13 @@ function applyFilters(){
         ...document.querySelectorAll('input[name="matches"]:checked')
     ].map(cb => cb.value);
 
+    const totalTaux = document.querySelectorAll('input[name="taux"]').length;
+    const totalRegions = document.querySelectorAll('input[name="regions"]').length;
+    const totalSources = document.querySelectorAll('input[name="sources"]').length;
+    const totalContrats = document.querySelectorAll('input[name="contrats"]').length;
+    const totalSecteurs = document.querySelectorAll('input[name="secteurs"]').length;
+    const totalMetiers = document.querySelectorAll('input[name="metiers"]').length;
+
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
     localStorage.setItem("jobfinder_filters", JSON.stringify({
@@ -1176,7 +1183,7 @@ function applyFilters(){
 "conseiller clientele"
 ];
 
-if(selectedMetiers.length > 0){
+if(selectedMetiers.length > 0 && selectedMetiers.length < totalMetiers){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
         const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
@@ -1190,17 +1197,16 @@ if(selectedMetiers.length > 0){
     });
 }
 
+if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
+    result = result.filter(offer =>
+        !offer.sector ||
+        selectedSecteurs.some(s =>
+            containsNormalized(offer.sector, s)
+        )
+    );
+}
 
-    if(selectedSecteurs.length > 0){
-        result = result.filter(offer =>
-            !offer.sector ||
-            selectedSecteurs.some(s =>
-                containsNormalized(offer.sector, s)
-            )
-        );
-    }
-
-    if(selectedTaux.length > 0){
+if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
         if(!offer.rate) return true;
         const rateNorm = normalizeText(offer.rate);
@@ -1215,16 +1221,14 @@ if(selectedMetiers.length > 0){
     });
 }
 
-    if(selectedContrats.length > 0){
-        result = result.filter(offer =>
-            !offer.contract ||
-            selectedContrats.some(c =>
-                containsNormalized(offer.contract, c)
-            )
-        );
-    }
-
-    const totalRegions = document.querySelectorAll('input[name="regions"]').length;
+if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
+    result = result.filter(offer =>
+        !offer.contract ||
+        selectedContrats.some(c =>
+            containsNormalized(offer.contract, c)
+        )
+    );
+}
 
 if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
     result = result.filter(offer =>
@@ -1235,17 +1239,16 @@ if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
     );
 }
 
-    if(selectedSources.length > 0){
-        result = result.filter(offer =>
-            !offer.source ||
-            selectedSources.some(s =>
-                containsNormalized(offer.source, s)
-            )
-        );
-    }
+if(selectedSources.length > 0 && selectedSources.length < totalSources){
+    result = result.filter(offer =>
+        !offer.source ||
+        selectedSources.some(s =>
+            containsNormalized(offer.source, s)
+        )
+    );
+}
 
     // Match IA = tri uniquement, pas de filtre
-
 
     if(activeFilters.sort === "match"){
         result.sort((a, b) =>
@@ -1266,6 +1269,7 @@ if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
     updateBestMatch();
     updateStatistics();
 }
+
 
 /* ==========================================
 RESET FILTERS
