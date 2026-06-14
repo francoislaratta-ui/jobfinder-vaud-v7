@@ -1255,14 +1255,16 @@ if(selectedMetiers.length > 0){
         );
     }
 
-    if(selectedRegions.length > 0){
-        result = result.filter(offer =>
-            !offer.location ||
-            selectedRegions.some(r =>
-                containsNormalized(offer.location, r)
-            )
-        );
-    }
+    const totalRegions = document.querySelectorAll('input[name="regions"]').length;
+
+if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
+    result = result.filter(offer =>
+        !offer.location ||
+        selectedRegions.some(r =>
+            containsNormalized(offer.location, r)
+        )
+    );
+}
 
     if(selectedSources.length > 0){
         result = result.filter(offer =>
