@@ -909,7 +909,9 @@ refreshOffersBtn.disabled = true;
 refreshOffersBtn.innerHTML = `🔄 Chargement...<br>⏳ Veuillez patienter...`;
 try{
 await loadOffers(true);
-applyFilters();;
+const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:checked')].map(cb => cb.value);
+console.log("Cases cochées:", selectedMetiers);
+applyFilters();
 openTab("filters");
 }finally{
 refreshOffersBtn.disabled = false;
