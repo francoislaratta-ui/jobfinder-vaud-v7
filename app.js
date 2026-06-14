@@ -927,7 +927,7 @@ console.error("Erreur actualisation manuelle :", error);
 refreshOffersBtn.disabled = false;
 
 refreshOffersBtn.innerHTML = `
-🔄 Actualiser
+🔍 Chercher de nouvelles offres
 `;
 
 }
@@ -1280,7 +1280,7 @@ if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
     }
 
     // Match IA = tri uniquement, pas de filtre
-    
+
 
     if(activeFilters.sort === "match"){
         result.sort((a, b) =>
