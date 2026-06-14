@@ -2012,8 +2012,6 @@ filteredOffers = [...offers];
 
 if(localStorage.getItem("jobfinder_filters")){
 applyFilters();
-}else{
-renderOffers(filteredOffers);
 }
 
 updateDashboard();
