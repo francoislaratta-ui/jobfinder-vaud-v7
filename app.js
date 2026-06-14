@@ -1201,13 +1201,19 @@ if(selectedMetiers.length > 0){
     }
 
     if(selectedTaux.length > 0){
-        result = result.filter(offer =>
-            !offer.rate ||
-            selectedTaux.some(t =>
-                containsNormalized(offer.rate, t)
-            )
-        );
-    }
+    result = result.filter(offer => {
+        if(!offer.rate) return true;
+        const rateNorm = normalizeText(offer.rate);
+        return selectedTaux.some(t => {
+            const tNum = parseInt(t);
+            if(isNaN(tNum)) return containsNormalized(offer.rate, t);
+            const match = rateNorm.match(/(\d+)/g);
+            if(!match) return false;
+            const nums = match.map(Number);
+            return nums.some(n => Math.abs(n - tNum) <= 10);
+        });
+    });
+}
 
     if(selectedContrats.length > 0){
         result = result.filter(offer =>
