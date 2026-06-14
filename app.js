@@ -2037,13 +2037,12 @@ Ouvre la console du navigateur pour voir le détail technique.
 }
 
 }
+
 /* ==========================================
 ACTUALISER OFFRES V14.6
 ========================================== */
 
 async function refreshOffers(){
-
-showInfo("Actualisation des offres en cours...");
 
 try{
 
