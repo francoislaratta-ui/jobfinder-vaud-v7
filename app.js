@@ -1188,12 +1188,29 @@ function applyFilters(){
     const SCRAPE_KEYWORDS = [
 "employe de commerce",
 "assistant administratif",
+"assistante administrative",
 "gestionnaire de dossier",
+"gestionnaire administratif",
+"gestionnaire de depot",
+"gestionnaire contentieux",
+"gestionnaire logistique",
+"gestionnaire approvisionnement",
 "technicien informatique",
+"technicien support",
+"technicien maintenance",
+"technicien systeme",
 "support informatique",
+"support utilisateur",
 "helpdesk",
 "back office",
-"collaborateur administratif"
+"collaborateur administratif",
+"collaborateur service",
+"coordinateur administratif",
+"administrateur gestionnaire",
+"employe administratif",
+"assistant de direction",
+"assistant rh",
+"conseiller clientele"
 ];
 
 if(selectedMetiers.length > 0){
