@@ -1090,6 +1090,7 @@ location.reload();
 if(resetFiltersBtn){
 resetFiltersBtn.addEventListener("click", () => {
 localStorage.removeItem("jobfinder_filters");
+localStorage.removeItem("jobfinder_visited");
 location.reload();
 });
 }
