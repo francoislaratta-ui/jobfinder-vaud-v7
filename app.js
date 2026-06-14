@@ -2020,10 +2020,15 @@ await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
 
-if(localStorage.getItem("jobfinder_filters")){
-applyFilters();
+const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
+const hasAny = rawFilters && Object.keys(rawFilters)
+    .filter(k => k !== "sort")
+    .some(k => (rawFilters[k] || []).length > 0);
+
+if(hasAny){
+    applyFilters();
 }else if(!skipRender){
-renderOffers(filteredOffers);
+    renderOffers(filteredOffers);
 }
 
 updateDashboard();
@@ -2071,7 +2076,8 @@ const response = await fetch("/api/scrape", { method: "POST" });
 const data = await response.json();
 
 await loadOffers();
-showSuccess(`${data.count} offres récupérées !`);
+applyFilters();
+showSuccess(`${filteredOffers.length} offres correspondent à vos critères !`);
 
 }catch(error){
 
@@ -2992,7 +2998,9 @@ showSuccess("Lettre copiée");
 .catch(() => {
 showError("Copie impossible");
 });
-}/* ==========================================
+}
+
+/* ==========================================
 EXPORT PDF / WORD / EMAIL
 ========================================== */
 
@@ -3001,12 +3009,6 @@ if(!currentLetter){
 showInfo("Aucune lettre");
 return;
 }
-
-/*
-Fallback simple :
-ouvre une fenêtre imprimable.
-Pour un vrai PDF, utiliser ensuite Imprimer > Enregistrer en PDF.
-*/
 
 const printable =
 window.open("", "_blank");
@@ -3107,6 +3109,7 @@ encodeURIComponent(currentLetter);
 window.location.href =
 `mailto:?subject=${subject}&body=${body}`;
 }
+
 
 /* ==========================================
 EXPORT JSON
