@@ -1279,14 +1279,8 @@ if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
         );
     }
 
-    if(selectedMatches.length > 0){
-        const minMatch = Math.min(
-            ...selectedMatches.map(m => parseInt(m))
-        );
-        result = result.filter(offer =>
-            calculateMatch(offer) >= minMatch
-        );
-    }
+    // Match IA = tri uniquement, pas de filtre
+    
 
     if(activeFilters.sort === "match"){
         result.sort((a, b) =>
