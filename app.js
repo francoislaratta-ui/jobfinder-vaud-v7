@@ -2118,6 +2118,16 @@ const card =
 document.createElement("div");
 
 card.className = "offer-card";
+card.setAttribute("data-offer-id", offer.id);
+card.style.cursor = "pointer";
+card.addEventListener("click", (e) => {
+    if(e.target.closest("button")) return;
+    openTab("filters");
+    setTimeout(() => {
+        const fullCard = document.querySelector(`[data-offer-id="${offer.id}"]`);
+        if(fullCard) fullCard.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+});
 
 const details =
 calculateMatchDetails(offer);
