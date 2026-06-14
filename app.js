@@ -3531,6 +3531,8 @@ cvAnalysisResult.innerHTML = `
 
 }
 
+}
+
 
 window.addEventListener("DOMContentLoaded", async () => {
 
