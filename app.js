@@ -3517,14 +3517,13 @@ initUI();
 
 loadSavedCV();
 
-const offersLoad =
-loadOffers();
+const isFirstVisit = !localStorage.getItem("jobfinder_filters");
 
-if(
-offersLoad &&
-typeof offersLoad.then === "function"
-){
+if(!isFirstVisit){
+const offersLoad = loadOffers();
+if(offersLoad && typeof offersLoad.then === "function"){
 await offersLoad;
+}
 }
 
 await new Promise(resolve => setTimeout(resolve, 300));
