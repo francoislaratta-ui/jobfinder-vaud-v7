@@ -1147,26 +1147,16 @@ function applyFilters(){
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
-    const hasFilters = selectedMetiers.length > 0 ||
-        selectedSecteurs.length > 0 ||
-        selectedTaux.length > 0 ||
-        selectedContrats.length > 0 ||
-        selectedRegions.length > 0 ||
-        selectedSources.length > 0 ||
-        selectedMatches.length > 0;
-
-    if(hasFilters){
-        localStorage.setItem("jobfinder_filters", JSON.stringify({
-            metiers: selectedMetiers,
-            secteurs: selectedSecteurs,
-            taux: selectedTaux,
-            contrats: selectedContrats,
-            regions: selectedRegions,
-            sources: selectedSources,
-            matches: selectedMatches,
-            sort: activeFilters.sort
-        }));
-    }
+    localStorage.setItem("jobfinder_filters", JSON.stringify({
+    metiers: selectedMetiers,
+    secteurs: selectedSecteurs,
+    taux: selectedTaux,
+    contrats: selectedContrats,
+    regions: selectedRegions,
+    sources: selectedSources,
+    matches: selectedMatches,
+    sort: activeFilters.sort
+}));
 
     let result = [...offers];
 
