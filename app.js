@@ -906,6 +906,7 @@ const isFirst = !localStorage.getItem("jobfinder_filters");
 
 if(isFirst){
 openTab("filters");
+showInfo("Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur Rechercher.");
 return;
 }
 
@@ -3541,6 +3542,12 @@ await offersLoad;
 await new Promise(resolve => setTimeout(resolve, 300));
 
 restoreSavedFilters();
+
+const isFirstVisit = !localStorage.getItem("jobfinder_filters");
+if(isFirstVisit){
+openTab("filters");
+showInfo("Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur Rechercher.");
+}
 
 renderFavorites();
 
