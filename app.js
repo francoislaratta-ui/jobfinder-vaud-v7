@@ -3550,8 +3550,11 @@ initUI();
 
 loadSavedCV();
 
-const hasFilters = !!localStorage.getItem("jobfinder_filters");
-const isFirstVisit = !hasFilters;
+const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
+const hasAny = rawFilters && Object.keys(rawFilters)
+    .filter(k => k !== "sort")
+    .some(k => (rawFilters[k] || []).length > 0);
+const isFirstVisit = !hasAny;
 
 if(!isFirstVisit){
 const offersLoad = loadOffers();
