@@ -915,7 +915,7 @@ applyFilters();
 openTab("filters");
 }finally{
 refreshOffersBtn.disabled = false;
-refreshOffersBtn.innerHTML = `🔍 Chercher de nouvelles offres`;
+refreshOffersBtn.innerHTML = `🔍 Rechercher / Actualiser`;
 }
 return;
 }
@@ -928,7 +928,7 @@ refreshOffersBtn.innerHTML = `
 `;
 
 try{
-
+    
 await refreshOffers();
 
 updateDashboard();
