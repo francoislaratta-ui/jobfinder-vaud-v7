@@ -2353,12 +2353,13 @@ card.innerHTML = `
 card.addEventListener("click", () => {
 openTab("filters");
 setTimeout(() => {
-const fullCard = document.querySelector(`[data-offer-id="${offer.id}"]`);
-if(fullCard) fullCard.scrollIntoView({ behavior: "smooth" });
-}, 300);
-});
-
-container.appendChild(card);
+const fullCard = document.querySelector(`#offersContainer [data-offer-id="${offer.id}"]`);
+if(fullCard){
+fullCard.scrollIntoView({ behavior: "smooth", block: "center" });
+fullCard.style.outline = "2px solid #7c3aed";
+setTimeout(() => fullCard.style.outline = "", 2000);
+}
+}, 400);
 });
 
 }
