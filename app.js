@@ -2338,33 +2338,45 @@ if(!container || list.length === 0){
 return;
 }
 
-const best =
-[...list]
-.sort((a, b) =>
+const sorted = [...list].sort((a,b) =>
 calculateMatch(b) - calculateMatch(a)
-)[0];
+).slice(0, 3);
 
-if(!best){
-return;
-}
+container.innerHTML = "";
 
-bestOffer = best;
+sorted.forEach(offer => {
+const match = calculateMatch(offer);
+const badge = getMatchBadge(match);
+const matchClass = getMatchClass(match);
 
-container.innerHTML = `
-<div class="offer-card best-match">
+const card = document.createElement("div");
+card.className = "offer-card";
+card.setAttribute("data-offer-id", offer.id);
+card.style.cursor = "pointer";
+
+card.innerHTML = `
 <div class="offer-title">
-🔥 ${escapeHTML(best.title)}
+💼 ${escapeHTML(offer.title)}
 </div>
 <div class="offer-company">
-🏢 ${escapeHTML(best.company)} • 🔥 Top Match
+🏢 ${escapeHTML(offer.company)} • ${escapeHTML(badge)}
 </div>
-<div class="offer-match ${getMatchClass(calculateMatch(best))}">
-🤖 ${calculateMatch(best)}% — ${escapeHTML(getMatchBadge(calculateMatch(best)))}
-</div>
+<div class="offer-match ${matchClass}">
+🤖 ${match}% — ${escapeHTML(badge)}
 </div>
 `;
-}
 
+card.addEventListener("click", () => {
+openTab("filters");
+setTimeout(() => {
+const fullCard = document.querySelector(`[data-offer-id="${offer.id}"]`);
+if(fullCard) fullCard.scrollIntoView({ behavior: "smooth" });
+}, 300);
+});
+
+container.appendChild(card);
+});
+}
 
 /* ==========================================
 RESULTS SUMMARY
