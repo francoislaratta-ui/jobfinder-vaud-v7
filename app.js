@@ -3590,12 +3590,10 @@ const hasAny = rawFilters && Object.keys(rawFilters)
 const isFirstVisit = !hasAny;
 
 if(!isFirstVisit){
-const offersLoad = loadOffers();
-if(offersLoad && typeof offersLoad.then === "function"){
-await offersLoad;
-}
+await loadOffers();
 }
 
+DOMContentLoaded
 await new Promise(resolve => setTimeout(resolve, 300));
 
 if(!isFirstVisit){
