@@ -1081,18 +1081,17 @@ openTab("settings");
 }
 
 if(btnReset){
-btnReset.addEventListener("click", async () => {
-resetFilters();
-await refreshOffers();
+btnReset.addEventListener("click", () => {
+localStorage.clear();
+location.reload();
 });
 }
 
 if(resetFiltersBtn){
-resetFiltersBtn.addEventListener("click", resetFilters);
-}
-
-if(searchOffersBtn){
-searchOffersBtn.addEventListener("click", applyFilters);
+resetFiltersBtn.addEventListener("click", () => {
+localStorage.clear();
+location.reload();
+});
 }
 
 if(sortFilter){
@@ -1100,6 +1099,7 @@ sortFilter.addEventListener("change", applyFilters);
 }
 
 }
+
 
 /* ==========================================
 TOGGLE SELECT ALL
