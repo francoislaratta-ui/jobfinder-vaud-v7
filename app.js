@@ -3329,7 +3329,7 @@ DASHBOARD
 function updateDashboard(){
 safeSetText(
 document.getElementById("kpiOffers"),
-offers.length
+filteredOffers.length || offers.length
 );
 
 safeSetText(
