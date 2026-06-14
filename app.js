@@ -3530,7 +3530,8 @@ initUI();
 
 loadSavedCV();
 
-const isFirstVisit = !localStorage.getItem("jobfinder_filters");
+const isFirstVisit = !localStorage.getItem("jobfinder_filters") && !sessionStorage.getItem("app_started");
+sessionStorage.setItem("app_started", "1");
 
 if(!isFirstVisit){
 const offersLoad = loadOffers();
