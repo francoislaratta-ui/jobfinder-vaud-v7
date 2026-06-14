@@ -1185,14 +1185,31 @@ function applyFilters(){
 
     let result = [...offers];
 
-    if(selectedMetiers.length > 0){
-        result = result.filter(offer =>
-            !offer.title ||
-            selectedMetiers.some(m =>
-                containsNormalized(offer.title, m)
-            )
+    const SCRAPE_KEYWORDS = [
+"employe de commerce",
+"assistant administratif",
+"gestionnaire de dossier",
+"technicien informatique",
+"support informatique",
+"helpdesk",
+"back office",
+"collaborateur administratif"
+];
+
+if(selectedMetiers.length > 0){
+    result = result.filter(offer => {
+        const titleNorm = normalizeText(offer.title);
+        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
+            k.split(" ").filter(w => w.length > 4)
+            .some(w => titleNorm.includes(w))
         );
-    }
+        const matchesMetier = selectedMetiers.some(m =>
+            containsNormalized(offer.title, m)
+        );
+        return matchesKeyword || matchesMetier;
+    });
+}
+
 
     if(selectedSecteurs.length > 0){
         result = result.filter(offer =>
