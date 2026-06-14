@@ -1327,6 +1327,35 @@ function resetFilters(){
 }
 
 /* ==========================================
+SAUVEGARDE FILTRES
+========================================== */
+
+function saveFilters(){
+    const groups = [
+        "metiers",
+        "secteurs",
+        "taux",
+        "contrats",
+        "regions",
+        "sources",
+        "matches"
+    ];
+
+    const saved = {};
+    groups.forEach(group => {
+        saved[group] = [...document.querySelectorAll(
+            `input[name="${group}"]:checked`
+        )].map(cb => cb.value);
+    });
+
+    if(sortFilter){
+        saved.sort = sortFilter.value;
+    }
+
+    localStorage.setItem("jobfinder_filters", JSON.stringify(saved));
+}
+
+/* ==========================================
 RESTAURATION FILTRES
 ========================================== */
 
@@ -3566,6 +3595,8 @@ await offersLoad;
 localStorage.setItem("jobfinder_visited", "true");
 
 await new Promise(resolve => setTimeout(resolve, 300));
+
+
 
 restoreSavedFilters();
 
