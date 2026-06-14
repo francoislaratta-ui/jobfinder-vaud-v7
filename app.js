@@ -905,8 +905,15 @@ refreshOffersBtn.addEventListener("click", async () => {
 const isFirst = !localStorage.getItem("jobfinder_filters");
 
 if(isFirst){
-applyFilters();
+refreshOffersBtn.disabled = true;
+refreshOffersBtn.innerHTML = `🔄 Chargement...<br>⏳ Veuillez patienter...`;
+try{
+await loadOffers();
 openTab("filters");
+}finally{
+refreshOffersBtn.disabled = false;
+refreshOffersBtn.innerHTML = `🔍 Chercher de nouvelles offres`;
+}
 return;
 }
 
@@ -1090,7 +1097,6 @@ sortFilter.addEventListener("change", applyFilters);
 }
 
 }
-
 
 /* ==========================================
 TOGGLE SELECT ALL
