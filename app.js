@@ -911,6 +911,7 @@ try{
 await loadOffers(true);
 const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:checked')].map(cb => cb.value);
 console.log("Cases cochées:", selectedMetiers);
+saveFilters();
 applyFilters();
 openTab("filters");
 }finally{
@@ -936,10 +937,8 @@ updateBestMatch();
 updateStatistics();
 updateApplicationCounters();
 
-const savedFilters = localStorage.getItem("jobfinder_filters");
-if(savedFilters){
+saveFilters();
 applyFilters();
-}
 
 openTab("filters");
 
@@ -1162,16 +1161,7 @@ function applyFilters(){
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
-    localStorage.setItem("jobfinder_filters", JSON.stringify({
-    metiers: selectedMetiers,
-    secteurs: selectedSecteurs,
-    taux: selectedTaux,
-    contrats: selectedContrats,
-    regions: selectedRegions,
-    sources: selectedSources,
-    matches: selectedMatches,
-    sort: activeFilters.sort
-}));
+    
 
     let result = [...offers];
 
