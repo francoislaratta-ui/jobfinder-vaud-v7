@@ -928,7 +928,7 @@ refreshOffersBtn.innerHTML = `
 `;
 
 try{
-    
+
 await refreshOffers();
 
 updateDashboard();
@@ -952,7 +952,7 @@ console.error("Erreur actualisation manuelle :", error);
 refreshOffersBtn.disabled = false;
 
 refreshOffersBtn.innerHTML = `
-🔍 Chercher de nouvelles offres
+🔍 Rechercher / Actualiser
 `;
 
 }
