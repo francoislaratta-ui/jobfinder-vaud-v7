@@ -2379,6 +2379,7 @@ container.appendChild(card);
 
 }
 
+
 /* ==========================================
 RESULTS SUMMARY
 ========================================== */
@@ -3530,7 +3531,6 @@ cvAnalysisResult.innerHTML = `
 
 }
 
-}
 
 window.addEventListener("DOMContentLoaded", async () => {
 
