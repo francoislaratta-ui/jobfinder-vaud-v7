@@ -917,7 +917,12 @@ updateDashboard();
 updateBestMatch();
 updateStatistics();
 updateApplicationCounters();
+
+const savedFilters = localStorage.getItem("jobfinder_filters");
+if(savedFilters){
 applyFilters();
+}
+
 openTab("filters");
 
 }catch(error){
