@@ -2011,10 +2011,10 @@ await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
 
-if(!skipRender){
 if(localStorage.getItem("jobfinder_filters")){
 applyFilters();
-}
+}else if(!skipRender){
+renderOffers(filteredOffers);
 }
 
 updateDashboard();
