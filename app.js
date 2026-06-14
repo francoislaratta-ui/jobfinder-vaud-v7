@@ -108,7 +108,7 @@ return String(value || "")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
-.replace(/[-–—·•]/g, " ")
+.replace(/[-–—·•·]/g, " "), " ")
 .replace(/[()\/«»"']/g, " ")
 .replace(/\./g, " ")
 .replace(/\s+/g, " ")
@@ -1199,8 +1199,12 @@ function applyFilters(){
 "technicien support",
 "technicien maintenance",
 "technicien systeme",
+"technicien alarme",
 "support informatique",
 "support utilisateur",
+"it support",
+"network support",
+"specialiste support",
 "helpdesk",
 "back office",
 "collaborateur administratif",
