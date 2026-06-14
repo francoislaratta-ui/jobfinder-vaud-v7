@@ -3546,8 +3546,8 @@ restoreSavedFilters();
 if(isFirstVisit){
 openTab("filters");
 setTimeout(() => {
-showInfo("Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur Rechercher.");
-}, 500);
+alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur Rechercher.");
+}, 800);
 }
 
 renderFavorites();
