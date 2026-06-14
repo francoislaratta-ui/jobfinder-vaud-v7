@@ -1121,22 +1121,6 @@ applyFilters();
 
 
 /* ==========================================
-TOGGLE SELECT ALL
-========================================== */
-
-function toggleSelectAll(masterCheckbox, groupName){
-    const checkboxes = masterCheckbox
-        .closest('.filter-content')
-        .querySelectorAll(`input[name="${groupName}"]`);
-
-    checkboxes.forEach(cb => {
-        cb.checked = masterCheckbox.checked;
-    });
-
-    applyFilters();
-}
-
-/* ==========================================
 APPLY FILTERS
 ========================================== */
 
