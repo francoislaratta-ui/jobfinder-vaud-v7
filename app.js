@@ -908,8 +908,8 @@ if(isFirst){
 refreshOffersBtn.disabled = true;
 refreshOffersBtn.innerHTML = `🔄 Chargement...<br>⏳ Veuillez patienter...`;
 try{
-await loadOffers();
-applyFilters();
+await loadOffers(true);
+applyFilters();;
 openTab("filters");
 }finally{
 refreshOffersBtn.disabled = false;
@@ -1913,7 +1913,7 @@ return updatedOffers;
 CHARGEMENT OFFRES
 ========================================== */
 
-async function loadOffers(){
+async function loadOffers(skipRender = false){
 
 try{
 
@@ -2011,8 +2011,10 @@ await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
 
+if(!skipRender){
 if(localStorage.getItem("jobfinder_filters")){
 applyFilters();
+}
 }
 
 updateDashboard();
