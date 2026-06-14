@@ -902,6 +902,13 @@ document.getElementById("refreshOffersBtn");
 if(refreshOffersBtn){
 refreshOffersBtn.addEventListener("click", async () => {
 
+const isFirst = !localStorage.getItem("jobfinder_filters");
+
+if(isFirst){
+openTab("filters");
+return;
+}
+
 refreshOffersBtn.disabled = true;
 
 refreshOffersBtn.innerHTML = `
