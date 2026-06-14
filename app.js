@@ -917,6 +917,7 @@ updateDashboard();
 updateBestMatch();
 updateStatistics();
 updateApplicationCounters();
+applyFilters();;
 
 }catch(error){
 
