@@ -1057,15 +1057,10 @@ openTab("settings");
 }
 
 if(btnReset){
-
 btnReset.addEventListener("click", async () => {
-
 resetFilters();
-
 await refreshOffers();
-
 });
-
 }
 
 if(resetFiltersBtn){
@@ -1076,33 +1071,12 @@ if(searchOffersBtn){
 searchOffersBtn.addEventListener("click", applyFilters);
 }
 
-document.querySelectorAll('input[name="sources"]')
-.forEach(cb => {
-cb.addEventListener("change", applyFilters);
-});
-
-document.querySelectorAll('input[name="matches"]')
-.forEach(cb => {
-cb.addEventListener("change", applyFilters);
-});
-
-document
-.querySelectorAll('#employerFilter input[type="checkbox"]')
-.forEach(cb => {
-cb.addEventListener("change", applyFilters);
-});
-
 if(sortFilter){
 sortFilter.addEventListener("change", applyFilters);
 }
 
-document
-.querySelectorAll("input[type='checkbox']")
-.forEach(checkbox => {
-checkbox.addEventListener("change", applyFilters);
-});
-
 }
+
 
 /* ==========================================
 TOGGLE SELECT ALL
