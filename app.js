@@ -905,8 +905,8 @@ refreshOffersBtn.addEventListener("click", async () => {
 const isFirst = !localStorage.getItem("jobfinder_filters");
 
 if(isFirst){
+applyFilters();
 openTab("filters");
-showInfo("Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur Rechercher.");
 return;
 }
 
