@@ -1080,9 +1080,11 @@ openTab("settings");
 });
 }
 
+
 if(btnReset){
 btnReset.addEventListener("click", () => {
-localStorage.clear();
+localStorage.removeItem("jobfinder_filters");
+localStorage.removeItem("jobfinder_visited");
 location.reload();
 });
 }
