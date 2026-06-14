@@ -3593,7 +3593,6 @@ if(!isFirstVisit){
 await loadOffers();
 }
 
-DOMContentLoaded
 await new Promise(resolve => setTimeout(resolve, 300));
 
 if(!isFirstVisit){
