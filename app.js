@@ -2338,46 +2338,6 @@ if(!container || list.length === 0){
 return;
 }
 
-const sorted = [...list].sort((a,b) =>
-calculateMatch(b) - calculateMatch(a)
-).slice(0, 3);
-
-container.innerHTML = "";
-
-sorted.forEach(offer => {
-const match = calculateMatch(offer);
-const badge = getMatchBadge(match);
-const matchClass = getMatchClass(match);
-
-const card = document.createElement("div");
-card.className = "offer-card";
-card.setAttribute("data-offer-id", offer.id);
-card.style.cursor = "pointer";
-
-card.innerHTML = `
-<div class="offer-title">
-💼 ${escapeHTML(offer.title)}
-</div>
-<div class="offer-company">
-🏢 ${escapeHTML(offer.company)} • ${escapeHTML(badge)}
-</div>
-<div class="offer-match ${matchClass}">
-🤖 ${match}% — ${escapeHTML(badge)}
-</div>
-`;
-
-card.addEventListener("click", () => {
-openTab("filters");
-setTimeout(() => {
-const fullCard = document.querySelector(`[data-offer-id="${offer.id}"]`);
-if(fullCard) fullCard.scrollIntoView({ behavior: "smooth" });
-}, 300);
-});
-
-container.appendChild(card);
-});
-}
-
 /* ==========================================
 RESULTS SUMMARY
 ========================================== */
