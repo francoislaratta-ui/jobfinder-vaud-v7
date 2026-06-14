@@ -909,6 +909,7 @@ refreshOffersBtn.disabled = true;
 refreshOffersBtn.innerHTML = `🔄 Chargement...<br>⏳ Veuillez patienter...`;
 try{
 await loadOffers();
+applyFilters();
 openTab("filters");
 }finally{
 refreshOffersBtn.disabled = false;
