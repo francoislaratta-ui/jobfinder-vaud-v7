@@ -3583,9 +3583,13 @@ initUI();
 loadSavedCV();
 
 const hasVisited = localStorage.getItem("jobfinder_visited");
+const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
+const hasAny = rawFilters && Object.keys(rawFilters)
+    .filter(k => k !== "sort")
+    .some(k => (rawFilters[k] || []).length > 0);
 const isFirstVisit = !hasVisited;
 
-if(!isFirstVisit){
+if(!isFirstVisit && hasAny){
 const offersLoad = loadOffers();
 if(offersLoad && typeof offersLoad.then === "function"){
 await offersLoad;
@@ -3596,9 +3600,9 @@ localStorage.setItem("jobfinder_visited", "true");
 
 await new Promise(resolve => setTimeout(resolve, 300));
 
-
-
+if(!isFirstVisit){
 restoreSavedFilters();
+}
 
 if(isFirstVisit){
 openTab("filters");
@@ -3608,11 +3612,8 @@ alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis c
 }
 
 renderFavorites();
-
 renderApplications();
-
 renderLettersHistory();
-
 updateApplicationCounters();
 
 console.log("==================================");
