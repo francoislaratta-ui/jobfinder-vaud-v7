@@ -1804,9 +1804,8 @@ if(!Array.isArray(list)){
 return [];
 }
 
-const enrichedOffers = [];
-
-for(const offer of list){
+const results = await Promise.all(
+list.map(async (offer) => {
 
 const descriptionMissing =
 !offer.description ||
@@ -1816,8 +1815,7 @@ const realOfferUrl =
 isRealOfferUrlClient(offer.offerUrl);
 
 if(!descriptionMissing || !realOfferUrl){
-enrichedOffers.push(offer);
-continue;
+return offer;
 }
 
 try{
@@ -1841,15 +1839,14 @@ throw new Error("HTTP " + response.status);
 const data =
 await response.json();
 
-enrichedOffers.push({
+return {
 ...offer,
 description:
 data.description ||
 "Descriptif non disponible."
-});
+};
 
-}
-catch(error){
+}catch(error){
 
 console.warn(
 "Description non récupérée :",
@@ -1857,13 +1854,14 @@ offer.title,
 error
 );
 
-enrichedOffers.push(offer);
+return offer;
 
 }
 
-}
+})
+);
 
-return enrichedOffers;
+return results;
 
 }
 
