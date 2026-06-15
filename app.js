@@ -2052,7 +2052,7 @@ const hasAny = rawFilters && Object.keys(rawFilters)
     .some(k => (rawFilters[k] || []).length > 0);
 
 if(hasAny){
-    applyFilters();
+    restoreSavedFilters();
 }else if(!skipRender){
     renderOffers(filteredOffers);
 }
