@@ -1393,7 +1393,7 @@ function restoreSavedFilters(){
         groups.some(g => (saved[g] || []).length > 0) ||
         saved.sort !== "match"
     ){
-        applyFilters();
+        setTimeout(() => applyFilters(), 500);
     }
 }
 
