@@ -586,127 +586,114 @@ API EXTRACTION DESCRIPTION URL
 ========================================== */
 app.post(
 "/api/extract-description",
-(req,res)=>{
+async (req,res)=>{
 
 try{
 
-const url =
-req.body?.url;
+const url = req.body?.url;
 
 if(!url){
-
 return res.status(400).json({
 success:false,
 description:"",
 message:"URL manquante"
 });
+}
+
+// Détection État de Vaud (Oracle HCM)
+const etatVaudMatch = url.match(/#fr\/sites\/CX_1\/job\/(\d+)/);
+
+if(etatVaudMatch){
+
+const jobId = etatVaudMatch[1];
+const apiUrl = `https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?expand=all&onlyData=true&finder=ById;Id=%22${jobId}%22,siteNumber=CX_1`;
+
+const axios = require("axios");
+
+const response = await axios.get(apiUrl, {
+headers:{
+"Accept": "application/json",
+"Accept-Language": "fr"
+},
+timeout: 10000
+});
+
+const items = response.data?.items;
+if(!items || items.length === 0){
+return res.json({ success:false, description:"Descriptif non disponible." });
+}
+
+const job = items[0];
+
+const title = job.Title || "";
+const description = job.ExternalDescriptionStr || job.Description || "";
+const responsibilities = job.Responsibilities || "";
+const qualifications = job.Qualifications || "";
+const whoWeAre = job.AboutCompany || job.WhoWeAre || "";
+const whyJoin = job.WhyJoinUs || "";
+const workRate = job.WorkingTime || job.ContractType || job.WorkPercent || "";
+const address = [
+job.PrimaryLocationAddress || "",
+job.PrimaryLocationPostalCode || "",
+job.PrimaryLocationCity || ""
+].filter(Boolean).join(", ");
+const startDate = job.TargetStartDate || job.ExpectedStartDate || "";
+const applyBefore = job.PostedEndDate || "";
+const salaryGrade = job.GradeName || job.SalaryGrade || "";
+
+let result = "";
+if(workRate) result += `Taux d'activité : ${workRate}\n`;
+if(salaryGrade) result += `Classe salariale : ${salaryGrade}\n`;
+if(startDate) result += `Date d'entrée : ${startDate}\n`;
+if(applyBefore) result += `Postuler avant : ${applyBefore}\n`;
+if(address) result += `Adresse : ${address}\n`;
+if(result) result += "\n";
+if(description) result += `DESCRIPTION DE L'EMPLOI\n${description}\n\n`;
+if(responsibilities) result += `RESPONSABILITÉS\n${responsibilities}\n\n`;
+if(qualifications) result += `QUALIFICATIONS\n${qualifications}\n\n`;
+if(whoWeAre) result += `QUI SOMMES-NOUS?\n${whoWeAre}\n\n`;
+if(whyJoin) result += `POURQUOI REJOINDRE L'ÉTAT DE VAUD?\n${whyJoin}\n\n`;
+
+return res.json({
+success: true,
+url,
+description: result.trim() || "Descriptif non disponible."
+});
 
 }
 
-const client =
-url.startsWith("https")
-? https
-: http;
+// Autres sources — extraction HTML classique
+const client = url.startsWith("https") ? https : http;
 
 client.get(url,(response)=>{
 
 let html = "";
-
-response.on(
-"data",
-chunk => {
-html += chunk;
-}
-);
-
-response.on(
-"end",
-()=>{
+response.on("data", chunk => { html += chunk; });
+response.on("end", ()=>{
 
 try{
-
-const description =
-extractUsefulDescription(html);
-
+const description = extractUsefulDescription(html);
 res.json({
-
 success:true,
-
 url,
+description: description || "Descriptif non disponible."
+});
+}catch(error){
+console.error("Erreur analyse HTML :", error);
+res.status(500).json({ success:false, description:"", message:"Erreur analyse HTML" });
+}
 
-description:
-description ||
-"Descriptif non disponible."
+});
 
+}).on("error",(error)=>{
+console.error("Erreur téléchargement :", error);
+res.status(500).json({ success:false, description:"", message:"Erreur téléchargement page" });
 });
 
 }
 catch(error){
-
-console.error(
-"Erreur analyse HTML :",
-error
-);
-
-res.status(500).json({
-
-success:false,
-
-description:"",
-
-message:
-"Erreur analyse HTML"
-
-});
-
-}
-
-});
-
-}).on(
-"error",
-(error)=>{
-
-console.error(
-"Erreur téléchargement :",
-error
-);
-
-res.status(500).json({
-
-success:false,
-
-description:"",
-
-message:
-"Erreur téléchargement page"
-
-});
-
-}
-
-);
-
-}
-catch(error){
-
-
-console.error(
-"Erreur extraction description :",
-error
-);
-
-res.status(500).json({
-
-success:false,
-
-description:"",
-
-message:
-"Erreur extraction description"
-
-});
-
+console.error("Erreur extraction description :", error);
+res.status(500).json({ success:false, description:"", message:"Erreur extraction description" });
 }
 
 }
@@ -814,6 +801,7 @@ message:
 
 }
 );
+
 
 /* ==========================================
 API CANDIDATURES
