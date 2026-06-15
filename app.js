@@ -3573,8 +3573,9 @@ const hasAny = rawFilters && Object.keys(rawFilters)
 const isFirstVisit = !hasAny;
 
 if(!isFirstVisit){
-await loadOffers();
+restoreSavedFilters();
 openTab("filters");
+await loadOffers();
 }
 
 if(isFirstVisit){
