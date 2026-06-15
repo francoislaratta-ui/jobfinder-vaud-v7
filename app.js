@@ -3592,8 +3592,7 @@ restoreSavedFilters();
 if(isFirstVisit){
 openTab("filters");
 setTimeout(() => {
-alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur Rechercher / Actualiser.");
-}, 800);
+alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur 💡 Rechercher avec mes critères.");}, 800);
 }
 
 renderFavorites();
