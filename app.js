@@ -916,7 +916,7 @@ applyFilters();
 openTab("filters");
 }finally{
 refreshOffersBtn.disabled = false;
-refreshOffersBtn.innerHTML = `🔍 Rechercher / Actualiser`;
+refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
 }
 return;
 }
@@ -951,7 +951,7 @@ console.error("Erreur actualisation manuelle :", error);
 refreshOffersBtn.disabled = false;
 
 refreshOffersBtn.innerHTML = `
-🔍 Rechercher / Actualiser
+💡 Rechercher avec mes critères
 `;
 
 }
