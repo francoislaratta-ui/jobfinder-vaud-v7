@@ -354,51 +354,33 @@ grid-column:1 / -1;
 
 margin-left:0;
 
-border:
-1px solid rgba(
-168,
-85,
-247,
-0.45
-) !important;
+border: none !important;
 
-background:
-linear-gradient(
+background: linear-gradient(
 90deg,
-rgba(15,23,42,0.96),
-rgba(2,6,23,0.98)
+#7c3aed,
+#a855f7
 ) !important;
 
-color:#a855f7 !important;
+color: #ffffff !important;
 
-box-shadow:
-0 3px 10px rgba(
-124,
-58,
-237,
-0.14
-);
+font-weight: 700 !important;
+
+font-size: 15px !important;
+
+box-shadow: 0 0 20px rgba(168,85,247,0.7);
 
 }
 
 .refresh-nav-btn:hover{
 
-border-color:
-rgba(
-168,
-85,
-247,
-0.75
-) !important;
-
-background:
-linear-gradient(
+background: linear-gradient(
 90deg,
-rgba(88,28,135,0.35),
-rgba(15,23,42,0.96)
+#6d28d9,
+#9333ea
 ) !important;
 
-color:#c084fc !important;
+color: #ffffff !important;
 
 }
 
