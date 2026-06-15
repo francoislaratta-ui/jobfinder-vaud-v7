@@ -1876,20 +1876,17 @@ async function discoverRealOfferUrls(list){
 const safeList =
 Array.isArray(list) ? list : [];
 
-const updatedOffers = [];
-
-for(const offer of safeList){
+const results = await Promise.all(
+safeList.map(async (offer) => {
 
 try{
 
 if(!offer || !offer.offerUrl){
-updatedOffers.push(offer);
-continue;
+return offer;
 }
 
 if(isRealOfferUrlClient(offer.offerUrl)){
-updatedOffers.push(offer);
-continue;
+return offer;
 }
 
 const response =
@@ -1898,33 +1895,23 @@ method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({
-offer
-})
+body:JSON.stringify({ offer })
 });
 
-if(!response.ok){
-updatedOffers.push(offer);
-continue;
-}
+if(!response.ok) return offer;
 
-const result =
-await response.json();
+const result = await response.json();
 
 if(result.success && result.discoveredUrl){
-
-updatedOffers.push({
+return {
 ...offer,
-offerUrl:result.discoveredUrl,
-originalOfferUrl:offer.offerUrl,
-urlDiscovered:true
-});
-
-}else{
-
-updatedOffers.push(offer);
-
+offerUrl: result.discoveredUrl,
+originalOfferUrl: offer.offerUrl,
+urlDiscovered: true
+};
 }
+
+return offer;
 
 }catch(error){
 
@@ -1934,15 +1921,17 @@ offer?.title || "",
 error
 );
 
-updatedOffers.push(offer);
+return offer;
 
 }
 
+})
+);
+
+return results;
+
 }
 
-return updatedOffers;
-
-}
 
 /* ==========================================
 CHARGEMENT OFFRES
