@@ -913,7 +913,13 @@ const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:che
 console.log("Cases cochées:", selectedMetiers);
 saveFilters();
 applyFilters();
-openTab("filters");
+openTab("offers");
+setTimeout(() => {
+const firstOffer = document.querySelector(".offer-card");
+if(firstOffer){
+firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+}, 300);
 }finally{
 refreshOffersBtn.disabled = false;
 refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
