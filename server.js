@@ -602,10 +602,10 @@ message:"URL manquante"
 
 // Détection État de Vaud (Oracle HCM)
 const etatVaudMatch = url.match(/#fr\/sites\/CX_1\/job\/(\d+)/);
+const jobId = etatVaudMatch ? etatVaudMatch[1] : req.body?.id;
 
-if(etatVaudMatch){
+if(jobId && (url.includes("offres-emploi.vd.ch") || req.body?.source === "État de Vaud")){
 
-const jobId = etatVaudMatch[1];
 const apiUrl = `https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?expand=all&onlyData=true&finder=ById;Id=%22${jobId}%22,siteNumber=CX_1`;
 
 const axios = require("axios");
@@ -625,7 +625,8 @@ return res.json({ success:false, description:"Descriptif non disponible." });
 
 const job = items[0];
 
-const title = job.Title || "";
+const stripHtml = s => s ? s.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim() : "";
+
 const description = job.ExternalDescriptionStr || job.Description || "";
 const responsibilities = job.Responsibilities || "";
 const qualifications = job.Qualifications || "";
@@ -648,11 +649,11 @@ if(startDate) result += `Date d'entrée : ${startDate}\n`;
 if(applyBefore) result += `Postuler avant : ${applyBefore}\n`;
 if(address) result += `Adresse : ${address}\n`;
 if(result) result += "\n";
-if(description) result += `DESCRIPTION DE L'EMPLOI\n${description}\n\n`;
-if(responsibilities) result += `RESPONSABILITÉS\n${responsibilities}\n\n`;
-if(qualifications) result += `QUALIFICATIONS\n${qualifications}\n\n`;
-if(whoWeAre) result += `QUI SOMMES-NOUS?\n${whoWeAre}\n\n`;
-if(whyJoin) result += `POURQUOI REJOINDRE L'ÉTAT DE VAUD?\n${whyJoin}\n\n`;
+if(description) result += `DESCRIPTION DE L'EMPLOI\n${stripHtml(description)}\n\n`;
+if(responsibilities) result += `RESPONSABILITÉS\n${stripHtml(responsibilities)}\n\n`;
+if(qualifications) result += `QUALIFICATIONS\n${stripHtml(qualifications)}\n\n`;
+if(whoWeAre) result += `QUI SOMMES-NOUS?\n${stripHtml(whoWeAre)}\n\n`;
+if(whyJoin) result += `POURQUOI REJOINDRE L'ÉTAT DE VAUD?\n${stripHtml(whyJoin)}\n\n`;
 
 return res.json({
 success: true,
@@ -719,6 +720,7 @@ offers
 
 }
 );
+
 
 /* ==========================================
 API FAVORIS
