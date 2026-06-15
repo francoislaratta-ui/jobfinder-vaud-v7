@@ -1814,7 +1814,13 @@ offer.description === "Descriptif non disponible.";
 const realOfferUrl =
 isRealOfferUrlClient(offer.offerUrl);
 
-if(!descriptionMissing || !realOfferUrl){
+const isEtatVaud = offer.source === "État de Vaud";
+
+if(!isEtatVaud && (!descriptionMissing || !realOfferUrl)){
+return offer;
+}
+
+if(!offer.offerUrl){
 return offer;
 }
 
@@ -1864,6 +1870,7 @@ return offer;
 return results;
 
 }
+
 
 /* ==========================================
 DECOUVERTE URLS REELLES
