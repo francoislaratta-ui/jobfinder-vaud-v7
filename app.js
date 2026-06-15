@@ -3587,12 +3587,6 @@ const isFirstVisit = !hasAny;
 
 if(!isFirstVisit){
 await loadOffers();
-}
-
-await new Promise(resolve => setTimeout(resolve, 1500));
-
-if(!isFirstVisit){
-restoreSavedFilters();
 openTab("filters");
 }
 
