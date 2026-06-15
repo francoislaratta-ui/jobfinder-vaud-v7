@@ -3593,12 +3593,14 @@ await new Promise(resolve => setTimeout(resolve, 300));
 
 if(!isFirstVisit){
 restoreSavedFilters();
+openTab("filters");
 }
 
 if(isFirstVisit){
 openTab("filters");
 setTimeout(() => {
-alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur 💡 Rechercher avec mes critères.");}, 800);
+alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur 💡 Rechercher avec mes critères.");
+}, 800);
 }
 
 renderFavorites();
