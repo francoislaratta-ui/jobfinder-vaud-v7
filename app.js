@@ -913,7 +913,7 @@ const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:che
 console.log("Cases cochées:", selectedMetiers);
 saveFilters();
 applyFilters();
-openTab("offers");
+openTab("filters");
 setTimeout(() => {
 const firstOffer = document.querySelector(".offer-card");
 if(firstOffer){
