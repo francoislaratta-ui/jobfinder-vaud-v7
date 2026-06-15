@@ -139,13 +139,91 @@ return html
 
 function extractUsefulDescription(html){
 
-const text =
-cleanHtmlText(html);
+const text = cleanHtmlText(html);
 
 if(!text){
 return "";
 }
 
+// Détection État de Vaud
+const isEtatVaud =
+html.includes("offres-emploi.vd.ch") ||
+html.includes("Pourquoi rejoindre l") ||
+html.includes("POSTULER MAINTENANT");
+
+if(isEtatVaud){
+
+const sections = [
+"DESCRIPTION DE L'EMPLOI",
+"Description de l'emploi",
+"RESPONSABILITÉS",
+"Responsabilités",
+"QUALIFICATIONS",
+"Qualifications",
+"QUI SOMMES-NOUS",
+"Qui sommes-nous",
+"POURQUOI REJOINDRE",
+"Pourquoi rejoindre"
+];
+
+const fields = [
+{ label: "Taux d'activité", regex: /Taux d'activité\s*([^\n]{3,30})/i },
+{ label: "Type de contrat", regex: /Type de contrat\s*([^\n]{3,30})/i },
+{ label: "Date d'entrée", regex: /Date d'entr[ée]+e? en fonction\s*([^\n]{3,30})/i },
+{ label: "Postuler avant", regex: /Postuler avant\s*([^\n]{3,30})/i },
+{ label: "Classe salariale", regex: /Classe salariale\s*([^\n]{1,10})/i },
+{ label: "Adresse", regex: /Adresse\s*([\s\S]{10,120}?)(?=Date|Taux|Type|Classe|Postuler|$)/i }
+];
+
+let result = "";
+
+// Extraire les champs structurés
+const structuredFields = fields
+.map(f => {
+const m = text.match(f.regex);
+return m ? `${f.label} : ${m[1].trim()}` : null;
+})
+.filter(Boolean)
+.join("\n");
+
+if(structuredFields){
+result += structuredFields + "\n\n";
+}
+
+// Extraire les sections textuelles
+let startIndex = -1;
+for(const section of sections){
+const index = text.toLowerCase().indexOf(section.toLowerCase());
+if(index !== -1){
+startIndex = index;
+break;
+}
+}
+
+if(startIndex !== -1){
+let extracted = text.substring(startIndex, startIndex + 5000);
+
+const stopWords = [
+"Emplois similaires",
+"Offres similaires",
+"POSTULER MAINTENANT"
+];
+
+for(const stop of stopWords){
+const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
+if(idx > 200){
+extracted = extracted.substring(0, idx).trim();
+}
+}
+
+result += extracted;
+}
+
+return result.trim() || text.substring(0, 3500).trim();
+
+}
+
+// Autres sources
 const keywords = [
 "Votre mission",
 "Vos missions",
@@ -162,15 +240,11 @@ const keywords = [
 let startIndex = -1;
 
 for(const keyword of keywords){
-
-const index =
-text.toLowerCase().indexOf(keyword.toLowerCase());
-
+const index = text.toLowerCase().indexOf(keyword.toLowerCase());
 if(index !== -1){
 startIndex = index;
 break;
 }
-
 }
 
 let result =
@@ -187,15 +261,10 @@ const stopWords = [
 ];
 
 for(const stopWord of stopWords){
-
-const index =
-result.toLowerCase().indexOf(stopWord.toLowerCase());
-
+const index = result.toLowerCase().indexOf(stopWord.toLowerCase());
 if(index > 800){
-result =
-result.substring(0, index).trim();
+result = result.substring(0, index).trim();
 }
-
 }
 
 if(result.length < 300){
@@ -205,6 +274,7 @@ return text.substring(0, 3500).trim();
 return result.trim();
 
 }
+
 
 /* ==========================================
 API HEALTH
