@@ -654,13 +654,14 @@ const startDate = getField("Date d'entrée en fonction");
 const contractType = getField("Type de contrat");
 const address = getField("Adresse");
 const applyBefore = job.ExternalPostedEndDate || "";
+const applyBeforeFormatted = applyBefore ? new Date(applyBefore).toLocaleDateString("fr-CH") : "";
 
 let result = "";
 if(workRate) result += `Taux d'activité : ${workRate}\n`;
 if(contractType) result += `Type de contrat : ${contractType}\n`;
 if(salaryGrade) result += `Classe salariale : ${salaryGrade}\n`;
 if(startDate) result += `Date d'entrée : ${startDate}\n`;
-if(applyBefore) result += `Postuler avant : ${new Date(applyBefore).toLocaleDateString("fr-CH")}\n`;
+if(applyBeforeFormatted) result += `Postuler avant : ${applyBeforeFormatted}\n`;
 if(address) result += `Adresse :\n${address}\n`;
 if(result) result += "\n";
 if(description) result += `DESCRIPTION DE L'EMPLOI\n${stripHtml(description)}\n\n`;
@@ -672,7 +673,13 @@ if(whyJoin) result += `POURQUOI REJOINDRE L'ÉTAT DE VAUD?\n${stripHtml(whyJoin)
 return res.json({
 success: true,
 url,
-description: result.trim() || "Descriptif non disponible."
+description: result.trim() || "Descriptif non disponible.",
+rate: workRate,
+contract: contractType,
+address: address,
+startDate: startDate,
+applyBefore: applyBeforeFormatted,
+salaryGrade: salaryGrade
 });
 
 }

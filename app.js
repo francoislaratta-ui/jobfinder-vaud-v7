@@ -1849,9 +1849,13 @@ await response.json();
 
 return {
 ...offer,
-description:
-data.description ||
-"Descriptif non disponible."
+description: data.description || "Descriptif non disponible.",
+rate: data.rate || offer.rate || "",
+contract: data.contract || offer.contract || "",
+address: data.address || offer.address || "",
+startDate: data.startDate || offer.startDate || "",
+applyBefore: data.applyBefore || offer.applyBefore || "",
+salaryGrade: data.salaryGrade || offer.salaryGrade || ""
 };
 
 }catch(error){
