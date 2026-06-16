@@ -2603,7 +2603,6 @@ error:error.message
 
 }
 );
-
 /* ==========================================
 SCRAPING OFFRES AU DEMARRAGE
 ========================================== */
@@ -2709,14 +2708,19 @@ const apprentiKeywords = [
 ];
 if(apprentiKeywords.some(a => titleLower.includes(a))) continue;
 
+const street = (job.street || "").trim();
+const zipCode = (job.zipCode || "").trim();
+const addressParts = [];
+if(street) addressParts.push(street);
+if(zipCode || place) addressParts.push(`${zipCode} ${place}`.trim());
+const address = addressParts.join("\n");
+
 offers.push({
 id: String(jobId || generateServerId()),
 title: job.title || "",
 company: job.company?.name || "",
 location: place,
-address: job.street
-? `${job.street}, ${job.zipCode || ""} ${place}`.trim()
-: "",
+address: address,
 sector: "",
 rate: job.employmentGrades
 ? job.employmentGrades[0] === job.employmentGrades[1]
@@ -2841,7 +2845,7 @@ const encodedKeyword =
 encodeURIComponent(`"${keyword}"`);
 
 const url =
-`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations&finder=findReqs;siteNumber=CX_1,limit=20,keyword=${encodedKeyword},sortBy=RELEVANCY`;
+`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations&finder=findReqs;siteNumber=CX_1,limit=20,keyword=${encodedKeyword},sortBy=RELEVANCY`;
 
 const html =
 await fetchExternalText(url);
@@ -2955,7 +2959,6 @@ console.warn(
 }
 
 }
-
 
 /* ==========================================
 DEMARRAGE SERVEUR
