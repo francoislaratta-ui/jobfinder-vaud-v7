@@ -2209,6 +2209,11 @@ return clean.split("\n")
 
 const addressHtml = formatAddress(offer.address);
 
+// Vérifier si la ville est déjà dans l'adresse
+const locationInAddress = offer.address &&
+offer.location &&
+offer.address.toLowerCase().includes(offer.location.toLowerCase());
+
 card.innerHTML = `
 <div class="offer-title">
 💼 ${escapeHTML(offer.title)}
@@ -2219,9 +2224,11 @@ card.innerHTML = `
 ${addressHtml ? `<div class="offer-address">${addressHtml}</div>` : ""}
 </div>
 
+${!locationInAddress ? `
 <div class="offer-location">
 📍 ${escapeHTML(offer.location)}
 </div>
+` : ""}
 
 ${offer.rate ? `
 <div class="offer-meta">
@@ -2402,6 +2409,7 @@ url,
 );
 
 }
+
 
 /* ==========================================
 BEST MATCH
