@@ -335,7 +335,7 @@ let extracted = startIndex === -1
 ? jobupClean.substring(0, 3500)
 : jobupClean.substring(startIndex, startIndex + 4500);
 
-// StopWords — uniquement texte vraiment parasite, pas les champs utiles
+// StopWords — texte parasite uniquement
 const stopWords = [
 "Autres recherches",
 "Offres similaires",
@@ -344,7 +344,8 @@ const stopWords = [
 "D'autres utilisateurs ont",
 "D'autres utilisateurs",
 "Afficher plus d'emplois",
-"Catégories :"
+"Catégories :",
+"Date de publication"
 ];
 
 for(const stop of stopWords){
@@ -406,6 +407,7 @@ return text.substring(0, 3500).trim();
 return result.trim();
 
 }
+
 
 /* ==========================================
 API HEALTH
