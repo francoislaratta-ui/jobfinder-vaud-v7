@@ -264,6 +264,33 @@ if(isJobup){
 
 const jobupText = cleanHtmlTextJobup(html);
 
+// Supprimer le bloc navigation Jobup en début de texte
+const navStopWords = [
+"Aller directement au contenu",
+"Espace recruteurs",
+"Se connecter",
+"Choix de la langue"
+];
+
+let jobupClean = jobupText;
+for(const nav of navStopWords){
+const idx = jobupClean.indexOf(nav);
+if(idx !== -1 && idx < 500){
+// Cherche la fin du bloc nav — "À propos de cette offre" ou titre offre
+const afterNav = jobupClean.indexOf("À propos de cette offre", idx);
+const afterNav2 = jobupClean.indexOf("A propos du rôle", idx);
+const afterNav3 = jobupClean.indexOf("Votre mission", idx);
+const afterNav4 = jobupClean.indexOf("Vos tâches", idx);
+const cutStart = Math.min(
+...[afterNav, afterNav2, afterNav3, afterNav4].filter(i => i > 0)
+);
+if(cutStart > 0){
+jobupClean = jobupClean.substring(cutStart);
+}
+break;
+}
+}
+
 const jobupFields = [
 { label: "Date de parution", regex: /(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i },
 { label: "Taux", regex: /(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i },
@@ -277,7 +304,7 @@ const jobupFields = [
 let jobupResult = "";
 
 jobupFields.forEach(f => {
-const m = jobupText.match(f.regex);
+const m = jobupClean.match(f.regex);
 if(m) jobupResult += `${f.label} : ${(m[1] || m[0]).trim()}\n`;
 });
 
@@ -290,20 +317,30 @@ const keywords = [
 "Vos responsabilités",
 "Votre profil",
 "Profil recherché",
-"Description du poste"
+"Description du poste",
+"A propos du rôle",
+"À propos du rôle",
+"Tâches",
+"Nous cherchons"
 ];
 
 let startIndex = -1;
 for(const keyword of keywords){
-const index = jobupText.toLowerCase().indexOf(keyword.toLowerCase());
+const index = jobupClean.toLowerCase().indexOf(keyword.toLowerCase());
 if(index !== -1){ startIndex = index; break; }
 }
 
 let extracted = startIndex === -1
-? jobupText.substring(0, 3500)
-: jobupText.substring(startIndex, startIndex + 4500);
+? jobupClean.substring(0, 3500)
+: jobupClean.substring(startIndex, startIndex + 4500);
 
-const stopWords = ["Autres recherches","Offres similaires","Emplois similaires","Estimateur de salaire"];
+const stopWords = [
+"Autres recherches",
+"Offres similaires",
+"Emplois similaires",
+"Estimateur de salaire",
+"D'autres utilisateurs ont"
+];
 for(const stop of stopWords){
 const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
 if(idx > 200) extracted = extracted.substring(0, idx).trim();
@@ -363,7 +400,6 @@ return text.substring(0, 3500).trim();
 return result.trim();
 
 }
-
 
 /* ==========================================
 API HEALTH
