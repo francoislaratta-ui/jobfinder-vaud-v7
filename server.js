@@ -628,7 +628,19 @@ const job = items[0];
 console.log("JOB FIELDS:", JSON.stringify(Object.keys(job)));
 console.log("JOB DATA:", JSON.stringify(job));
 
-const stripHtml = s => s ? s.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim() : "";
+const stripHtml = s => s ? s
+.replace(/<[^>]+>/g," ")
+.replace(/&nbsp;/g," ")
+.replace(/&amp;/g,"&")
+.replace(/&quot;/g,"\"")
+.replace(/&#39;/g,"'")
+.replace(/&eacute;/g,"é")
+.replace(/&egrave;/g,"è")
+.replace(/&agrave;/g,"à")
+.replace(/&ccedil;/g,"ç")
+.replace(/&\w+;/g," ")
+.replace(/\s+/g," ")
+.trim() : "";
 
 const description = job.ExternalDescriptionStr || job.Description || "";
 const responsibilities = job.Responsibilities || "";
@@ -728,6 +740,7 @@ app.delete("/api/offers/cache", (req,res)=>{
 writeJson(OFFERS_FILE, []);
 res.json({ success:true, message:"Cache vidé" });
 });
+
 
 /* ==========================================
 API FAVORIS
