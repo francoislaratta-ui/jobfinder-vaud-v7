@@ -2198,8 +2198,26 @@ ${offer.address ? `
 ` : ""}
 
 <div class="offer-meta">
-${offer.rate ? `⏰ ${escapeHTML(offer.rate)}` : ""}${offer.rate && offer.contract ? " • " : ""}${offer.contract ? `📄 ${escapeHTML(offer.contract)}` : ""}
+${offer.rate ? `⏰ Taux : ${escapeHTML(offer.rate)}` : ""}${offer.rate && offer.contract ? " • " : ""}${offer.contract ? `📄 ${escapeHTML(offer.contract)}` : ""}
 </div>
+
+${offer.startDate ? `
+<div class="offer-meta">
+🗓️ Entrée : ${escapeHTML(offer.startDate)}
+</div>
+` : ""}
+
+${offer.applyBefore ? `
+<div class="offer-meta">
+⏳ Postuler avant : ${escapeHTML(offer.applyBefore)}
+</div>
+` : ""}
+
+${offer.salaryGrade ? `
+<div class="offer-meta">
+💰 Classe salariale : ${escapeHTML(offer.salaryGrade)}
+</div>
+` : ""}
 
 ${offer.salary ? `
 <div class="offer-salary">
@@ -2212,7 +2230,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 ${escapeHTML(offer.date)}
+📅 Publié le : ${escapeHTML(offer.date)}
 </div>
 
 ${offer.offerUrl ? `
@@ -2325,6 +2343,7 @@ linkBtn?.addEventListener("click", () => openOffer(offer));
 
 return card;
 }
+
 
 /* ==========================================
 OUVRIR OFFRE V14.6
