@@ -724,6 +724,10 @@ offers
 }
 );
 
+app.delete("/api/offers/cache", (req,res)=>{
+writeJson(OFFERS_FILE, []);
+res.json({ success:true, message:"Cache vidé" });
+});
 
 /* ==========================================
 API FAVORIS
