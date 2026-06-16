@@ -275,7 +275,7 @@ if(idx > 200) extracted = extracted.substring(0, idx).trim();
 }
 
 const structured = extracted
-.replace(/(MISSION DETAILLEE|VOTRE PROFIL|CE QUE NOUS OFFRONS|PROFIL RECHERCHÉ|VOS MISSIONS|VOS TÂCHES|NOS AVANTAGES)/gi,
+.replace(/(MISSION DETAILLEE|VOTRE PROFIL|Votre profil|CE QUE NOUS OFFRONS|Ce que nous offrons|PROFIL RECHERCHÉ|Profil recherché|VOS MISSIONS|Vos missions|VOS TÂCHES|Vos tâches|NOS AVANTAGES|Nos avantages|NOUS OFFRONS|Nous offrons|VOTRE MISSION|Votre mission|Comment postuler|COMMENT POSTULER|Entrée en fonction|Contact)/g,
 "\n\n$1\n")
 .replace(/\s{3,}/g, "\n");
 
