@@ -671,216 +671,7 @@ error:error.message
 );
 
 
-/* ==========================================
-API EXTRACTION DESCRIPTION URL
-========================================== */
-app.post(
-"/api/extract-description",
-async (req,res)=>{
 
-try{
-
-const url = req.body?.url;
-
-if(!url){
-return res.status(400).json({
-success:false,
-description:"",
-message:"URL manquante"
-});
-}
-
-// Détection État de Vaud (Oracle HCM)
-const etatVaudMatch = url.match(/#fr\/sites\/CX_1\/job\/(\d+)/);
-const jobId = etatVaudMatch ? etatVaudMatch[1] : req.body?.id;
-
-if(jobId && (url.includes("offres-emploi.vd.ch") || req.body?.source === "État de Vaud")){
-
-const apiUrl = `https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?expand=all&onlyData=true&finder=ById;Id=%22${jobId}%22,siteNumber=CX_1`;
-
-const axios = require("axios");
-
-const response = await axios.get(apiUrl, {
-headers:{
-"Accept": "application/json",
-"Accept-Language": "fr"
-},
-timeout: 10000
-});
-
-const items = response.data?.items;
-if(!items || items.length === 0){
-return res.json({ success:false, description:"Descriptif non disponible." });
-}
-
-const job = items[0];
-
-const stripHtml = s => s ? s
-.replace(/<[^>]+>/g," ")
-.replace(/&nbsp;/g," ")
-.replace(/&amp;/g,"&")
-.replace(/&quot;/g,"\"")
-.replace(/&#39;/g,"'")
-.replace(/&eacute;/g,"é")
-.replace(/&egrave;/g,"è")
-.replace(/&agrave;/g,"à")
-.replace(/&ccedil;/g,"ç")
-.replace(/&\w+;/g," ")
-.replace(/\s+/g," ")
-.trim() : "";
-
-const description = job.ExternalDescriptionStr || "";
-const responsibilities = job.ExternalResponsibilitiesStr || "";
-const qualifications = job.ExternalQualificationsStr || "";
-const whoWeAre = job.OrganizationDescriptionStr || "";
-const whyJoin = job.CorporateDescriptionStr || "";
-
-const flexFields = job.requisitionFlexFields || [];
-const getField = label => (flexFields.find(f => f.Prompt === label)?.Value || "");
-
-const workRate = getField("Taux d'activité");
-const salaryGrade = getField("Classe salariale");
-const startDate = getField("Date d'entrée en fonction");
-const contractType = getField("Type de contrat");
-const applyBefore = job.ExternalPostedEndDate || "";
-const applyBeforeFormatted = applyBefore ? new Date(applyBefore).toLocaleDateString("fr-CH") : "";
-
-// Adresse Oracle HCM — chaque ligne séparée par \n
-const rawAddress = getField("Adresse");
-const address = rawAddress
-.split(/[\n,]+/)
-.map(l => l.trim())
-.filter(Boolean)
-.join("\n");
-
-let result = "";
-if(workRate) result += `Taux d'activité : ${workRate}\n`;
-if(contractType) result += `Type de contrat : ${contractType}\n`;
-if(salaryGrade) result += `Classe salariale : ${salaryGrade}\n`;
-if(startDate) result += `Date d'entrée : ${startDate}\n`;
-if(applyBeforeFormatted) result += `Postuler avant : ${applyBeforeFormatted}\n`;
-if(address) result += `Adresse :\n${address}\n`;
-if(result) result += "\n";
-if(description) result += `DESCRIPTION DE L'EMPLOI\n${stripHtml(description)}\n\n`;
-if(responsibilities) result += `RESPONSABILITÉS\n${stripHtml(responsibilities)}\n\n`;
-if(qualifications) result += `QUALIFICATIONS\n${stripHtml(qualifications)}\n\n`;
-if(whoWeAre) result += `QUI SOMMES-NOUS?\n${stripHtml(whoWeAre)}\n\n`;
-if(whyJoin) result += `POURQUOI REJOINDRE L'ÉTAT DE VAUD?\n${stripHtml(whyJoin)}\n\n`;
-
-return res.json({
-success: true,
-url,
-description: result.trim() || "Descriptif non disponible.",
-rate: workRate,
-contract: contractType,
-address: address,
-startDate: startDate,
-applyBefore: applyBeforeFormatted,
-salaryGrade: salaryGrade
-});
-
-}
-
-// Autres sources — extraction HTML classique
-const client = url.startsWith("https") ? https : http;
-
-client.get(url,(response)=>{
-
-let html = "";
-response.on("data", chunk => { html += chunk; });
-response.on("end", ()=>{
-
-try{
-const description = extractUsefulDescription(html);
-
-// Extraction champs séparés pour Jobup
-let rate = "";
-let contract = "";
-let address = "";
-let salary = "";
-let date = "";
-let applyBefore = "";
-let startDate = "";
-
-if(url.includes("jobup.ch")){
-const jobupText = cleanHtmlTextJobup(html);
-
-const rateMatch = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
-if(rateMatch) rate = rateMatch[1].trim();
-
-const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
-if(contractMatch) contract = contractMatch[1].trim();
-
-const addressMatch = jobupText.match(/([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i);
-if(addressMatch) address = addressMatch[1].trim();
-
-// Estimation salariale Jobup — format CHF xx xxx - xx xxx/an ou /mois
-const salaryMatch = jobupText.match(/(CHF\s*[\d\s']+(?:\s*[-–]\s*[\d\s']+)?\s*\/\s*(?:an|mois))/i);
-if(salaryMatch) salary = salaryMatch[1].replace(/\s+/g," ").trim();
-
-const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
-if(dateMatch) date = dateMatch[1].trim();
-
-const applyBeforeMatch = jobupText.match(/Postuler avant[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
-if(applyBeforeMatch) applyBefore = applyBeforeMatch[1].trim();
-
-const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i);
-if(startDateMatch) startDate = startDateMatch[1].trim();
-}
-
-res.json({
-success:true,
-url,
-description: description || "Descriptif non disponible.",
-rate,
-contract,
-address,
-salary,
-date,
-applyBefore,
-startDate
-});
-}catch(error){
-console.error("Erreur analyse HTML :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur analyse HTML" });
-}
-
-});
-
-}).on("error",(error)=>{
-console.error("Erreur téléchargement :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur téléchargement page" });
-});
-
-}
-catch(error){
-console.error("Erreur extraction description :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur extraction description" });
-}
-
-}
-);
-
-
-/* ==========================================
-API OFFRES
-========================================== */
-
-app.get(
-"/api/offers",
-(req,res)=>{
-
-const offers =
-readJson(
-OFFERS_FILE
-);
-
-res.json(
-offers
-);
-
-}
-);
 
 app.delete("/api/offers/cache", (req,res)=>{
 writeJson(OFFERS_FILE, []);
@@ -1019,91 +810,231 @@ message:
 }
 );
 
-app.put(
-"/api/candidatures/:id",
-(req,res)=>{
 
-const candidatures =
-readJson(
-APPLICATIONS_FILE
-);
 
-const index =
-candidatures.findIndex(
-item =>
-item.id === req.params.id
-);
+/* ==========================================
+API EXTRACTION DESCRIPTION URL
+========================================== */
+app.post(
+"/api/extract-description",
+async (req,res)=>{
 
-if(index === -1){
+try{
 
-return res.status(404)
-.json({
+const url = req.body?.url;
 
+if(!url){
+return res.status(400).json({
 success:false,
+description:"",
+message:"URL manquante"
+});
+}
 
-message:
-"Candidature introuvable"
+// Détection État de Vaud (Oracle HCM)
+const etatVaudMatch = url.match(/#fr\/sites\/CX_1\/job\/(\d+)/);
+const jobId = etatVaudMatch ? etatVaudMatch[1] : req.body?.id;
 
+if(jobId && (url.includes("offres-emploi.vd.ch") || req.body?.source === "État de Vaud")){
+
+const apiUrl = `https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?expand=all&onlyData=true&finder=ById;Id=%22${jobId}%22,siteNumber=CX_1`;
+
+const axios = require("axios");
+
+const response = await axios.get(apiUrl, {
+headers:{
+"Accept": "application/json",
+"Accept-Language": "fr"
+},
+timeout: 10000
+});
+
+const items = response.data?.items;
+if(!items || items.length === 0){
+return res.json({ success:false, description:"Descriptif non disponible." });
+}
+
+const job = items[0];
+
+const stripHtml = s => s ? s
+.replace(/<[^>]+>/g," ")
+.replace(/&nbsp;/g," ")
+.replace(/&amp;/g,"&")
+.replace(/&quot;/g,"\"")
+.replace(/&#39;/g,"'")
+.replace(/&eacute;/g,"é")
+.replace(/&egrave;/g,"è")
+.replace(/&agrave;/g,"à")
+.replace(/&ccedil;/g,"ç")
+.replace(/&\w+;/g," ")
+.replace(/\s+/g," ")
+.trim() : "";
+
+const description = job.ExternalDescriptionStr || "";
+const responsibilities = job.ExternalResponsibilitiesStr || "";
+const qualifications = job.ExternalQualificationsStr || "";
+const whoWeAre = job.OrganizationDescriptionStr || "";
+const whyJoin = job.CorporateDescriptionStr || "";
+
+const flexFields = job.requisitionFlexFields || [];
+const getField = label => (flexFields.find(f => f.Prompt === label)?.Value || "");
+
+const workRate = getField("Taux d'activité");
+const salaryGrade = getField("Classe salariale");
+const startDate = getField("Date d'entrée en fonction");
+const contractType = getField("Type de contrat");
+const applyBefore = job.ExternalPostedEndDate || "";
+const applyBeforeFormatted = applyBefore ? new Date(applyBefore).toLocaleDateString("fr-CH") : "";
+
+// Adresse Oracle HCM — chaque ligne séparée par \n
+const rawAddress = getField("Adresse");
+const address = rawAddress
+.split(/\n/)
+.map(l => l.trim())
+.filter(Boolean)
+.join("\n");
+
+let result = "";
+if(workRate) result += `Taux d'activité : ${workRate}\n`;
+if(contractType) result += `Type de contrat : ${contractType}\n`;
+if(salaryGrade) result += `Classe salariale : ${salaryGrade}\n`;
+if(startDate) result += `Date d'entrée : ${startDate}\n`;
+if(applyBeforeFormatted) result += `Postuler avant : ${applyBeforeFormatted}\n`;
+if(address) result += `Adresse :\n${address}\n`;
+if(result) result += "\n";
+if(description) result += `DESCRIPTION DE L'EMPLOI\n${stripHtml(description)}\n\n`;
+if(responsibilities) result += `RESPONSABILITÉS\n${stripHtml(responsibilities)}\n\n`;
+if(qualifications) result += `QUALIFICATIONS\n${stripHtml(qualifications)}\n\n`;
+if(whoWeAre) result += `QUI SOMMES-NOUS?\n${stripHtml(whoWeAre)}\n\n`;
+if(whyJoin) result += `POURQUOI REJOINDRE L'ÉTAT DE VAUD?\n${stripHtml(whyJoin)}\n\n`;
+
+return res.json({
+success: true,
+url,
+description: result.trim() || "Descriptif non disponible.",
+rate: workRate,
+contract: contractType,
+address: address,
+startDate: startDate,
+applyBefore: applyBeforeFormatted,
+salaryGrade: salaryGrade
 });
 
 }
 
-candidatures[index] = {
+// Autres sources — extraction HTML classique
+const client = url.startsWith("https") ? https : http;
 
-...candidatures[index],
+client.get(url,(response)=>{
 
-...req.body
+let html = "";
+response.on("data", chunk => { html += chunk; });
+response.on("end", ()=>{
 
-};
+try{
+const description = extractUsefulDescription(html);
 
-writeJson(
-APPLICATIONS_FILE,
-candidatures
-);
+// Extraction champs séparés pour Jobup
+let rate = "";
+let contract = "";
+let address = "";
+let salary = "";
+let date = "";
+let applyBefore = "";
+let startDate = "";
+
+if(url.includes("jobup.ch")){
+const jobupText = cleanHtmlTextJobup(html);
+
+const rateMatch = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
+if(rateMatch) rate = rateMatch[1].trim();
+
+const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
+if(contractMatch) contract = contractMatch[1].trim();
+
+// Adresse complète — depuis "Adresse" jusqu'à ligne vide ou "Autres recherches"
+const addressBlockMatch = jobupText.match(/Adresse\s*([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories)/i);
+if(addressBlockMatch){
+address = addressBlockMatch[1]
+.split("\n")
+.map(l => l.trim())
+.filter(Boolean)
+.join("\n");
+}
+
+// Estimation salariale Jobup
+const salaryMatch = jobupText.match(/CHF\s*[\d\s']+\s*[-–]\s*[\d\s']+\s*\/\s*(?:an|mois)/i);
+if(salaryMatch) salary = salaryMatch[0].replace(/\s+/g," ").trim();
+
+const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
+if(dateMatch) date = dateMatch[1].trim();
+
+const applyBeforeMatch = jobupText.match(/Postuler avant\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
+if(applyBeforeMatch) applyBefore = applyBeforeMatch[1].trim();
+
+const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i);
+if(startDateMatch) startDate = startDateMatch[1].trim();
+}
 
 res.json({
-
 success:true,
-
-message:
-"Candidature mise à jour"
+url,
+description: description || "Descriptif non disponible.",
+rate,
+contract,
+address,
+salary,
+date,
+applyBefore,
+startDate
+});
+}catch(error){
+console.error("Erreur analyse HTML :", error);
+res.status(500).json({ success:false, description:"", message:"Erreur analyse HTML" });
+}
 
 });
+
+}).on("error",(error)=>{
+console.error("Erreur téléchargement :", error);
+res.status(500).json({ success:false, description:"", message:"Erreur téléchargement page" });
+});
+
+}
+catch(error){
+console.error("Erreur extraction description :", error);
+res.status(500).json({ success:false, description:"", message:"Erreur extraction description" });
+}
 
 }
 );
 
-app.delete(
-"/api/candidatures/:id",
+
+/* ==========================================
+API OFFRES
+========================================== */
+
+app.get(
+"/api/offers",
 (req,res)=>{
 
-let candidatures =
+const offers =
 readJson(
-APPLICATIONS_FILE
+OFFERS_FILE
 );
 
-candidatures =
-candidatures.filter(
-item =>
-item.id !== req.params.id
+res.json(
+offers
 );
-
-writeJson(
-APPLICATIONS_FILE,
-candidatures
-);
-
-res.json({
-
-success:true,
-
-message:
-"Candidature supprimée"
-
-});
 
 }
 );
+
+app.delete("/api/offers/cache", (req,res)=>{
+writeJson(OFFERS_FILE, []);
+res.json({ success:true, message:"Cache vidé" });
+});
+
 
 /* ==========================================
 API LETTRES
