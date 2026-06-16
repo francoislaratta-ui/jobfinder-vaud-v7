@@ -177,7 +177,6 @@ const fields = [
 
 let result = "";
 
-// Extraire les champs structurés
 const structuredFields = fields
 .map(f => {
 const m = text.match(f.regex);
@@ -190,7 +189,6 @@ if(structuredFields){
 result += structuredFields + "\n\n";
 }
 
-// Extraire les sections textuelles
 let startIndex = -1;
 for(const section of sections){
 const index = text.toLowerCase().indexOf(section.toLowerCase());
@@ -221,6 +219,57 @@ result += extracted;
 
 return result.trim() || text.substring(0, 3500).trim();
 
+}
+
+// Détection Jobup
+const isJobup = html.includes("jobup.ch");
+
+if(isJobup){
+
+const jobupFields = [
+{ label: "Date de parution", regex: /(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i },
+{ label: "Taux", regex: /(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i },
+{ label: "Contrat", regex: /(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i },
+{ label: "Adresse", regex: /([A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i },
+{ label: "Salaire", regex: /CHF\s*[\d\s']+(?:\s*-\s*[\d\s']+)?\s*\/an/i }
+];
+
+let jobupResult = "";
+
+jobupFields.forEach(f => {
+const m = text.match(f.regex);
+if(m) jobupResult += `${f.label} : ${m[1] || m[0]}\n`;
+});
+
+if(jobupResult) jobupResult += "\n";
+
+const keywords = [
+"Votre mission",
+"Vos missions",
+"Vos tâches",
+"Vos responsabilités",
+"Votre profil",
+"Profil recherché",
+"Description du poste"
+];
+
+let startIndex = -1;
+for(const keyword of keywords){
+const index = text.toLowerCase().indexOf(keyword.toLowerCase());
+if(index !== -1){ startIndex = index; break; }
+}
+
+let extracted = startIndex === -1
+? text.substring(0, 3500)
+: text.substring(startIndex, startIndex + 4500);
+
+const stopWords = ["Autres recherches","Offres similaires","Emplois similaires","Estimateur de salaire"];
+for(const stop of stopWords){
+const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
+if(idx > 200) extracted = extracted.substring(0, idx).trim();
+}
+
+return (jobupResult + extracted).trim();
 }
 
 // Autres sources
@@ -300,6 +349,7 @@ new Date().toISOString()
 
 }
 );
+
 
 /* ==========================================
 VALIDATION URL ANNONCE
