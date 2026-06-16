@@ -845,6 +845,32 @@ res.status(500).json({ success:false, description:"", message:"Erreur extraction
 
 
 /* ==========================================
+API OFFRES
+========================================== */
+
+app.get(
+"/api/offers",
+(req,res)=>{
+
+const offers =
+readJson(
+OFFERS_FILE
+);
+
+res.json(
+offers
+);
+
+}
+);
+
+app.delete("/api/offers/cache", (req,res)=>{
+writeJson(OFFERS_FILE, []);
+res.json({ success:true, message:"Cache vidé" });
+});
+
+
+/* ==========================================
 API FAVORIS
 ========================================== */
 
@@ -925,7 +951,6 @@ message:
 
 }
 );
-
 
 /* ==========================================
 API CANDIDATURES
