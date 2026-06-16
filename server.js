@@ -625,9 +625,6 @@ return res.json({ success:false, description:"Descriptif non disponible." });
 
 const job = items[0];
 
-console.log("JOB FIELDS:", JSON.stringify(Object.keys(job)));
-console.log("JOB DATA:", JSON.stringify(job));
-
 const stripHtml = s => s ? s
 .replace(/<[^>]+>/g," ")
 .replace(/&nbsp;/g," ")
@@ -642,27 +639,29 @@ const stripHtml = s => s ? s
 .replace(/\s+/g," ")
 .trim() : "";
 
-const description = job.ExternalDescriptionStr || job.Description || "";
-const responsibilities = job.Responsibilities || "";
-const qualifications = job.Qualifications || "";
-const whoWeAre = job.AboutCompany || job.WhoWeAre || "";
-const whyJoin = job.WhyJoinUs || "";
-const workRate = job.WorkingTime || job.ContractType || job.WorkPercent || "";
-const address = [
-job.PrimaryLocationAddress || "",
-job.PrimaryLocationPostalCode || "",
-job.PrimaryLocationCity || ""
-].filter(Boolean).join(", ");
-const startDate = job.TargetStartDate || job.ExpectedStartDate || "";
-const applyBefore = job.PostedEndDate || "";
-const salaryGrade = job.GradeName || job.SalaryGrade || "";
+const description = job.ExternalDescriptionStr || "";
+const responsibilities = job.ExternalResponsibilitiesStr || "";
+const qualifications = job.ExternalQualificationsStr || "";
+const whoWeAre = job.OrganizationDescriptionStr || "";
+const whyJoin = job.CorporateDescriptionStr || "";
+
+const flexFields = job.requisitionFlexFields || [];
+const getField = label => (flexFields.find(f => f.Prompt === label)?.Value || "");
+
+const workRate = getField("Taux d'activité");
+const salaryGrade = getField("Classe salariale");
+const startDate = getField("Date d'entrée en fonction");
+const contractType = getField("Type de contrat");
+const address = getField("Adresse");
+const applyBefore = job.ExternalPostedEndDate || "";
 
 let result = "";
 if(workRate) result += `Taux d'activité : ${workRate}\n`;
+if(contractType) result += `Type de contrat : ${contractType}\n`;
 if(salaryGrade) result += `Classe salariale : ${salaryGrade}\n`;
 if(startDate) result += `Date d'entrée : ${startDate}\n`;
-if(applyBefore) result += `Postuler avant : ${applyBefore}\n`;
-if(address) result += `Adresse : ${address}\n`;
+if(applyBefore) result += `Postuler avant : ${new Date(applyBefore).toLocaleDateString("fr-CH")}\n`;
+if(address) result += `Adresse :\n${address}\n`;
 if(result) result += "\n";
 if(description) result += `DESCRIPTION DE L'EMPLOI\n${stripHtml(description)}\n\n`;
 if(responsibilities) result += `RESPONSABILITÉS\n${stripHtml(responsibilities)}\n\n`;
