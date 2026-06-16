@@ -274,7 +274,12 @@ const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
 if(idx > 200) extracted = extracted.substring(0, idx).trim();
 }
 
-return (jobupResult + extracted).trim();
+const structured = extracted
+.replace(/(MISSION DETAILLEE|VOTRE PROFIL|CE QUE NOUS OFFRONS|PROFIL RECHERCHÉ|VOS MISSIONS|VOS TÂCHES|NOS AVANTAGES)/gi,
+"\n\n$1\n")
+.replace(/\s{3,}/g, "\n");
+
+return (jobupResult + structured).trim();
 }
 
 // Autres sources
