@@ -1807,16 +1807,17 @@ return [];
 const results = await Promise.all(
 list.map(async (offer) => {
 
+const isEtatVaud = offer.source === "État de Vaud";
+
 const descriptionMissing =
 !offer.description ||
-offer.description === "Descriptif non disponible.";
+offer.description === "Descriptif non disponible." ||
+isEtatVaud;
 
 const realOfferUrl =
 isRealOfferUrlClient(offer.offerUrl);
 
-const isEtatVaud = offer.source === "État de Vaud";
-
-if(!isEtatVaud && (!descriptionMissing || !realOfferUrl)){
+if(!descriptionMissing || !realOfferUrl){
 return offer;
 }
 
@@ -1834,7 +1835,8 @@ headers:{
 },
 body:JSON.stringify({
 url:offer.offerUrl,
-source:offer.source || ""
+source:offer.source || "",
+id:offer.id || ""
 })
 });
 
