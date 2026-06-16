@@ -2607,6 +2607,7 @@ error:error.message
 
 }
 );
+
 /* ==========================================
 SCRAPING OFFRES AU DEMARRAGE
 ========================================== */
@@ -2681,6 +2682,9 @@ const results =
 data?.vacancy?.results?.main?.results || [];
 
 console.log(`Jobup "${keyword}": ${results.length} offres`);
+if(results.length > 0){
+console.log("🔍 SAMPLE job brut:", JSON.stringify(results[0], null, 2));
+}
 
 for(const job of results){
 
