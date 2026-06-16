@@ -625,6 +625,9 @@ return res.json({ success:false, description:"Descriptif non disponible." });
 
 const job = items[0];
 
+console.log("JOB FIELDS:", JSON.stringify(Object.keys(job)));
+console.log("JOB DATA:", JSON.stringify(job));
+
 const stripHtml = s => s ? s.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim() : "";
 
 const description = job.ExternalDescriptionStr || job.Description || "";
