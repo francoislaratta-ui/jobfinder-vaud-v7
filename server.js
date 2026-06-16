@@ -742,9 +742,16 @@ const workRate = getField("Taux d'activité");
 const salaryGrade = getField("Classe salariale");
 const startDate = getField("Date d'entrée en fonction");
 const contractType = getField("Type de contrat");
-const address = getField("Adresse");
 const applyBefore = job.ExternalPostedEndDate || "";
 const applyBeforeFormatted = applyBefore ? new Date(applyBefore).toLocaleDateString("fr-CH") : "";
+
+// Adresse Oracle HCM — chaque ligne séparée par \n
+const rawAddress = getField("Adresse");
+const address = rawAddress
+.split(/[\n,]+/)
+.map(l => l.trim())
+.filter(Boolean)
+.join("\n");
 
 let result = "";
 if(workRate) result += `Taux d'activité : ${workRate}\n`;
@@ -792,6 +799,8 @@ let contract = "";
 let address = "";
 let salary = "";
 let date = "";
+let applyBefore = "";
+let startDate = "";
 
 if(url.includes("jobup.ch")){
 const jobupText = cleanHtmlTextJobup(html);
@@ -805,11 +814,18 @@ if(contractMatch) contract = contractMatch[1].trim();
 const addressMatch = jobupText.match(/([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i);
 if(addressMatch) address = addressMatch[1].trim();
 
-const salaryMatch = jobupText.match(/(CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/(?:an|mois))/i);
-if(salaryMatch) salary = salaryMatch[1].trim();
+// Estimation salariale Jobup — format CHF xx xxx - xx xxx/an ou /mois
+const salaryMatch = jobupText.match(/(CHF\s*[\d\s']+(?:\s*[-–]\s*[\d\s']+)?\s*\/\s*(?:an|mois))/i);
+if(salaryMatch) salary = salaryMatch[1].replace(/\s+/g," ").trim();
 
 const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
 if(dateMatch) date = dateMatch[1].trim();
+
+const applyBeforeMatch = jobupText.match(/Postuler avant[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
+if(applyBeforeMatch) applyBefore = applyBeforeMatch[1].trim();
+
+const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i);
+if(startDateMatch) startDate = startDateMatch[1].trim();
 }
 
 res.json({
@@ -820,7 +836,9 @@ rate,
 contract,
 address,
 salary,
-date
+date,
+applyBefore,
+startDate
 });
 }catch(error){
 console.error("Erreur analyse HTML :", error);
@@ -868,7 +886,6 @@ app.delete("/api/offers/cache", (req,res)=>{
 writeJson(OFFERS_FILE, []);
 res.json({ success:true, message:"Cache vidé" });
 });
-
 
 /* ==========================================
 API FAVORIS

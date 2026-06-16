@@ -1855,7 +1855,9 @@ contract: data.contract || offer.contract || "",
 address: data.address || offer.address || "",
 startDate: data.startDate || offer.startDate || "",
 applyBefore: data.applyBefore || offer.applyBefore || "",
-salaryGrade: data.salaryGrade || offer.salaryGrade || ""
+salaryGrade: data.salaryGrade || offer.salaryGrade || "",
+salary: data.salary || offer.salary || "",
+date: data.date || offer.date || ""
 };
 
 }catch(error){
@@ -1876,7 +1878,6 @@ return offer;
 return results;
 
 }
-
 
 /* ==========================================
 DECOUVERTE URLS REELLES
