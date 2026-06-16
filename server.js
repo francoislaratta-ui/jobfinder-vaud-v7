@@ -2683,7 +2683,7 @@ data?.vacancy?.results?.main?.results || [];
 
 console.log(`Jobup "${keyword}": ${results.length} offres`);
 if(results.length > 0){
-console.log("🔍 SAMPLE job brut:", JSON.stringify(results[0], null, 2));
+console.log("🔍 Types contrats:", results.map(j => JSON.stringify(j.employmentTypeIds)).join(" | "));
 }
 
 for(const job of results){
@@ -2967,6 +2967,7 @@ console.warn(
 }
 
 }
+
 
 /* ==========================================
 DEMARRAGE SERVEUR
