@@ -2178,6 +2178,21 @@ getMatchClass(match);
 
 const badge =
 getMatchBadge(match);
+
+const descText = escapeHTML(
+offer.description ||
+offer.details ||
+offer.summary ||
+offer.tasks ||
+offer.text ||
+offer.content ||
+"Descriptif non disponible."
+);
+
+const descHtml = offer.source === "Jobup"
+? descText.replace(/\n/g, "<br>")
+: descText;
+
 card.innerHTML = `
 <div class="offer-title">
 💼 ${escapeHTML(offer.title)}
@@ -2268,15 +2283,7 @@ ${offer.offerUrl ? `
 </button>
 
 <div class="offer-description hidden">
-${escapeHTML(
-offer.description ||
-offer.details ||
-offer.summary ||
-offer.tasks ||
-offer.text ||
-offer.content ||
-"Descriptif non disponible."
-)}
+${descHtml}
 </div>
 
 <div class="offer-actions">
