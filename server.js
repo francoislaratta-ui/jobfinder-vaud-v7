@@ -276,13 +276,14 @@ let jobupClean = jobupText;
 for(const nav of navStopWords){
 const idx = jobupClean.indexOf(nav);
 if(idx !== -1 && idx < 500){
-// Cherche la fin du bloc nav — "À propos de cette offre" ou titre offre
 const afterNav = jobupClean.indexOf("À propos de cette offre", idx);
 const afterNav2 = jobupClean.indexOf("A propos du rôle", idx);
 const afterNav3 = jobupClean.indexOf("Votre mission", idx);
 const afterNav4 = jobupClean.indexOf("Vos tâches", idx);
+const afterNav5 = jobupClean.indexOf("Tâches", idx);
+const afterNav6 = jobupClean.indexOf("Nous cherchons", idx);
 const cutStart = Math.min(
-...[afterNav, afterNav2, afterNav3, afterNav4].filter(i => i > 0)
+...[afterNav, afterNav2, afterNav3, afterNav4, afterNav5, afterNav6].filter(i => i > 0)
 );
 if(cutStart > 0){
 jobupClean = jobupClean.substring(cutStart);
@@ -334,13 +335,27 @@ let extracted = startIndex === -1
 ? jobupClean.substring(0, 3500)
 : jobupClean.substring(startIndex, startIndex + 4500);
 
+// StopWords élargis pour couper tout le texte parasite Jobup
 const stopWords = [
 "Autres recherches",
+"Autres recherches d",
 "Offres similaires",
 "Emplois similaires",
 "Estimateur de salaire",
-"D'autres utilisateurs ont"
+"D'autres utilisateurs ont",
+"D'autres utilisateurs",
+"Afficher plus d'emplois",
+"Catégories :",
+"Date de publication",
+"Lieux ",
+"Postuler avant",
+"Date d'entrée en fonction",
+"Classe salariale",
+"Type de contrat",
+"Taux d'activité",
+"AdresseOffice"
 ];
+
 for(const stop of stopWords){
 const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
 if(idx > 200) extracted = extracted.substring(0, idx).trim();
