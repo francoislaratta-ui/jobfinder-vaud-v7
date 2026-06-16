@@ -2179,19 +2179,18 @@ getMatchClass(match);
 const badge =
 getMatchBadge(match);
 
-const descText = escapeHTML(
+const rawDesc =
 offer.description ||
 offer.details ||
 offer.summary ||
 offer.tasks ||
 offer.text ||
 offer.content ||
-"Descriptif non disponible."
-);
+"Descriptif non disponible.";
 
 const descHtml = offer.source === "Jobup"
-? descText.replace(/\n/g, "<br>")
-: descText;
+? escapeHTML(rawDesc).replace(/\n/g, "<br>")
+: escapeHTML(rawDesc);
 
 card.innerHTML = `
 <div class="offer-title">
