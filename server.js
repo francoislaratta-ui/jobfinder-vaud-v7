@@ -132,6 +132,9 @@ return html
 .replace(/&amp;/g, "&")
 .replace(/&quot;/g, "\"")
 .replace(/&#39;/g, "'")
+.replace(/&#x27;/g, "'")
+.replace(/&#x2F;/g, "/")
+.replace(/&#x3A;/g, ":")
 .replace(/\s+/g, " ")
 .trim();
 
@@ -230,15 +233,17 @@ const jobupFields = [
 { label: "Date de parution", regex: /(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i },
 { label: "Taux", regex: /(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i },
 { label: "Contrat", regex: /(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i },
-{ label: "Adresse", regex: /([A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i },
-{ label: "Salaire", regex: /CHF\s*[\d\s']+(?:\s*-\s*[\d\s']+)?\s*\/an/i }
+{ label: "Lieu de travail", regex: /Lieu de travail\s*[:\s]+([A-Za-zÀ-ÿ\s,.-]+?)(?=\s{2,}|Vous êtes|$)/i },
+{ label: "Adresse", regex: /([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i },
+{ label: "Salaire", regex: /(CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/(?:an|mois))/i },
+{ label: "Entrée en service", regex: /Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i }
 ];
 
 let jobupResult = "";
 
 jobupFields.forEach(f => {
 const m = text.match(f.regex);
-if(m) jobupResult += `${f.label} : ${m[1] || m[0]}\n`;
+if(m) jobupResult += `${f.label} : ${(m[1] || m[0]).trim()}\n`;
 });
 
 if(jobupResult) jobupResult += "\n";
