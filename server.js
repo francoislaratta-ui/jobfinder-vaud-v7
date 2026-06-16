@@ -139,7 +139,36 @@ return html
 .replace(/&#x27;/g, "'")
 .replace(/&#x2F;/g, "/")
 .replace(/&#x3A;/g, ":")
-.replace(/\s+/g, " ")
+.replace(/[ \t]+/g, " ")
+.replace(/\n[ \t]+/g, "\n")
+.replace(/\n{3,}/g, "\n\n")
+.trim();
+
+}
+
+function cleanHtmlTextJobup(html){
+
+if(!html){
+return "";
+}
+
+return html
+.replace(/<script[\s\S]*?<\/script>/gi, "")
+.replace(/<style[\s\S]*?<\/style>/gi, "")
+.replace(/<br\s*\/?>/gi, "\n")
+.replace(/<\/p>/gi, "\n")
+.replace(/<\/li>/gi, "\n")
+.replace(/<\/h[1-6]>/gi, "\n")
+.replace(/<\/div>/gi, "\n")
+.replace(/<[^>]+>/g, "")
+.replace(/&nbsp;/g, " ")
+.replace(/&amp;/g, "&")
+.replace(/&quot;/g, "\"")
+.replace(/&#39;/g, "'")
+.replace(/&#x27;/g, "'")
+.replace(/[ \t]+/g, " ")
+.replace(/\n[ \t]+/g, "\n")
+.replace(/\n{3,}/g, "\n\n")
 .trim();
 
 }
@@ -233,11 +262,13 @@ const isJobup = html.includes("jobup.ch");
 
 if(isJobup){
 
+const jobupText = cleanHtmlTextJobup(html);
+
 const jobupFields = [
 { label: "Date de parution", regex: /(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i },
 { label: "Taux", regex: /(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i },
 { label: "Contrat", regex: /(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i },
-{ label: "Lieu de travail", regex: /Lieu de travail\s*[:\s]+([A-Za-zÀ-ÿ\s,.-]+?)(?=\s{2,}|Vous êtes|$)/i },
+{ label: "Lieu de travail", regex: /Lieu de travail\s*[:\s]+([A-Za-zÀ-ÿ\s,.-]+?)(?=\n|$)/i },
 { label: "Adresse", regex: /([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i },
 { label: "Salaire", regex: /(CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/(?:an|mois))/i },
 { label: "Entrée en service", regex: /Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i }
@@ -246,7 +277,7 @@ const jobupFields = [
 let jobupResult = "";
 
 jobupFields.forEach(f => {
-const m = text.match(f.regex);
+const m = jobupText.match(f.regex);
 if(m) jobupResult += `${f.label} : ${(m[1] || m[0]).trim()}\n`;
 });
 
@@ -264,13 +295,13 @@ const keywords = [
 
 let startIndex = -1;
 for(const keyword of keywords){
-const index = text.toLowerCase().indexOf(keyword.toLowerCase());
+const index = jobupText.toLowerCase().indexOf(keyword.toLowerCase());
 if(index !== -1){ startIndex = index; break; }
 }
 
 let extracted = startIndex === -1
-? text.substring(0, 3500)
-: text.substring(startIndex, startIndex + 4500);
+? jobupText.substring(0, 3500)
+: jobupText.substring(startIndex, startIndex + 4500);
 
 const stopWords = ["Autres recherches","Offres similaires","Emplois similaires","Estimateur de salaire"];
 for(const stop of stopWords){
@@ -278,11 +309,7 @@ const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
 if(idx > 200) extracted = extracted.substring(0, idx).trim();
 }
 
-const structured = extracted
-.replace(/(MISSION DETAILLEE|VOTRE PROFIL|Votre profil|CE QUE NOUS OFFRONS|Ce que nous offrons|PROFIL RECHERCHÉ|Profil recherché|VOS MISSIONS|Vos missions|VOS TÂCHES|Vos tâches|NOS AVANTAGES|Nos avantages|NOUS OFFRONS|Nous offrons|VOTRE MISSION|Votre mission|Comment postuler|COMMENT POSTULER|Entrée en fonction|Contact)/g,
-"\n\n$1\n");
-
-return (jobupResult + structured).trim();
+return (jobupResult + extracted).trim();
 }
 
 // Autres sources
