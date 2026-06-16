@@ -988,17 +988,25 @@ if(rateMatch) rate = rateMatch[1].trim();
 const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
 if(contractMatch) contract = contractMatch[1].trim();
 
-// Adresse complète — depuis "Adresse" jusqu'à ligne vide ou "Autres recherches"
-const addressBlockMatch = jobupText.match(/Adresse\s*([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories)/i);
+// Adresse — uniquement si bloc "Adresse" propre trouvé avec NPA
+const addressBlockMatch = jobupText.match(/Adresse\s*\n([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories|D'autres utilisateurs)/i);
 if(addressBlockMatch){
-address = addressBlockMatch[1]
+const lines = addressBlockMatch[1]
 .split("\n")
 .map(l => l.trim())
 .filter(Boolean)
-.join("\n");
+.filter(l => l.length < 80); // évite les longues phrases parasites
+// Garde uniquement les lignes qui ressemblent à une adresse
+const addressLines = lines.filter(l =>
+/\d{4}/.test(l) || // NPA
+/^[A-ZÀ-Ÿa-zà-ÿ\s,.-]{3,50}$/.test(l) // texte court = rue ou lieu
+);
+if(addressLines.length > 0){
+address = addressLines.join("\n");
+}
 }
 
-// Estimation salariale Jobup — cherche dans HTML brut ET texte nettoyé
+// Estimation salariale Jobup
 const salaryMatchRaw = html.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
 const salaryMatchText = jobupText.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
 const salaryFound = salaryMatchRaw || salaryMatchText;
@@ -1007,7 +1015,10 @@ if(salaryFound) salary = salaryFound[0].replace(/\s+/g," ").trim();
 const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
 if(dateMatch) date = dateMatch[1].trim();
 
-const applyBeforeMatch = jobupText.match(/Postuler avant\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
+// Date postulation — formats variés
+const applyBeforeMatch = jobupText.match(
+/(?:Postuler avant|jusqu.au|délai)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4})/i
+);
 if(applyBeforeMatch) applyBefore = applyBeforeMatch[1].trim();
 
 const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i);
@@ -1072,8 +1083,6 @@ app.delete("/api/offers/cache", (req,res)=>{
 writeJson(OFFERS_FILE, []);
 res.json({ success:true, message:"Cache vidé" });
 });
-
-
 
 /* ==========================================
 API LETTRES
