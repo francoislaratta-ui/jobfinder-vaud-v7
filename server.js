@@ -962,9 +962,11 @@ address = addressBlockMatch[1]
 .join("\n");
 }
 
-// Estimation salariale Jobup
-const salaryMatch = jobupText.match(/CHF\s*[\d\s']+\s*[-–]\s*[\d\s']+\s*\/\s*(?:an|mois)/i);
-if(salaryMatch) salary = salaryMatch[0].replace(/\s+/g," ").trim();
+// Estimation salariale Jobup — cherche dans HTML brut ET texte nettoyé
+const salaryMatchRaw = html.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
+const salaryMatchText = jobupText.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
+const salaryFound = salaryMatchRaw || salaryMatchText;
+if(salaryFound) salary = salaryFound[0].replace(/\s+/g," ").trim();
 
 const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
 if(dateMatch) date = dateMatch[1].trim();
@@ -1034,6 +1036,7 @@ app.delete("/api/offers/cache", (req,res)=>{
 writeJson(OFFERS_FILE, []);
 res.json({ success:true, message:"Cache vidé" });
 });
+
 
 
 /* ==========================================
