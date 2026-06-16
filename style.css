@@ -2627,9 +2627,6 @@ grid-template-columns:1fr !important;
 
 }
 
-/* ==========================================
-CV ANALYSIS CARD
-========================================== */
 
 /* ==========================================
 CV ANALYSIS CARD V14.2.4 COMPACT
@@ -2734,6 +2731,22 @@ color:#f1f1f1;
 font-size:0.80rem;
 
 word-break:break-word;
+
+}
+
+.offer-employer-block{
+
+display:flex;
+
+flex-direction:column;
+
+}
+
+.offer-employer-block .offer-address{
+
+padding-left:1.6em;
+
+line-height:1.6;
 
 }
 

@@ -2213,23 +2213,26 @@ card.innerHTML = `
 💼 ${escapeHTML(offer.title)}
 </div>
 
-<div class="offer-company">
-🏢 ${escapeHTML(offer.company)}
+<div class="offer-employer-block">
+<div class="offer-company">🏢 ${escapeHTML(offer.company)}</div>
+${addressHtml ? `<div class="offer-address">${addressHtml}</div>` : ""}
 </div>
 
 <div class="offer-location">
 📍 ${escapeHTML(offer.location)}
 </div>
 
-${addressHtml ? `
-<div class="offer-address">
-📮 ${addressHtml}
+${offer.rate ? `
+<div class="offer-meta">
+⏰ Taux : ${escapeHTML(offer.rate)}
 </div>
 ` : ""}
 
+${offer.contract ? `
 <div class="offer-meta">
-${offer.rate ? `⏰ Taux : ${escapeHTML(offer.rate)}` : ""}${offer.rate && offer.contract ? " • " : ""}${offer.contract ? `📄 ${escapeHTML(offer.contract)}` : ""}
+📄 ${escapeHTML(offer.contract)}
 </div>
+` : ""}
 
 ${offer.startDate ? `
 <div class="offer-meta">
