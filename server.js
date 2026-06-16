@@ -335,25 +335,16 @@ let extracted = startIndex === -1
 ? jobupClean.substring(0, 3500)
 : jobupClean.substring(startIndex, startIndex + 4500);
 
-// StopWords élargis pour couper tout le texte parasite Jobup
+// StopWords — uniquement texte vraiment parasite, pas les champs utiles
 const stopWords = [
 "Autres recherches",
-"Autres recherches d",
 "Offres similaires",
 "Emplois similaires",
 "Estimateur de salaire",
 "D'autres utilisateurs ont",
 "D'autres utilisateurs",
 "Afficher plus d'emplois",
-"Catégories :",
-"Date de publication",
-"Lieux ",
-"Postuler avant",
-"Date d'entrée en fonction",
-"Classe salariale",
-"Type de contrat",
-"Taux d'activité",
-"AdresseOffice"
+"Catégories :"
 ];
 
 for(const stop of stopWords){
