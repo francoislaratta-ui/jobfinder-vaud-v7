@@ -785,10 +785,42 @@ response.on("end", ()=>{
 
 try{
 const description = extractUsefulDescription(html);
+
+// Extraction champs séparés pour Jobup
+let rate = "";
+let contract = "";
+let address = "";
+let salary = "";
+let date = "";
+
+if(url.includes("jobup.ch")){
+const jobupText = cleanHtmlTextJobup(html);
+
+const rateMatch = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
+if(rateMatch) rate = rateMatch[1].trim();
+
+const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
+if(contractMatch) contract = contractMatch[1].trim();
+
+const addressMatch = jobupText.match(/([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i);
+if(addressMatch) address = addressMatch[1].trim();
+
+const salaryMatch = jobupText.match(/(CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/(?:an|mois))/i);
+if(salaryMatch) salary = salaryMatch[1].trim();
+
+const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
+if(dateMatch) date = dateMatch[1].trim();
+}
+
 res.json({
 success:true,
 url,
-description: description || "Descriptif non disponible."
+description: description || "Descriptif non disponible.",
+rate,
+contract,
+address,
+salary,
+date
 });
 }catch(error){
 console.error("Erreur analyse HTML :", error);
@@ -810,32 +842,6 @@ res.status(500).json({ success:false, description:"", message:"Erreur extraction
 
 }
 );
-
-
-/* ==========================================
-API OFFRES
-========================================== */
-
-app.get(
-"/api/offers",
-(req,res)=>{
-
-const offers =
-readJson(
-OFFERS_FILE
-);
-
-res.json(
-offers
-);
-
-}
-);
-
-app.delete("/api/offers/cache", (req,res)=>{
-writeJson(OFFERS_FILE, []);
-res.json({ success:true, message:"Cache vidé" });
-});
 
 
 /* ==========================================
