@@ -2192,6 +2192,22 @@ const descHtml = offer.source === "Jobup"
 ? escapeHTML(rawDesc).replace(/\n/g, "<br>")
 : escapeHTML(rawDesc);
 
+// Nettoyage + formatage adresse
+const formatAddress = (addr) => {
+if(!addr) return "";
+const clean = addr
+.replace(/À propos de cette offre[\s\S]*/i, "")
+.replace(/Autres recherches[\s\S]*/i, "")
+.replace(/Offres similaires[\s\S]*/i, "")
+.trim();
+return clean.split("\n")
+.map(l => l.trim())
+.filter(Boolean)
+.join("<br>");
+};
+
+const addressHtml = formatAddress(offer.address);
+
 card.innerHTML = `
 <div class="offer-title">
 💼 ${escapeHTML(offer.title)}
@@ -2205,9 +2221,9 @@ card.innerHTML = `
 📍 ${escapeHTML(offer.location)}
 </div>
 
-${offer.address ? `
+${addressHtml ? `
 <div class="offer-address">
-📮 ${escapeHTML(offer.address)}
+📮 ${addressHtml}
 </div>
 ` : ""}
 
@@ -2382,7 +2398,6 @@ url,
 );
 
 }
-
 
 /* ==========================================
 BEST MATCH
