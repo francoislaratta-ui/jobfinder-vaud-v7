@@ -2653,6 +2653,15 @@ const VAUD_PLACES = [
 
 async function fetchJobupOffers(){
 
+const CONTRACT_TYPE_MAP = {
+"1": "CDI",
+"2": "CDD",
+"3": "Temporaire",
+"4": "Stage",
+"5": "CDI",
+"6": "Apprentissage"
+};
+
 const offers = [];
 
 try{
@@ -2682,9 +2691,6 @@ const results =
 data?.vacancy?.results?.main?.results || [];
 
 console.log(`Jobup "${keyword}": ${results.length} offres`);
-if(results.length > 0){
-console.log("🔍 Types contrats:", results.map(j => JSON.stringify(j.employmentTypeIds)).join(" | "));
-}
 
 for(const job of results){
 
@@ -2723,6 +2729,9 @@ if(street) addressParts.push(street);
 if(zipCode || place) addressParts.push(`${zipCode} ${place}`.trim());
 const address = addressParts.join("\n");
 
+const contractId = (job.employmentTypeIds || [])[0] || "";
+const contract = CONTRACT_TYPE_MAP[contractId] || "";
+
 offers.push({
 id: String(jobId || generateServerId()),
 title: job.title || "",
@@ -2735,7 +2744,7 @@ rate: job.employmentGrades
 ? `${job.employmentGrades[0]}%`
 : `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
 : "",
-contract: job.contractType || "",
+contract: contract,
 source: "Jobup",
 offerUrl: jobId
 ? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
