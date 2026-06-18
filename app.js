@@ -303,6 +303,9 @@ document.getElementById("applicationsBoard");
 const lettersHistoryContainer =
 document.getElementById("lettersHistoryContainer");
 
+const notificationToggle =
+document.getElementById("notificationToggle");
+
 /* ==========================================
 BOUTONS PRINCIPAUX
 ========================================== */
