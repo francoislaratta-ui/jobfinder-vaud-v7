@@ -190,12 +190,29 @@ targetJobs: [
 "Assistante administrative",
 "Gestionnaire de dossier",
 "Gestionnaire administratif",
+"Gestionnaire",
 "Collaborateur administratif",
 "Collaboratrice administrative",
+"Collaborateur",
 "Technicien informatique",
 "Support informatique",
 "Helpdesk",
-"Back-office"
+"Back-office",
+"Back office",
+"Administration",
+"Administratif",
+"Administrative",
+"Secrétaire",
+"Réceptionniste",
+"Agent administratif",
+"Coordinateur",
+"Coordinatrice",
+"Opérateur",
+"Spécialiste",
+"Conseiller",
+"Conseillère",
+"Chargé de",
+"Chargée de"
 ],
 
 preferredSectors: [
@@ -208,7 +225,19 @@ preferredSectors: [
 "Santé",
 "Assurances",
 "Banque",
-"Collectivités publiques"
+"Collectivités publiques",
+"Public",
+"Commune",
+"Municipal",
+"Canton",
+"Vaud",
+"Lausanne",
+"Finance",
+"Comptabilité",
+"Logistique",
+"Commerce",
+"Ressources humaines",
+"RH"
 ],
 
 preferredRegions: [
@@ -1518,6 +1547,7 @@ const rateText =
 String(offer.rate || "");
 
 const rateOk =
+!rateText ||
 userProfile.preferredRates.some(rate =>
 containsNormalized(rateText, rate)
 ) ||
