@@ -1170,8 +1170,6 @@ function applyFilters(){
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
-    
-
     let result = [...offers];
 
     const SCRAPE_KEYWORDS = [
@@ -1291,11 +1289,14 @@ if(selectedSources.length > 0 && selectedSources.length < totalSources){
     }
 
     filteredOffers = result;
+
     renderOffers(filteredOffers);
+    updateDashboard();
     updateBestMatch();
     updateStatistics();
-}
+    saveFilters();
 
+}
 
 /* ==========================================
 RESET FILTERS
