@@ -2421,63 +2421,138 @@ BEST MATCH
 ========================================== */
 
 function updateBestMatch(){
+
 const container =
 document.getElementById("bestMatchContainer");
 
-const list =
-filteredOffers.length
-? filteredOffers
-: offers;
-
-if(!container || list.length === 0){
+if(!container){
 return;
 }
 
-const sorted = [...list].sort((a,b) =>
-calculateMatch(b) - calculateMatch(a)
-).slice(0, 3);
+const list =
+Array.isArray(filteredOffers) && filteredOffers.length > 0
+? filteredOffers
+: offers;
 
 container.innerHTML = "";
 
-sorted.forEach(offer => {
-const match = calculateMatch(offer);
-const badge = getMatchBadge(match);
-const matchClass = getMatchClass(match);
+if(!Array.isArray(list) || list.length === 0){
 
-const card = document.createElement("div");
-card.className = "offer-card";
-card.setAttribute("data-offer-id", offer.id);
-card.style.cursor = "pointer";
+container.innerHTML = `
+<div class="empty-state">
+Aucune offre analysée
+</div>
+`;
+
+return;
+
+}
+
+const sorted =
+[...list]
+.filter(offer => offer && offer.id)
+.sort((a,b) =>
+calculateMatch(b) - calculateMatch(a)
+)
+.slice(0, 3);
+
+if(sorted.length === 0){
+
+container.innerHTML = `
+<div class="empty-state">
+Aucune offre analysée
+</div>
+`;
+
+return;
+
+}
+
+bestOffer =
+sorted[0];
+
+sorted.forEach((offer, index) => {
+
+const match =
+calculateMatch(offer);
+
+const badge =
+getMatchBadge(match);
+
+const matchClass =
+getMatchClass(match);
+
+const topLabel =
+index === 0
+? "🔥 Top Match"
+: `#${index + 1}`;
+
+const card =
+document.createElement("div");
+
+card.className =
+index === 0
+? "offer-card best-match"
+: "offer-card";
+
+card.setAttribute(
+"data-offer-id",
+offer.id
+);
+
+card.style.cursor =
+"pointer";
 
 card.innerHTML = `
 <div class="offer-title">
 💼 ${escapeHTML(offer.title)}
 </div>
+
 <div class="offer-company">
-🏢 ${escapeHTML(offer.company)} • ${escapeHTML(badge)}
+🏢 ${escapeHTML(offer.company)} • ${escapeHTML(topLabel)}
 </div>
+
 <div class="offer-match ${matchClass}">
-🤖 ${match}% — ${escapeHTML(badge)}
+🤖 Match IA : ${match}% — ${escapeHTML(badge)}
 </div>
 `;
 
 card.addEventListener("click", () => {
+
 openTab("filters");
+
 setTimeout(() => {
-const fullCard = document.querySelector(`#offersContainer [data-offer-id="${offer.id}"]`);
+
+const fullCard =
+document.querySelector(
+`#offersContainer [data-offer-id="${offer.id}"]`
+);
+
 if(fullCard){
-fullCard.scrollIntoView({ behavior: "smooth", block: "center" });
-fullCard.style.outline = "2px solid #7c3aed";
-setTimeout(() => fullCard.style.outline = "", 2000);
+
+fullCard.scrollIntoView({
+behavior: "smooth",
+block: "center"
+});
+
+fullCard.style.outline =
+"2px solid #7c3aed";
+
+setTimeout(() => {
+fullCard.style.outline = "";
+}, 2000);
+
 }
+
 }, 400);
+
 });
 
 container.appendChild(card);
+
 });
 
 }
-
 
 /* ==========================================
 RESULTS SUMMARY
@@ -3422,9 +3497,20 @@ DASHBOARD
 ========================================== */
 
 function updateDashboard(){
+
+const visibleOffers =
+Array.isArray(filteredOffers)
+? filteredOffers
+: [];
+
+const dashboardOffers =
+visibleOffers.length > 0
+? visibleOffers
+: [];
+
 safeSetText(
 document.getElementById("kpiOffers"),
-filteredOffers.length || offers.length
+dashboardOffers.length
 );
 
 safeSetText(
@@ -3439,8 +3525,11 @@ applications.length
 
 safeSetText(
 document.getElementById("kpiAI"),
-getAverageMatch(filteredOffers.length ? filteredOffers : offers) + "%"
+dashboardOffers.length > 0
+? getAverageMatch(dashboardOffers) + "%"
+: "0%"
 );
+
 }
 
 /* ==========================================
