@@ -1233,11 +1233,11 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        if(!offer.rate) return false;
+        if(!offer.rate) return true;
         const rateNorm = normalizeText(offer.rate);
         const numsInRate = (rateNorm.match(/\d+/g) || []).map(Number)
             .filter(n => n >= 10 && n <= 100);
-        if(!numsInRate.length) return false;
+        if(!numsInRate.length) return true;
         return selectedTaux.some(t => {
             const tNum = parseInt(t);
             if(isNaN(tNum)) return containsNormalized(offer.rate, t);
