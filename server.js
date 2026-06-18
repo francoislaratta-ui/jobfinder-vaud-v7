@@ -2906,6 +2906,308 @@ return offers;
 
 }
 
+/* ==========================================
+SCRAPING SOURCES SUPPLEMENTAIRES V14.6
+Indeed / LinkedIn / Migros / Nestlé / Coop
+========================================== */
+
+function extractAnchorsFromHtml(html, baseUrl){
+
+const anchors = [];
+
+const regex =
+/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+
+let match;
+
+while((match = regex.exec(html)) !== null){
+
+try{
+
+const href =
+new URL(match[1], baseUrl).href;
+
+const text =
+cleanHtmlText(match[2] || "");
+
+anchors.push({
+href,
+text
+});
+
+}catch(error){
+
+}
+
+}
+
+return anchors;
+
+}
+
+function looksLikeWantedJob(text){
+
+const value =
+String(text || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "");
+
+const keywords = [
+"employe",
+"assistant",
+"assistante",
+"administratif",
+"administrative",
+"gestionnaire",
+"dossier",
+"commerce",
+"support",
+"helpdesk",
+"technicien",
+"informatique",
+"rh",
+"clientele",
+"coordinateur"
+];
+
+return keywords.some(keyword =>
+value.includes(keyword)
+);
+
+}
+
+async function fetchGenericJobPageOffers(config){
+
+const offers = [];
+
+try{
+
+const html =
+await fetchExternalText(config.url);
+
+const anchors =
+extractAnchorsFromHtml(
+html,
+config.url
+);
+
+const seen = new Set();
+
+for(const anchor of anchors){
+
+const href =
+anchor.href || "";
+
+const title =
+(anchor.text || "").trim();
+
+if(!href || seen.has(href)){
+continue;
+}
+
+seen.add(href);
+
+const hrefLower =
+href.toLowerCase();
+
+const isJobLink =
+config.linkPatterns.some(pattern =>
+hrefLower.includes(pattern)
+);
+
+if(!isJobLink){
+continue;
+}
+
+if(
+title &&
+title.length < 120 &&
+!looksLikeWantedJob(title)
+){
+continue;
+}
+
+offers.push({
+id: generateServerId(),
+title: title || config.defaultTitle,
+company: config.company,
+location: "Vaud",
+sector: config.sector || "",
+rate: "",
+contract: "",
+source: config.source,
+offerUrl: href,
+url: href,
+date: new Date().toISOString().split("T")[0],
+description: "Descriptif non disponible.",
+salary: ""
+});
+
+}
+
+console.log(
+`${config.source}: ${offers.length} offres détectées`
+);
+
+}catch(error){
+
+console.warn(
+`Erreur scraping ${config.source} :`,
+error.message
+);
+
+}
+
+return offers;
+
+}
+
+async function fetchIndeedOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "Indeed",
+company: "Indeed",
+url: "https://ch-fr.indeed.com/jobs?q=&l=vaud&from=searchOnHP",
+defaultTitle: "Offre Indeed Vaud",
+linkPatterns: [
+"/viewjob",
+"jk="
+]
+});
+
+}
+
+async function fetchLinkedInOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "LinkedIn",
+company: "LinkedIn",
+url: "https://www.linkedin.com/jobs/search/?keywords=&location=Vaud%2C%20Suisse",
+defaultTitle: "Offre LinkedIn Vaud",
+linkPatterns: [
+"/jobs/view/"
+]
+});
+
+}
+
+async function fetchMigrosOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "Migros",
+company: "Migros",
+url: "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants",
+defaultTitle: "Offre Migros",
+linkPatterns: [
+"/fr/postes-vacants/",
+"/job/",
+"/jobs/"
+]
+});
+
+}
+
+async function fetchNestleOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "Nestlé",
+company: "Nestlé",
+url: "https://www.nestle.ch/fr/emplois",
+defaultTitle: "Offre Nestlé",
+linkPatterns: [
+"/jobs/",
+"/job/",
+"/emplois",
+"/career",
+"/careers"
+]
+});
+
+}
+
+async function fetchCoopOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "Coop",
+company: "Coop",
+url: "https://jobs.coopjobs.ch/?lang=fr",
+defaultTitle: "Offre Coop",
+linkPatterns: [
+"/job/",
+"/jobs/",
+"/stellen/",
+"jobid"
+]
+});
+
+}
+
+async function fetchLinkedInOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "LinkedIn",
+company: "LinkedIn",
+url: "https://www.linkedin.com/jobs/search/?keywords=&location=Vaud%2C%20Suisse",
+defaultTitle: "Offre LinkedIn Vaud",
+linkPatterns: [
+"/jobs/view/"
+]
+});
+
+}
+
+async function fetchMigrosOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "Migros",
+company: "Migros",
+url: "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants",
+defaultTitle: "Offre Migros",
+linkPatterns: [
+"/fr/postes-vacants/",
+"/job/",
+"/jobs/"
+]
+});
+
+}
+
+async function fetchNestleOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "Nestlé",
+company: "Nestlé",
+url: "https://www.nestle.ch/fr/emplois",
+defaultTitle: "Offre Nestlé",
+linkPatterns: [
+"/jobs/",
+"/job/",
+"/emplois",
+"/career",
+"/careers"
+]
+});
+
+}
+
+async function fetchCoopOffers(){
+
+return await fetchGenericJobPageOffers({
+source: "Coop",
+company: "Coop",
+url: "https://jobs.coopjobs.ch/?lang=fr",
+defaultTitle: "Offre Coop",
+linkPatterns: [
+"/job/",
+"/jobs/",
+"/stellen/",
+"jobid"
+]
+});
+
+}
+
 function generateServerId(){
 return Date.now().toString() +
 Math.random().toString(36).substring(2, 8);
@@ -2940,19 +3242,31 @@ console.log("🔄 Scraping des offres en cours...");
 
 const [
 jobupOffers,
-jobscoutOffers,
-vdOffers
+vdOffers,
+indeedOffers,
+linkedinOffers,
+migrosOffers,
+nestleOffers,
+coopOffers
 ] = await Promise.all([
 fetchJobupOffers(),
-fetchJobScout24Offers(),
-fetchVdOffers()
+fetchVdOffers(),
+typeof fetchIndeedOffers === "function" ? fetchIndeedOffers() : Promise.resolve([]),
+typeof fetchLinkedInOffers === "function" ? fetchLinkedInOffers() : Promise.resolve([]),
+typeof fetchMigrosOffers === "function" ? fetchMigrosOffers() : Promise.resolve([]),
+typeof fetchNestleOffers === "function" ? fetchNestleOffers() : Promise.resolve([]),
+typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
 ]);
 
 const allOffers =
 deduplicateOffers([
 ...jobupOffers,
-...jobscoutOffers,
-...vdOffers
+...vdOffers,
+...indeedOffers,
+...linkedinOffers,
+...migrosOffers,
+...nestleOffers,
+...coopOffers
 ]);
 
 if(allOffers.length > 0){
@@ -2964,7 +3278,7 @@ console.log(
 );
 
 console.log(
-`📊 Jobup: ${jobupOffers.length} | JobScout24: ${jobscoutOffers.length} | VD: ${vdOffers.length}`
+`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | Indeed: ${indeedOffers.length} | LinkedIn: ${linkedinOffers.length} | Migros: ${migrosOffers.length} | Nestlé: ${nestleOffers.length} | Coop: ${coopOffers.length}`
 );
 
 }else{
