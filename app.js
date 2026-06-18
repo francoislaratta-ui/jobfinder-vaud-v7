@@ -105,6 +105,7 @@ return String(value || "")
 
 function normalizeText(value){
 return String(value || "")
+.replace(/[\u200B-\u200D\uFEFF\u00A0]/g, " ")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
@@ -1232,15 +1233,20 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        if(!offer.rate) return true;
+        if(!offer.rate) return false;
         const rateNorm = normalizeText(offer.rate);
+        const numsInRate = (rateNorm.match(/\d+/g) || []).map(Number)
+            .filter(n => n >= 10 && n <= 100);
+        if(!numsInRate.length) return false;
         return selectedTaux.some(t => {
             const tNum = parseInt(t);
             if(isNaN(tNum)) return containsNormalized(offer.rate, t);
-            const match = rateNorm.match(/(\d+)/g);
-            if(!match) return false;
-            const nums = match.map(Number);
-            return nums.some(n => Math.abs(n - tNum) <= 10);
+            if(numsInRate.length === 1){
+                return numsInRate[0] === tNum;
+            }
+            const min = Math.min(...numsInRate);
+            const max = Math.max(...numsInRate);
+            return tNum >= min && tNum <= max;
         });
     });
 }
@@ -2019,12 +2025,10 @@ offer.contractType ||
 "",
 
 title:
-offer.title || "",
+(offer.title || "").replace(/[\u200B-\u200D\uFEFF\u00A0]/g, " ").replace(/\s+/g, " ").trim(),
 
 company:
-offer.company ||
-offer.employer ||
-"",
+(offer.company || offer.employer || "").replace(/[\u200B-\u200D\uFEFF\u00A0]/g, " ").replace(/\s+/g, " ").trim(),
 
 date:
 offer.date ||
