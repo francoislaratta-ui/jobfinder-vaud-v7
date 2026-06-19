@@ -3227,17 +3227,87 @@ return offers;
 
 async function fetchIndeedOffers(){
 
-return await fetchGenericJobPageOffers({
-source: "Indeed",
-company: "Indeed",
-url: "https://ch-fr.indeed.com/jobs?q=&l=vaud&from=searchOnHP",
-defaultTitle: "Offre Indeed Vaud",
-linkPatterns: [
-"/viewjob",
-"jk="
-]
-});
+const queries = [
+"employe+de+commerce",
+"assistant+administratif",
+"gestionnaire+de+dossier",
+"technicien+informatique",
+"helpdesk"
+];
 
+const allOffers = [];
+const seen = new Set();
+
+for(const q of queries){
+try{
+// RSS Indeed — format XML public, pas de blocage
+const rssUrl = `https://ch-fr.indeed.com/rss?q=${q}&l=Vaud&sort=date`;
+const rssText = await fetchExternalText(rssUrl);
+
+if(!rssText || !rssText.includes("<item>")){
+continue;
+}
+
+const items = rssText.match(/<item>([\s\S]*?)<\/item>/g) || [];
+
+for(const item of items){
+const title = (item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || item.match(/<title>(.*?)<\/title>/))?.[1]?.trim() || "";
+const link = (item.match(/<link>(.*?)<\/link>/) || [])[1]?.trim() || "";
+const company = (item.match(/<source[^>]*>(.*?)<\/source>/) || item.match(/Indeed - (.*?)(?:<|$)/))?.[1]?.trim() || "Indeed";
+const location = (item.match(/<\!--location-->(.*?)<\//) || item.match(/Indeed:<\/b>(.*?)<br/))?.[1]?.trim() || "Vaud";
+const pubDate = (item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1]?.trim() || "";
+const description = (item.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/) || [])[1]?.replace(/<[^>]+>/g,"").trim() || "";
+
+if(!link || seen.has(link)) continue;
+seen.add(link);
+
+if(title && !looksLikeWantedJob(title)) continue;
+
+// Extraire taux depuis titre ou description
+let rate = "";
+const rateMatch = (title+" "+description).match(/\b(\d{2,3}\s*[-–à]\s*\d{2,3}\s*%|\d{2,3}\s*%)/);
+if(rateMatch){
+const nums = rateMatch[1].match(/\d+/g).map(Number).filter(n => n >= 10 && n <= 100);
+if(nums.length) rate = rateMatch[1].trim();
+}
+
+// Extraire contrat
+let contract = "";
+const contractMatch = (title+" "+description).match(/\b(CDI|CDD|Temporaire|Durée indéterminée|Durée déterminée)\b/i);
+if(contractMatch) contract = contractMatch[1];
+
+// Formater date
+let dateFormatted = "";
+if(pubDate){
+try{
+const d = new Date(pubDate);
+dateFormatted = String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();
+}catch(e){}
+}
+
+allOffers.push({
+id: generateServerId(),
+title,
+company,
+location: location || "Vaud",
+sector: "",
+rate,
+contract,
+source: "Indeed",
+offerUrl: link,
+url: link,
+date: dateFormatted || new Date().toISOString().split("T")[0],
+description: description || "Descriptif non disponible.",
+salary: ""
+});
+}
+}catch(err){
+console.warn("Erreur Indeed RSS:", q, err.message);
+}
+}
+
+console.log(`Indeed: ${allOffers.length} offres détectées`);
+return allOffers;
 }
 
 async function fetchLinkedInOffers(){
