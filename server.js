@@ -1069,40 +1069,61 @@ startDate = raw.replace(/\s+/g," ").trim();
 }
 }
 
-// Classe de salaire (PostFinance, État de Vaud)
+// Classe de salaire — regex stricte, que des chiffres/lettres courtes
 if(!salaryGrade){
-const gradeMatch = genericText.match(/(?:Classe de salaire|Classe salariale|Echelle salariale)[^:]{0,5}:?\s*([^<\n]{1,20})/i);
+const gradeMatch = genericText.match(/(?:Classe de salaire|Classe salariale|Echelle salariale)\s*:?\s*([A-Z]?\d{1,3}[a-z]?)/i);
 if(gradeMatch) salaryGrade = gradeMatch[1].trim();
 }
 
+// Date limite postulation — format jj.mm.aaaa
 if(!applyBefore){
 const applyMatch = genericText.match(/(?:Postuler avant|Délai de candidature|jusqu.au)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{2,4})/i);
-if(applyMatch) applyBefore = applyMatch[1].trim();
+if(applyMatch){
+const parts = applyMatch[1].replace(/\./g,"/").split("/");
+if(parts.length === 3){
+const d = parts[0].padStart(2,"0");
+const m = parts[1].padStart(2,"0");
+const y = parts[2].length === 2 ? "20"+parts[2] : parts[2];
+applyBefore = d+"."+m+"."+y;
+} else {
+applyBefore = applyMatch[1];
+}
+}
 }
 
 if(!address){
-// Cherche rue + numéro, puis NPA + ville — rue max 50 chars, pas de mots parasites
+// Mots parasites à exclure du début de la rue
+const parasiteWords = [
+"propose","prepose","qualite","ressources","humaines","service",
+"direction","secteur","departement","terminee","determinee",
+"jobcloud","francais","deutsch","copyright","mentions"
+];
+
+// Cherche : rue (mots + numéro) puis NPA (4 chiffres) + ville
+// La rue doit commencer par une majuscule et contenir un numéro
 const fullAddrMatch = genericText.match(
-/\b([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ'-]{1,25}(?:\s[A-ZÀ-Ÿa-zà-ÿ'-]{1,20}){0,3}\s+\d{1,4}[a-zA-Z]?)[,\s]+?(\d{4})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/
+/\b((?:[A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ'-]{1,20}\s){1,4}\d{1,4}[a-zA-Z]?)\s*[,\s]+?(1[0-9]{3}|[2-9]\d{3})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/
 );
+
 if(fullAddrMatch){
 const rue = fullAddrMatch[1].trim();
 const npa = fullAddrMatch[2];
-const ville = fullAddrMatch[3].trim().split(" ").slice(0,3).join(" ");
-// Valide : rue ne contient pas de mots parasites
-const parasites = ["propos","qualite","ressources","humaines","service","direction","secteur","département"];
+const ville = fullAddrMatch[3].trim().split(/\s+/).slice(0,3).join(" ");
 const rueNorm = rue.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-const isClean = !parasites.some(p => rueNorm.includes(p));
-if(isClean){
+const isClean = !parasiteWords.some(p => rueNorm.startsWith(p) || rueNorm.includes(p));
+// NPA Suisse valide : 1000-9999
+const npaNum = parseInt(npa);
+const validNpa = npaNum >= 1000 && npaNum <= 9999;
+if(isClean && validNpa){
 address = rue + "\n" + npa + " " + ville;
 } else {
-// Fallback NPA + ville uniquement
-const npaMatch = genericText.match(/\b(\d{4})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/);
-if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim().split(" ").slice(0,3).join(" ");
+// Fallback NPA + ville
+const npaMatch = genericText.match(/\b([1-9]\d{3})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/);
+if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim().split(/\s+/).slice(0,3).join(" ");
 }
 } else {
-const npaMatch = genericText.match(/\b(\d{4})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/);
-if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim().split(" ").slice(0,3).join(" ");
+const npaMatch = genericText.match(/\b([1-9]\d{3})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/);
+if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim().split(/\s+/).slice(0,3).join(" ");
 }
 }
 

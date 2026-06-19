@@ -912,16 +912,17 @@ UTILITAIRES
 ========================================== */
 
 function formatDate(date){
-if(!date){
-return "";
-}
-
+if(!date) return "";
 try{
-return new Date(date).toLocaleDateString("fr-CH");
+const d = new Date(date);
+if(isNaN(d.getTime())) return String(date);
+const day = String(d.getDate()).padStart(2,"0");
+const month = String(d.getMonth()+1).padStart(2,"0");
+const year = d.getFullYear();
+return day+"."+month+"."+year;
 }catch(e){
 return String(date);
 }
-
 }
 
 function generateId(){
@@ -2300,17 +2301,21 @@ const descHtml = offer.source === "Jobup"
 const formatAddress = (addr) => {
 if(!addr) return "";
 const clean = addr
-.replace(/À propos de cette offre[\s\S]*/i, "")
-.replace(/Autres recherches[\s\S]*/i, "")
-.replace(/Offres similaires[\s\S]*/i, "")
-.replace(/À propos de c[^\n]*/gi, "")
+.replace(/à propos[^\n]*/gi, "")
+.replace(/Autres recherches[^\n]*/gi, "")
+.replace(/Offres similaires[^\n]*/gi, "")
 .replace(/About this[^\n]*/gi, "")
 .replace(/En savoir plus[^\n]*/gi, "")
+.replace(/JobCloud[^\n]*/gi, "")
+.replace(/Copyright[^\n]*/gi, "")
 .trim();
 const lines = clean.split("\n")
 .map(l => l.trim())
 .filter(l => l.length > 0 && l.length < 60)
-.filter(l => !/^(qualit|ressources|humaines|service|direction|département|secteur)/i.test(l));
+.filter(l => {
+const norm = l.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+return !/^(qualit|ressources|humaines|service|direction|departement|secteur|terminee|determin|propose|prepose|francais|deutsch|jobcloud|copyright)/.test(norm);
+});
 return lines.join("<br>");
 };
 
@@ -2378,7 +2383,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(offer.date)}
+📅 Publié le : ${escapeHTML(formatDate(offer.date) || offer.date)}
 </div>
 
 ${offer.offerUrl ? `
