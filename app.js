@@ -2303,11 +2303,15 @@ const clean = addr
 .replace(/À propos de cette offre[\s\S]*/i, "")
 .replace(/Autres recherches[\s\S]*/i, "")
 .replace(/Offres similaires[\s\S]*/i, "")
+.replace(/À propos de c[^\n]*/gi, "")
+.replace(/About this[^\n]*/gi, "")
+.replace(/En savoir plus[^\n]*/gi, "")
 .trim();
-return clean.split("\n")
+const lines = clean.split("\n")
 .map(l => l.trim())
-.filter(Boolean)
-.join("<br>");
+.filter(l => l.length > 0 && l.length < 60)
+.filter(l => !/^(qualit|ressources|humaines|service|direction|département|secteur)/i.test(l));
+return lines.join("<br>");
 };
 
 const addressHtml = formatAddress(offer.address);
@@ -3857,5 +3861,5 @@ console.log("==================================");
 });
 
 /* ==========================================
-FIN APP.JS V14.6.1 PREMIUM IA
+FIN APP.JS V14.6 PREMIUM IA
 ========================================== */

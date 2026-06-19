@@ -1021,19 +1021,35 @@ if(startDateMatch) startDate = startDateMatch[1].trim();
 
 // Extraction générique — toutes sources (Indeed, LinkedIn, etc.)
 const genericText = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+let salaryGrade = "";
 
 if(!rate){
-// Taux : entre 10% et 100% uniquement, avec % obligatoire
+// Labels structurés type PostFinance/LinkedIn
+const rateLabel = genericText.match(/(?:Taux d.occupation|Taux de travail|Pensum|Workload)[^\d]*((?:1[0-9]|[2-9]\d|100)\s*[-–à]\s*(?:1[0-9]|[2-9]\d|100)\s*%|(?:1[0-9]|[2-9]\d|100)\s*%)/i);
+if(rateLabel){
+rate = rateLabel[1].trim();
+} else {
+// Générique : taux entre 10% et 100%
 const rateMatch = genericText.match(/\b((?:1[0-9]|[2-9]\d|100)\s*[-–à]\s*(?:1[0-9]|[2-9]\d|100)\s*%|(?:1[0-9]|[2-9]\d|100)\s*%)/i);
 if(rateMatch){
 const nums = rateMatch[1].match(/\d+/g).map(Number).filter(n => n >= 10 && n <= 100);
 if(nums.length > 0) rate = rateMatch[1].trim();
 }
 }
+}
 
 if(!contract){
+// Labels structurés type PostFinance
+const contractLabel = genericText.match(/(?:Durée d.emploi|Type de contrat|Contrat)[^:]{0,5}:?\s*(contrat à durée indéterminée|contrat à durée déterminée|CDI|CDD|Temporaire|Apprentissage)/i);
+if(contractLabel){
+const raw = contractLabel[1].trim();
+if(/indéterminée/i.test(raw)) contract = "CDI";
+else if(/déterminée/i.test(raw)) contract = "CDD";
+else contract = raw;
+} else {
 const contractMatch = genericText.match(/\b(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Contrat fixe|Emploi fixe|Apprentissage)\b/i);
 if(contractMatch) contract = contractMatch[1].trim();
+}
 }
 
 if(!salary){
@@ -1042,17 +1058,21 @@ if(salaryMatch) salary = salaryMatch[0].replace(/\s+/g," ").trim();
 }
 
 if(!startDate){
-// Date d'entrée : cherche une vraie date ou mention courte après le label
 const startMatch = genericText.match(
-/(?:Entrée en fonction|Entrée en service|Date d'entrée|Prise de poste|Dès que possible|De suite)[^:]{0,10}:?\s*([^<,;\n]{3,40})/i
+/(?:Entrée en fonction|Entrée en service|Date d.entrée|Date de début|Prise de poste|Dès que possible|De suite|Disponibilité)[^:]{0,10}:?\s*([^<,;\n]{3,40})/i
 );
 if(startMatch){
 const raw = startMatch[1].trim();
-// Valide : contient une date, "suite", "convenir", "septembre" etc.
 if(/\d{4}|suite|convenir|immédiat|janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre/i.test(raw)){
 startDate = raw.replace(/\s+/g," ").trim();
 }
 }
+}
+
+// Classe de salaire (PostFinance, État de Vaud)
+if(!salaryGrade){
+const gradeMatch = genericText.match(/(?:Classe de salaire|Classe salariale|Echelle salariale)[^:]{0,5}:?\s*([^<\n]{1,20})/i);
+if(gradeMatch) salaryGrade = gradeMatch[1].trim();
 }
 
 if(!applyBefore){
@@ -1061,19 +1081,28 @@ if(applyMatch) applyBefore = applyMatch[1].trim();
 }
 
 if(!address){
-// Cherche rue + numéro, puis NPA + ville sur la même zone
+// Cherche rue + numéro, puis NPA + ville — rue max 50 chars, pas de mots parasites
 const fullAddrMatch = genericText.match(
-/([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s'-]{2,40}\s+\d{1,4}[a-zA-Z]?)[,\s\n]+?(\d{4})\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,30})/
+/\b([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ'-]{1,25}(?:\s[A-ZÀ-Ÿa-zà-ÿ'-]{1,20}){0,3}\s+\d{1,4}[a-zA-Z]?)[,\s]+?(\d{4})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/
 );
 if(fullAddrMatch){
 const rue = fullAddrMatch[1].trim();
 const npa = fullAddrMatch[2];
-const ville = fullAddrMatch[3].trim();
+const ville = fullAddrMatch[3].trim().split(" ").slice(0,3).join(" ");
+// Valide : rue ne contient pas de mots parasites
+const parasites = ["propos","qualite","ressources","humaines","service","direction","secteur","département"];
+const rueNorm = rue.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const isClean = !parasites.some(p => rueNorm.includes(p));
+if(isClean){
 address = rue + "\n" + npa + " " + ville;
 } else {
-// Fallback : juste NPA + ville
-const npaMatch = genericText.match(/\b(\d{4})\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,30})/);
-if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim();
+// Fallback NPA + ville uniquement
+const npaMatch = genericText.match(/\b(\d{4})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/);
+if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim().split(" ").slice(0,3).join(" ");
+}
+} else {
+const npaMatch = genericText.match(/\b(\d{4})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/);
+if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim().split(" ").slice(0,3).join(" ");
 }
 }
 
@@ -1085,6 +1114,7 @@ rate,
 contract,
 address,
 salary,
+salaryGrade,
 date,
 applyBefore,
 startDate
