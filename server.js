@@ -3230,9 +3230,17 @@ async function fetchIndeedOffers(){
 const queries = [
 "employe+de+commerce",
 "assistant+administratif",
+"assistante+administrative",
 "gestionnaire+de+dossier",
+"gestionnaire+administratif",
+"collaborateur+administratif",
 "technicien+informatique",
-"helpdesk"
+"support+informatique",
+"helpdesk",
+"back+office",
+"receptionniste",
+"secretaire",
+"coordinateur+administratif"
 ];
 
 const allOffers = [];
@@ -3261,7 +3269,7 @@ const description = (item.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/descr
 if(!link || seen.has(link)) continue;
 seen.add(link);
 
-if(title && !looksLikeWantedJob(title)) continue;
+// Pas de filtre titre — les requêtes RSS sont déjà ciblées
 
 // Extraire taux depuis titre ou description
 let rate = "";
