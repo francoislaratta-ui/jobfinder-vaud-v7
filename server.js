@@ -1023,12 +1023,16 @@ if(startDateMatch) startDate = startDateMatch[1].trim();
 const genericText = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
 if(!rate){
-const rateMatch = genericText.match(/(\d{2,3}\s*[-–à]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
-if(rateMatch) rate = rateMatch[1].trim();
+// Taux : entre 10% et 100% uniquement, avec % obligatoire
+const rateMatch = genericText.match(/\b((?:1[0-9]|[2-9]\d|100)\s*[-–à]\s*(?:1[0-9]|[2-9]\d|100)\s*%|(?:1[0-9]|[2-9]\d|100)\s*%)/i);
+if(rateMatch){
+const nums = rateMatch[1].match(/\d+/g).map(Number).filter(n => n >= 10 && n <= 100);
+if(nums.length > 0) rate = rateMatch[1].trim();
+}
 }
 
 if(!contract){
-const contractMatch = genericText.match(/(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Contrat fixe|Emploi fixe|Apprentissage)/i);
+const contractMatch = genericText.match(/\b(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Contrat fixe|Emploi fixe|Apprentissage)\b/i);
 if(contractMatch) contract = contractMatch[1].trim();
 }
 
@@ -1038,22 +1042,34 @@ if(salaryMatch) salary = salaryMatch[0].replace(/\s+/g," ").trim();
 }
 
 if(!startDate){
-const startMatch = genericText.match(/(?:Entrée en fonction|Entrée en service|Début|Prise de poste|Disponible)[^:]*:?\s*([^<.\n]{3,50})/i);
-if(startMatch) startDate = startMatch[1].trim();
+// Date d'entrée : cherche une vraie date ou mention courte après le label
+const startMatch = genericText.match(
+/(?:Entrée en fonction|Entrée en service|Date d'entrée|Prise de poste|Dès que possible|De suite)[^:]{0,10}:?\s*([^<,;\n]{3,40})/i
+);
+if(startMatch){
+const raw = startMatch[1].trim();
+// Valide : contient une date, "suite", "convenir", "septembre" etc.
+if(/\d{4}|suite|convenir|immédiat|janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre/i.test(raw)){
+startDate = raw.replace(/\s+/g," ").trim();
+}
+}
 }
 
 if(!applyBefore){
-const applyMatch = genericText.match(/(?:Postuler avant|Délai|jusqu.au)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{2,4})/i);
+const applyMatch = genericText.match(/(?:Postuler avant|Délai de candidature|jusqu.au)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{2,4})/i);
 if(applyMatch) applyBefore = applyMatch[1].trim();
 }
 
 if(!address){
-// Cherche rue + NPA + ville : "Route du Signal 29, 1018 Lausanne"
+// Cherche rue + numéro, puis NPA + ville sur la même zone
 const fullAddrMatch = genericText.match(
-/([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s'-]{2,40}\s+\d{1,4}[a-zA-Z]?)[,\s]+?(\d{4})\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,30})/
+/([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s'-]{2,40}\s+\d{1,4}[a-zA-Z]?)[,\s\n]+?(\d{4})\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,30})/
 );
 if(fullAddrMatch){
-address = fullAddrMatch[1].trim() + ", " + fullAddrMatch[2] + " " + fullAddrMatch[3].trim();
+const rue = fullAddrMatch[1].trim();
+const npa = fullAddrMatch[2];
+const ville = fullAddrMatch[3].trim();
+address = rue + "\n" + npa + " " + ville;
 } else {
 // Fallback : juste NPA + ville
 const npaMatch = genericText.match(/\b(\d{4})\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,30})/);
