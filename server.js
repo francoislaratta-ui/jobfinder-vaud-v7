@@ -989,18 +989,51 @@ let startDate = "";
 
 // Extraction Jobup
 if(url.includes("jobup.ch")){
-const jobupText = cleanHtmlTextJobup(html);
+// Ajouter espace entre labels et valeurs collés (ex: "Taux d'activité50-100%")
+const jobupTextRaw = cleanHtmlTextJobup(html);
+const jobupText = jobupTextRaw
+.replace(/Taux d.activit[eé]/gi, "Taux d'activité ")
+.replace(/Type de contrat/gi, "Type de contrat ")
+.replace(/Classe salariale/gi, "Classe salariale ")
+.replace(/Date d.entr[eé]e en fonction/gi, "Date d'entrée en fonction ")
+.replace(/Entr[eé]e en fonction/gi, "Entrée en fonction ")
+.replace(/Postuler avant/gi, "Postuler avant ")
+.replace(/Date de publication/gi, "Date de publication ")
+.replace(/Lieu de travail/gi, "Lieu de travail ")
+.replace(/Adresse/gi, "Adresse ");
 
-const rateMatch = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
+const rateMatch = jobupText.match(/Taux[^\d]*(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
 if(rateMatch) rate = rateMatch[1].trim();
+else {
+const rateMatch2 = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
+if(rateMatch2) rate = rateMatch2[1].trim();
+}
 
-const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
-if(contractMatch) contract = contractMatch[1].trim();
+const contractMatch = jobupText.match(/Type de contrat\s*(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
+if(contractMatch){
+const raw = contractMatch[1].trim();
+if(/indéterminée/i.test(raw)) contract = "CDI";
+else if(/déterminée/i.test(raw)) contract = "CDD";
+else contract = raw;
+} else {
+const contractMatch2 = jobupText.match(/(Durée indéterminée|Durée déterminée|CDI|CDD|Temporaire|Apprentissage)/i);
+if(contractMatch2){
+const raw = contractMatch2[1].trim();
+if(/indéterminée/i.test(raw)) contract = "CDI";
+else if(/déterminée/i.test(raw)) contract = "CDD";
+else contract = raw;
+}
+}
 
-const addressBlockMatch = jobupText.match(/Adresse\s*\n([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories|D'autres utilisateurs)/i);
+// Adresse Jobup — exclure lignes parasites
+const addressBlockMatch = jobupText.match(/Adresse\s*\n([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories|D.autres utilisateurs|Voir plus)/i);
 if(addressBlockMatch){
-const lines = addressBlockMatch[1].split("\n").map(l => l.trim()).filter(Boolean).filter(l => l.length < 80);
-const addressLines = lines.filter(l => /\d{4}/.test(l) || /^[A-ZÀ-Ÿa-zà-ÿ\s,.-]{3,50}$/.test(l));
+const parasiteAddr = ["direction","ressources","humaines","fiscalit","service","departement","generale"];
+const lines = addressBlockMatch[1].split("\n").map(l => l.trim()).filter(Boolean).filter(l => l.length < 60);
+const addressLines = lines.filter(l => {
+const norm = l.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+return !parasiteAddr.some(p => norm.includes(p)) && (/\d{4}/.test(l) || /^[A-ZÀ-Ÿa-zà-ÿ][\s\w,.-]{2,50}$/.test(l));
+});
 if(addressLines.length > 0) address = addressLines.join("\n");
 }
 
@@ -1009,13 +1042,32 @@ const salaryMatchText = jobupText.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*
 const salaryFound = salaryMatchRaw || salaryMatchText;
 if(salaryFound) salary = salaryFound[0].replace(/\s+/g," ").trim();
 
+// Classe salariale Jobup
+const gradeJobup = jobupText.match(/Classe salariale\s*(\d{1,3}[a-z]?)/i);
+if(gradeJobup) salaryGrade = gradeJobup[1].trim();
+
+// Date publication
 const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
-if(dateMatch) date = dateMatch[1].trim();
+if(dateMatch){
+const months = {janvier:"01",février:"02",mars:"03",avril:"04",mai:"05",juin:"06",juillet:"07",août:"08",septembre:"09",octobre:"10",novembre:"11",décembre:"12"};
+const parts = dateMatch[1].split(/\s+/);
+const d = parts[0].padStart(2,"0");
+const m = months[parts[1].toLowerCase()] || "01";
+const y = parts[2];
+date = d+"."+m+"."+y;
+}
 
-const applyBeforeMatch = jobupText.match(/(?:Postuler avant|jusqu.au|délai)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
-if(applyBeforeMatch) applyBefore = applyBeforeMatch[1].trim();
+// Date limite postulation
+const applyBeforeMatch = jobupText.match(/Postuler avant\s*(\d{1,2}[./]\d{1,2}[./]\d{2,4})/i);
+if(applyBeforeMatch){
+const parts = applyBeforeMatch[1].replace(/\./g,"/").split("/");
+if(parts.length===3){
+const d=parts[0].padStart(2,"0"), mo=parts[1].padStart(2,"0"), y=parts[2].length===2?"20"+parts[2]:parts[2];
+applyBefore = d+"."+mo+"."+y;
+}
+}
 
-const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i);
+const startDateMatch = jobupText.match(/Entr[ée]e en fonction\s*([^\n.]{3,50})/i);
 if(startDateMatch) startDate = startDateMatch[1].trim();
 }
 
@@ -1118,12 +1170,27 @@ if(isClean && validNpa){
 address = rue + "\n" + npa + " " + ville;
 } else {
 // Fallback NPA + ville
-const npaMatch = genericText.match(/\b([1-9]\d{3})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/);
-if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim().split(/\s+/).slice(0,3).join(" ");
+// NPA Suisse valide : 1000-9699 mais pas années (2020-2030)
+const npaRaw = genericText.match(/\b([1-9]\d{3})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/g) || [];
+const validNpaMatch = npaRaw.find(m => {
+const n = parseInt(m.match(/\d{4}/)[0]);
+return n >= 1000 && n <= 9699 && !(n >= 2020 && n <= 2030);
+});
+if(validNpaMatch){
+const parts = validNpaMatch.match(/^(\d{4})\s+(.+)$/);
+if(parts) address = parts[1] + " " + parts[2].trim().split(/\s+/).slice(0,3).join(" ");
+}
 }
 } else {
-const npaMatch = genericText.match(/\b([1-9]\d{3})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/);
-if(npaMatch) address = npaMatch[1] + " " + npaMatch[2].trim().split(/\s+/).slice(0,3).join(" ");
+const npaRaw2 = genericText.match(/\b([1-9]\d{3})\s+([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,25})\b/g) || [];
+const validNpaMatch2 = npaRaw2.find(m => {
+const n = parseInt(m.match(/\d{4}/)[0]);
+return n >= 1000 && n <= 9699 && !(n >= 2020 && n <= 2030);
+});
+if(validNpaMatch2){
+const parts = validNpaMatch2.match(/^(\d{4})\s+(.+)$/);
+if(parts) address = parts[1] + " " + parts[2].trim().split(/\s+/).slice(0,3).join(" ");
+}
 }
 }
 

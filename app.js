@@ -1266,6 +1266,20 @@ function applyFilters(){
 
     let result = [...offers];
 
+    // Masquer offres expirées (applyBefore dépassé)
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    result = result.filter(offer => {
+        if(!offer.applyBefore) return true;
+        // Format jj.mm.aaaa ou jj/mm/aaaa
+        const parts = offer.applyBefore.replace(/\//g,".").split(".");
+        if(parts.length !== 3) return true;
+        const d = parseInt(parts[0]), m = parseInt(parts[1])-1, y = parseInt(parts[2]);
+        if(isNaN(d)||isNaN(m)||isNaN(y)) return true;
+        const deadline = new Date(y, m, d);
+        return deadline >= today;
+    });
+
     const SCRAPE_KEYWORDS = [
 "employe de commerce",
 "assistant administratif",
