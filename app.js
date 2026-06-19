@@ -1280,36 +1280,20 @@ function applyFilters(){
         return deadline >= today;
     });
 
+    // Mêmes keywords que Jobup SEARCH_KEYWORDS — source de référence
     const SCRAPE_KEYWORDS = [
 "employe de commerce",
 "assistant administratif",
 "assistante administrative",
 "gestionnaire de dossier",
 "gestionnaire administratif",
-"gestionnaire de depot",
-"gestionnaire contentieux",
-"gestionnaire logistique",
-"gestionnaire approvisionnement",
 "technicien informatique",
-"technicien support",
-"technicien maintenance",
-"technicien systeme",
-"technicien alarme",
 "support informatique",
-"support utilisateur",
-"it support",
-"network support",
-"specialiste support",
 "helpdesk",
+"back-office",
 "back office",
 "collaborateur administratif",
-"collaborateur service",
-"coordinateur administratif",
-"administrateur gestionnaire",
-"employe administratif",
-"assistant de direction",
-"assistant rh",
-"conseiller clientele"
+"collaboratrice administrative"
 ];
 
 const selectAllMetiers = document.getElementById("selectAllMetiers");
@@ -1317,10 +1301,14 @@ const selectAllMetiers = document.getElementById("selectAllMetiers");
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
-        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
-            k.split(" ").filter(w => w.length > 4)
-            .some(w => titleNorm.includes(w))
-        );
+        // Chaque keyword doit matcher comme expression complète OU tous ses mots présents
+        const matchesKeyword = SCRAPE_KEYWORDS.some(k => {
+            const kNorm = normalizeText(k);
+            if(titleNorm.includes(kNorm)) return true;
+            // Pour les expressions multi-mots : tous les mots significatifs doivent être présents
+            const words = kNorm.split(" ").filter(w => w.length > 4);
+            return words.length >= 2 && words.every(w => titleNorm.includes(w));
+        });
         if(selectAllMetiers?.checked) return matchesKeyword;
         const matchesMetier = selectedMetiers.some(m =>
             containsNormalized(offer.title, m)

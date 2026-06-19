@@ -3115,27 +3115,39 @@ String(text || "")
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "");
 
-const keywords = [
-"employe",
-"assistant",
-"assistante",
-"administratif",
-"administrative",
-"gestionnaire",
-"dossier",
-"commerce",
-"support",
+// Basé exactement sur SEARCH_KEYWORDS Jobup — expressions complètes en priorité
+const exactPhrases = [
+"employe de commerce",
+"assistant administratif",
+"assistante administrative",
+"gestionnaire de dossier",
+"gestionnaire administratif",
+"technicien informatique",
+"support informatique",
 "helpdesk",
-"technicien",
-"informatique",
-"rh",
-"clientele",
-"coordinateur"
+"back-office",
+"back office",
+"collaborateur administratif",
+"collaboratrice administrative"
 ];
 
-return keywords.some(keyword =>
-value.includes(keyword)
-);
+if(exactPhrases.some(k => value.includes(k))) return true;
+
+// Combinaisons de mots (pour titres reformulés)
+const combos = [
+["employe", "commerce"],
+["assistant", "administratif"],
+["assistante", "administrative"],
+["gestionnaire", "dossier"],
+["gestionnaire", "administratif"],
+["technicien", "informatique"],
+["technicien", "support"],
+["support", "informatique"],
+["collaborateur", "administratif"],
+["collaboratrice", "administrative"]
+];
+
+return combos.some(([a, b]) => value.includes(a) && value.includes(b));
 
 }
 
@@ -3227,20 +3239,16 @@ return offers;
 
 async function fetchIndeedOffers(){
 
+// Mêmes keywords que Jobup SEARCH_KEYWORDS
 const queries = [
 "employe+de+commerce",
 "assistant+administratif",
-"assistante+administrative",
 "gestionnaire+de+dossier",
-"gestionnaire+administratif",
-"collaborateur+administratif",
 "technicien+informatique",
 "support+informatique",
 "helpdesk",
-"back+office",
-"receptionniste",
-"secretaire",
-"coordinateur+administratif"
+"back-office",
+"collaborateur+administratif"
 ];
 
 const allOffers = [];
@@ -3320,132 +3328,416 @@ return allOffers;
 
 async function fetchLinkedInOffers(){
 
-return await fetchGenericJobPageOffers({
-source: "LinkedIn",
-company: "LinkedIn",
-url: "https://www.linkedin.com/jobs/search/?keywords=&location=Vaud%2C%20Suisse",
-defaultTitle: "Offre LinkedIn Vaud",
-linkPatterns: [
-"/jobs/view/"
-]
-});
+// Mêmes keywords que Jobup SEARCH_KEYWORDS
+const queries = [
+"employe de commerce",
+"assistant administratif",
+"gestionnaire de dossier",
+"technicien informatique",
+"support informatique",
+"helpdesk",
+"back-office",
+"collaborateur administratif"
+];
 
+const allOffers = [];
+const seen = new Set();
+
+for(const q of queries){
+try{
+const encoded = encodeURIComponent(q);
+// LinkedIn jobs API non-authentifiée
+const url = `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=${encoded}&location=Vaud%2C%20Suisse&start=0`;
+
+const html = await fetchExternalText(url);
+if(!html) continue;
+
+// Extraire les offres du HTML retourné
+const titleMatches = html.match(/class="base-search-card__title"[^>]*>([\s\S]*?)<\/h3>/gi) || [];
+const companyMatches = html.match(/class="base-search-card__subtitle"[^>]*>([\s\S]*?)<\/(?:a|span)>/gi) || [];
+const locationMatches = html.match(/class="job-search-card__location"[^>]*>([\s\S]*?)<\/span>/gi) || [];
+const linkMatches = html.match(/href="(https:\/\/www\.linkedin\.com\/jobs\/view\/[^"]+)"/gi) || [];
+const dateMatches = html.match(/<time[^>]*datetime="([^"]+)"[^>]*>/gi) || [];
+
+const count = Math.max(titleMatches.length, linkMatches.length);
+
+for(let i = 0; i < count; i++){
+const title = titleMatches[i]
+? titleMatches[i].replace(/<[^>]+>/g,"").trim()
+: "Offre LinkedIn";
+const company = companyMatches[i]
+? companyMatches[i].replace(/<[^>]+>/g,"").trim()
+: "LinkedIn";
+const location = locationMatches[i]
+? locationMatches[i].replace(/<[^>]+>/g,"").trim()
+: "Vaud";
+const linkMatch = linkMatches[i]
+? linkMatches[i].match(/href="([^"]+)"/)
+: null;
+const link = linkMatch ? linkMatch[1].split("?")[0] : "";
+const dateMatch = dateMatches[i]
+? dateMatches[i].match(/datetime="([^"]+)"/)
+: null;
+
+if(!link || seen.has(link)) continue;
+seen.add(link);
+
+// Extraire taux depuis titre
+let rate = "";
+const rateMatch = title.match(/\b(\d{2,3}\s*[-–à]\s*\d{2,3}\s*%|\d{2,3}\s*%)/);
+if(rateMatch){
+const nums = rateMatch[1].match(/\d+/g).map(Number).filter(n => n>=10 && n<=100);
+if(nums.length) rate = rateMatch[1].trim();
+}
+
+// Extraire contrat depuis titre
+let contract = "";
+const contractMatch = title.match(/\b(CDI|CDD|Temporaire|Freelance)\b/i);
+if(contractMatch) contract = contractMatch[1];
+
+// Formater date
+let dateFormatted = "";
+if(dateMatch && dateMatch[1]){
+try{
+const d = new Date(dateMatch[1]);
+dateFormatted = String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();
+}catch(e){}
+}
+
+allOffers.push({
+id: generateServerId(),
+title,
+company,
+location: location.includes("Vaud") || location.includes("Lausanne") ? location : "Vaud",
+sector: "",
+rate,
+contract,
+source: "LinkedIn",
+offerUrl: link,
+url: link,
+date: dateFormatted || new Date().toISOString().split("T")[0],
+description: "Descriptif non disponible.",
+salary: ""
+});
+}
+}catch(err){
+console.warn("Erreur LinkedIn:", q, err.message);
+}
+}
+
+console.log(`LinkedIn: ${allOffers.length} offres détectées`);
+return allOffers;
+}
+
+async function fetchKeywordOffers(config){
+// Même logique que Jobup — cherche par keyword, filtre avec looksLikeWantedJob
+const allOffers = [];
+const seen = new Set();
+
+for(const keyword of SEARCH_KEYWORDS){
+try{
+const encoded = encodeURIComponent(keyword);
+const url = config.buildUrl(encoded);
+const html = await fetchExternalText(url);
+if(!html) continue;
+
+const anchors = extractAnchorsFromHtml(html, url);
+
+for(const anchor of anchors){
+const href = anchor.href || "";
+const title = (anchor.text || "").trim();
+
+if(!href || seen.has(href)) continue;
+seen.add(href);
+
+const isJobLink = config.linkPatterns.some(p => href.toLowerCase().includes(p));
+if(!isJobLink) continue;
+
+if(title && !looksLikeWantedJob(title)) continue;
+
+// Extraire taux depuis titre
+let rate = "";
+const rateMatch = title.match(/(\d{2,3}\s*[-–à]\s*\d{2,3}\s*%|\d{2,3}\s*%)/);
+if(rateMatch){
+const nums = rateMatch[1].match(/\d+/g).map(Number).filter(n => n>=10 && n<=100);
+if(nums.length) rate = rateMatch[1].trim();
+}
+
+// Extraire contrat depuis titre
+let contract = "";
+const contractMatch = title.match(/(CDI|CDD|Temporaire|Fixe)/i);
+if(contractMatch) contract = contractMatch[1];
+
+allOffers.push({
+id: generateServerId(),
+title: title || config.defaultTitle,
+company: config.company,
+location: "Vaud",
+sector: "",
+rate,
+contract,
+source: config.source,
+offerUrl: href,
+url: href,
+date: new Date().toLocaleDateString("fr-CH").split("/").reverse().join("."),
+description: "Descriptif non disponible.",
+salary: ""
+});
+}
+}catch(err){
+console.warn(`Erreur ${config.source} "${keyword}":`, err.message);
+}
+}
+
+console.log(`${config.source}: ${allOffers.length} offres détectées`);
+return allOffers;
+}
+
+async function fetchPosteOffers(){
+return await fetchKeywordOffers({
+source: "La Poste",
+company: "La Poste",
+buildUrl: (q) => `https://career.post.ch/fr/Offres-demploi?q=${q}&location=Vaud`,
+defaultTitle: "Offre La Poste",
+linkPatterns: ["/fr/offres-demploi/", "/job/", "/jobs/", "/career/"]
+});
 }
 
 async function fetchMigrosOffers(){
-
-return await fetchGenericJobPageOffers({
+return await fetchKeywordOffers({
 source: "Migros",
 company: "Migros",
-url: "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants",
+buildUrl: (q) => `https://jobs.migros.ch/fr/recherche?q=${q}&location=Vaud`,
 defaultTitle: "Offre Migros",
-linkPatterns: [
-"/fr/postes-vacants/",
-"/job/",
-"/jobs/"
-]
+linkPatterns: ["/fr/postes-vacants/", "/job/", "/jobs/"]
 });
-
 }
 
 async function fetchNestleOffers(){
-
-return await fetchGenericJobPageOffers({
+return await fetchKeywordOffers({
 source: "Nestlé",
 company: "Nestlé",
-url: "https://www.nestle.ch/fr/emplois",
+buildUrl: (q) => `https://www.nestle.com/jobs/search?q=${q}&location=Vaud`,
 defaultTitle: "Offre Nestlé",
-linkPatterns: [
-"/jobs/",
-"/job/",
-"/emplois",
-"/career",
-"/careers"
-]
+linkPatterns: ["/jobs/", "/job/", "/career", "/emplois"]
 });
-
 }
 
 async function fetchCoopOffers(){
-
-return await fetchGenericJobPageOffers({
+return await fetchKeywordOffers({
 source: "Coop",
 company: "Coop",
-url: "https://jobs.coopjobs.ch/?lang=fr",
+buildUrl: (q) => `https://jobs.coopjobs.ch/?lang=fr&q=${q}`,
 defaultTitle: "Offre Coop",
-linkPatterns: [
-"/job/",
-"/jobs/",
-"/stellen/",
-"jobid"
-]
+linkPatterns: ["/job/", "/jobs/", "/stellen/", "jobid"]
 });
-
 }
 
 async function fetchLinkedInOffers(){
 
-return await fetchGenericJobPageOffers({
-source: "LinkedIn",
-company: "LinkedIn",
-url: "https://www.linkedin.com/jobs/search/?keywords=&location=Vaud%2C%20Suisse",
-defaultTitle: "Offre LinkedIn Vaud",
-linkPatterns: [
-"/jobs/view/"
-]
-});
+// Mêmes keywords que Jobup SEARCH_KEYWORDS
+const queries = [
+"employe de commerce",
+"assistant administratif",
+"gestionnaire de dossier",
+"technicien informatique",
+"support informatique",
+"helpdesk",
+"back-office",
+"collaborateur administratif"
+];
 
+const allOffers = [];
+const seen = new Set();
+
+for(const q of queries){
+try{
+const encoded = encodeURIComponent(q);
+// LinkedIn jobs API non-authentifiée
+const url = `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=${encoded}&location=Vaud%2C%20Suisse&start=0`;
+
+const html = await fetchExternalText(url);
+if(!html) continue;
+
+// Extraire les offres du HTML retourné
+const titleMatches = html.match(/class="base-search-card__title"[^>]*>([\s\S]*?)<\/h3>/gi) || [];
+const companyMatches = html.match(/class="base-search-card__subtitle"[^>]*>([\s\S]*?)<\/(?:a|span)>/gi) || [];
+const locationMatches = html.match(/class="job-search-card__location"[^>]*>([\s\S]*?)<\/span>/gi) || [];
+const linkMatches = html.match(/href="(https:\/\/www\.linkedin\.com\/jobs\/view\/[^"]+)"/gi) || [];
+const dateMatches = html.match(/<time[^>]*datetime="([^"]+)"[^>]*>/gi) || [];
+
+const count = Math.max(titleMatches.length, linkMatches.length);
+
+for(let i = 0; i < count; i++){
+const title = titleMatches[i]
+? titleMatches[i].replace(/<[^>]+>/g,"").trim()
+: "Offre LinkedIn";
+const company = companyMatches[i]
+? companyMatches[i].replace(/<[^>]+>/g,"").trim()
+: "LinkedIn";
+const location = locationMatches[i]
+? locationMatches[i].replace(/<[^>]+>/g,"").trim()
+: "Vaud";
+const linkMatch = linkMatches[i]
+? linkMatches[i].match(/href="([^"]+)"/)
+: null;
+const link = linkMatch ? linkMatch[1].split("?")[0] : "";
+const dateMatch = dateMatches[i]
+? dateMatches[i].match(/datetime="([^"]+)"/)
+: null;
+
+if(!link || seen.has(link)) continue;
+seen.add(link);
+
+// Extraire taux depuis titre
+let rate = "";
+const rateMatch = title.match(/\b(\d{2,3}\s*[-–à]\s*\d{2,3}\s*%|\d{2,3}\s*%)/);
+if(rateMatch){
+const nums = rateMatch[1].match(/\d+/g).map(Number).filter(n => n>=10 && n<=100);
+if(nums.length) rate = rateMatch[1].trim();
+}
+
+// Extraire contrat depuis titre
+let contract = "";
+const contractMatch = title.match(/\b(CDI|CDD|Temporaire|Freelance)\b/i);
+if(contractMatch) contract = contractMatch[1];
+
+// Formater date
+let dateFormatted = "";
+if(dateMatch && dateMatch[1]){
+try{
+const d = new Date(dateMatch[1]);
+dateFormatted = String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();
+}catch(e){}
+}
+
+allOffers.push({
+id: generateServerId(),
+title,
+company,
+location: location.includes("Vaud") || location.includes("Lausanne") ? location : "Vaud",
+sector: "",
+rate,
+contract,
+source: "LinkedIn",
+offerUrl: link,
+url: link,
+date: dateFormatted || new Date().toISOString().split("T")[0],
+description: "Descriptif non disponible.",
+salary: ""
+});
+}
+}catch(err){
+console.warn("Erreur LinkedIn:", q, err.message);
+}
+}
+
+console.log(`LinkedIn: ${allOffers.length} offres détectées`);
+return allOffers;
+}
+
+async function fetchKeywordOffers(config){
+// Même logique que Jobup — cherche par keyword, filtre avec looksLikeWantedJob
+const allOffers = [];
+const seen = new Set();
+
+for(const keyword of SEARCH_KEYWORDS){
+try{
+const encoded = encodeURIComponent(keyword);
+const url = config.buildUrl(encoded);
+const html = await fetchExternalText(url);
+if(!html) continue;
+
+const anchors = extractAnchorsFromHtml(html, url);
+
+for(const anchor of anchors){
+const href = anchor.href || "";
+const title = (anchor.text || "").trim();
+
+if(!href || seen.has(href)) continue;
+seen.add(href);
+
+const isJobLink = config.linkPatterns.some(p => href.toLowerCase().includes(p));
+if(!isJobLink) continue;
+
+if(title && !looksLikeWantedJob(title)) continue;
+
+// Extraire taux depuis titre
+let rate = "";
+const rateMatch = title.match(/(\d{2,3}\s*[-–à]\s*\d{2,3}\s*%|\d{2,3}\s*%)/);
+if(rateMatch){
+const nums = rateMatch[1].match(/\d+/g).map(Number).filter(n => n>=10 && n<=100);
+if(nums.length) rate = rateMatch[1].trim();
+}
+
+// Extraire contrat depuis titre
+let contract = "";
+const contractMatch = title.match(/(CDI|CDD|Temporaire|Fixe)/i);
+if(contractMatch) contract = contractMatch[1];
+
+allOffers.push({
+id: generateServerId(),
+title: title || config.defaultTitle,
+company: config.company,
+location: "Vaud",
+sector: "",
+rate,
+contract,
+source: config.source,
+offerUrl: href,
+url: href,
+date: new Date().toLocaleDateString("fr-CH").split("/").reverse().join("."),
+description: "Descriptif non disponible.",
+salary: ""
+});
+}
+}catch(err){
+console.warn(`Erreur ${config.source} "${keyword}":`, err.message);
+}
+}
+
+console.log(`${config.source}: ${allOffers.length} offres détectées`);
+return allOffers;
+}
+
+async function fetchPosteOffers(){
+return await fetchKeywordOffers({
+source: "La Poste",
+company: "La Poste",
+buildUrl: (q) => `https://career.post.ch/fr/Offres-demploi?q=${q}&location=Vaud`,
+defaultTitle: "Offre La Poste",
+linkPatterns: ["/fr/offres-demploi/", "/job/", "/jobs/", "/career/"]
+});
 }
 
 async function fetchMigrosOffers(){
-
-return await fetchGenericJobPageOffers({
+return await fetchKeywordOffers({
 source: "Migros",
 company: "Migros",
-url: "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants",
+buildUrl: (q) => `https://jobs.migros.ch/fr/recherche?q=${q}&location=Vaud`,
 defaultTitle: "Offre Migros",
-linkPatterns: [
-"/fr/postes-vacants/",
-"/job/",
-"/jobs/"
-]
+linkPatterns: ["/fr/postes-vacants/", "/job/", "/jobs/"]
 });
-
 }
 
 async function fetchNestleOffers(){
-
-return await fetchGenericJobPageOffers({
+return await fetchKeywordOffers({
 source: "Nestlé",
 company: "Nestlé",
-url: "https://www.nestle.ch/fr/emplois",
+buildUrl: (q) => `https://www.nestle.com/jobs/search?q=${q}&location=Vaud`,
 defaultTitle: "Offre Nestlé",
-linkPatterns: [
-"/jobs/",
-"/job/",
-"/emplois",
-"/career",
-"/careers"
-]
+linkPatterns: ["/jobs/", "/job/", "/career", "/emplois"]
 });
-
 }
 
 async function fetchCoopOffers(){
-
-return await fetchGenericJobPageOffers({
+return await fetchKeywordOffers({
 source: "Coop",
 company: "Coop",
-url: "https://jobs.coopjobs.ch/?lang=fr",
+buildUrl: (q) => `https://jobs.coopjobs.ch/?lang=fr&q=${q}`,
 defaultTitle: "Offre Coop",
-linkPatterns: [
-"/job/",
-"/jobs/",
-"/stellen/",
-"jobid"
-]
+linkPatterns: ["/job/", "/jobs/", "/stellen/", "jobid"]
 });
-
 }
 
 function generateServerId(){
@@ -3487,7 +3779,8 @@ indeedOffers,
 linkedinOffers,
 migrosOffers,
 nestleOffers,
-coopOffers
+coopOffers,
+posteOffers
 ] = await Promise.all([
 fetchJobupOffers(),
 fetchVdOffers(),
@@ -3495,7 +3788,8 @@ typeof fetchIndeedOffers === "function" ? fetchIndeedOffers() : Promise.resolve(
 typeof fetchLinkedInOffers === "function" ? fetchLinkedInOffers() : Promise.resolve([]),
 typeof fetchMigrosOffers === "function" ? fetchMigrosOffers() : Promise.resolve([]),
 typeof fetchNestleOffers === "function" ? fetchNestleOffers() : Promise.resolve([]),
-typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
+typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([]),
+typeof fetchPosteOffers === "function" ? fetchPosteOffers() : Promise.resolve([])
 ]);
 
 const allOffers =
@@ -3506,7 +3800,8 @@ deduplicateOffers([
 ...linkedinOffers,
 ...migrosOffers,
 ...nestleOffers,
-...coopOffers
+...coopOffers,
+...posteOffers
 ]);
 
 if(allOffers.length > 0){
