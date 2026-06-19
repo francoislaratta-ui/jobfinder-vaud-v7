@@ -604,19 +604,35 @@ const softwareKeywords = [
 "erp",
 "crm",
 "windows",
-"office"
+"office",
+"microsoft",
+"teams",
+"sharepoint",
+"onenote",
+"access",
+"adobe",
+"office 365",
+"filemaker",
+"pro-concept",
+"hypsis",
+"axapta",
+"timeas",
+"tipee",
+"linux",
+"unix"
 ];
 
 const languageKeywords = [
 "français",
 "anglais",
-"allemand",
-"italien"
+"italien",
+"espagnol"
 ];
 
 const adminKeywords = [
 "gestion administrative",
 "gestion de dossiers",
+"gestion de dossier",
 "facturation",
 "comptabilité",
 "classement",
@@ -626,16 +642,54 @@ const adminKeywords = [
 "téléphone",
 "email",
 "planification",
-"organisation"
+"organisation",
+"administratif",
+"administrative",
+"accueil",
+"réception",
+"secrétariat",
+"bureautique",
+"agenda",
+"courrier",
+"saisie",
+"traitement",
+"commande",
+"caisse",
+"encaissement",
+"logistique",
+"coordination",
+"immobilier",
+"contentieux",
+"statistiques",
+"budget",
+"admission",
+"planning",
+"qualité",
+"stock",
+"commandes clients",
+"gestion financière",
+"secrétaire médical",
+"assistant logistique",
+"employé de commerce",
+"coordinateur réseau"
 ];
 
 const supportKeywords = [
 "support informatique",
 "helpdesk",
 "technicien informatique",
+"technicien réseau",
 "installation",
 "maintenance",
-"dépannage"
+"dépannage",
+"réseau",
+"informatique",
+"système",
+"ticketing",
+"parc informatique",
+"configuration",
+"formation utilisateurs",
+"support utilisateurs"
 ];
 
 softwareKeywords.forEach(keyword => {
@@ -651,12 +705,21 @@ software.push(keyword);
 });
 
 languageKeywords.forEach(keyword => {
+const kw = normalizeText(keyword);
+if(!normalized.includes(kw)) return;
 
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+const weakQualifiers = [
+"scolaire", "notions", "debutant",
+"bases", "elementaire", "basique",
+"rudiments", "niveau scolaire"
+];
+
+const idx = normalized.indexOf(kw);
+const context = normalized.substring(Math.max(0, idx - 40), idx + kw.length + 40);
+
+const isWeak = weakQualifiers.some(q => context.includes(q));
+
+if(!isWeak){
 languages.push(keyword);
 }
 
@@ -1582,11 +1645,12 @@ currentCVAnalysis.skills.length
 ){
 
 const matchingSkills =
-currentCVAnalysis.skills.filter(skill =>
-offerText.includes(
-normalizeText(skill)
-)
-);
+currentCVAnalysis.skills.filter(skill => {
+const skillNorm = normalizeText(skill);
+if(offerText.includes(skillNorm)) return true;
+const words = skillNorm.split(" ").filter(w => w.length > 4);
+return words.length > 0 && words.some(w => offerText.includes(w));
+});
 
 if(matchingSkills.length > 0){
 
@@ -1622,11 +1686,10 @@ currentCVAnalysis.languages.length
 ){
 
 const matchingLanguages =
-currentCVAnalysis.languages.filter(language =>
-offerText.includes(
-normalizeText(language)
-)
-);
+currentCVAnalysis.languages.filter(language => {
+const langNorm = normalizeText(language);
+return offerText.includes(langNorm);
+});
 
 if(matchingLanguages.length > 0){
 
