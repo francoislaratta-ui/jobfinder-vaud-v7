@@ -2907,8 +2907,8 @@ return offers;
 }
 
 /* ==========================================
-SCRAPING SOURCES SUPPLEMENTAIRES V14.6.2
-Même logique que Jobup pour toutes les sources
+SCRAPING SOURCES SUPPLEMENTAIRES V14.6.3
+Même logique que Jobup + nettoyage liens parasites
 Indeed / LinkedIn / Migros / Nestlé / Coop
 ========================================== */
 
@@ -2978,11 +2978,71 @@ return String(value || "")
 .replace(/&amp;/g, "&")
 .replace(/&quot;/g, "\"")
 .replace(/&#39;/g, "'")
+.replace(/&#x27;/g, "'")
 .replace(/&ndash;/g, "-")
 .replace(/&mdash;/g, "-")
 .replace(/–|—/g, "-")
 .replace(/\s+/g, " ")
 .trim();
+
+}
+
+function isBadJobCandidateLink(href, text){
+
+const url =
+String(href || "")
+.toLowerCase();
+
+const label =
+String(text || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "");
+
+const badUrlPatterns = [
+"/career/salaries",
+"/careers/salaries",
+"/addlloc/",
+"addlloc/redirect",
+"campaignid=serp-more",
+"#main",
+"#main-content",
+"#main-footer",
+"#footer",
+"#",
+"/jobs/search-jobs",
+"/de/jobs/search-jobs",
+"/fr/jobs/search-jobs"
+];
+
+const badTextPatterns = [
+"skip to main",
+"skip to main content",
+"deutsch",
+"english",
+"francais",
+"site internet",
+"offre nestle",
+"consultez les offres d'emploi similaires",
+"offres d'emploi similaires",
+"emplois similaires",
+"salary",
+"salaire"
+];
+
+if(badUrlPatterns.some(pattern => url.includes(pattern))){
+return true;
+}
+
+if(badTextPatterns.some(pattern => label.includes(pattern))){
+return true;
+}
+
+if(label.length < 4){
+return true;
+}
+
+return false;
 
 }
 
@@ -3067,6 +3127,22 @@ return "";
 
 }
 
+function extractSalaryFromText(text){
+
+const value =
+cleanOfferTitleText(text);
+
+const salaryMatch =
+value.match(/CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/?\s*(?:an|mois|heure)?/i);
+
+if(salaryMatch){
+return salaryMatch[0].replace(/\s+/g, " ").trim();
+}
+
+return "";
+
+}
+
 function extractContractFromText(text){
 
 const value =
@@ -3098,11 +3174,15 @@ if(value.includes("stage")){
 return "Stage";
 }
 
+if(value.includes("apprentissage")){
+return "Apprentissage";
+}
+
 return "";
 
 }
 
-function normalizeSourceTitle(title, rate, contract){
+function normalizeSourceTitle(title, rate, contract, salary){
 
 let cleanTitle =
 cleanOfferTitleText(title);
@@ -3110,6 +3190,16 @@ cleanOfferTitleText(title);
 if(rate){
 cleanTitle =
 cleanTitle.replace(rate, " ");
+}
+
+if(contract){
+cleanTitle =
+cleanTitle.replace(contract, " ");
+}
+
+if(salary){
+cleanTitle =
+cleanTitle.replace(salary, " ");
 }
 
 cleanTitle =
@@ -3162,6 +3252,10 @@ if(!href){
 continue;
 }
 
+if(isBadJobCandidateLink(href, rawText)){
+continue;
+}
+
 const hrefLower =
 href.toLowerCase();
 
@@ -3193,11 +3287,15 @@ extractRateFromText(combinedText);
 const contract =
 extractContractFromText(combinedText);
 
+const salary =
+extractSalaryFromText(combinedText);
+
 const title =
 normalizeSourceTitle(
 rawText || config.defaultTitle,
 rate,
-contract
+contract,
+salary
 );
 
 offers.push({
@@ -3213,7 +3311,7 @@ offerUrl: href,
 url: href,
 date: new Date().toISOString().split("T")[0],
 description: rawText || "Descriptif non disponible.",
-salary: "",
+salary,
 matchedKeyword: keyword
 });
 
@@ -3238,182 +3336,7 @@ return offers;
 
 }
 
-async function fetchIndeedOffers(){
 
-return await fetchKeywordOffers({
-source: "Indeed",
-company: "Indeed",
-sector: "",
-defaultTitle: "Offre Indeed Vaud",
-buildUrl: keyword =>
-`https://ch-fr.indeed.com/jobs?q=${encodeURIComponent(keyword)}&l=Vaud`,
-linkPatterns: [
-"/viewjob",
-"jk="
-]
-});
-
-}
-
-async function fetchLinkedInOffers(){
-
-return await fetchKeywordOffers({
-source: "LinkedIn",
-company: "LinkedIn",
-sector: "",
-defaultTitle: "Offre LinkedIn Vaud",
-buildUrl: keyword =>
-`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keyword)}&location=Vaud%2C%20Suisse`,
-linkPatterns: [
-"/jobs/view/"
-]
-});
-
-}
-
-async function fetchMigrosOffers(){
-
-return await fetchKeywordOffers({
-source: "Migros",
-company: "Migros",
-sector: "Commerce / Administration",
-defaultTitle: "Offre Migros",
-buildUrl: keyword =>
-`https://jobs.migros.ch/fr/recherche-d-emploi?query=${encodeURIComponent(keyword)}&location=Vaud`,
-linkPatterns: [
-"/fr/postes-vacants/",
-"/fr/jobs/",
-"/job/",
-"/jobs/"
-]
-});
-
-}
-
-async function fetchNestleOffers(){
-
-return await fetchKeywordOffers({
-source: "Nestlé",
-company: "Nestlé",
-sector: "Administration / Industrie",
-defaultTitle: "Offre Nestlé",
-buildUrl: keyword =>
-`https://www.nestle.ch/fr/jobs/search-jobs?keyword=${encodeURIComponent(keyword)}&location=Vaud`,
-linkPatterns: [
-"/jobs/",
-"/job/",
-"/emplois",
-"/career",
-"/careers"
-]
-});
-
-}
-
-async function fetchCoopOffers(){
-
-return await fetchKeywordOffers({
-source: "Coop",
-company: "Coop",
-sector: "Commerce / Administration",
-defaultTitle: "Offre Coop",
-buildUrl: keyword =>
-`https://jobs.coopjobs.ch/search/?q=${encodeURIComponent(keyword)}&location=Vaud&lang=fr`,
-linkPatterns: [
-"/job/",
-"/jobs/",
-"/stellen/",
-"jobid"
-]
-});
-
-}
-
-function generateServerId(){
-return Date.now().toString() +
-Math.random().toString(36).substring(2, 8);
-}
-
-function deduplicateOffers(offers){
-
-const seen = new Set();
-const result = [];
-
-for(const offer of offers){
-
-const key =
-`${offer.title}-${offer.company}-${offer.location}-${offer.offerUrl}`
-.toLowerCase()
-.replace(/\s+/g, "");
-
-if(!seen.has(key)){
-seen.add(key);
-result.push(offer);
-}
-
-}
-
-return result;
-
-}
-
-async function scrapeAllOffers(){
-
-console.log("🔄 Scraping des offres en cours...");
-
-const [
-jobupOffers,
-vdOffers,
-jobscout24Offers,
-indeedOffers,
-linkedinOffers,
-migrosOffers,
-nestleOffers,
-coopOffers
-] = await Promise.all([
-fetchJobupOffers(),
-fetchVdOffers(),
-fetchJobScout24Offers(),
-typeof fetchIndeedOffers === "function" ? fetchIndeedOffers() : Promise.resolve([]),
-typeof fetchLinkedInOffers === "function" ? fetchLinkedInOffers() : Promise.resolve([]),
-typeof fetchMigrosOffers === "function" ? fetchMigrosOffers() : Promise.resolve([]),
-typeof fetchNestleOffers === "function" ? fetchNestleOffers() : Promise.resolve([]),
-typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
-]);
-
-const allOffers =
-deduplicateOffers([
-...jobupOffers,
-...vdOffers,
-...jobscout24Offers,
-...indeedOffers,
-...linkedinOffers,
-...migrosOffers,
-...nestleOffers,
-...coopOffers
-]);
-
-if(allOffers.length > 0){
-
-writeJson(OFFERS_FILE, allOffers);
-
-console.log(
-`✅ ${allOffers.length} offres scrapées et sauvegardées`
-);
-
-console.log(
-`📊 Jobup: ${jobupOffers.length} | VD: ${vdOffers.length} | JobScout24: ${jobscout24Offers.length} | Indeed: ${indeedOffers.length} | LinkedIn: ${linkedinOffers.length} | Migros: ${migrosOffers.length} | Nestlé: ${nestleOffers.length} | Coop: ${coopOffers.length}`
-);
-
-}else{
-
-console.warn(
-"⚠️ Aucune offre récupérée — offers.json conservé"
-);
-
-}
-
-}
 
 /* ==========================================
 DEMARRAGE SERVEUR
