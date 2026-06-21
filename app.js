@@ -1318,57 +1318,66 @@ function applyFilters(){
 
     if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
 
-        result = result.filter(offer => {
+    result = result.filter(offer => {
 
-            const selectedNumbers =
-            selectedTaux
-            .map(value => parseInt(value, 10))
-            .filter(value => !isNaN(value));
+        const selectedNumbers =
+        selectedTaux
+        .map(value => parseInt(value, 10))
+        .filter(value => !isNaN(value));
 
-            if(selectedNumbers.length === 0){
-                return true;
-            }
+        if(selectedNumbers.length === 0){
+            return true;
+        }
 
-            const rateText =
-            normalizeText(`
-            ${offer.rate || ""}
-            ${offer.title || ""}
-            ${offer.description || ""}
-            `);
+        const rateText =
+        normalizeText(`
+        ${offer.rate || ""}
+        ${offer.title || ""}
+        `);
 
-            const numbers =
-            rateText.match(/\b(10|20|30|40|50|60|70|80|90|100)\b/g);
+        const rangeMatch =
+        rateText.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*[-–]\s*(10|20|30|40|50|60|70|80|90|100)\b/);
 
-            if(!numbers){
-                return true;
-            }
+        if(rangeMatch){
 
-            const rateNumbers =
-            numbers.map(Number);
+            const minRate =
+            Math.min(
+                Number(rangeMatch[1]),
+                Number(rangeMatch[2])
+            );
 
-            if(rateNumbers.length >= 2){
+            const maxRate =
+            Math.max(
+                Number(rangeMatch[1]),
+                Number(rangeMatch[2])
+            );
 
-                const minRate =
-                Math.min(...rateNumbers);
+            return selectedNumbers.some(selected =>
+                selected >= minRate &&
+                selected <= maxRate
+            );
 
-                const maxRate =
-                Math.max(...rateNumbers);
+        }
 
-                return selectedNumbers.some(selected =>
-                    selected >= minRate &&
-                    selected <= maxRate
-                );
+        const singleMatches =
+        rateText.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*%?\b/g);
 
-            }
+        if(!singleMatches){
+            return true;
+        }
 
-            const singleRate =
-            rateNumbers[0];
+        const rateNumbers =
+        singleMatches
+        .map(value => parseInt(value, 10))
+        .filter(value => !isNaN(value));
 
-            return selectedNumbers.includes(singleRate);
+        return rateNumbers.some(rate =>
+            selectedNumbers.includes(rate)
+        );
 
-        });
+    });
 
-    }
+}
 
     if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
 
