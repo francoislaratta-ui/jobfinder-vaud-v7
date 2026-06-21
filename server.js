@@ -2907,8 +2907,8 @@ return offers;
 }
 
 /* ==========================================
-SCRAPING SOURCES SUPPLEMENTAIRES V14.6.3
-Même logique que Jobup + nettoyage liens parasites
+SCRAPING SOURCES SUPPLEMENTAIRES V14.6.4
+Même logique que Jobup + fonction scrapeAllOffers restaurée
 Indeed / LinkedIn / Migros / Nestlé / Coop
 ========================================== */
 
@@ -2990,8 +2990,7 @@ return String(value || "")
 function isBadJobCandidateLink(href, text){
 
 const url =
-String(href || "")
-.toLowerCase();
+String(href || "").toLowerCase();
 
 const label =
 String(text || "")
@@ -3009,15 +3008,11 @@ const badUrlPatterns = [
 "#main-content",
 "#main-footer",
 "#footer",
-"#",
-"/jobs/search-jobs",
-"/de/jobs/search-jobs",
-"/fr/jobs/search-jobs"
+"/jobs/search-jobs"
 ];
 
 const badTextPatterns = [
 "skip to main",
-"skip to main content",
 "deutsch",
 "english",
 "francais",
@@ -3030,19 +3025,11 @@ const badTextPatterns = [
 "salaire"
 ];
 
-if(badUrlPatterns.some(pattern => url.includes(pattern))){
-return true;
-}
-
-if(badTextPatterns.some(pattern => label.includes(pattern))){
-return true;
-}
-
-if(label.length < 4){
-return true;
-}
-
-return false;
+return (
+badUrlPatterns.some(pattern => url.includes(pattern)) ||
+badTextPatterns.some(pattern => label.includes(pattern)) ||
+label.length < 4
+);
 
 }
 
@@ -3057,7 +3044,7 @@ String(text || "")
 const keywords =
 getSharedSearchKeywords();
 
-const exactMatch =
+if(
 keywords.some(keyword =>
 value.includes(
 String(keyword)
@@ -3065,9 +3052,8 @@ String(keyword)
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
 )
-);
-
-if(exactMatch){
+)
+){
 return true;
 }
 
@@ -3135,11 +3121,9 @@ cleanOfferTitleText(text);
 const salaryMatch =
 value.match(/CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/?\s*(?:an|mois|heure)?/i);
 
-if(salaryMatch){
-return salaryMatch[0].replace(/\s+/g, " ").trim();
-}
-
-return "";
+return salaryMatch
+? salaryMatch[0].replace(/\s+/g, " ").trim()
+: "";
 
 }
 
@@ -3151,18 +3135,11 @@ String(text || "")
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "");
 
-if(
-value.includes("duree indeterminee") ||
-value.includes("emploi fixe") ||
-value.includes("cdi")
-){
+if(value.includes("cdi") || value.includes("emploi fixe") || value.includes("duree indeterminee")){
 return "CDI";
 }
 
-if(
-value.includes("duree determinee") ||
-value.includes("cdd")
-){
+if(value.includes("cdd") || value.includes("duree determinee")){
 return "CDD";
 }
 
@@ -3187,20 +3164,11 @@ function normalizeSourceTitle(title, rate, contract, salary){
 let cleanTitle =
 cleanOfferTitleText(title);
 
-if(rate){
-cleanTitle =
-cleanTitle.replace(rate, " ");
+[rate, contract, salary].forEach(value => {
+if(value){
+cleanTitle = cleanTitle.replace(value, " ");
 }
-
-if(contract){
-cleanTitle =
-cleanTitle.replace(contract, " ");
-}
-
-if(salary){
-cleanTitle =
-cleanTitle.replace(salary, " ");
-}
+});
 
 cleanTitle =
 cleanTitle
@@ -3235,10 +3203,7 @@ const html =
 await fetchExternalText(searchUrl);
 
 const anchors =
-extractAnchorsFromHtml(
-html,
-searchUrl
-);
+extractAnchorsFromHtml(html, searchUrl);
 
 for(const anchor of anchors){
 
@@ -3248,11 +3213,7 @@ anchor.href || "";
 const rawText =
 cleanOfferTitleText(anchor.text || "");
 
-if(!href){
-continue;
-}
-
-if(isBadJobCandidateLink(href, rawText)){
+if(!href || isBadJobCandidateLink(href, rawText)){
 continue;
 }
 
@@ -3291,12 +3252,7 @@ const salary =
 extractSalaryFromText(combinedText);
 
 const title =
-normalizeSourceTitle(
-rawText || config.defaultTitle,
-rate,
-contract,
-salary
-);
+normalizeSourceTitle(rawText || config.defaultTitle, rate, contract, salary);
 
 offers.push({
 id: generateServerId(),
@@ -3319,20 +3275,186 @@ matchedKeyword: keyword
 
 }catch(error){
 
-console.warn(
-`${config.source} erreur keyword "${keyword}" :`,
-error.message
-);
+console.warn(`${config.source} erreur keyword "${keyword}" :`, error.message);
 
 }
 
 }
 
-console.log(
-`${config.source}: ${offers.length} offres détectées avec critères Jobup`
-);
+console.log(`${config.source}: ${offers.length} offres détectées avec critères Jobup`);
 
 return offers;
+
+}
+
+async function fetchIndeedOffers(){
+
+return await fetchKeywordOffers({
+source: "Indeed",
+company: "Indeed",
+sector: "",
+defaultTitle: "Offre Indeed Vaud",
+buildUrl: keyword =>
+`https://ch-fr.indeed.com/jobs?q=${encodeURIComponent(keyword)}&l=Vaud`,
+linkPatterns: [
+"/viewjob",
+"jk="
+]
+});
+
+}
+
+async function fetchLinkedInOffers(){
+
+return await fetchKeywordOffers({
+source: "LinkedIn",
+company: "LinkedIn",
+sector: "",
+defaultTitle: "Offre LinkedIn Vaud",
+buildUrl: keyword =>
+`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keyword)}&location=Vaud%2C%20Suisse`,
+linkPatterns: [
+"/jobs/view/"
+]
+});
+
+}
+
+async function fetchMigrosOffers(){
+
+return await fetchKeywordOffers({
+source: "Migros",
+company: "Migros",
+sector: "Commerce / Administration",
+defaultTitle: "Offre Migros",
+buildUrl: keyword =>
+`https://jobs.migros.ch/fr/recherche-d-emploi?query=${encodeURIComponent(keyword)}`,
+linkPatterns: [
+"/fr/postes-vacants/",
+"/fr/jobs/",
+"/job/",
+"/jobs/"
+]
+});
+
+}
+
+async function fetchNestleOffers(){
+
+return await fetchKeywordOffers({
+source: "Nestlé",
+company: "Nestlé",
+sector: "Administration / Industrie",
+defaultTitle: "Offre Nestlé",
+buildUrl: keyword =>
+`https://www.nestle.ch/fr/jobs/search-jobs?keyword=${encodeURIComponent(keyword)}&location=Vaud`,
+linkPatterns: [
+"/jobs/jobdetails",
+"/jobs/details",
+"/jobdetails"
+]
+});
+
+}
+
+async function fetchCoopOffers(){
+
+return await fetchKeywordOffers({
+source: "Coop",
+company: "Coop",
+sector: "Commerce / Administration",
+defaultTitle: "Offre Coop",
+buildUrl: keyword =>
+`https://jobs.coopjobs.ch/search/?q=${encodeURIComponent(keyword)}&location=Vaud&lang=fr`,
+linkPatterns: [
+"/job/",
+"/jobs/",
+"/stellen/",
+"jobid"
+]
+});
+
+}
+
+function generateServerId(){
+return Date.now().toString() +
+Math.random().toString(36).substring(2, 8);
+}
+
+function deduplicateOffers(offers){
+
+const seen = new Set();
+const result = [];
+
+for(const offer of offers){
+
+const key =
+`${offer.title}-${offer.company}-${offer.location}-${offer.offerUrl}`
+.toLowerCase()
+.replace(/\s+/g, "");
+
+if(!seen.has(key)){
+seen.add(key);
+result.push(offer);
+}
+
+}
+
+return result;
+
+}
+
+async function scrapeAllOffers(){
+
+console.log("🔄 Scraping des offres en cours...");
+
+const [
+jobupOffers,
+vdOffers,
+jobscout24Offers,
+indeedOffers,
+linkedinOffers,
+migrosOffers,
+nestleOffers,
+coopOffers
+] = await Promise.all([
+fetchJobupOffers(),
+fetchVdOffers(),
+fetchJobScout24Offers(),
+typeof fetchIndeedOffers === "function" ? fetchIndeedOffers() : Promise.resolve([]),
+typeof fetchLinkedInOffers === "function" ? fetchLinkedInOffers() : Promise.resolve([]),
+typeof fetchMigrosOffers === "function" ? fetchMigrosOffers() : Promise.resolve([]),
+typeof fetchNestleOffers === "function" ? fetchNestleOffers() : Promise.resolve([]),
+typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
+]);
+
+const allOffers =
+deduplicateOffers([
+...jobupOffers,
+...vdOffers,
+...jobscout24Offers,
+...indeedOffers,
+...linkedinOffers,
+...migrosOffers,
+...nestleOffers,
+...coopOffers
+]);
+
+if(allOffers.length > 0){
+
+writeJson(OFFERS_FILE, allOffers);
+
+console.log(`✅ ${allOffers.length} offres scrapées et sauvegardées`);
+
+console.log(
+`📊 Jobup: ${jobupOffers.length} | VD: ${vdOffers.length} | JobScout24: ${jobscout24Offers.length} | Indeed: ${indeedOffers.length} | LinkedIn: ${linkedinOffers.length} | Migros: ${migrosOffers.length} | Nestlé: ${nestleOffers.length} | Coop: ${coopOffers.length}`
+);
+
+}else{
+
+console.warn("⚠️ Aucune offre récupérée — offers.json conservé");
+
+}
 
 }
 
