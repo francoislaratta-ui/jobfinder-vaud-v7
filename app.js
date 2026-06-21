@@ -116,6 +116,68 @@ return String(value || "")
 .trim();
 }
 
+function extractNormalizedRate(offer){
+
+const source =
+String(`
+${offer.rate || ""}
+${offer.workRate || ""}
+${offer.title || ""}
+${offer.description || ""}
+`)
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "")
+.replace(/&nbsp;/g, " ")
+.replace(/&#160;/g, " ")
+.replace(/&#8203;/g, "")
+.replace(/&amp;/g, "&")
+.replace(/&ndash;/g, "-")
+.replace(/&mdash;/g, "-")
+.replace(/–|—/g, "-")
+.replace(/\s+a\s+/g, " - ")
+.replace(/\s+à\s+/g, " - ")
+.replace(/\s+/g, " ")
+.trim();
+
+const rangePatterns = [
+/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+/\b(10|20|30|40|50|60|70|80|90|100)\s*%\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+/\b(10|20|30|40|50|60|70|80|90|100)\s*(?:a|à)\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+/\b(10|20|30|40|50|60|70|80|90|100)\s*%\s*(?:a|à)\s*(10|20|30|40|50|60|70|80|90|100)\s*%/
+];
+
+for(const pattern of rangePatterns){
+const rangeMatch = source.match(pattern);
+if(rangeMatch){
+const minRate = Math.min(Number(rangeMatch[1]), Number(rangeMatch[2]));
+const maxRate = Math.max(Number(rangeMatch[1]), Number(rangeMatch[2]));
+const values = [];
+for(let rate = minRate; rate <= maxRate; rate += 10){
+values.push(rate);
+}
+return { hasRate:true, type:"range", min:minRate, max:maxRate, values, label:`${minRate}-${maxRate}%` };
+}
+}
+
+const labeledMatch = source.match(
+/(?:taux d'activite|taux d occupation|taux|temps de travail|activite)\s*:?\s*(10|20|30|40|50|60|70|80|90|100)\s*%/
+);
+if(labeledMatch){
+const rate = Number(labeledMatch[1]);
+return { hasRate:true, type:"single", min:rate, max:rate, values:[rate], label:`${rate}%` };
+}
+
+const singleMatch = source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*%/);
+if(singleMatch){
+const rate = Number(singleMatch[1]);
+return { hasRate:true, type:"single", min:rate, max:rate, values:[rate], label:`${rate}%` };
+}
+
+return { hasRate:false, type:"", min:null, max:null, values:[], label:"" };
+
+}
+
 function containsNormalized(source, search){
 const s = normalizeText(source);
 const q = normalizeText(search);
@@ -885,6 +947,23 @@ behavior: "smooth"
 }
 }
 
+function handleTempsPlein(checkbox){
+
+const taux = document.querySelectorAll('input[name="taux"]');
+
+taux.forEach(cb => {
+cb.checked = false;
+});
+
+if(checkbox.checked){
+const taux100 = document.getElementById("taux100");
+if(taux100) taux100.checked = true;
+}
+
+applyFilters();
+
+}
+
 /* ==========================================
 INITIALISATION UI
 ========================================== */
@@ -1235,15 +1314,12 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        if(!offer.rate) return true;
-        const rateNorm = normalizeText(offer.rate);
+        const rateInfo = extractNormalizedRate(offer);
+        if(!rateInfo.hasRate) return true;
         return selectedTaux.some(t => {
             const tNum = parseInt(t);
-            if(isNaN(tNum)) return containsNormalized(offer.rate, t);
-            const match = rateNorm.match(/(\d+)/g);
-            if(!match) return false;
-            const nums = match.map(Number);
-            return nums.some(n => Math.abs(n - tNum) <= 10);
+            if(isNaN(tNum)) return false;
+            return rateInfo.values.includes(tNum);
         });
     });
 }
