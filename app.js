@@ -1246,88 +1246,227 @@ function applyFilters(){
 "conseiller clientele"
 ];
 
-const selectAllMetiers = document.getElementById("selectAllMetiers");
+    const selectAllMetiers =
+    document.getElementById("selectAllMetiers");
 
-if(selectedMetiers.length > 0){
-    result = result.filter(offer => {
-        const titleNorm = normalizeText(offer.title);
-        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
-            k.split(" ").filter(w => w.length > 4)
-            .some(w => titleNorm.includes(w))
-        );
-        if(selectAllMetiers?.checked) return matchesKeyword;
-        const matchesMetier = selectedMetiers.some(m =>
-            containsNormalized(offer.title, m)
-        );
-        return matchesKeyword || matchesMetier;
-    });
-}
+    if(selectedMetiers.length > 0){
 
-if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
-    result = result.filter(offer =>
-        !offer.sector ||
-        selectedSecteurs.some(s =>
-            containsNormalized(offer.sector, s)
-        )
-    );
-}
+        result = result.filter(offer => {
 
-if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
-    result = result.filter(offer => {
-        if(!offer.rate) return true;
-        const rateNorm = normalizeText(offer.rate);
-        return selectedTaux.some(t => {
-            const tNum = parseInt(t);
-            if(isNaN(tNum)) return containsNormalized(offer.rate, t);
-            const match = rateNorm.match(/(\d+)/g);
-            if(!match) return false;
-            const nums = match.map(Number);
-            return nums.some(n => Math.abs(n - tNum) <= 10);
+            const offerTitle =
+            normalizeText(offer.title || "");
+
+            const offerText =
+            normalizeText(`
+            ${offer.title || ""}
+            ${offer.company || ""}
+            ${offer.sector || ""}
+            ${offer.description || ""}
+            `);
+
+            const matchesKeyword =
+            SCRAPE_KEYWORDS.some(keyword => {
+
+                const words =
+                normalizeText(keyword)
+                .split(" ")
+                .filter(word => word.length > 3);
+
+                return words.length &&
+                words.every(word => offerText.includes(word));
+
+            });
+
+            if(selectAllMetiers?.checked){
+                return matchesKeyword;
+            }
+
+            const matchesMetier =
+            selectedMetiers.some(metier => {
+
+                const words =
+                normalizeText(metier)
+                .split(" ")
+                .filter(word => word.length > 3);
+
+                return words.length &&
+                words.every(word => offerText.includes(word));
+
+            });
+
+            return matchesMetier;
+
         });
-    });
-}
 
-if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
-    result = result.filter(offer =>
-        !offer.contract ||
-        selectedContrats.some(c =>
-            containsNormalized(offer.contract, c)
-        )
-    );
-}
+    }
 
-if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
-    result = result.filter(offer =>
-        !offer.location ||
-        selectedRegions.some(r =>
-            containsNormalized(offer.location, r)
-        )
-    );
-}
+    if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
-if(selectedSources.length > 0 && selectedSources.length < totalSources){
-    result = result.filter(offer =>
-        !offer.source ||
-        selectedSources.some(s =>
-            containsNormalized(offer.source, s)
-        )
-    );
-}
+        result = result.filter(offer => {
+
+            if(!offer.sector){
+                return true;
+            }
+
+            return selectedSecteurs.some(secteur =>
+                containsNormalized(offer.sector, secteur)
+            );
+
+        });
+
+    }
+
+    if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
+
+        result = result.filter(offer => {
+
+            const selectedNumbers =
+            selectedTaux
+            .map(value => parseInt(value, 10))
+            .filter(value => !isNaN(value));
+
+            if(selectedNumbers.length === 0){
+                return true;
+            }
+
+            const rateText =
+            normalizeText(`
+            ${offer.rate || ""}
+            ${offer.title || ""}
+            ${offer.description || ""}
+            `);
+
+            const numbers =
+            rateText.match(/\b(10|20|30|40|50|60|70|80|90|100)\b/g);
+
+            if(!numbers){
+                return true;
+            }
+
+            const rateNumbers =
+            numbers.map(Number);
+
+            if(rateNumbers.length >= 2){
+
+                const minRate =
+                Math.min(...rateNumbers);
+
+                const maxRate =
+                Math.max(...rateNumbers);
+
+                return selectedNumbers.some(selected =>
+                    selected >= minRate &&
+                    selected <= maxRate
+                );
+
+            }
+
+            const singleRate =
+            rateNumbers[0];
+
+            return selectedNumbers.includes(singleRate);
+
+        });
+
+    }
+
+    if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
+
+        result = result.filter(offer => {
+
+            if(!offer.contract && !offer.title && !offer.description){
+                return true;
+            }
+
+            const contractText =
+            normalizeText(`
+            ${offer.contract || ""}
+            ${offer.title || ""}
+            ${offer.description || ""}
+            `);
+
+            return selectedContrats.some(contrat => {
+
+                const normalizedContrat =
+                normalizeText(contrat);
+
+                if(normalizedContrat === "cdi"){
+                    return (
+                        contractText.includes("cdi") ||
+                        contractText.includes("duree indeterminee") ||
+                        contractText.includes("emploi fixe")
+                    );
+                }
+
+                if(normalizedContrat === "cdd"){
+                    return (
+                        contractText.includes("cdd") ||
+                        contractText.includes("duree determinee")
+                    );
+                }
+
+                return contractText.includes(normalizedContrat);
+
+            });
+
+        });
+
+    }
+
+    if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
+
+        result = result.filter(offer => {
+
+            if(!offer.location && !offer.address && !offer.description){
+                return true;
+            }
+
+            const regionText =
+            normalizeText(`
+            ${offer.location || ""}
+            ${offer.address || ""}
+            ${offer.description || ""}
+            `);
+
+            return selectedRegions.some(region =>
+                regionText.includes(normalizeText(region))
+            );
+
+        });
+
+    }
+
+    if(selectedSources.length > 0 && selectedSources.length < totalSources){
+
+        result = result.filter(offer =>
+            !offer.source ||
+            selectedSources.some(source =>
+                containsNormalized(offer.source, source)
+            )
+        );
+
+    }
 
     // Match IA = tri uniquement, pas de filtre
 
     if(activeFilters.sort === "match"){
+
         result.sort((a, b) =>
             calculateMatch(b) - calculateMatch(a)
         );
+
     }else if(activeFilters.sort === "date"){
+
         result.sort((a, b) =>
             new Date(b.date) - new Date(a.date)
         );
+
     }else if(activeFilters.sort === "company"){
+
         result.sort((a, b) =>
             (a.company || "").localeCompare(b.company || "", "fr")
         );
+
     }
 
     filteredOffers = result;
@@ -1339,6 +1478,7 @@ if(selectedSources.length > 0 && selectedSources.length < totalSources){
     saveFilters();
 
 }
+
 
 /* ==========================================
 RESET FILTERS
