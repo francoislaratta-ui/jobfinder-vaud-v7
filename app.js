@@ -1320,41 +1320,68 @@ function applyFilters(){
 
     result = result.filter(offer => {
 
-        if(!offer.rate){
+        const selectedNumbers =
+        selectedTaux
+        .map(value => parseInt(value, 10))
+        .filter(value => !isNaN(value));
+
+        if(selectedNumbers.length === 0){
             return true;
         }
 
-        const rateNorm =
-        normalizeText(offer.rate);
+        const rateSource =
+        String(`
+        ${offer.rate || ""}
+        ${offer.title || ""}
+        `)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
 
-        return selectedTaux.some(t => {
+        const rangeMatch =
+        rateSource.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*[-–—]\s*(10|20|30|40|50|60|70|80|90|100)\s*%/);
 
-            const tNum =
-            parseInt(t);
+        if(rangeMatch){
 
-            if(isNaN(tNum)){
-                return containsNormalized(offer.rate, t);
-            }
-
-            const match =
-            rateNorm.match(/(\d+)/g);
-
-            if(!match){
-                return false;
-            }
-
-            const nums =
-            match.map(Number);
-
-            return nums.some(n =>
-                Math.abs(n - tNum) <= 10
+            const minRate =
+            Math.min(
+                Number(rangeMatch[1]),
+                Number(rangeMatch[2])
             );
 
-        });
+            const maxRate =
+            Math.max(
+                Number(rangeMatch[1]),
+                Number(rangeMatch[2])
+            );
+
+            return selectedNumbers.some(selected =>
+                selected >= minRate &&
+                selected <= maxRate
+            );
+
+        }
+
+        const singleMatches =
+        rateSource.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*%/g);
+
+        if(!singleMatches){
+            return true;
+        }
+
+        const rateNumbers =
+        singleMatches
+        .map(value => parseInt(value, 10))
+        .filter(value => !isNaN(value));
+
+        return rateNumbers.some(rate =>
+            selectedNumbers.includes(rate)
+        );
 
     });
 
 }
+
 
     if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
 
