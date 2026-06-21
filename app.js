@@ -1329,51 +1329,21 @@ function applyFilters(){
                 return true;
             }
 
-            const rateSource =
-            String(`
-            ${offer.rate || ""}
-            ${offer.title || ""}
-            `)
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/&#8203;/g, "")
-            .replace(/&nbsp;/g, " ")
-            .replace(/–|—/g, "-")
-            .replace(/\s+/g, " ")
-            .trim();
+            const rate =
+            offer.normalizedRate || {
+                hasRate:false,
+                min:null,
+                max:null
+            };
 
-            const numbers =
-            rateSource.match(/\b(10|20|30|40|50|60|70|80|90|100)\b/g);
-
-            if(!numbers){
-                return true;
+            if(!rate.hasRate){
+                return false;
             }
 
-            const rateNumbers =
-            numbers
-            .map(Number)
-            .filter(number => !isNaN(number));
-
-            if(rateNumbers.length >= 2){
-
-                const minRate =
-                Math.min(...rateNumbers);
-
-                const maxRate =
-                Math.max(...rateNumbers);
-
-                return selectedNumbers.some(selected =>
-                    selected >= minRate &&
-                    selected <= maxRate
-                );
-
-            }
-
-            const singleRate =
-            rateNumbers[0];
-
-            return selectedNumbers.includes(singleRate);
+            return selectedNumbers.some(selected =>
+                selected >= rate.min &&
+                selected <= rate.max
+            );
 
         });
 
@@ -1487,7 +1457,6 @@ function applyFilters(){
     saveFilters();
 
 }
-
 
 /* ==========================================
 RESET FILTERS
@@ -2165,8 +2134,86 @@ Array.isArray(data)
 ? data
 : [];
 
+function extractNormalizedRate(offer){
+
+const source =
+String(`
+${offer.rate || ""}
+${offer.workRate || ""}
+${offer.title || ""}
+`)
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "")
+.replace(/&nbsp;/g, " ")
+.replace(/&#8203;/g, "")
+.replace(/–|—/g, "-")
+.replace(/\ba\b/g, "-")
+.replace(/\s+/g, " ")
+.trim();
+
+const rangeMatch =
+source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%?/);
+
+if(rangeMatch){
+
+const minRate =
+Math.min(
+Number(rangeMatch[1]),
+Number(rangeMatch[2])
+);
+
+const maxRate =
+Math.max(
+Number(rangeMatch[1]),
+Number(rangeMatch[2])
+);
+
+return {
+hasRate:true,
+type:"range",
+min:minRate,
+max:maxRate,
+values:[minRate,maxRate],
+label:`${minRate}-${maxRate}%`
+};
+
+}
+
+const singleMatch =
+source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*%/);
+
+if(singleMatch){
+
+const rate =
+Number(singleMatch[1]);
+
+return {
+hasRate:true,
+type:"single",
+min:rate,
+max:rate,
+values:[rate],
+label:`${rate}%`
+};
+
+}
+
+return {
+hasRate:false,
+type:"",
+min:null,
+max:null,
+values:[],
+label:""
+};
+
+}
+
 offers =
-offers.map(offer => ({
+offers.map(offer => {
+
+const normalizedOffer = {
 ...offer,
 
 id:
@@ -2234,13 +2281,28 @@ offer.profile ||
 offer.mission ||
 offer.responsibilities ||
 "Descriptif non disponible."
-}));
+};
+
+return {
+...normalizedOffer,
+normalizedRate:
+extractNormalizedRate(normalizedOffer)
+};
+
+});
 
 offers =
 await discoverRealOfferUrls(offers);
 
 offers =
 await enrichOffersDescriptions(offers);
+
+offers =
+offers.map(offer => ({
+...offer,
+normalizedRate:
+extractNormalizedRate(offer)
+}));
 
 detectNewOffers();
 
@@ -2289,6 +2351,7 @@ Ouvre la console du navigateur pour voir le détail technique.
 }
 
 }
+
 
 /* ==========================================
 ACTUALISER OFFRES V14.6
