@@ -22,7 +22,7 @@ seenOffers: "jobfinder_seen_offers"
 CONFIGURATION
 ========================================== */
 
-const APP_VERSION = "14.6.0";
+const APP_VERSION = "14.2.4";
 
 const WEEKLY_TARGET = 3;
 const MONTHLY_TARGET = 12;
@@ -106,7 +106,6 @@ return String(value || "")
 
 function normalizeText(value){
 return String(value || "")
-.replace(/[\u200B\uFEFF\u00A0]/g, " ")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
@@ -177,16 +176,8 @@ let deferredPrompt = null;
 let bestOffer = null;
 let filteredOffers = [];
 let employersList = [];
-
 let newOffers = [];
-
-let seenOffers =
-safeArray(
-safeJSON(
-localStorage.getItem(STORAGE_KEYS.seenOffers),
-[]
-)
-);
+let seenOffers = safeArray(safeJSON(getStorage(STORAGE_KEYS.seenOffers), []));
 
 /* ==========================================
 PROFIL IA V14.6.0
@@ -586,29 +577,14 @@ const softwareKeywords = [
 "erp",
 "crm",
 "windows",
-"office",
-"office 365",
-"filemaker",
-"pro-concept",
-"hypsis",
-"axapta",
-"timeas",
-"tipee",
-"linux",
-"unix"
+"office"
 ];
 
 const languageKeywords = [
 "français",
 "anglais",
+"allemand",
 "italien"
-];
-
-const weakLanguageQualifiers = [
-"scolaire",
-"notions",
-"debutant",
-"bases"
 ];
 
 const adminKeywords = [
@@ -623,16 +599,7 @@ const adminKeywords = [
 "téléphone",
 "email",
 "planification",
-"organisation",
-"accueil",
-"réception",
-"secrétariat",
-"bureautique",
-"agenda",
-"contentieux",
-"budget",
-"admission",
-"planning"
+"organisation"
 ];
 
 const supportKeywords = [
@@ -641,10 +608,7 @@ const supportKeywords = [
 "technicien informatique",
 "installation",
 "maintenance",
-"dépannage",
-"parc informatique",
-"configuration",
-"formation utilisateurs"
+"dépannage"
 ];
 
 softwareKeywords.forEach(keyword => {
@@ -661,14 +625,11 @@ software.push(keyword);
 
 languageKeywords.forEach(keyword => {
 
-const keyNorm = normalizeText(keyword);
-if(!normalized.includes(keyNorm)) return;
-
-// Vérifier contexte : si un qualificatif faible précède la langue, ignorer
-const idx = normalized.indexOf(keyNorm);
-const context = normalized.substring(Math.max(0, idx - 40), idx);
-const isWeak = weakLanguageQualifiers.some(q => context.includes(q));
-if(!isWeak){
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
 languages.push(keyword);
 }
 
@@ -1199,200 +1160,138 @@ function applyFilters(){
         ...document.querySelectorAll('input[name="sources"]:checked')
     ].map(cb => cb.value);
 
+    const selectedMatches = [
+        ...document.querySelectorAll('input[name="matches"]:checked')
+    ].map(cb => cb.value);
+
     const totalTaux = document.querySelectorAll('input[name="taux"]').length;
     const totalRegions = document.querySelectorAll('input[name="regions"]').length;
     const totalSources = document.querySelectorAll('input[name="sources"]').length;
     const totalContrats = document.querySelectorAll('input[name="contrats"]').length;
     const totalSecteurs = document.querySelectorAll('input[name="secteurs"]').length;
+    const totalMetiers = document.querySelectorAll('input[name="metiers"]').length;
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
     let result = [...offers];
 
-    console.log("🔍 OFFRES AVANT FILTRES :", result.length);
-    console.log("🔎 SOURCES DISPONIBLES :", [...new Set(result.map(o => o.source))]);
-    console.log("✅ SOURCES COCHÉES :", selectedSources);
+    const SCRAPE_KEYWORDS = [
+"employe de commerce",
+"assistant administratif",
+"assistante administrative",
+"gestionnaire de dossier",
+"gestionnaire administratif",
+"gestionnaire de depot",
+"gestionnaire contentieux",
+"gestionnaire logistique",
+"gestionnaire approvisionnement",
+"technicien informatique",
+"technicien support",
+"technicien maintenance",
+"technicien systeme",
+"technicien alarme",
+"support informatique",
+"support utilisateur",
+"it support",
+"network support",
+"specialiste support",
+"helpdesk",
+"back office",
+"collaborateur administratif",
+"collaborateur service",
+"coordinateur administratif",
+"administrateur gestionnaire",
+"employe administratif",
+"assistant de direction",
+"assistant rh",
+"conseiller clientele"
+];
 
-    if(selectedMetiers.length > 0){
+const selectAllMetiers = document.getElementById("selectAllMetiers");
 
-        result = result.filter(offer => {
+if(selectedMetiers.length > 0){
+    result = result.filter(offer => {
+        const titleNorm = normalizeText(offer.title);
+        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
+            k.split(" ").filter(w => w.length > 4)
+            .some(w => titleNorm.includes(w))
+        );
+        if(selectAllMetiers?.checked) return matchesKeyword;
+        const matchesMetier = selectedMetiers.some(m =>
+            containsNormalized(offer.title, m)
+        );
+        return matchesKeyword || matchesMetier;
+    });
+}
 
-            const offerText =
-            normalizeText(`
-            ${offer.title || ""}
-            ${offer.company || ""}
-            ${offer.sector || ""}
-            ${offer.description || ""}
-            ${offer.matchedKeyword || ""}
-            `);
+if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
+    result = result.filter(offer =>
+        !offer.sector ||
+        selectedSecteurs.some(s =>
+            containsNormalized(offer.sector, s)
+        )
+    );
+}
 
-            return selectedMetiers.some(metier => {
-
-                const words =
-                normalizeText(metier)
-                .split(" ")
-                .filter(word => word.length > 3);
-
-                return words.length &&
-                words.every(word => offerText.includes(word));
-
-            });
-
+if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
+    result = result.filter(offer => {
+        if(!offer.rate) return true;
+        const rateNorm = normalizeText(offer.rate);
+        return selectedTaux.some(t => {
+            const tNum = parseInt(t);
+            if(isNaN(tNum)) return containsNormalized(offer.rate, t);
+            const match = rateNorm.match(/(\d+)/g);
+            if(!match) return false;
+            const nums = match.map(Number);
+            return nums.some(n => Math.abs(n - tNum) <= 10);
         });
+    });
+}
 
-    }
+if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
+    result = result.filter(offer =>
+        !offer.contract ||
+        selectedContrats.some(c =>
+            containsNormalized(offer.contract, c)
+        )
+    );
+}
 
-    if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
+if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
+    result = result.filter(offer =>
+        !offer.location ||
+        selectedRegions.some(r =>
+            containsNormalized(offer.location, r)
+        )
+    );
+}
 
-        result = result.filter(offer => {
+if(selectedSources.length > 0 && selectedSources.length < totalSources){
+    result = result.filter(offer =>
+        !offer.source ||
+        selectedSources.some(s =>
+            containsNormalized(offer.source, s)
+        )
+    );
+}
 
-            if(!offer.sector){
-                return true;
-            }
-
-            return selectedSecteurs.some(secteur =>
-                containsNormalized(offer.sector, secteur)
-            );
-
-        });
-
-    }
-
-    if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
-
-        const selectedNumbers =
-        selectedTaux
-        .map(value => parseInt(value, 10))
-        .filter(value => !isNaN(value));
-
-        if(selectedNumbers.length > 0){
-
-            result = result.filter(offer => {
-
-                const rate =
-                offer.normalizedRate || extractNormalizedRate(offer);
-
-                if(!rate || !rate.hasRate){
-                    return false;
-                }
-
-                return selectedNumbers.some(selected =>
-                    selected >= rate.min &&
-                    selected <= rate.max
-                );
-
-            });
-
-        }
-
-    }
-
-    if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
-
-        result = result.filter(offer => {
-
-            if(!offer.contract && !offer.title && !offer.description){
-                return true;
-            }
-
-            const contractText =
-            normalizeText(`
-            ${offer.contract || ""}
-            ${offer.title || ""}
-            ${offer.description || ""}
-            `);
-
-            return selectedContrats.some(contrat => {
-
-                const normalizedContrat =
-                normalizeText(contrat);
-
-                if(normalizedContrat === "cdi"){
-                    return (
-                        contractText.includes("cdi") ||
-                        contractText.includes("duree indeterminee") ||
-                        contractText.includes("emploi fixe")
-                    );
-                }
-
-                if(normalizedContrat === "cdd"){
-                    return (
-                        contractText.includes("cdd") ||
-                        contractText.includes("duree determinee")
-                    );
-                }
-
-                return contractText.includes(normalizedContrat);
-
-            });
-
-        });
-
-    }
-
-    if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
-
-        result = result.filter(offer => {
-
-            if(!offer.location && !offer.address && !offer.description){
-                return true;
-            }
-
-            const regionText =
-            normalizeText(`
-            ${offer.location || ""}
-            ${offer.address || ""}
-            ${offer.description || ""}
-            `);
-
-            return selectedRegions.some(region =>
-                regionText.includes(normalizeText(region))
-            );
-
-        });
-
-    }
-
-    if(selectedSources.length > 0 && selectedSources.length < totalSources){
-
-        result = result.filter(offer => {
-
-            if(!offer.source){
-                return true;
-            }
-
-            return selectedSources.some(source =>
-                normalizeText(offer.source) === normalizeText(source)
-            );
-
-        });
-
-    }
+    // Match IA = tri uniquement, pas de filtre
 
     if(activeFilters.sort === "match"){
-
         result.sort((a, b) =>
             calculateMatch(b) - calculateMatch(a)
         );
-
     }else if(activeFilters.sort === "date"){
-
         result.sort((a, b) =>
             new Date(b.date) - new Date(a.date)
         );
-
     }else if(activeFilters.sort === "company"){
-
         result.sort((a, b) =>
             (a.company || "").localeCompare(b.company || "", "fr")
         );
-
     }
 
     filteredOffers = result;
-
-    console.log("🎯 OFFRES APRÈS FILTRES :", filteredOffers.length);
-    console.log("🎯 SOURCES APRÈS FILTRES :", [...new Set(filteredOffers.map(o => o.source))]);
 
     renderOffers(filteredOffers);
     updateDashboard();
@@ -1401,7 +1300,6 @@ function applyFilters(){
     saveFilters();
 
 }
-
 
 /* ==========================================
 RESET FILTERS
@@ -2065,9 +1963,7 @@ async function loadOffers(skipRender = false){
 try{
 
 const response =
-await fetch("/api/offers?t=" + Date.now(), {
-cache:"no-store"
-});
+await fetch("/api/offers");
 
 if(!response.ok){
 throw new Error("HTTP " + response.status);
@@ -2081,161 +1977,128 @@ Array.isArray(data)
 ? data
 : [];
 
-console.log("📦 OFFRES API BRUTES :", offers.length);
-console.log("📦 SOURCES API :", [...new Set(offers.map(o => o.source))]);
+offers =
+offers.map(offer => ({
+...offer,
 
-function extractNormalizedRate(offer){
+id:
+String(
+offer.id ||
+offer.externalId ||
+generateId()
+),
 
-const source =
-String(`
-${offer.rate || ""}
-${offer.workRate || ""}
-${offer.title || ""}
-${offer.description || ""}
-`)
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "")
-.replace(/&nbsp;/g, " ")
-.replace(/&#160;/g, " ")
-.replace(/&#8203;/g, "")
-.replace(/&amp;/g, "&")
-.replace(/&ndash;/g, "-")
-.replace(/&mdash;/g, "-")
-.replace(/–|—/g, "-")
-.replace(/\s+a\s+/g, " - ")
-.replace(/\s+à\s+/g, " - ")
-.replace(/\s+/g, " ")
-.trim();
+offerUrl:
+offer.offerUrl ||
+offer.url ||
+offer.link ||
+"",
 
-/* ==========================
-RANGES
-40-60%
-40 à 60 %
-40 % à 60 %
-========================== */
+address:
+offer.address || "",
 
-const rangePatterns = [
+salary:
+offer.salary || "",
 
-/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+source:
+offer.source || "Source inconnue",
 
-/\b(10|20|30|40|50|60|70|80|90|100)\s*%\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+sector:
+offer.sector || "",
 
-/\b(10|20|30|40|50|60|70|80|90|100)\s*(?:a|à)\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+location:
+offer.location ||
+offer.region ||
+"",
 
-/\b(10|20|30|40|50|60|70|80|90|100)\s*%\s*(?:a|à)\s*(10|20|30|40|50|60|70|80|90|100)\s*%/
+rate:
+offer.rate ||
+offer.workRate ||
+"",
 
-];
+contract:
+offer.contract ||
+offer.contractType ||
+"",
 
-for(const pattern of rangePatterns){
+title:
+offer.title || "",
 
-const rangeMatch =
-source.match(pattern);
+company:
+offer.company ||
+offer.employer ||
+"",
 
-if(rangeMatch){
+date:
+offer.date ||
+offer.publishedAt ||
+"",
 
-const minRate =
-Math.min(
-Number(rangeMatch[1]),
-Number(rangeMatch[2])
+description:
+offer.description ||
+offer.details ||
+offer.summary ||
+offer.tasks ||
+offer.text ||
+offer.content ||
+offer.body ||
+offer.profile ||
+offer.mission ||
+offer.responsibilities ||
+"Descriptif non disponible."
+}));
+
+offers =
+await discoverRealOfferUrls(offers);
+
+offers =
+await enrichOffersDescriptions(offers);
+
+filteredOffers = [...offers];
+
+const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
+const hasAny = rawFilters && Object.keys(rawFilters)
+    .filter(k => k !== "sort")
+    .some(k => (rawFilters[k] || []).length > 0);
+
+if(hasAny){
+    restoreSavedFilters();
+}else if(!skipRender){
+    renderOffers(filteredOffers);
+}
+
+updateDashboard();
+updateBestMatch();
+updateNotifications();
+updateStatistics();
+
+}
+catch(error){
+
+console.error(
+"Erreur chargement offres :",
+error
 );
 
-const maxRate =
-Math.max(
-Number(rangeMatch[1]),
-Number(rangeMatch[2])
-);
+offers = [];
+filteredOffers = [];
 
-const values = [];
-
-for(
-let rate = minRate;
-rate <= maxRate;
-rate += 10
-){
-values.push(rate);
-}
-
-return {
-hasRate:true,
-type:"range",
-min:minRate,
-max:maxRate,
-values,
-label:`${minRate}-${maxRate}%`
-};
-
+if(offersContainer){
+offersContainer.innerHTML = `
+<div class="offer-card">
+<div class="offer-title">
+❌ Erreur de chargement des offres
+</div>
+<div class="offer-reasons">
+Ouvre la console du navigateur pour voir le détail technique.
+</div>
+</div>
+`;
 }
 
 }
 
-/* ==========================
-TAUX NOMMÉS
-Taux d'activité : 50%
-Temps de travail : 60%
-Activité : 40%
-========================== */
-
-const labeledMatch =
-source.match(
-/(?:taux d'activite|taux d occupation|taux|temps de travail|activite)\s*:?\s*(10|20|30|40|50|60|70|80|90|100)\s*%/
-);
-
-if(labeledMatch){
-
-const rate =
-Number(labeledMatch[1]);
-
-return {
-hasRate:true,
-type:"single",
-min:rate,
-max:rate,
-values:[rate],
-label:`${rate}%`
-};
-
 }
-
-/* ==========================
-TAUX SIMPLE
-40%
-50%
-60%
-========================== */
-
-const singleMatch =
-source.match(
-/\b(10|20|30|40|50|60|70|80|90|100)\s*%/
-);
-
-if(singleMatch){
-
-const rate =
-Number(singleMatch[1]);
-
-return {
-hasRate:true,
-type:"single",
-min:rate,
-max:rate,
-values:[rate],
-label:`${rate}%`
-};
-
-}
-
-return {
-hasRate:false,
-type:"",
-min:null,
-max:null,
-values:[],
-label:""
-};
-
-}
-
 
 /* ==========================================
 ACTUALISER OFFRES V14.6
@@ -2267,24 +2130,15 @@ RENDER OFFRES
 ========================================== */
 
 function renderOffers(data){
-
 if(!offersContainer){
 return;
 }
 
-const list =
-Array.isArray(data)
-? data
-: [];
-
-console.log("🖥️ renderOffers reçoit :", list.length);
-console.log("🖥️ Sources renderOffers :", [...new Set(list.map(o => o.source))]);
-
 offersContainer.innerHTML = "";
 
-updateResultsSummary(list);
+updateResultsSummary(data);
 
-if(list.length === 0){
+if(!data || data.length === 0){
 offersContainer.innerHTML = `
 <div class="offer-card">
 <div class="offer-title">
@@ -2296,51 +2150,10 @@ Aucune offre trouvée
 return;
 }
 
-list.forEach((offer, index) => {
-
-try{
-
-const card =
-createOfferCard(offer);
-
+data.forEach(offer => {
+const card = createOfferCard(offer);
 offersContainer.appendChild(card);
-
-}catch(error){
-
-console.error("❌ Erreur createOfferCard offre index", index, offer, error);
-
-const fallbackCard =
-document.createElement("div");
-
-fallbackCard.className =
-"offer-card";
-
-fallbackCard.innerHTML = `
-<div class="offer-title">
-⚠️ Offre affichée en mode secours
-</div>
-<div class="offer-company">
-🏢 ${escapeHTML(offer.company || "Entreprise inconnue")}
-</div>
-<div class="offer-location">
-📍 ${escapeHTML(offer.location || "Lieu non renseigné")}
-</div>
-<div class="offer-meta">
-⏰ ${escapeHTML(offer.rate || "Taux non renseigné")} • 📄 ${escapeHTML(offer.contract || "Contrat non renseigné")}
-</div>
-<div class="offer-source">
-🔎 ${escapeHTML(offer.source || "Source inconnue")}
-</div>
-`;
-
-offersContainer.appendChild(fallbackCard);
-
-}
-
 });
-
-console.log("✅ Cartes réellement affichées :", offersContainer.children.length);
-
 }
 
 /* ==========================================

@@ -376,7 +376,7 @@ MEILLEUR MATCH DU JOUR
 
 <div class="objectives-card">
 
-<div
+<<div
 id="aiBestMatchContainer">
 
 Aucun résultat disponible
@@ -686,13 +686,8 @@ TAUX
 <hr class="filter-separator">
 
 <label>
-<input type="checkbox" name="taux" value="Temps plein" id="tempsPlein" onchange="if(this.checked) document.getElementById('taux100').checked = true;">
-Temps plein
-</label>
-
-<label>
-<input type="checkbox" name="taux" value="Temps partiel">
-Temps partiel
+<input type="checkbox" id="tempsPlein" onchange="handleTempsPlein(this)">
+Temps plein (100%)
 </label>
 
 </div>
@@ -1936,13 +1931,13 @@ Suivez vos offres, favoris, candidatures et recommandations IA en temps réel.
 <div class="objectives-card">
 
 <h3>
-🔔 Alertes intelligentes
+🆕 Nouvelles offres
 </h3>
 
 <div
 id="newOffersNotifications">
 
-Aucune nouvelle offre détectée
+Aucune nouvelle offre
 
 </div>
 
@@ -1994,7 +1989,6 @@ Aucune alerte IA
 </div>
 
 </section>
-
 
 <!-- ==========================================
 BOUTONS FLOTTANTS
