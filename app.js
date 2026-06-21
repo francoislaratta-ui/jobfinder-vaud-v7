@@ -1199,62 +1199,23 @@ function applyFilters(){
         ...document.querySelectorAll('input[name="sources"]:checked')
     ].map(cb => cb.value);
 
-    const selectedMatches = [
-        ...document.querySelectorAll('input[name="matches"]:checked')
-    ].map(cb => cb.value);
-
     const totalTaux = document.querySelectorAll('input[name="taux"]').length;
     const totalRegions = document.querySelectorAll('input[name="regions"]').length;
     const totalSources = document.querySelectorAll('input[name="sources"]').length;
     const totalContrats = document.querySelectorAll('input[name="contrats"]').length;
     const totalSecteurs = document.querySelectorAll('input[name="secteurs"]').length;
-    const totalMetiers = document.querySelectorAll('input[name="metiers"]').length;
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
     let result = [...offers];
 
-    const SCRAPE_KEYWORDS = [
-"employe de commerce",
-"assistant administratif",
-"assistante administrative",
-"gestionnaire de dossier",
-"gestionnaire administratif",
-"gestionnaire de depot",
-"gestionnaire contentieux",
-"gestionnaire logistique",
-"gestionnaire approvisionnement",
-"technicien informatique",
-"technicien support",
-"technicien maintenance",
-"technicien systeme",
-"technicien alarme",
-"support informatique",
-"support utilisateur",
-"it support",
-"network support",
-"specialiste support",
-"helpdesk",
-"back office",
-"collaborateur administratif",
-"collaborateur service",
-"coordinateur administratif",
-"administrateur gestionnaire",
-"employe administratif",
-"assistant de direction",
-"assistant rh",
-"conseiller clientele"
-];
-
-    const selectAllMetiers =
-    document.getElementById("selectAllMetiers");
+    console.log("🔍 OFFRES AVANT FILTRES :", result.length);
+    console.log("🔎 SOURCES DISPONIBLES :", [...new Set(result.map(o => o.source))]);
+    console.log("✅ SOURCES COCHÉES :", selectedSources);
 
     if(selectedMetiers.length > 0){
 
         result = result.filter(offer => {
-
-            const offerTitle =
-            normalizeText(offer.title || "");
 
             const offerText =
             normalizeText(`
@@ -1262,27 +1223,10 @@ function applyFilters(){
             ${offer.company || ""}
             ${offer.sector || ""}
             ${offer.description || ""}
+            ${offer.matchedKeyword || ""}
             `);
 
-            const matchesKeyword =
-            SCRAPE_KEYWORDS.some(keyword => {
-
-                const words =
-                normalizeText(keyword)
-                .split(" ")
-                .filter(word => word.length > 3);
-
-                return words.length &&
-                words.every(word => offerText.includes(word));
-
-            });
-
-            if(selectAllMetiers?.checked){
-                return matchesKeyword;
-            }
-
-            const matchesMetier =
-            selectedMetiers.some(metier => {
+            return selectedMetiers.some(metier => {
 
                 const words =
                 normalizeText(metier)
@@ -1293,8 +1237,6 @@ function applyFilters(){
                 words.every(word => offerText.includes(word));
 
             });
-
-            return matchesMetier;
 
         });
 
@@ -1318,34 +1260,30 @@ function applyFilters(){
 
     if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
 
-        result = result.filter(offer => {
+        const selectedNumbers =
+        selectedTaux
+        .map(value => parseInt(value, 10))
+        .filter(value => !isNaN(value));
 
-            const selectedNumbers =
-            selectedTaux
-            .map(value => parseInt(value, 10))
-            .filter(value => !isNaN(value));
+        if(selectedNumbers.length > 0){
 
-            if(selectedNumbers.length === 0){
-                return true;
-            }
+            result = result.filter(offer => {
 
-            const rate =
-            offer.normalizedRate || {
-                hasRate:false,
-                min:null,
-                max:null
-            };
+                const rate =
+                offer.normalizedRate || extractNormalizedRate(offer);
 
-            if(!rate.hasRate){
-                return false;
-            }
+                if(!rate || !rate.hasRate){
+                    return false;
+                }
 
-            return selectedNumbers.some(selected =>
-                selected >= rate.min &&
-                selected <= rate.max
-            );
+                return selectedNumbers.some(selected =>
+                    selected >= rate.min &&
+                    selected <= rate.max
+                );
 
-        });
+            });
+
+        }
 
     }
 
@@ -1417,16 +1355,19 @@ function applyFilters(){
 
     if(selectedSources.length > 0 && selectedSources.length < totalSources){
 
-        result = result.filter(offer =>
-            !offer.source ||
-            selectedSources.some(source =>
-                containsNormalized(offer.source, source)
-            )
-        );
+        result = result.filter(offer => {
+
+            if(!offer.source){
+                return true;
+            }
+
+            return selectedSources.some(source =>
+                normalizeText(offer.source) === normalizeText(source)
+            );
+
+        });
 
     }
-
-    // Match IA = tri uniquement, pas de filtre
 
     if(activeFilters.sort === "match"){
 
@@ -1450,6 +1391,9 @@ function applyFilters(){
 
     filteredOffers = result;
 
+    console.log("🎯 OFFRES APRÈS FILTRES :", filteredOffers.length);
+    console.log("🎯 SOURCES APRÈS FILTRES :", [...new Set(filteredOffers.map(o => o.source))]);
+
     renderOffers(filteredOffers);
     updateDashboard();
     updateBestMatch();
@@ -1457,6 +1401,7 @@ function applyFilters(){
     saveFilters();
 
 }
+
 
 /* ==========================================
 RESET FILTERS
