@@ -2079,6 +2079,9 @@ Array.isArray(data)
 ? data
 : [];
 
+console.log("📦 OFFRES API BRUTES :", offers.length);
+console.log("📦 SOURCES API :", [...new Set(offers.map(o => o.source))]);
+
 function extractNormalizedRate(offer){
 
 const decodeRateText = value =>
@@ -2100,53 +2103,24 @@ String(value || "")
 .replace(/\s+/g, " ")
 .trim();
 
-const strictSource =
+const source =
 decodeRateText(`
 ${offer.rate || ""}
 ${offer.workRate || ""}
-`);
-
-const fallbackSource =
-decodeRateText(`
 ${offer.title || ""}
 ${offer.description || ""}
 `);
-
-const sources = [
-strictSource,
-fallbackSource
-];
-
-for(const source of sources){
-
-if(!source){
-continue;
-}
 
 const rangeMatch =
 source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/);
 
 if(rangeMatch){
 
-const minRate =
-Math.min(
-Number(rangeMatch[1]),
-Number(rangeMatch[2])
-);
-
-const maxRate =
-Math.max(
-Number(rangeMatch[1]),
-Number(rangeMatch[2])
-);
-
+const minRate = Math.min(Number(rangeMatch[1]), Number(rangeMatch[2]));
+const maxRate = Math.max(Number(rangeMatch[1]), Number(rangeMatch[2]));
 const values = [];
 
-for(
-let rate = minRate;
-rate <= maxRate;
-rate += 10
-){
+for(let rate = minRate; rate <= maxRate; rate += 10){
 values.push(rate);
 }
 
@@ -2157,25 +2131,6 @@ min:minRate,
 max:maxRate,
 values,
 label:`${minRate}-${maxRate}%`
-};
-
-}
-
-const labelSingleMatch =
-source.match(/(?:taux d'activite|taux d occupation|taux|temps de travail|activite)\s*:?\s*(10|20|30|40|50|60|70|80|90|100)\s*%/);
-
-if(labelSingleMatch){
-
-const rate =
-Number(labelSingleMatch[1]);
-
-return {
-hasRate:true,
-type:"single",
-min:rate,
-max:rate,
-values:[rate],
-label:`${rate}%`
 };
 
 }
@@ -2199,8 +2154,6 @@ label:`${rate}%`
 
 }
 
-}
-
 return {
 hasRate:false,
 type:"",
@@ -2212,18 +2165,15 @@ label:""
 
 }
 
+window.extractNormalizedRate = extractNormalizedRate;
+
 offers =
 offers.map(offer => {
 
 const normalizedOffer = {
 ...offer,
 
-id:
-String(
-offer.id ||
-offer.externalId ||
-generateId()
-),
+id:String(offer.id || offer.externalId || generateId()),
 
 offerUrl:
 offer.offerUrl ||
@@ -2287,38 +2237,79 @@ offer.responsibilities ||
 
 return {
 ...normalizedOffer,
-normalizedRate:
-extractNormalizedRate(normalizedOffer)
+normalizedRate:extractNormalizedRate(normalizedOffer)
 };
 
 });
 
-offers =
+console.log("✅ APRÈS NORMALISATION :", offers.length);
+
+try{
+
+const beforeDiscovery =
+[...offers];
+
+const discoveredOffers =
 await discoverRealOfferUrls(offers);
 
-offers =
+if(
+Array.isArray(discoveredOffers) &&
+discoveredOffers.length >= beforeDiscovery.length
+){
+offers = discoveredOffers;
+}else{
+console.warn("⚠️ discoverRealOfferUrls a réduit les offres. Liste complète conservée.", {
+avant:beforeDiscovery.length,
+apres:Array.isArray(discoveredOffers) ? discoveredOffers.length : "invalide"
+});
+offers = beforeDiscovery;
+}
+
+}catch(error){
+console.warn("⚠️ discoverRealOfferUrls ignoré :", error.message);
+}
+
+console.log("✅ APRÈS DISCOVERY :", offers.length);
+
+try{
+
+const beforeEnrich =
+[...offers];
+
+const enrichedOffers =
 await enrichOffersDescriptions(offers);
+
+if(
+Array.isArray(enrichedOffers) &&
+enrichedOffers.length >= beforeEnrich.length
+){
+offers = enrichedOffers;
+}else{
+console.warn("⚠️ enrichOffersDescriptions a réduit les offres. Liste complète conservée.", {
+avant:beforeEnrich.length,
+apres:Array.isArray(enrichedOffers) ? enrichedOffers.length : "invalide"
+});
+offers = beforeEnrich;
+}
+
+}catch(error){
+console.warn("⚠️ enrichOffersDescriptions ignoré :", error.message);
+}
+
+console.log("✅ APRÈS ENRICHISSEMENT :", offers.length);
 
 offers =
 offers.map(offer => ({
 ...offer,
-normalizedRate:
-extractNormalizedRate(offer)
+normalizedRate:extractNormalizedRate(offer)
 }));
 
 detectNewOffers();
 
 filteredOffers = [...offers];
 
-const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
-const hasAny = rawFilters && Object.keys(rawFilters)
-    .filter(k => k !== "sort")
-    .some(k => (rawFilters[k] || []).length > 0);
-
-if(hasAny){
-    restoreSavedFilters();
-}else if(!skipRender){
-    renderOffers(filteredOffers);
+if(!skipRender){
+renderOffers(filteredOffers);
 }
 
 updateDashboard();
@@ -2326,13 +2317,13 @@ updateBestMatch();
 updateNotifications();
 updateStatistics();
 
+console.log("🎯 OFFRES AFFICHÉES :", filteredOffers.length);
+console.log("🎯 SOURCES AFFICHÉES :", [...new Set(filteredOffers.map(o => o.source))]);
+
 }
 catch(error){
 
-console.error(
-"Erreur chargement offres :",
-error
-);
+console.error("Erreur chargement offres :", error);
 
 offers = [];
 filteredOffers = [];
@@ -2353,7 +2344,6 @@ Ouvre la console du navigateur pour voir le détail technique.
 }
 
 }
-
 
 /* ==========================================
 ACTUALISER OFFRES V14.6
