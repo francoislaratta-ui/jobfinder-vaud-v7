@@ -2136,24 +2136,50 @@ Array.isArray(data)
 
 function extractNormalizedRate(offer){
 
-const source =
-String(`
-${offer.rate || ""}
-${offer.workRate || ""}
-${offer.title || ""}
-`)
+const decodeRateText = value =>
+String(value || "")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
 .replace(/&nbsp;/g, " ")
+.replace(/&#160;/g, " ")
 .replace(/&#8203;/g, "")
+.replace(/&zwnj;/g, "")
+.replace(/&zwj;/g, "")
+.replace(/&amp;/g, "&")
+.replace(/&ndash;/g, "-")
+.replace(/&mdash;/g, "-")
 .replace(/–|—/g, "-")
-.replace(/\ba\b/g, "-")
+.replace(/\s+a\s+/g, " - ")
+.replace(/\s+à\s+/g, " - ")
 .replace(/\s+/g, " ")
 .trim();
 
+const strictSource =
+decodeRateText(`
+${offer.rate || ""}
+${offer.workRate || ""}
+`);
+
+const fallbackSource =
+decodeRateText(`
+${offer.title || ""}
+${offer.description || ""}
+`);
+
+const sources = [
+strictSource,
+fallbackSource
+];
+
+for(const source of sources){
+
+if(!source){
+continue;
+}
+
 const rangeMatch =
-source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%?/);
+source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/);
 
 if(rangeMatch){
 
@@ -2169,13 +2195,42 @@ Number(rangeMatch[1]),
 Number(rangeMatch[2])
 );
 
+const values = [];
+
+for(
+let rate = minRate;
+rate <= maxRate;
+rate += 10
+){
+values.push(rate);
+}
+
 return {
 hasRate:true,
 type:"range",
 min:minRate,
 max:maxRate,
-values:[minRate,maxRate],
+values,
 label:`${minRate}-${maxRate}%`
+};
+
+}
+
+const labelSingleMatch =
+source.match(/(?:taux d'activite|taux d occupation|taux|temps de travail|activite)\s*:?\s*(10|20|30|40|50|60|70|80|90|100)\s*%/);
+
+if(labelSingleMatch){
+
+const rate =
+Number(labelSingleMatch[1]);
+
+return {
+hasRate:true,
+type:"single",
+min:rate,
+max:rate,
+values:[rate],
+label:`${rate}%`
 };
 
 }
@@ -2196,6 +2251,8 @@ max:rate,
 values:[rate],
 label:`${rate}%`
 };
+
+}
 
 }
 
