@@ -21,7 +21,7 @@ filters: "jobfinder_filters"
 CONFIGURATION
 ========================================== */
 
-const APP_VERSION = "14.2.4";
+const APP_VERSION = "14.6.0";
 
 const WEEKLY_TARGET = 3;
 const MONTHLY_TARGET = 12;
@@ -105,7 +105,7 @@ return String(value || "")
 
 function normalizeText(value){
 return String(value || "")
-.replace(/[\u200B-\u200D\uFEFF\u00A0]/g, " ")
+.replace(/[\u200B\uFEFF\u00A0]/g, " ")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
@@ -190,29 +190,12 @@ targetJobs: [
 "Assistante administrative",
 "Gestionnaire de dossier",
 "Gestionnaire administratif",
-"Gestionnaire",
 "Collaborateur administratif",
 "Collaboratrice administrative",
-"Collaborateur",
 "Technicien informatique",
 "Support informatique",
 "Helpdesk",
-"Back-office",
-"Back office",
-"Administration",
-"Administratif",
-"Administrative",
-"Secrétaire",
-"Réceptionniste",
-"Agent administratif",
-"Coordinateur",
-"Coordinatrice",
-"Opérateur",
-"Spécialiste",
-"Conseiller",
-"Conseillère",
-"Chargé de",
-"Chargée de"
+"Back-office"
 ],
 
 preferredSectors: [
@@ -225,19 +208,7 @@ preferredSectors: [
 "Santé",
 "Assurances",
 "Banque",
-"Collectivités publiques",
-"Public",
-"Commune",
-"Municipal",
-"Canton",
-"Vaud",
-"Lausanne",
-"Finance",
-"Comptabilité",
-"Logistique",
-"Commerce",
-"Ressources humaines",
-"RH"
+"Collectivités publiques"
 ],
 
 preferredRegions: [
@@ -605,12 +576,6 @@ const softwareKeywords = [
 "crm",
 "windows",
 "office",
-"microsoft",
-"teams",
-"sharepoint",
-"onenote",
-"access",
-"adobe",
 "office 365",
 "filemaker",
 "pro-concept",
@@ -625,14 +590,19 @@ const softwareKeywords = [
 const languageKeywords = [
 "français",
 "anglais",
-"italien",
-"espagnol"
+"italien"
+];
+
+const weakLanguageQualifiers = [
+"scolaire",
+"notions",
+"debutant",
+"bases"
 ];
 
 const adminKeywords = [
 "gestion administrative",
 "gestion de dossiers",
-"gestion de dossier",
 "facturation",
 "comptabilité",
 "classement",
@@ -643,53 +613,27 @@ const adminKeywords = [
 "email",
 "planification",
 "organisation",
-"administratif",
-"administrative",
 "accueil",
 "réception",
 "secrétariat",
 "bureautique",
 "agenda",
-"courrier",
-"saisie",
-"traitement",
-"commande",
-"caisse",
-"encaissement",
-"logistique",
-"coordination",
-"immobilier",
 "contentieux",
-"statistiques",
 "budget",
 "admission",
-"planning",
-"qualité",
-"stock",
-"commandes clients",
-"gestion financière",
-"secrétaire médical",
-"assistant logistique",
-"employé de commerce",
-"coordinateur réseau"
+"planning"
 ];
 
 const supportKeywords = [
 "support informatique",
 "helpdesk",
 "technicien informatique",
-"technicien réseau",
 "installation",
 "maintenance",
 "dépannage",
-"réseau",
-"informatique",
-"système",
-"ticketing",
 "parc informatique",
 "configuration",
-"formation utilisateurs",
-"support utilisateurs"
+"formation utilisateurs"
 ];
 
 softwareKeywords.forEach(keyword => {
@@ -705,20 +649,14 @@ software.push(keyword);
 });
 
 languageKeywords.forEach(keyword => {
-const kw = normalizeText(keyword);
-if(!normalized.includes(kw)) return;
 
-const weakQualifiers = [
-"scolaire", "notions", "debutant",
-"bases", "elementaire", "basique",
-"rudiments", "niveau scolaire"
-];
+const keyNorm = normalizeText(keyword);
+if(!normalized.includes(keyNorm)) return;
 
-const idx = normalized.indexOf(kw);
-const context = normalized.substring(Math.max(0, idx - 40), idx + kw.length + 40);
-
-const isWeak = weakQualifiers.some(q => context.includes(q));
-
+// Vérifier contexte : si un qualificatif faible précède la langue, ignorer
+const idx = normalized.indexOf(keyNorm);
+const context = normalized.substring(Math.max(0, idx - 40), idx);
+const isWeak = weakLanguageQualifiers.some(q => context.includes(q));
 if(!isWeak){
 languages.push(keyword);
 }
@@ -912,17 +850,16 @@ UTILITAIRES
 ========================================== */
 
 function formatDate(date){
-if(!date) return "";
+if(!date){
+return "";
+}
+
 try{
-const d = new Date(date);
-if(isNaN(d.getTime())) return String(date);
-const day = String(d.getDate()).padStart(2,"0");
-const month = String(d.getMonth()+1).padStart(2,"0");
-const year = d.getFullYear();
-return day+"."+month+"."+year;
+return new Date(date).toLocaleDateString("fr-CH");
 }catch(e){
 return String(date);
 }
+
 }
 
 function generateId(){
@@ -1266,34 +1203,36 @@ function applyFilters(){
 
     let result = [...offers];
 
-    // Masquer offres expirées (applyBefore dépassé)
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    result = result.filter(offer => {
-        if(!offer.applyBefore) return true;
-        // Format jj.mm.aaaa ou jj/mm/aaaa
-        const parts = offer.applyBefore.replace(/\//g,".").split(".");
-        if(parts.length !== 3) return true;
-        const d = parseInt(parts[0]), m = parseInt(parts[1])-1, y = parseInt(parts[2]);
-        if(isNaN(d)||isNaN(m)||isNaN(y)) return true;
-        const deadline = new Date(y, m, d);
-        return deadline >= today;
-    });
-
-    // Mêmes keywords que Jobup SEARCH_KEYWORDS — source de référence
     const SCRAPE_KEYWORDS = [
 "employe de commerce",
 "assistant administratif",
 "assistante administrative",
 "gestionnaire de dossier",
 "gestionnaire administratif",
+"gestionnaire de depot",
+"gestionnaire contentieux",
+"gestionnaire logistique",
+"gestionnaire approvisionnement",
 "technicien informatique",
+"technicien support",
+"technicien maintenance",
+"technicien systeme",
+"technicien alarme",
 "support informatique",
+"support utilisateur",
+"it support",
+"network support",
+"specialiste support",
 "helpdesk",
-"back-office",
 "back office",
 "collaborateur administratif",
-"collaboratrice administrative"
+"collaborateur service",
+"coordinateur administratif",
+"administrateur gestionnaire",
+"employe administratif",
+"assistant de direction",
+"assistant rh",
+"conseiller clientele"
 ];
 
 const selectAllMetiers = document.getElementById("selectAllMetiers");
@@ -1301,14 +1240,10 @@ const selectAllMetiers = document.getElementById("selectAllMetiers");
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
-        // Chaque keyword doit matcher comme expression complète OU tous ses mots présents
-        const matchesKeyword = SCRAPE_KEYWORDS.some(k => {
-            const kNorm = normalizeText(k);
-            if(titleNorm.includes(kNorm)) return true;
-            // Pour les expressions multi-mots : tous les mots significatifs doivent être présents
-            const words = kNorm.split(" ").filter(w => w.length > 4);
-            return words.length >= 2 && words.every(w => titleNorm.includes(w));
-        });
+        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
+            k.split(" ").filter(w => w.length > 4)
+            .some(w => titleNorm.includes(w))
+        );
         if(selectAllMetiers?.checked) return matchesKeyword;
         const matchesMetier = selectedMetiers.some(m =>
             containsNormalized(offer.title, m)
@@ -1330,18 +1265,13 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
         if(!offer.rate) return true;
         const rateNorm = normalizeText(offer.rate);
-        const numsInRate = (rateNorm.match(/\d+/g) || []).map(Number)
-            .filter(n => n >= 10 && n <= 100);
-        if(!numsInRate.length) return true;
         return selectedTaux.some(t => {
             const tNum = parseInt(t);
             if(isNaN(tNum)) return containsNormalized(offer.rate, t);
-            if(numsInRate.length === 1){
-                return numsInRate[0] === tNum;
-            }
-            const min = Math.min(...numsInRate);
-            const max = Math.max(...numsInRate);
-            return tNum >= min && tNum <= max;
+            const match = rateNorm.match(/(\d+)/g);
+            if(!match) return false;
+            const nums = match.map(Number);
+            return nums.some(n => Math.abs(n - tNum) <= 10);
         });
     });
 }
@@ -1613,7 +1543,6 @@ const rateText =
 String(offer.rate || "");
 
 const rateOk =
-!rateText ||
 userProfile.preferredRates.some(rate =>
 containsNormalized(rateText, rate)
 ) ||
@@ -1648,12 +1577,11 @@ currentCVAnalysis.skills.length
 ){
 
 const matchingSkills =
-currentCVAnalysis.skills.filter(skill => {
-const skillNorm = normalizeText(skill);
-if(offerText.includes(skillNorm)) return true;
-const words = skillNorm.split(" ").filter(w => w.length > 4);
-return words.length > 0 && words.some(w => offerText.includes(w));
-});
+currentCVAnalysis.skills.filter(skill =>
+offerText.includes(
+normalizeText(skill)
+)
+);
 
 if(matchingSkills.length > 0){
 
@@ -1689,10 +1617,11 @@ currentCVAnalysis.languages.length
 ){
 
 const matchingLanguages =
-currentCVAnalysis.languages.filter(language => {
-const langNorm = normalizeText(language);
-return offerText.includes(langNorm);
-});
+currentCVAnalysis.languages.filter(language =>
+offerText.includes(
+normalizeText(language)
+)
+);
 
 if(matchingLanguages.length > 0){
 
@@ -2121,10 +2050,12 @@ offer.contractType ||
 "",
 
 title:
-(offer.title || "").replace(/[\u200B-\u200D\uFEFF\u00A0]/g, " ").replace(/\s+/g, " ").trim(),
+offer.title || "",
 
 company:
-(offer.company || offer.employer || "").replace(/[\u200B-\u200D\uFEFF\u00A0]/g, " ").replace(/\s+/g, " ").trim(),
+offer.company ||
+offer.employer ||
+"",
 
 date:
 offer.date ||
@@ -2303,22 +2234,14 @@ const descHtml = offer.source === "Jobup"
 const formatAddress = (addr) => {
 if(!addr) return "";
 const clean = addr
-.replace(/à propos[^\n]*/gi, "")
-.replace(/Autres recherches[^\n]*/gi, "")
-.replace(/Offres similaires[^\n]*/gi, "")
-.replace(/About this[^\n]*/gi, "")
-.replace(/En savoir plus[^\n]*/gi, "")
-.replace(/JobCloud[^\n]*/gi, "")
-.replace(/Copyright[^\n]*/gi, "")
+.replace(/À propos de cette offre[\s\S]*/i, "")
+.replace(/Autres recherches[\s\S]*/i, "")
+.replace(/Offres similaires[\s\S]*/i, "")
 .trim();
-const lines = clean.split("\n")
+return clean.split("\n")
 .map(l => l.trim())
-.filter(l => l.length > 0 && l.length < 60)
-.filter(l => {
-const norm = l.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-return !/^(qualit|ressources|humaines|service|direction|departement|secteur|terminee|determin|propose|prepose|francais|deutsch|jobcloud|copyright)/.test(norm);
-});
-return lines.join("<br>");
+.filter(Boolean)
+.join("<br>");
 };
 
 const addressHtml = formatAddress(offer.address);
@@ -2385,7 +2308,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(formatDate(offer.date) || offer.date)}
+📅 Publié le : ${escapeHTML(offer.date)}
 </div>
 
 ${offer.offerUrl ? `
@@ -3702,7 +3625,7 @@ applications.length
 safeSetText(
 document.getElementById("aiNotifications"),
 offers.length
-? "• " + offers.filter(offer => Number(offer.match || offer.score || 0) >= 90).length + " offres avec Match > 90%"
+? "• " + offers.filter(offer => calculateMatch(offer) >= 90).length + " offres avec Match > 90%"
 : "Aucune alerte IA"
 );
 
