@@ -2377,20 +2377,20 @@ ${offer.offerUrl ? `
 <div class="offer-reasons">
 
 <div class="ia-reasons-grid">
-<div>✓ Métier compatible</div>
-<div>✓ Contrat compatible</div>
-<div>✓ Secteur intéressant</div>
-<div>✓ Salaire intéressant</div>
-<div>✓ Expérience cohérente</div>
+${details.reasons.length > 0
+? details.reasons.map(r => `<div>✓ ${escapeHTML(r)}</div>`).join("")
+: "<div>Aucun point fort détecté</div>"
+}
 </div>
 
+${details.missing.length > 0 ? `
 <div class="ia-check-block">
 <strong>🧐 Points à vérifier :</strong>
 <ul>
-<li>Compétences spécifiques à confirmer</li>
-<li>Compétences CV peu visibles</li>
+${details.missing.map(m => `<li>${escapeHTML(m)}</li>`).join("")}
 </ul>
 </div>
+` : ""}
 
 </div>
 

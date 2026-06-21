@@ -3086,6 +3086,59 @@ value.includes(keyword)
 
 }
 
+async function extractOfferDetails(href, source){
+
+const details = { company: "", rate: "", contract: "", location: "", address: "" };
+
+try{
+
+const html = await fetchExternalText(href);
+const text = cleanHtmlText(html);
+
+/* Company */
+if(source === "LinkedIn"){
+const companyMatch =
+html.match(/class="[^"]*top-card[^"]*company[^"]*"[^>]*>([^<]{2,60})</) ||
+html.match(/"employerName"\s*:\s*"([^"]{2,60})"/) ||
+html.match(/class="[^"]*company-name[^"]*"[^>]*>([^<]{2,60})</) ||
+html.match(/<a[^>]*company[^>]*>([^<]{2,60})<\/a>/i);
+if(companyMatch) details.company = companyMatch[1].trim();
+}
+
+if(source === "Indeed"){
+const companyMatch =
+html.match(/class="[^"]*companyName[^"]*"[^>]*>([^<]{2,60})</) ||
+html.match(/"hiringOrganization"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]{2,60})"/) ||
+html.match(/data-company-name="([^"]{2,60})"/);
+if(companyMatch) details.company = companyMatch[1].trim();
+}
+
+/* Rate */
+const rateMatch = text.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
+if(rateMatch) details.rate = rateMatch[1].trim();
+
+/* Contract */
+const contractMatch = text.match(/(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Temps plein|Temps partiel)/i);
+if(contractMatch){
+details.contract = contractMatch[1].trim()
+.replace(/Durée indéterminée/i, "CDI")
+.replace(/Durée déterminée/i, "CDD")
+.replace(/Temps plein/i, "CDI")
+.replace(/Temps partiel/i, "CDD");
+}
+
+/* Location */
+const locationMatch = text.match(/(?:Lausanne|Morges|Nyon|Vevey|Renens|Yverdon|Prilly|Crissier|Pully|Bussigny|Gland|Rolle|Montreux|Aigle)[^\n,]{0,30}/i);
+if(locationMatch) details.location = locationMatch[0].trim().split(/[,\n]/)[0].trim();
+
+}catch(err){
+// silencieux — on garde les valeurs vides
+}
+
+return details;
+
+}
+
 async function fetchGenericJobPageOffers(config){
 
 const offers = [];
@@ -3151,14 +3204,31 @@ if(!looksLikeWantedJob(title)){
 continue;
 }
 
+/* Extraction company/rate/contract depuis la page de l'offre */
+let company = config.company;
+let rate = "";
+let contract = "";
+let location = "Vaud";
+
+if(config.extractDetails){
+try{
+const details = await extractOfferDetails(href, config.source);
+if(details.company) company = details.company;
+if(details.rate) rate = details.rate;
+if(details.contract) contract = details.contract;
+if(details.location) location = details.location;
+}catch(err){}
+}
+
 offers.push({
 id: generateServerId(),
 title: title || config.defaultTitle,
-company: config.company,
-location: "Vaud",
+company: company,
+location: location,
+address: "",
 sector: config.sector || "",
-rate: "",
-contract: "",
+rate: rate,
+contract: contract,
 source: config.source,
 offerUrl: href,
 url: href,
@@ -3207,10 +3277,12 @@ linkPatterns: ["/viewjob", "jk="],
 blockedLinkPatterns: [
 "/career/", "/salaires/", "/salary/",
 "/entreprises/", "/forum/", "/rc/clk"
-]
+],
+extractDetails: true
 });
 
-offers.push(...result);
+// Filtrer les offres sans vraie company (page expirée/invalide)
+offers.push(...result.filter(o => o.company && o.company !== "Indeed"));
 
 }
 
@@ -3373,7 +3445,8 @@ source: "LinkedIn",
 company: "LinkedIn",
 url: "https://www.linkedin.com/jobs/search/?keywords=assistant+administratif&location=Vaud%2C%20Suisse",
 defaultTitle: "Offre LinkedIn Vaud",
-linkPatterns: ["/jobs/view/"]
+linkPatterns: ["/jobs/view/"],
+extractDetails: true
 });
 
 }
