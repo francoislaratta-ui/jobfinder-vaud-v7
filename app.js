@@ -2108,8 +2108,29 @@ ${offer.description || ""}
 .replace(/\s+/g, " ")
 .trim();
 
+/* ==========================
+RANGES
+40-60%
+40 à 60 %
+40 % à 60 %
+========================== */
+
+const rangePatterns = [
+
+/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+
+/\b(10|20|30|40|50|60|70|80|90|100)\s*%\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+
+/\b(10|20|30|40|50|60|70|80|90|100)\s*(?:a|à)\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
+
+/\b(10|20|30|40|50|60|70|80|90|100)\s*%\s*(?:a|à)\s*(10|20|30|40|50|60|70|80|90|100)\s*%/
+
+];
+
+for(const pattern of rangePatterns){
+
 const rangeMatch =
-source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/);
+source.match(pattern);
 
 if(rangeMatch){
 
@@ -2127,7 +2148,11 @@ Number(rangeMatch[2])
 
 const values = [];
 
-for(let rate = minRate; rate <= maxRate; rate += 10){
+for(
+let rate = minRate;
+rate <= maxRate;
+rate += 10
+){
 values.push(rate);
 }
 
@@ -2142,8 +2167,47 @@ label:`${minRate}-${maxRate}%`
 
 }
 
+}
+
+/* ==========================
+TAUX NOMMÉS
+Taux d'activité : 50%
+Temps de travail : 60%
+Activité : 40%
+========================== */
+
+const labeledMatch =
+source.match(
+/(?:taux d'activite|taux d occupation|taux|temps de travail|activite)\s*:?\s*(10|20|30|40|50|60|70|80|90|100)\s*%/
+);
+
+if(labeledMatch){
+
+const rate =
+Number(labeledMatch[1]);
+
+return {
+hasRate:true,
+type:"single",
+min:rate,
+max:rate,
+values:[rate],
+label:`${rate}%`
+};
+
+}
+
+/* ==========================
+TAUX SIMPLE
+40%
+50%
+60%
+========================== */
+
 const singleMatch =
-source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*%/);
+source.match(
+/\b(10|20|30|40|50|60|70|80|90|100)\s*%/
+);
 
 if(singleMatch){
 
@@ -2172,133 +2236,6 @@ label:""
 
 }
 
-window.extractNormalizedRate =
-extractNormalizedRate;
-
-offers =
-offers.map(offer => {
-
-const normalizedOffer = {
-...offer,
-
-id:
-String(
-offer.id ||
-offer.externalId ||
-generateId()
-),
-
-offerUrl:
-offer.offerUrl ||
-offer.url ||
-offer.link ||
-"",
-
-address:
-offer.address || "",
-
-salary:
-offer.salary || "",
-
-source:
-offer.source || "Source inconnue",
-
-sector:
-offer.sector || "",
-
-location:
-offer.location ||
-offer.region ||
-"Vaud",
-
-rate:
-offer.rate ||
-offer.workRate ||
-"",
-
-contract:
-offer.contract ||
-offer.contractType ||
-"",
-
-title:
-offer.title ||
-"Titre non renseigné",
-
-company:
-offer.company ||
-offer.employer ||
-"Entreprise inconnue",
-
-date:
-offer.date ||
-offer.publishedAt ||
-"",
-
-description:
-offer.description ||
-offer.details ||
-offer.summary ||
-offer.tasks ||
-offer.text ||
-offer.content ||
-offer.body ||
-offer.profile ||
-offer.mission ||
-offer.responsibilities ||
-"Descriptif non disponible."
-};
-
-return {
-...normalizedOffer,
-normalizedRate:
-extractNormalizedRate(normalizedOffer)
-};
-
-});
-
-filteredOffers =
-[...offers];
-
-console.log("🎯 OFFRES PRÊTES À AFFICHER :", filteredOffers.length);
-console.log("🎯 SOURCES PRÊTES À AFFICHER :", [...new Set(filteredOffers.map(o => o.source))]);
-
-if(!skipRender){
-renderOffers(filteredOffers);
-}
-
-updateDashboard();
-updateBestMatch();
-updateNotifications();
-updateStatistics();
-
-}
-catch(error){
-
-console.error(
-"Erreur chargement offres :",
-error
-);
-
-offers = [];
-filteredOffers = [];
-
-if(offersContainer){
-offersContainer.innerHTML = `
-<div class="offer-card">
-<div class="offer-title">
-❌ Erreur de chargement des offres
-</div>
-<div class="offer-reasons">
-Ouvre la console du navigateur pour voir le détail technique.
-</div>
-</div>
-`;
-}
-
-}
-
-}
 
 /* ==========================================
 ACTUALISER OFFRES V14.6
