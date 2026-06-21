@@ -1320,60 +1320,37 @@ function applyFilters(){
 
     result = result.filter(offer => {
 
-        const selectedNumbers =
-        selectedTaux
-        .map(value => parseInt(value, 10))
-        .filter(value => !isNaN(value));
-
-        if(selectedNumbers.length === 0){
+        if(!offer.rate){
             return true;
         }
 
-        const rateText =
-        normalizeText(`
-        ${offer.rate || ""}
-        ${offer.title || ""}
-        `);
+        const rateNorm =
+        normalizeText(offer.rate);
 
-        const rangeMatch =
-        rateText.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*[-–]\s*(10|20|30|40|50|60|70|80|90|100)\b/);
+        return selectedTaux.some(t => {
 
-        if(rangeMatch){
+            const tNum =
+            parseInt(t);
 
-            const minRate =
-            Math.min(
-                Number(rangeMatch[1]),
-                Number(rangeMatch[2])
+            if(isNaN(tNum)){
+                return containsNormalized(offer.rate, t);
+            }
+
+            const match =
+            rateNorm.match(/(\d+)/g);
+
+            if(!match){
+                return false;
+            }
+
+            const nums =
+            match.map(Number);
+
+            return nums.some(n =>
+                Math.abs(n - tNum) <= 10
             );
 
-            const maxRate =
-            Math.max(
-                Number(rangeMatch[1]),
-                Number(rangeMatch[2])
-            );
-
-            return selectedNumbers.some(selected =>
-                selected >= minRate &&
-                selected <= maxRate
-            );
-
-        }
-
-        const singleMatches =
-        rateText.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*%?\b/g);
-
-        if(!singleMatches){
-            return true;
-        }
-
-        const rateNumbers =
-        singleMatches
-        .map(value => parseInt(value, 10))
-        .filter(value => !isNaN(value));
-
-        return rateNumbers.some(rate =>
-            selectedNumbers.includes(rate)
-        );
+        });
 
     });
 
