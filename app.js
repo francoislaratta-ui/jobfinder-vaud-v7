@@ -144,35 +144,24 @@ const source = rateOnly.length > 1
 ? rateOnly
 : normalize(`${offer.description || ""}`);
 
-const rangePatterns = [
-/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
-/\b(10|20|30|40|50|60|70|80|90|100)\s*%\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
-/\b(10|20|30|40|50|60|70|80|90|100)\s*(?:a|à)\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,
-/\b(10|20|30|40|50|60|70|80|90|100)\s*%\s*(?:a|à)\s*(10|20|30|40|50|60|70|80|90|100)\s*%/
-];
+/* Pattern multiples de 5 entre 5 et 100 */
+const PCT = "(5|10|15|20|25|30|35|40|45|50|55|60|65|70|75|80|85|90|95|100)";
+const RANGE = new RegExp(`\\b${PCT}\\s*-\\s*${PCT}\\s*%`);
+const RANGE2 = new RegExp(`\\b${PCT}\\s*%\\s*-\\s*${PCT}\\s*%`);
+const SINGLE = new RegExp(`\\b${PCT}\\s*%`);
 
-for(const pattern of rangePatterns){
-const rangeMatch = source.match(pattern);
+const rangeMatch = source.match(RANGE) || source.match(RANGE2);
 if(rangeMatch){
 const minRate = Math.min(Number(rangeMatch[1]), Number(rangeMatch[2]));
 const maxRate = Math.max(Number(rangeMatch[1]), Number(rangeMatch[2]));
 const values = [];
-for(let rate = minRate; rate <= maxRate; rate += 10){
+for(let rate = minRate; rate <= maxRate; rate += 5){
 values.push(rate);
 }
 return { hasRate:true, type:"range", min:minRate, max:maxRate, values, label:`${minRate}-${maxRate}%` };
 }
-}
 
-const labeledMatch = source.match(
-/(?:taux d'activite|taux d occupation|taux|temps de travail|activite)\s*:?\s*(10|20|30|40|50|60|70|80|90|100)\s*%/
-);
-if(labeledMatch){
-const rate = Number(labeledMatch[1]);
-return { hasRate:true, type:"single", min:rate, max:rate, values:[rate], label:`${rate}%` };
-}
-
-const singleMatch = source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*%/);
+const singleMatch = source.match(SINGLE);
 if(singleMatch){
 const rate = Number(singleMatch[1]);
 return { hasRate:true, type:"single", min:rate, max:rate, values:[rate], label:`${rate}%` };
