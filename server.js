@@ -2675,7 +2675,7 @@ const VAUD_PLACES = [
 "bussigny","crissier","gland","rolle","aubonne",
 "cossonay","echallens","moudon","oron","payerne",
 "ste-croix","vallorbe","orbe","grandson","avenches",
-"cudrefin","estavayer","lucens","romont","bulle",
+"cudrefin","estavayer","lucens",
 "villeneuve","bex","ollon","leysin","gryon",
 "vd","vaud","west lausanne","lausanne district"
 ];

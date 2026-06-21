@@ -1325,7 +1325,8 @@ if(numericTaux.length > 0 && !selectAllTaux?.checked){
         if(!rateInfo.hasRate) return true;
         return numericTaux.some(t => {
             const tNum = parseInt(t);
-            return rateInfo.values.includes(tNum);
+            /* Vérifier si la valeur cochée tombe dans la plage min-max */
+            return tNum >= rateInfo.min && tNum <= rateInfo.max;
         });
     });
 }
