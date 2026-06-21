@@ -3479,6 +3479,113 @@ return result;
 
 }
 
+async function fetchChuvOffers(){
+
+const offers = [];
+
+try{
+
+/* Page Administration CHUV — liste des offres */
+const url = "https://recrutement.chuv.ch/home.html";
+
+const html = await fetchExternalText(url);
+
+/* Extraire les liens /vacancy/ */
+const vacancyMatches = html.match(/href="(\/vacancy\/[^"]+\.html)"/g) || [];
+
+const seen = new Set();
+
+for(const match of vacancyMatches){
+
+const path = match.replace(/href="|"/g, "");
+const href = `https://recrutement.chuv.ch${path}`;
+
+if(seen.has(href)) continue;
+seen.add(href);
+
+try{
+
+const detailHtml = await fetchExternalText(href);
+const detailText = cleanHtmlText(detailHtml);
+
+/* Titre */
+const titleMatch = detailHtml.match(/<h1[^>]*>([^<]{5,120})<\/h1>/i);
+if(!titleMatch) continue;
+const title = titleMatch[1].replace(/&#\d+;/g, " ").trim();
+
+if(!looksLikeWantedJob(title)) continue;
+
+/* Taux */
+let rate = "";
+const rateMatch = detailText.match(/Taux d.activit[eé]\s*[:\-]?\s*([\d\s%\-–]+%)/i);
+if(rateMatch) rate = rateMatch[1].trim();
+
+/* Contrat */
+let contract = "";
+const contractMatch = detailText.match(/Type de contrat\s*[:\-]?\s*(CDI|CDD|CDM)/i);
+if(contractMatch) contract = contractMatch[1].trim();
+
+/* Lieu */
+let location = "Lausanne";
+const locationMatch = detailText.match(/Lieu\s*[:\-]?\s*([A-Za-zÀ-ÿ\s\-]{3,40}?)(?=\n|Taux|Type|Date)/i);
+if(locationMatch) location = locationMatch[1].trim();
+
+/* Date */
+let date = new Date().toISOString().split("T")[0];
+const dateMatch = detailText.match(/Date de d[eé]but de publication\s*[:\-]?\s*(\d{2}[-/]\d{2}[-/]\d{4})/i);
+if(dateMatch){
+const parts = dateMatch[1].split(/[-/]/);
+date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+/* Date postulation */
+let applyBefore = "";
+const applyMatch = detailText.match(/Date de fin de postulation\s*[:\-]?\s*(\d{2}[-/]\d{2}[-/]\d{4})/i);
+if(applyMatch){
+const p = applyMatch[1].split(/[-/]/);
+applyBefore = `${p[0]}.${p[1]}.${p[2]}`;
+}
+
+/* Classe salariale */
+let salaryGrade = "";
+const gradeMatch = detailText.match(/Niveau\s*[:\-]?\s*(\d+)/i);
+if(gradeMatch) salaryGrade = `Niveau ${gradeMatch[1]}`;
+
+offers.push({
+id: generateServerId(),
+title,
+company: "CHUV",
+location,
+address: "Rue du Bugnon 21, 1011 Lausanne",
+sector: "Santé",
+rate,
+contract,
+source: "CHUV",
+offerUrl: href,
+url: href,
+date,
+description: detailText.substring(0, 1500).trim(),
+salary: "",
+applyBefore,
+salaryGrade
+});
+
+}catch(err){
+console.warn("CHUV offre impossible :", href, err.message);
+}
+
+}
+
+console.log(`CHUV: ${offers.length} offres admin détectées`);
+
+}catch(error){
+console.warn("Erreur scraping CHUV :", error.message);
+}
+
+return offers;
+
+}
+
 async function scrapeAllOffers(){
 
 console.log("🔄 Scraping des offres en cours...");
@@ -3490,7 +3597,8 @@ jobscout24Offers,
 indeedOffers,
 linkedinOffers,
 freshjobsOffers,
-emploisVaudOffers
+emploisVaudOffers,
+chuvOffers
 ] = await Promise.all([
 fetchJobupOffers(),
 fetchVdOffers(),
@@ -3498,7 +3606,8 @@ fetchJobScout24Offers(),
 fetchIndeedOffers(),
 fetchLinkedInOffers(),
 fetchFreshJobsOffers(),
-fetchEmploisVaudOffers()
+fetchEmploisVaudOffers(),
+fetchChuvOffers()
 ]);
 
 const allOffers =
@@ -3509,7 +3618,8 @@ deduplicateOffers([
 ...indeedOffers,
 ...linkedinOffers,
 ...freshjobsOffers,
-...emploisVaudOffers
+...emploisVaudOffers,
+...chuvOffers
 ]);
 
 if(allOffers.length > 0){
@@ -3521,7 +3631,7 @@ console.log(
 );
 
 console.log(
-`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | JobScout24: ${jobscout24Offers.length} | Indeed: ${indeedOffers.length} | LinkedIn: ${linkedinOffers.length} | FreshJobs: ${freshjobsOffers.length} | EmploisVaud: ${emploisVaudOffers.length}`
+`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | JobScout24: ${jobscout24Offers.length} | Indeed: ${indeedOffers.length} | LinkedIn: ${linkedinOffers.length} | FreshJobs: ${freshjobsOffers.length} | EmploisVaud: ${emploisVaudOffers.length} | CHUV: ${chuvOffers.length}`
 );
 
 }else{
