@@ -118,13 +118,7 @@ return String(value || "")
 
 function extractNormalizedRate(offer){
 
-const source =
-String(`
-${offer.rate || ""}
-${offer.workRate || ""}
-${offer.title || ""}
-${offer.description || ""}
-`)
+const normalize = str => String(str || "")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
@@ -139,6 +133,16 @@ ${offer.description || ""}
 .replace(/\s+à\s+/g, " - ")
 .replace(/\s+/g, " ")
 .trim();
+
+/* Priorité 1 : champ rate seul */
+const rateOnly = normalize(
+`${offer.rate || ""} ${offer.workRate || ""}`
+);
+
+/* Priorité 2 : fallback sur description si rate vide */
+const source = rateOnly.length > 1
+? rateOnly
+: normalize(`${offer.description || ""}`);
 
 const rangePatterns = [
 /\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/,

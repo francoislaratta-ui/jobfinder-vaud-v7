@@ -2747,6 +2747,23 @@ const apprentiKeywords = [
 ];
 if(apprentiKeywords.some(a => titleLower.includes(a))) continue;
 
+const excludedKeywords = [
+"commerce de detail",
+"commerce de détail",
+"gestionnaire de vente",
+"conseiller de vente",
+"conseillere de vente",
+"vendeur",
+"vendeuse",
+"chef de rayon",
+"responsable de rayon"
+];
+const titleNorm = titleLower.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+if(excludedKeywords.some(e =>
+e.normalize("NFD").replace(/[\u0300-\u036f]/g,"").split(" ")
+.every(w => titleNorm.includes(w))
+)) continue;
+
 const street = (job.street || "").trim();
 const zipCode = (job.zipCode || "").trim();
 const addressParts = [];
