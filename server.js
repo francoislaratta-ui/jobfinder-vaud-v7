@@ -3019,22 +3019,48 @@ String(text || "")
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "");
 
+/* Exclusions prioritaires */
+const excluded = [
+"gestionnaire de vente",
+"commerce de detail",
+"conseiller de vente",
+"conseillere de vente",
+"vendeur",
+"vendeuse",
+"vente au detail",
+"responsable de rayon",
+"chef de rayon",
+"chef de vente",
+"technicien de vente",
+"representant de vente",
+"agent de vente",
+"salaire pour",
+"explorateur de carriere"
+];
+
+if(excluded.some(e => value.includes(e))){
+return false;
+}
+
 const keywords = [
-"employe",
-"assistant",
-"assistante",
-"administratif",
-"administrative",
-"gestionnaire",
-"dossier",
-"commerce",
-"support",
+"employe de commerce",
+"assistant administratif",
+"assistante administrative",
+"gestionnaire de dossier",
+"gestionnaire administratif",
+"gestionnaire logistique",
+"gestionnaire contentieux",
+"collaborateur administratif",
+"support informatique",
+"technicien informatique",
+"technicien support",
 "helpdesk",
-"technicien",
-"informatique",
-"rh",
-"clientele",
-"coordinateur"
+"back office",
+"back-office",
+"coordinateur administratif",
+"assistant de direction",
+"assistant rh",
+"conseiller clientele"
 ];
 
 return keywords.some(keyword =>
@@ -3083,6 +3109,15 @@ hrefLower.includes(pattern)
 );
 
 if(!isJobLink){
+continue;
+}
+
+const isBlockedLink =
+(config.blockedLinkPatterns || []).some(pattern =>
+hrefLower.includes(pattern)
+);
+
+if(isBlockedLink){
 continue;
 }
 
@@ -3139,6 +3174,13 @@ defaultTitle: "Offre Indeed Vaud",
 linkPatterns: [
 "/viewjob",
 "jk="
+],
+blockedLinkPatterns: [
+"/career/",
+"/salaires/",
+"/salary/",
+"/entreprises/",
+"/forum/"
 ]
 });
 
