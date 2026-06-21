@@ -14,7 +14,8 @@ settings: "jobfinder_settings",
 stats: "jobfinder_stats",
 offers: "jobfinder_offers",
 letters: "jobfinder_letters",
-filters: "jobfinder_filters"
+filters: "jobfinder_filters",
+seenOffers: "jobfinder_seen_offers"
 };
 
 /* ==========================================
@@ -176,6 +177,16 @@ let deferredPrompt = null;
 let bestOffer = null;
 let filteredOffers = [];
 let employersList = [];
+
+let newOffers = [];
+
+let seenOffers =
+safeArray(
+safeJSON(
+localStorage.getItem(STORAGE_KEYS.seenOffers),
+[]
+)
+);
 
 /* ==========================================
 PROFIL IA V14.6.0
@@ -2082,6 +2093,8 @@ await discoverRealOfferUrls(offers);
 offers =
 await enrichOffersDescriptions(offers);
 
+detectNewOffers();
+
 filteredOffers = [...offers];
 
 const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
@@ -3568,44 +3581,90 @@ dashboardOffers.length > 0
 NOTIFICATIONS
 ========================================== */
 
-function updateNotifications(){
+function getOfferMemoryId(offer){
 
-const sourceCounts = {};
+return String(
+offer.externalId ||
+offer.offerUrl ||
+offer.url ||
+`${offer.company || ""}-${offer.title || ""}-${offer.location || ""}`
+)
+.toLowerCase()
+.trim();
+
+}
+
+function detectNewOffers(){
+
+newOffers = [];
 
 offers.forEach(offer => {
-const source =
-offer.source || offer.company || "Autre";
 
-sourceCounts[source] =
-(sourceCounts[source] || 0) + 1;
+const memoryId =
+getOfferMemoryId(offer);
+
+if(!memoryId){
+return;
+}
+
+if(!seenOffers.includes(memoryId)){
+
+newOffers.push(offer);
+seenOffers.push(memoryId);
+
+}
+
 });
 
-const sourceLines =
-Object.entries(sourceCounts)
-.slice(0, 6)
-.map(([source,count]) => {
-return `
-<div class="alert-source-line">
-<span>• ${escapeHTML(source)}</span>
-<span>: ${count}</span>
-</div>
-`;
-})
-.join("");
+localStorage.setItem(
+STORAGE_KEYS.seenOffers,
+JSON.stringify(seenOffers)
+);
+
+}
+
+function updateNotifications(){
+
+const badge =
+document.getElementById("notificationsBadge");
+
+if(badge){
+
+badge.textContent =
+newOffers.length
+? ` 🔴${newOffers.length}`
+: "";
+
+}
 
 const newOffersBox =
 document.getElementById("newOffersNotifications");
 
 if(newOffersBox){
+
 newOffersBox.innerHTML =
-offers.length
-? `
-<div class="alert-line">
-• ${offers.length} nouvelles offres
+newOffers.length
+? newOffers
+.map(offer => `
+<div class="notification-item">
+
+<div>
+🆕 <strong>${escapeHTML(offer.title)}</strong>
 </div>
-${sourceLines}
-`
-: "Aucune nouvelle offre";
+
+<div>
+🏢 ${escapeHTML(offer.company)}
+</div>
+
+<div>
+📍 ${escapeHTML(offer.location)}
+</div>
+
+</div>
+`)
+.join("")
+: "Aucune nouvelle offre détectée";
+
 }
 
 safeSetText(
