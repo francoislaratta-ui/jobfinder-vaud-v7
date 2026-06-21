@@ -2640,12 +2640,16 @@ SCRAPING OFFRES AU DEMARRAGE
 const SEARCH_KEYWORDS = [
 "employé de commerce",
 "assistant administratif",
+"assistante administrative",
 "gestionnaire de dossier",
+"gestionnaire administratif",
+"collaborateur administratif",
 "technicien informatique",
 "support informatique",
 "helpdesk",
 "back-office",
-"collaborateur administratif"
+"secrétaire",
+"employé administratif"
 ];
 
 const VAUD_REGIONS = [
