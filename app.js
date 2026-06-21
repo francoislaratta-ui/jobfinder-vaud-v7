@@ -1312,18 +1312,19 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
     );
 }
 
-if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
+const selectAllTaux = document.getElementById("selectAllTaux");
+const numericTaux = selectedTaux.filter(t => !isNaN(parseInt(t)));
+
+if(numericTaux.length > 0 && !selectAllTaux?.checked){
     result = result.filter(offer => {
         const rateInfo = extractNormalizedRate(offer);
         if(!rateInfo.hasRate) return true;
-        return selectedTaux.some(t => {
+        return numericTaux.some(t => {
             const tNum = parseInt(t);
-            if(isNaN(tNum)) return false;
             return rateInfo.values.includes(tNum);
         });
     });
 }
-
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
     result = result.filter(offer =>
         !offer.contract ||
