@@ -2065,7 +2065,9 @@ async function loadOffers(skipRender = false){
 try{
 
 const response =
-await fetch("/api/offers");
+await fetch("/api/offers?t=" + Date.now(), {
+cache:"no-store"
+});
 
 if(!response.ok){
 throw new Error("HTTP " + response.status);
@@ -2084,16 +2086,19 @@ console.log("📦 SOURCES API :", [...new Set(offers.map(o => o.source))]);
 
 function extractNormalizedRate(offer){
 
-const decodeRateText = value =>
-String(value || "")
+const source =
+String(`
+${offer.rate || ""}
+${offer.workRate || ""}
+${offer.title || ""}
+${offer.description || ""}
+`)
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
 .replace(/&nbsp;/g, " ")
 .replace(/&#160;/g, " ")
 .replace(/&#8203;/g, "")
-.replace(/&zwnj;/g, "")
-.replace(/&zwj;/g, "")
 .replace(/&amp;/g, "&")
 .replace(/&ndash;/g, "-")
 .replace(/&mdash;/g, "-")
@@ -2103,21 +2108,23 @@ String(value || "")
 .replace(/\s+/g, " ")
 .trim();
 
-const source =
-decodeRateText(`
-${offer.rate || ""}
-${offer.workRate || ""}
-${offer.title || ""}
-${offer.description || ""}
-`);
-
 const rangeMatch =
 source.match(/\b(10|20|30|40|50|60|70|80|90|100)\s*-\s*(10|20|30|40|50|60|70|80|90|100)\s*%/);
 
 if(rangeMatch){
 
-const minRate = Math.min(Number(rangeMatch[1]), Number(rangeMatch[2]));
-const maxRate = Math.max(Number(rangeMatch[1]), Number(rangeMatch[2]));
+const minRate =
+Math.min(
+Number(rangeMatch[1]),
+Number(rangeMatch[2])
+);
+
+const maxRate =
+Math.max(
+Number(rangeMatch[1]),
+Number(rangeMatch[2])
+);
+
 const values = [];
 
 for(let rate = minRate; rate <= maxRate; rate += 10){
@@ -2165,7 +2172,8 @@ label:""
 
 }
 
-window.extractNormalizedRate = extractNormalizedRate;
+window.extractNormalizedRate =
+extractNormalizedRate;
 
 offers =
 offers.map(offer => {
@@ -2173,7 +2181,12 @@ offers.map(offer => {
 const normalizedOffer = {
 ...offer,
 
-id:String(offer.id || offer.externalId || generateId()),
+id:
+String(
+offer.id ||
+offer.externalId ||
+generateId()
+),
 
 offerUrl:
 offer.offerUrl ||
@@ -2196,7 +2209,7 @@ offer.sector || "",
 location:
 offer.location ||
 offer.region ||
-"",
+"Vaud",
 
 rate:
 offer.rate ||
@@ -2209,12 +2222,13 @@ offer.contractType ||
 "",
 
 title:
-offer.title || "",
+offer.title ||
+"Titre non renseigné",
 
 company:
 offer.company ||
 offer.employer ||
-"",
+"Entreprise inconnue",
 
 date:
 offer.date ||
@@ -2237,76 +2251,17 @@ offer.responsibilities ||
 
 return {
 ...normalizedOffer,
-normalizedRate:extractNormalizedRate(normalizedOffer)
+normalizedRate:
+extractNormalizedRate(normalizedOffer)
 };
 
 });
 
-console.log("✅ APRÈS NORMALISATION :", offers.length);
-
-try{
-
-const beforeDiscovery =
+filteredOffers =
 [...offers];
 
-const discoveredOffers =
-await discoverRealOfferUrls(offers);
-
-if(
-Array.isArray(discoveredOffers) &&
-discoveredOffers.length >= beforeDiscovery.length
-){
-offers = discoveredOffers;
-}else{
-console.warn("⚠️ discoverRealOfferUrls a réduit les offres. Liste complète conservée.", {
-avant:beforeDiscovery.length,
-apres:Array.isArray(discoveredOffers) ? discoveredOffers.length : "invalide"
-});
-offers = beforeDiscovery;
-}
-
-}catch(error){
-console.warn("⚠️ discoverRealOfferUrls ignoré :", error.message);
-}
-
-console.log("✅ APRÈS DISCOVERY :", offers.length);
-
-try{
-
-const beforeEnrich =
-[...offers];
-
-const enrichedOffers =
-await enrichOffersDescriptions(offers);
-
-if(
-Array.isArray(enrichedOffers) &&
-enrichedOffers.length >= beforeEnrich.length
-){
-offers = enrichedOffers;
-}else{
-console.warn("⚠️ enrichOffersDescriptions a réduit les offres. Liste complète conservée.", {
-avant:beforeEnrich.length,
-apres:Array.isArray(enrichedOffers) ? enrichedOffers.length : "invalide"
-});
-offers = beforeEnrich;
-}
-
-}catch(error){
-console.warn("⚠️ enrichOffersDescriptions ignoré :", error.message);
-}
-
-console.log("✅ APRÈS ENRICHISSEMENT :", offers.length);
-
-offers =
-offers.map(offer => ({
-...offer,
-normalizedRate:extractNormalizedRate(offer)
-}));
-
-detectNewOffers();
-
-filteredOffers = [...offers];
+console.log("🎯 OFFRES PRÊTES À AFFICHER :", filteredOffers.length);
+console.log("🎯 SOURCES PRÊTES À AFFICHER :", [...new Set(filteredOffers.map(o => o.source))]);
 
 if(!skipRender){
 renderOffers(filteredOffers);
@@ -2317,13 +2272,13 @@ updateBestMatch();
 updateNotifications();
 updateStatistics();
 
-console.log("🎯 OFFRES AFFICHÉES :", filteredOffers.length);
-console.log("🎯 SOURCES AFFICHÉES :", [...new Set(filteredOffers.map(o => o.source))]);
-
 }
 catch(error){
 
-console.error("Erreur chargement offres :", error);
+console.error(
+"Erreur chargement offres :",
+error
+);
 
 offers = [];
 filteredOffers = [];
