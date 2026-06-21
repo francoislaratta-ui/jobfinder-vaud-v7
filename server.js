@@ -421,7 +421,7 @@ res.json({
 
 status:"OK",
 
-version:"14.3.1",
+version:"14.6.0",
 
 application:
 "Job Finder Vaud",

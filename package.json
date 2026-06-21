@@ -1,6 +1,6 @@
 {
   "name": "jobfinder-vaud",
-  "version": "14.0.0",
+  "version": "14.6.0",
   "description": "Job Finder Vaud Premium IA",
   "main": "server.js",
   "scripts": {
