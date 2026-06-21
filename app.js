@@ -2375,15 +2375,24 @@ RENDER OFFRES
 ========================================== */
 
 function renderOffers(data){
+
 if(!offersContainer){
 return;
 }
 
+const list =
+Array.isArray(data)
+? data
+: [];
+
+console.log("🖥️ renderOffers reçoit :", list.length);
+console.log("🖥️ Sources renderOffers :", [...new Set(list.map(o => o.source))]);
+
 offersContainer.innerHTML = "";
 
-updateResultsSummary(data);
+updateResultsSummary(list);
 
-if(!data || data.length === 0){
+if(list.length === 0){
 offersContainer.innerHTML = `
 <div class="offer-card">
 <div class="offer-title">
@@ -2395,10 +2404,51 @@ Aucune offre trouvée
 return;
 }
 
-data.forEach(offer => {
-const card = createOfferCard(offer);
+list.forEach((offer, index) => {
+
+try{
+
+const card =
+createOfferCard(offer);
+
 offersContainer.appendChild(card);
+
+}catch(error){
+
+console.error("❌ Erreur createOfferCard offre index", index, offer, error);
+
+const fallbackCard =
+document.createElement("div");
+
+fallbackCard.className =
+"offer-card";
+
+fallbackCard.innerHTML = `
+<div class="offer-title">
+⚠️ Offre affichée en mode secours
+</div>
+<div class="offer-company">
+🏢 ${escapeHTML(offer.company || "Entreprise inconnue")}
+</div>
+<div class="offer-location">
+📍 ${escapeHTML(offer.location || "Lieu non renseigné")}
+</div>
+<div class="offer-meta">
+⏰ ${escapeHTML(offer.rate || "Taux non renseigné")} • 📄 ${escapeHTML(offer.contract || "Contrat non renseigné")}
+</div>
+<div class="offer-source">
+🔎 ${escapeHTML(offer.source || "Source inconnue")}
+</div>
+`;
+
+offersContainer.appendChild(fallbackCard);
+
+}
+
 });
+
+console.log("✅ Cartes réellement affichées :", offersContainer.children.length);
+
 }
 
 /* ==========================================
