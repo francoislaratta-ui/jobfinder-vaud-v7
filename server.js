@@ -2641,6 +2641,7 @@ const SEARCH_KEYWORDS = [
 "employé de commerce",
 "assistant administratif",
 "assistante administrative",
+"assistant de direction",
 "gestionnaire de dossier",
 "gestionnaire administratif",
 "collaborateur administratif",
@@ -2649,6 +2650,9 @@ const SEARCH_KEYWORDS = [
 "helpdesk",
 "back-office",
 "secrétaire",
+"secrétaire comptable",
+"secrétaire d'unité",
+"secrétaire administratif",
 "employé administratif"
 ];
 
@@ -2767,6 +2771,9 @@ if(excludedKeywords.some(e =>
 e.normalize("NFD").replace(/[\u0300-\u036f]/g,"").split(" ")
 .every(w => titleNorm.includes(w))
 )) continue;
+
+/* Exclure assistante médicale spécifiquement */
+if(titleNorm.includes("assistante medicale") || titleNorm.includes("assistant medical")) continue;
 
 const street = (job.street || "").trim();
 const zipCode = (job.zipCode || "").trim();
@@ -3055,10 +3062,17 @@ const excluded = [
 "representant de vente",
 "agent de vente",
 "salaire pour",
-"explorateur de carriere"
+"explorateur de carriere",
+"assistant rh",
+"assistante rh"
 ];
 
-if(excluded.some(e => value.includes(e))){
+/* Exclusion combinée : assistante médicale uniquement */
+const isAssistanteMedicale =
+value.includes("assistante medicale") ||
+value.includes("assistant medical");
+
+if(excluded.some(e => value.includes(e)) || isAssistanteMedicale){
 return false;
 }
 
@@ -3066,11 +3080,16 @@ const keywords = [
 "employe de commerce",
 "assistant administratif",
 "assistante administrative",
+"assistant de direction",
+"assistante de direction",
 "gestionnaire de dossier",
 "gestionnaire administratif",
 "gestionnaire logistique",
 "gestionnaire contentieux",
 "collaborateur administratif",
+"collaboratrice administrative",
+"employe administratif",
+"employee administrative",
 "support informatique",
 "technicien informatique",
 "technicien support",
@@ -3078,8 +3097,13 @@ const keywords = [
 "back office",
 "back-office",
 "coordinateur administratif",
-"assistant de direction",
-"assistant rh",
+"coordinatrice administrative",
+"secretaire",
+"secretaire comptable",
+"secretaire d unite",
+"secretaire de direction",
+"secretaire administratif",
+"secretaire administrative",
 "conseiller clientele"
 ];
 
