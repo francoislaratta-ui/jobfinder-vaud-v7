@@ -1009,6 +1009,9 @@ document.getElementById("refreshOffersBtn");
 if(refreshOffersBtn){
 refreshOffersBtn.addEventListener("click", async () => {
 
+/* Sauvegarder les filtres actuels AVANT tout chargement */
+saveFilters();
+
 const isFirst = !localStorage.getItem("jobfinder_filters");
 
 if(isFirst){
@@ -1016,9 +1019,6 @@ refreshOffersBtn.disabled = true;
 refreshOffersBtn.innerHTML = `🔄 Chargement...<br>⏳ Veuillez patienter...`;
 try{
 await loadOffers(true);
-const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:checked')].map(cb => cb.value);
-console.log("Cases cochées:", selectedMetiers);
-saveFilters();
 applyFilters();
 openTab("filters");
 setTimeout(() => {
@@ -1050,7 +1050,6 @@ updateBestMatch();
 updateStatistics();
 updateApplicationCounters();
 
-saveFilters();
 applyFilters();
 
 openTab("filters");
@@ -2155,14 +2154,7 @@ await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
 
-const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
-const hasAny = rawFilters && Object.keys(rawFilters)
-    .filter(k => k !== "sort")
-    .some(k => (rawFilters[k] || []).length > 0);
-
-if(hasAny){
-    restoreSavedFilters();
-}else if(!skipRender){
+if(!skipRender){
     renderOffers(filteredOffers);
 }
 
