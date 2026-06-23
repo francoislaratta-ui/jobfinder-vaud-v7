@@ -1050,7 +1050,10 @@ updateBestMatch();
 updateStatistics();
 updateApplicationCounters();
 
+/* Forcer applyFilters après que tout soit chargé */
+setTimeout(() => {
 applyFilters();
+}, 200);
 
 openTab("filters");
 
