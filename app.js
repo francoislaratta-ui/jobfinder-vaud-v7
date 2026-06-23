@@ -3597,7 +3597,11 @@ const btn = document.getElementById("analyzeCompatibilityBtn");
 const status = document.getElementById("compatibilityStatus");
 const results = document.getElementById("compatibilityResults");
 
-if(!offers || offers.length === 0){
+const pool = Array.isArray(filteredOffers) && filteredOffers.length > 0
+? filteredOffers
+: offers;
+
+if(!pool || pool.length === 0){
 if(status) status.textContent = "⚠️ Aucune offre chargée. Lance d'abord une recherche.";
 return;
 }
@@ -3608,12 +3612,12 @@ return;
 }
 
 if(btn) btn.disabled = true;
-if(status) status.textContent = `⏳ Analyse de ${offers.length} offres en cours...`;
+if(status) status.textContent = `⏳ Analyse de ${pool.length} offres en cours...`;
 if(results) results.innerHTML = "";
 
 setTimeout(() => {
 
-const scored = offers
+const scored = pool
 .map(offer => ({
 ...offer,
 _score: calculateMatch(offer),
@@ -3649,7 +3653,7 @@ ${offer._details.reasons.length > 0 ? `
 }).join("");
 }
 
-if(status) status.textContent = `✅ ${scored.length} meilleures offres affichées — cliquez sur une carte pour y accéder.`;
+if(status) status.textContent = `✅ ${scored.length} meilleures offres sur ${pool.length} analysées — cliquez sur une carte pour y accéder.`;
 if(btn) btn.disabled = false;
 
 }, 100);
