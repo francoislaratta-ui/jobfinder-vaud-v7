@@ -686,8 +686,13 @@ TAUX
 <hr class="filter-separator">
 
 <label>
-<input type="checkbox" id="tempsPlein" onchange="handleTempsPlein(this)">
-Temps plein (100%)
+<input type="checkbox" name="taux" value="Temps plein" id="tempsPlein" onchange="if(this.checked) document.getElementById('taux100').checked = true;">
+Temps plein
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="Temps partiel">
+Temps partiel
 </label>
 
 </div>
@@ -1320,23 +1325,32 @@ Compatibilité moyenne avec les offres
 </div>
 
 <!-- ==========================================
-MEILLEUR MATCH
+RECHERCHE PAR COMPATIBILITE CV
 ========================================== -->
 
 <div class="objectives-card">
 
 <h3>
 
-🔥 Meilleur Match du Jour
+🔍 Recherche par compatibilité CV
 
 </h3>
 
-<div
-id="bestMatchContainer">
+<p style="font-size:13px; color: var(--text-secondary); margin-bottom: 12px;">
+Analyse toutes les offres chargées et les trie par score de compatibilité avec ton CV.
+</p>
 
-Aucun résultat disponible
+<button
+id="analyzeCompatibilityBtn"
+class="action-btn">
 
-</div>
+🤖 Analyser la compatibilité
+
+</button>
+
+<div id="compatibilityStatus" style="margin-top:10px; font-size:13px; color: var(--text-secondary);"></div>
+
+<div id="compatibilityResults" style="margin-top:16px;"></div>
 
 </div>
 

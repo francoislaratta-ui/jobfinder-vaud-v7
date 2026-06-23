@@ -3588,6 +3588,78 @@ showSuccess("Reset terminé");
 
 
 /* ==========================================
+RECHERCHE PAR COMPATIBILITE CV
+========================================== */
+
+function analyzeCompatibility(){
+
+const btn = document.getElementById("analyzeCompatibilityBtn");
+const status = document.getElementById("compatibilityStatus");
+const results = document.getElementById("compatibilityResults");
+
+if(!offers || offers.length === 0){
+if(status) status.textContent = "⚠️ Aucune offre chargée. Lance d'abord une recherche.";
+return;
+}
+
+if(!currentCVAnalysis){
+if(status) status.textContent = "⚠️ Aucun CV analysé. Importe et analyse ton CV d'abord.";
+return;
+}
+
+if(btn) btn.disabled = true;
+if(status) status.textContent = `⏳ Analyse de ${offers.length} offres en cours...`;
+if(results) results.innerHTML = "";
+
+setTimeout(() => {
+
+const scored = offers
+.map(offer => ({
+...offer,
+_score: calculateMatch(offer),
+_details: calculateMatchDetails(offer)
+}))
+.sort((a, b) => b._score - a._score)
+.slice(0, 10);
+
+if(results){
+results.innerHTML = scored.map((offer, index) => {
+
+const badge = getMatchBadge(offer._score);
+const matchClass = getMatchClass(offer._score);
+const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
+
+return `
+<div class="offer-card" style="margin-bottom:10px; cursor:pointer;" onclick="openTab('filters'); setTimeout(() => { const el = document.querySelector('[data-offer-id=\\'${escapeHTML(offer.id)}\\']'); if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); el.style.outline='2px solid #7c3aed'; setTimeout(()=>el.style.outline='',2000); } }, 400);">
+<div class="offer-title" style="font-size:14px;">
+${medal} ${escapeHTML(offer.title)}
+</div>
+<div class="offer-company" style="font-size:13px;">
+🏢 ${escapeHTML(offer.company)} &nbsp;·&nbsp; 📍 ${escapeHTML(offer.location)}
+</div>
+<div class="offer-match ${matchClass}" style="margin-top:8px;">
+🤖 Score : ${offer._score}% — ${escapeHTML(badge)}
+</div>
+${offer._details.reasons.length > 0 ? `
+<div style="font-size:12px; color: var(--text-secondary); margin-top:6px;">
+✓ ${offer._details.reasons.join(" &nbsp;·&nbsp; ✓ ")}
+</div>` : ""}
+</div>
+`;
+}).join("");
+}
+
+if(status) status.textContent = `✅ ${scored.length} meilleures offres affichées — cliquez sur une carte pour y accéder.`;
+if(btn) btn.disabled = false;
+
+}, 100);
+
+}
+
+document.getElementById("analyzeCompatibilityBtn")
+?.addEventListener("click", analyzeCompatibility);
+
+/* ==========================================
 DASHBOARD
 ========================================== */
 
