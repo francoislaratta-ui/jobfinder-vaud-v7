@@ -2697,116 +2697,78 @@ try{
 
 for(const keyword of SEARCH_KEYWORDS){
 
-/* Délai anti-blocage Jobup */
-await new Promise(r => setTimeout(r, 1500));
+await new Promise(r => setTimeout(r, 800));
 
-const encodedKeyword =
-encodeURIComponent(keyword);
+const encodedKeyword = encodeURIComponent(keyword);
 
-const url =
-`https://www.jobup.ch/fr/emplois/?term=${encodedKeyword}&regionIds=52`;
+/* Utilise le proxy RSS interne pour éviter le blocage Cloudflare */
+const rssUrl = `http://localhost:${PORT}/api/proxy-rss?term=${encodedKeyword}&region=52`;
 
-const html =
-await fetchExternalText(url);
-
-const initMatch =
-html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__)/);
-
-if(!initMatch){
-console.log(`Jobup "${keyword}": __INIT__ non trouvé`);
+let xml = "";
+try{
+const response = await axios.get(rssUrl, { timeout: 15000, responseType: "text" });
+xml = response.data;
+}catch(e){
+console.warn(`Jobup proxy RSS "${keyword}" échoué: ${e.message}`);
 continue;
 }
 
-const data = JSON.parse(initMatch[1]);
+const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
+console.log(`Jobup RSS "${keyword}": ${items.length} offres`);
 
-const results =
-data?.vacancy?.results?.main?.results || [];
+for(const item of items){
 
-console.log(`Jobup "${keyword}": ${results.length} offres`);
+const title =
+(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] ||
+(item.match(/<title>(.*?)<\/title>/) || [])[1] || "";
 
-for(const job of results){
+const link =
+(item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
 
-const jobId = job.id || "";
-const place = job.place || "";
+const description =
+(item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
 
-const isVaud =
-job.regions?.some(r =>
-String(r).includes("52") ||
-String(r).toLowerCase().includes("vaud")
-) ||
-VAUD_PLACES.some(v =>
-place.toLowerCase().includes(v)
-) ||
-job.locations?.some(l =>
-l.cantonCode === "VD"
-);
+const pubDate =
+(item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
 
-if(!isVaud) continue;
+const company =
+(item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) ||
+item.match(/<author>(.*?)<\/author>/) || [])[1] || "";
 
-const titleLower = (job.title || "").toLowerCase();
-const keywordWords = keyword.toLowerCase().split(" ");
-if(!keywordWords.some(w => w.length > 4 && titleLower.includes(w))) continue;
+const location =
+(item.match(/<location><!\[CDATA\[(.*?)\]\]><\/location>/) ||
+item.match(/<city>(.*?)<\/city>/) || [])[1] || "Vaud";
 
-const apprentiKeywords = [
-"apprenti","apprentie","apprenant",
-"préapprentissage","préapprenti",
-"cfc en cours","stage","stagiaire"
-];
-if(apprentiKeywords.some(a => titleLower.includes(a))) continue;
+if(!title) continue;
+
+const titleNorm = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+
+const apprentiKeywords = ["apprenti","apprentie","apprenant","stage","stagiaire"];
+if(apprentiKeywords.some(a => titleNorm.includes(a))) continue;
 
 const excludedKeywords = [
-"commerce de detail",
-"commerce de détail",
-"gestionnaire de vente",
-"conseiller de vente",
-"conseillere de vente",
-"vendeur",
-"vendeuse",
-"chef de rayon",
-"responsable de rayon"
+"commerce de detail","gestionnaire de vente","conseiller de vente",
+"vendeur","vendeuse","chef de rayon","responsable de rayon",
+"assistante medicale","assistant medical","assistant rh","assistante rh"
 ];
-const titleNorm = titleLower.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-if(excludedKeywords.some(e =>
-e.normalize("NFD").replace(/[\u0300-\u036f]/g,"").split(" ")
-.every(w => titleNorm.includes(w))
-)) continue;
+if(excludedKeywords.some(e => titleNorm.includes(e.normalize("NFD").replace(/[\u0300-\u036f]/g,"")))) continue;
 
-/* Exclure assistante médicale spécifiquement */
-if(titleNorm.includes("assistante medicale") || titleNorm.includes("assistant medical")) continue;
-
-const street = (job.street || "").trim();
-const zipCode = (job.zipCode || "").trim();
-const addressParts = [];
-if(street) addressParts.push(street);
-if(zipCode || place) addressParts.push(`${zipCode} ${place}`.trim());
-const address = addressParts.join("\n");
-
-const contractId = (job.employmentTypeIds || [])[0] || "";
-const contract = CONTRACT_TYPE_MAP[contractId] || "";
+const jobId = (link.match(/detail\/([^/]+)\//) || [])[1] || "";
 
 offers.push({
-id: String(jobId || generateServerId()),
-title: job.title || "",
-company: job.company?.name || "",
-location: place,
-address: address,
+id: jobId || generateServerId(),
+title: title.trim(),
+company: company.trim(),
+location: location.trim(),
+address: "",
 sector: "",
-rate: job.employmentGrades &&
-job.employmentGrades[0] !== job.employmentGrades[1]
-? `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
-: "",
-contract: contract,
+rate: "",
+contract: "",
 source: "Jobup",
-offerUrl: jobId
-? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
-: "",
-date: job.publicationDate
-? job.publicationDate.split("T")[0]
-: new Date().toISOString().split("T")[0],
-description: job.lead || "Descriptif non disponible.",
-salary: job.salary
-? `CHF ${job.salary}`
-: "",
+offerUrl: link.trim() || (jobId ? `https://www.jobup.ch/fr/emplois/detail/${jobId}/` : ""),
+date: pubDate ? new Date(pubDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+description: description || "Descriptif non disponible.",
+salary: ""
 });
 
 }
@@ -2814,11 +2776,10 @@ salary: job.salary
 }
 
 }catch(error){
-
 console.warn("Erreur scraping Jobup :", error.message);
-
 }
 
+console.log(`Jobup total: ${offers.length} offres`);
 return offers;
 
 }
