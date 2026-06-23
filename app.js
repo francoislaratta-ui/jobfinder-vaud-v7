@@ -1050,10 +1050,8 @@ updateBestMatch();
 updateStatistics();
 updateApplicationCounters();
 
-/* Forcer applyFilters après que tout soit chargé */
-setTimeout(() => {
 applyFilters();
-}, 200);
+showSuccess(`${filteredOffers.length} offres correspondent à vos critères !`);
 
 openTab("filters");
 
@@ -2206,8 +2204,6 @@ const response = await fetch("/api/scrape", { method: "POST" });
 const data = await response.json();
 
 await loadOffers();
-applyFilters();
-showSuccess(`${filteredOffers.length} offres correspondent à vos critères !`);
 
 }catch(error){
 
@@ -3610,7 +3606,8 @@ return;
 }
 
 if(!currentCVAnalysis){
-if(status) status.textContent = "⚠️ Aucun CV analysé. Importe et analyse ton CV d'abord.";
+if(status) status.textContent = "⚠️ Aucun CV analysé. Importe et analyse ton CV d'abord dans l'onglet IA Premium.";
+if(btn) btn.disabled = false;
 return;
 }
 
