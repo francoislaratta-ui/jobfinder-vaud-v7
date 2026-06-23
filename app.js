@@ -22,7 +22,7 @@ seenOffers: "jobfinder_seen_offers"
 CONFIGURATION
 ========================================== */
 
-const APP_VERSION = "14.2.4";
+const APP_VERSION = "14.6.0";
 
 const WEEKLY_TARGET = 3;
 const MONTHLY_TARGET = 12;
@@ -106,6 +106,7 @@ return String(value || "")
 
 function normalizeText(value){
 return String(value || "")
+.replace(/[\u200B\uFEFF\u00A0]/g, " ")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
@@ -134,17 +135,9 @@ const normalize = str => String(str || "")
 .replace(/\s+/g, " ")
 .trim();
 
-/* Priorité 1 : champ rate seul */
-const rateOnly = normalize(
-`${offer.rate || ""} ${offer.workRate || ""}`
-);
+const rateOnly = normalize(`${offer.rate || ""} ${offer.workRate || ""}`);
+const source = rateOnly.length > 1 ? rateOnly : normalize(`${offer.description || ""}`);
 
-/* Priorité 2 : fallback sur description si rate vide */
-const source = rateOnly.length > 1
-? rateOnly
-: normalize(`${offer.description || ""}`);
-
-/* Pattern multiples de 5 entre 5 et 100 */
 const PCT = "(5|10|15|20|25|30|35|40|45|50|55|60|65|70|75|80|85|90|95|100)";
 const RANGE = new RegExp(`\\b${PCT}\\s*-\\s*${PCT}\\s*%`);
 const RANGE2 = new RegExp(`\\b${PCT}\\s*%\\s*-\\s*${PCT}\\s*%`);
@@ -155,9 +148,7 @@ if(rangeMatch){
 const minRate = Math.min(Number(rangeMatch[1]), Number(rangeMatch[2]));
 const maxRate = Math.max(Number(rangeMatch[1]), Number(rangeMatch[2]));
 const values = [];
-for(let rate = minRate; rate <= maxRate; rate += 5){
-values.push(rate);
-}
+for(let rate = minRate; rate <= maxRate; rate += 5){ values.push(rate); }
 return { hasRate:true, type:"range", min:minRate, max:maxRate, values, label:`${minRate}-${maxRate}%` };
 }
 
@@ -247,47 +238,25 @@ targetJobs: [
 "Assistante administrative",
 "Gestionnaire de dossier",
 "Gestionnaire administratif",
-"Gestionnaire administrative",
 "Collaborateur administratif",
 "Collaboratrice administrative",
 "Technicien informatique",
-"Technicienne informatique",
 "Support informatique",
 "Helpdesk",
-"Back-office",
-"Secrétaire",
-"Secrétaire médical",
-"Secrétaire médicale",
-"Assistant de direction",
-"Assistante de direction",
-"Assistant RH",
-"Coordinateur administratif",
-"Coordinatrice administrative",
-"Employé administratif",
-"Employée administrative",
-"Agent administratif",
-"Collaborateur de bureau",
-"Technicien support",
-"Technicien réseau",
-"Responsable de dossiers"
+"Back-office"
 ],
 
 preferredSectors: [
 "Administration",
 "Administration publique",
-"Collectivités publiques",
 "Fiduciaire",
 "Informatique",
 "Immobilier",
 "Services",
 "Santé",
-"Médical",
-"Social",
 "Assurances",
 "Banque",
-"Industrie",
-"Formation",
-"Enseignement"
+"Collectivités publiques"
 ],
 
 preferredRegions: [
@@ -303,36 +272,27 @@ preferredRegions: [
 "Yverdon",
 "Rolle",
 "Aigle",
-"Montreux",
-"Bussigny",
-"Pully",
-"Gland"
+"Montreux"
 ],
 
 preferredRates: [
-"40%",
 "50%",
 "60%",
 "70%",
-"40-60%",
 "50-60%",
 "60-70%",
-"40-70%",
-"50-70%",
-"40 - 60%",
 "50 - 60%",
 "60 - 70%",
-"40% - 60%",
-"50% - 70%"
+"50 à 70%",
+"50% - 70%",
+"50-70%"
 ],
 
 preferredContracts: [
 "CDI",
 "CDD",
 "Temporaire",
-"Fixe",
-"Durée indéterminée",
-"Durée déterminée"
+"Fixe"
 ]
 };
 
@@ -647,28 +607,30 @@ const normalized =
 normalizeText(text);
 
 const software = [];
+
 const languages = [];
+
 const adminSkills = [];
+
 const supportSkills = [];
 
 const softwareKeywords = [
-"office 365",
-"office",
 "excel",
 "word",
 "outlook",
 "powerpoint",
-"filemaker",
-"timeas",
-"tipee",
 "sap",
-"hypsis",
-"axapta",
-"pro-concept",
-"proconcept",
 "erp",
 "crm",
 "windows",
+"office",
+"office 365",
+"filemaker",
+"pro-concept",
+"hypsis",
+"axapta",
+"timeas",
+"tipee",
 "linux",
 "unix"
 ];
@@ -676,78 +638,101 @@ const softwareKeywords = [
 const languageKeywords = [
 "français",
 "anglais",
-"allemand",
 "italien"
 ];
 
+const weakLanguageQualifiers = [
+"scolaire",
+"notions",
+"debutant",
+"bases"
+];
+
 const adminKeywords = [
-"gestion de dossier",
 "gestion administrative",
+"gestion de dossiers",
 "facturation",
-"comptabilite",
 "comptabilité",
 "classement",
 "archivage",
 "correspondance",
 "service client",
-"secretariat",
-"secrétariat",
-"accueil",
-"agenda",
+"téléphone",
+"email",
 "planification",
 "organisation",
+"accueil",
+"réception",
+"secrétariat",
+"bureautique",
+"agenda",
 "contentieux",
-"immobilier",
-"logistique",
-"commandes",
-"statistiques",
 "budget",
 "admission",
-"mutation",
-"coordination",
-"partenaires",
-"courriers"
+"planning"
 ];
 
 const supportKeywords = [
 "support informatique",
 "helpdesk",
 "technicien informatique",
-"technicien reseau",
-"technicien réseau",
 "installation",
 "maintenance",
-"depannage",
 "dépannage",
-"configuration",
 "parc informatique",
-"formation utilisateurs",
-"super user",
-"super-user"
+"configuration",
+"formation utilisateurs"
 ];
 
 softwareKeywords.forEach(keyword => {
-if(normalized.includes(normalizeText(keyword))){
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
 software.push(keyword);
 }
+
 });
 
 languageKeywords.forEach(keyword => {
-if(normalized.includes(normalizeText(keyword))){
+
+const keyNorm = normalizeText(keyword);
+if(!normalized.includes(keyNorm)) return;
+
+// Vérifier contexte : si un qualificatif faible précède la langue, ignorer
+const idx = normalized.indexOf(keyNorm);
+const context = normalized.substring(Math.max(0, idx - 40), idx);
+const isWeak = weakLanguageQualifiers.some(q => context.includes(q));
+if(!isWeak){
 languages.push(keyword);
 }
+
 });
 
 adminKeywords.forEach(keyword => {
-if(normalized.includes(normalizeText(keyword))){
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
 adminSkills.push(keyword);
 }
+
 });
 
 supportKeywords.forEach(keyword => {
-if(normalized.includes(normalizeText(keyword))){
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
 supportSkills.push(keyword);
 }
+
 });
 
 const skills = [
@@ -758,12 +743,19 @@ const skills = [
 ];
 
 return {
-wordCount: text.split(/\s+/).filter(Boolean).length,
+
+wordCount:
+text
+.split(/\s+/)
+.filter(Boolean)
+.length,
+
 skills,
 software,
 languages,
 adminSkills,
 supportSkills
+
 };
 
 }
@@ -967,23 +959,6 @@ top: 0,
 behavior: "smooth"
 });
 }
-}
-
-function handleTempsPlein(checkbox){
-
-const taux = document.querySelectorAll('input[name="taux"]');
-
-taux.forEach(cb => {
-cb.checked = false;
-});
-
-if(checkbox.checked){
-const taux100 = document.getElementById("taux100");
-if(taux100) taux100.checked = true;
-}
-
-applyFilters();
-
 }
 
 /* ==========================================
@@ -1343,11 +1318,11 @@ if(numericTaux.length > 0 && !selectAllTaux?.checked){
         if(!rateInfo.hasRate) return true;
         return numericTaux.some(t => {
             const tNum = parseInt(t);
-            /* Vérifier si la valeur cochée tombe dans la plage min-max */
             return tNum >= rateInfo.min && tNum <= rateInfo.max;
         });
     });
 }
+
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
     result = result.filter(offer =>
         !offer.contract ||
@@ -2386,20 +2361,20 @@ ${offer.offerUrl ? `
 <div class="offer-reasons">
 
 <div class="ia-reasons-grid">
-${details.reasons.length > 0
-? details.reasons.map(r => `<div>✓ ${escapeHTML(r)}</div>`).join("")
-: "<div>Aucun point fort détecté</div>"
-}
+<div>✓ Métier compatible</div>
+<div>✓ Contrat compatible</div>
+<div>✓ Secteur intéressant</div>
+<div>✓ Salaire intéressant</div>
+<div>✓ Expérience cohérente</div>
 </div>
 
-${details.missing.length > 0 ? `
 <div class="ia-check-block">
 <strong>🧐 Points à vérifier :</strong>
 <ul>
-${details.missing.map(m => `<li>${escapeHTML(m)}</li>`).join("")}
+<li>Compétences spécifiques à confirmer</li>
+<li>Compétences CV peu visibles</li>
 </ul>
 </div>
-` : ""}
 
 </div>
 
@@ -3596,9 +3571,7 @@ const btn = document.getElementById("analyzeCompatibilityBtn");
 const status = document.getElementById("compatibilityStatus");
 const results = document.getElementById("compatibilityResults");
 
-const pool = Array.isArray(offers) && offers.length > 0
-? offers
-: [];
+const pool = Array.isArray(offers) && offers.length > 0 ? offers : [];
 
 if(!pool || pool.length === 0){
 if(status) status.textContent = "⚠️ Aucune offre chargée. Lance d'abord une recherche.";
@@ -3628,26 +3601,15 @@ _details: calculateMatchDetails(offer)
 
 if(results){
 results.innerHTML = scored.map((offer, index) => {
-
 const badge = getMatchBadge(offer._score);
 const matchClass = getMatchClass(offer._score);
 const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
-
 return `
 <div class="offer-card" style="margin-bottom:10px; cursor:pointer;" onclick="openTab('filters'); setTimeout(() => { const el = document.querySelector('[data-offer-id=\\'${escapeHTML(offer.id)}\\']'); if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); el.style.outline='2px solid #7c3aed'; setTimeout(()=>el.style.outline='',2000); } }, 400);">
-<div class="offer-title" style="font-size:14px;">
-${medal} ${escapeHTML(offer.title)}
-</div>
-<div class="offer-company" style="font-size:13px;">
-🏢 ${escapeHTML(offer.company)} &nbsp;·&nbsp; 📍 ${escapeHTML(offer.location)}
-</div>
-<div class="offer-match ${matchClass}" style="margin-top:8px;">
-🤖 Score : ${offer._score}% — ${escapeHTML(badge)}
-</div>
-${offer._details.reasons.length > 0 ? `
-<div style="font-size:12px; color: var(--text-secondary); margin-top:6px;">
-✓ ${offer._details.reasons.join(" &nbsp;·&nbsp; ✓ ")}
-</div>` : ""}
+<div class="offer-title" style="font-size:14px;">${medal} ${escapeHTML(offer.title)}</div>
+<div class="offer-company" style="font-size:13px;">🏢 ${escapeHTML(offer.company)} &nbsp;·&nbsp; 📍 ${escapeHTML(offer.location)}</div>
+<div class="offer-match ${matchClass}" style="margin-top:8px;">🤖 Score : ${offer._score}% — ${escapeHTML(badge)}</div>
+${offer._details.reasons.length > 0 ? `<div style="font-size:12px; color: var(--text-secondary); margin-top:6px;">✓ ${offer._details.reasons.join(" &nbsp;·&nbsp; ✓ ")}</div>` : ""}
 </div>
 `;
 }).join("");
@@ -3707,90 +3669,44 @@ dashboardOffers.length > 0
 NOTIFICATIONS
 ========================================== */
 
-function getOfferMemoryId(offer){
-
-return String(
-offer.externalId ||
-offer.offerUrl ||
-offer.url ||
-`${offer.company || ""}-${offer.title || ""}-${offer.location || ""}`
-)
-.toLowerCase()
-.trim();
-
-}
-
-function detectNewOffers(){
-
-newOffers = [];
-
-offers.forEach(offer => {
-
-const memoryId =
-getOfferMemoryId(offer);
-
-if(!memoryId){
-return;
-}
-
-if(!seenOffers.includes(memoryId)){
-
-newOffers.push(offer);
-seenOffers.push(memoryId);
-
-}
-
-});
-
-localStorage.setItem(
-STORAGE_KEYS.seenOffers,
-JSON.stringify(seenOffers)
-);
-
-}
-
 function updateNotifications(){
 
-const badge =
-document.getElementById("notificationsBadge");
+const sourceCounts = {};
 
-if(badge){
+offers.forEach(offer => {
+const source =
+offer.source || offer.company || "Autre";
 
-badge.textContent =
-newOffers.length
-? ` 🔴${newOffers.length}`
-: "";
+sourceCounts[source] =
+(sourceCounts[source] || 0) + 1;
+});
 
-}
+const sourceLines =
+Object.entries(sourceCounts)
+.slice(0, 6)
+.map(([source,count]) => {
+return `
+<div class="alert-source-line">
+<span>• ${escapeHTML(source)}</span>
+<span>: ${count}</span>
+</div>
+`;
+})
+.join("");
 
 const newOffersBox =
 document.getElementById("newOffersNotifications");
 
 if(newOffersBox){
-
 newOffersBox.innerHTML =
-newOffers.length
-? newOffers
-.map(offer => `
-<div class="notification-item">
-
-<div>
-🆕 <strong>${escapeHTML(offer.title)}</strong>
+offers.length
+? `
+<div class="alert-line">
+• ${offers.length} nouvelles offres
 </div>
-
-<div>
-🏢 ${escapeHTML(offer.company)}
-</div>
-
-<div>
-📍 ${escapeHTML(offer.location)}
-</div>
-
-</div>
-`)
-.join("")
-: "Aucune nouvelle offre détectée";
-
+${sourceLines}
+`
+: "Aucune nouvelle offre";
 }
 
 safeSetText(

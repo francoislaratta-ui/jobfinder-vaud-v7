@@ -376,7 +376,7 @@ MEILLEUR MATCH DU JOUR
 
 <div class="objectives-card">
 
-<div
+<<div
 id="aiBestMatchContainer">
 
 Aucun résultat disponible
@@ -1297,6 +1297,36 @@ class="action-btn">
 </div>
 
 <!-- ==========================================
+RECHERCHE PAR COMPATIBILITE CV
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🔍 Recherche par compatibilité CV
+
+</h3>
+
+<p style="font-size:13px; color: var(--text-secondary); margin-bottom: 12px;">
+Analyse toutes les offres chargées et les trie par score de compatibilité avec ton CV.
+</p>
+
+<button
+id="analyzeCompatibilityBtn"
+class="action-btn">
+
+🤖 Analyser la compatibilité
+
+</button>
+
+<div id="compatibilityStatus" style="margin-top:10px; font-size:13px; color: var(--text-secondary);"></div>
+
+<div id="compatibilityResults" style="margin-top:16px;"></div>
+
+</div>
+
+<!-- ==========================================
 SCORE IA
 ========================================== -->
 
@@ -1321,27 +1351,6 @@ class="big-score">
 Compatibilité moyenne avec les offres
 
 </p>
-
-</div>
-
-<!-- ==========================================
-MEILLEUR MATCH
-========================================== -->
-
-<div class="objectives-card">
-
-<h3>
-
-🔥 Meilleur Match du Jour
-
-</h3>
-
-<div
-id="bestMatchContainer">
-
-Aucun résultat disponible
-
-</div>
 
 </div>
 
@@ -1936,13 +1945,13 @@ Suivez vos offres, favoris, candidatures et recommandations IA en temps réel.
 <div class="objectives-card">
 
 <h3>
-🔔 Alertes intelligentes
+🆕 Nouvelles offres
 </h3>
 
 <div
 id="newOffersNotifications">
 
-Aucune nouvelle offre détectée
+Aucune nouvelle offre
 
 </div>
 
@@ -1994,7 +2003,6 @@ Aucune alerte IA
 </div>
 
 </section>
-
 
 <!-- ==========================================
 BOUTONS FLOTTANTS
