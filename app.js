@@ -247,25 +247,47 @@ targetJobs: [
 "Assistante administrative",
 "Gestionnaire de dossier",
 "Gestionnaire administratif",
+"Gestionnaire administrative",
 "Collaborateur administratif",
 "Collaboratrice administrative",
 "Technicien informatique",
+"Technicienne informatique",
 "Support informatique",
 "Helpdesk",
-"Back-office"
+"Back-office",
+"Secrétaire",
+"Secrétaire médical",
+"Secrétaire médicale",
+"Assistant de direction",
+"Assistante de direction",
+"Assistant RH",
+"Coordinateur administratif",
+"Coordinatrice administrative",
+"Employé administratif",
+"Employée administrative",
+"Agent administratif",
+"Collaborateur de bureau",
+"Technicien support",
+"Technicien réseau",
+"Responsable de dossiers"
 ],
 
 preferredSectors: [
 "Administration",
 "Administration publique",
+"Collectivités publiques",
 "Fiduciaire",
 "Informatique",
 "Immobilier",
 "Services",
 "Santé",
+"Médical",
+"Social",
 "Assurances",
 "Banque",
-"Collectivités publiques"
+"Industrie",
+"Formation",
+"Enseignement"
 ],
 
 preferredRegions: [
@@ -281,27 +303,36 @@ preferredRegions: [
 "Yverdon",
 "Rolle",
 "Aigle",
-"Montreux"
+"Montreux",
+"Bussigny",
+"Pully",
+"Gland"
 ],
 
 preferredRates: [
+"40%",
 "50%",
 "60%",
 "70%",
+"40-60%",
 "50-60%",
 "60-70%",
+"40-70%",
+"50-70%",
+"40 - 60%",
 "50 - 60%",
 "60 - 70%",
-"50 à 70%",
-"50% - 70%",
-"50-70%"
+"40% - 60%",
+"50% - 70%"
 ],
 
 preferredContracts: [
 "CDI",
 "CDD",
 "Temporaire",
-"Fixe"
+"Fixe",
+"Durée indéterminée",
+"Durée déterminée"
 ]
 };
 
@@ -616,23 +647,30 @@ const normalized =
 normalizeText(text);
 
 const software = [];
-
 const languages = [];
-
 const adminSkills = [];
-
 const supportSkills = [];
 
 const softwareKeywords = [
+"office 365",
+"office",
 "excel",
 "word",
 "outlook",
 "powerpoint",
+"filemaker",
+"timeas",
+"tipee",
 "sap",
+"hypsis",
+"axapta",
+"pro-concept",
+"proconcept",
 "erp",
 "crm",
 "windows",
-"office"
+"linux",
+"unix"
 ];
 
 const languageKeywords = [
@@ -643,75 +681,73 @@ const languageKeywords = [
 ];
 
 const adminKeywords = [
+"gestion de dossier",
 "gestion administrative",
-"gestion de dossiers",
 "facturation",
+"comptabilite",
 "comptabilité",
 "classement",
 "archivage",
 "correspondance",
 "service client",
-"téléphone",
-"email",
+"secretariat",
+"secrétariat",
+"accueil",
+"agenda",
 "planification",
-"organisation"
+"organisation",
+"contentieux",
+"immobilier",
+"logistique",
+"commandes",
+"statistiques",
+"budget",
+"admission",
+"mutation",
+"coordination",
+"partenaires",
+"courriers"
 ];
 
 const supportKeywords = [
 "support informatique",
 "helpdesk",
 "technicien informatique",
+"technicien reseau",
+"technicien réseau",
 "installation",
 "maintenance",
-"dépannage"
+"depannage",
+"dépannage",
+"configuration",
+"parc informatique",
+"formation utilisateurs",
+"super user",
+"super-user"
 ];
 
 softwareKeywords.forEach(keyword => {
-
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+if(normalized.includes(normalizeText(keyword))){
 software.push(keyword);
 }
-
 });
 
 languageKeywords.forEach(keyword => {
-
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+if(normalized.includes(normalizeText(keyword))){
 languages.push(keyword);
 }
-
 });
 
 adminKeywords.forEach(keyword => {
-
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+if(normalized.includes(normalizeText(keyword))){
 adminSkills.push(keyword);
 }
-
 });
 
 supportKeywords.forEach(keyword => {
-
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+if(normalized.includes(normalizeText(keyword))){
 supportSkills.push(keyword);
 }
-
 });
 
 const skills = [
@@ -722,19 +758,12 @@ const skills = [
 ];
 
 return {
-
-wordCount:
-text
-.split(/\s+/)
-.filter(Boolean)
-.length,
-
+wordCount: text.split(/\s+/).filter(Boolean).length,
 skills,
 software,
 languages,
 adminSkills,
 supportSkills
-
 };
 
 }
@@ -1368,7 +1397,6 @@ if(selectedSources.length > 0 && selectedSources.length < totalSources){
     updateDashboard();
     updateBestMatch();
     updateStatistics();
-    saveFilters();
 
 }
 
