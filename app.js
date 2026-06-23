@@ -3596,9 +3596,9 @@ const btn = document.getElementById("analyzeCompatibilityBtn");
 const status = document.getElementById("compatibilityStatus");
 const results = document.getElementById("compatibilityResults");
 
-const pool = Array.isArray(filteredOffers) && filteredOffers.length > 0
-? filteredOffers
-: offers;
+const pool = Array.isArray(offers) && offers.length > 0
+? offers
+: [];
 
 if(!pool || pool.length === 0){
 if(status) status.textContent = "⚠️ Aucune offre chargée. Lance d'abord une recherche.";
