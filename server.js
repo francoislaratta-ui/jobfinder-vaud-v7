@@ -2554,8 +2554,49 @@ error:error.message
 );
 
 /* ==========================================
-API SCRAPE ON DEMAND
+IMPORT OFFRES DEPUIS SCRAPER LOCAL
 ========================================== */
+
+app.post("/api/offers/import", (req, res) => {
+
+try{
+
+const { offers: newOffers, source } = req.body;
+
+if(!Array.isArray(newOffers) || newOffers.length === 0){
+return res.status(400).json({ success: false, message: "Aucune offre reçue" });
+}
+
+// Charger les offres existantes
+const existing = readJson(OFFERS_FILE) || [];
+
+// Supprimer les anciennes offres de la même source
+const otherOffers = existing.filter(o => o.source !== (newOffers[0]?.source || source));
+
+// Fusionner et dédupliquer
+const merged = deduplicateOffers([...otherOffers, ...newOffers]);
+
+writeJson(OFFERS_FILE, merged);
+
+console.log(`📥 Import ${source || "local"}: ${newOffers.length} offres reçues → ${merged.length} total`);
+
+res.json({
+success: true,
+received: newOffers.length,
+total: merged.length,
+message: `${newOffers.length} offres importées avec succès`
+});
+
+}catch(error){
+
+console.error("Erreur import offres:", error.message);
+res.status(500).json({ success: false, message: error.message });
+
+}
+
+});
+
+
 
 app.post(
 "/api/scrape",
