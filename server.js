@@ -3523,9 +3523,19 @@ typeof fetchNestleOffers === "function" ? fetchNestleOffers() : Promise.resolve(
 typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
 ]);
 
+const existingOffers = readJson(OFFERS_FILE) || [];
+const existingJobup = existingOffers.filter(o => o.source === "Jobup");
+
+/* Préserver les offres Jobup importées localement si scraping retourne 0 */
+const jobupToUse = jobupOffers.length > 0 ? jobupOffers : existingJobup;
+
+if(jobupToUse.length > 0 && jobupOffers.length === 0){
+console.log(`♻️ Jobup: scraping 0 offres — conservation des ${existingJobup.length} offres importées localement`);
+}
+
 const allOffers =
 deduplicateOffers([
-...jobupOffers,
+...jobupToUse,
 ...vdOffers,
 ...jobscout24Offers,
 ...indeedOffers,
