@@ -1232,7 +1232,10 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        if(!offer.rate) return true;
+        // Offre sans taux : acceptée uniquement si 100% est coché
+        if(!offer.rate){
+            return selectedTaux.includes("100");
+        }
         const rateNorm = normalizeText(offer.rate);
         return selectedTaux.some(t => {
             const tNum = parseInt(t);
