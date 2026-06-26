@@ -2203,6 +2203,26 @@ const descHtml = offer.source === "Jobup"
 : escapeHTML(rawDesc);
 
 // Nettoyage + formatage adresse
+const CONTRACT_MAP = {
+"unlimited": "CDI",
+"permanent": "CDI",
+"cdi": "CDI",
+"limited": "CDD",
+"temporary": "CDD",
+"cdd": "CDD",
+"internship": "Stage",
+"stage": "Stage",
+"apprenticeship": "Apprentissage",
+"freelance": "Freelance",
+"mandate": "Mandat"
+};
+
+const formatContract = (contract) => {
+if(!contract) return "";
+const key = contract.trim().toLowerCase();
+return CONTRACT_MAP[key] || contract;
+};
+
 const formatAddress = (addr) => {
 if(!addr) return "";
 
@@ -2257,7 +2277,7 @@ ${offer.rate ? `
 
 ${offer.contract ? `
 <div class="offer-meta">
-📄 ${escapeHTML(offer.contract)}
+📄 ${escapeHTML(formatContract(offer.contract))}
 </div>
 ` : ""}
 
