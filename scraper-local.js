@@ -67,7 +67,7 @@ headers: {
 "Sec-Fetch-Mode": "navigate",
 "Sec-Fetch-Site": "cross-site"
 },
-timeout: 15000,
+timeout: 30000,
 responseType: "text"
 });
 return response.data;
