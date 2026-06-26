@@ -1128,6 +1128,30 @@ applyFilters();
 }
 
 /* ==========================================
+CONTRACT MAP
+========================================== */
+
+const CONTRACT_MAP = {
+"unlimited": "CDI",
+"permanent": "CDI",
+"cdi": "CDI",
+"limited": "CDD",
+"temporary": "CDD",
+"cdd": "CDD",
+"internship": "Stage",
+"stage": "Stage",
+"apprenticeship": "Apprentissage",
+"freelance": "Freelance",
+"mandate": "Mandat"
+};
+
+function formatContract(contract){
+if(!contract) return "";
+const key = contract.trim().toLowerCase();
+return CONTRACT_MAP[key] || contract;
+}
+
+/* ==========================================
 APPLY FILTERS
 ========================================== */
 
@@ -1249,12 +1273,14 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
 }
 
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
-    result = result.filter(offer =>
-        !offer.contract ||
-        selectedContrats.some(c =>
-            containsNormalized(offer.contract, c)
-        )
-    );
+    result = result.filter(offer => {
+        if(!offer.contract) return true;
+        // Normaliser la valeur brute (ex: "limited" → "CDD") avant de comparer
+        const contractNorm = formatContract(offer.contract);
+        return selectedContrats.some(c =>
+            containsNormalized(contractNorm, c)
+        );
+    });
 }
 
 if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
@@ -2203,26 +2229,6 @@ const descHtml = offer.source === "Jobup"
 : escapeHTML(rawDesc);
 
 // Nettoyage + formatage adresse
-const CONTRACT_MAP = {
-"unlimited": "CDI",
-"permanent": "CDI",
-"cdi": "CDI",
-"limited": "CDD",
-"temporary": "CDD",
-"cdd": "CDD",
-"internship": "Stage",
-"stage": "Stage",
-"apprenticeship": "Apprentissage",
-"freelance": "Freelance",
-"mandate": "Mandat"
-};
-
-const formatContract = (contract) => {
-if(!contract) return "";
-const key = contract.trim().toLowerCase();
-return CONTRACT_MAP[key] || contract;
-};
-
 const formatAddress = (addr) => {
 if(!addr) return "";
 
