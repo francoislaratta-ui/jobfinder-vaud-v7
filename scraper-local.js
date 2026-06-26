@@ -88,73 +88,93 @@ async function scrapeDetailPage(path){
 const url = `https://www.jobup.ch${path}`;
 const html = await fetchJobupPage(url);
 
+/* Essai 1 : extraction depuis le JSON __INIT__ de Jobup */
+const initMatch = html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__|<\/script>)/);
+if(initMatch){
+try{
+const data = JSON.parse(initMatch[1]);
+const job = data?.vacancy?.detail?.vacancy;
+if(job){
+const title = job.title || "";
+if(!looksLikeWantedJob(title)) return null;
+
+const company = job.company?.name || "";
+const place = job.place || "";
+const street = job.street || "";
+const zipCode = job.zipCode || "";
+const address = [street, `${zipCode} ${place}`.trim()].filter(Boolean).join(", ");
+const location = place || "Vaud";
+
+const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
+const textLower = (title + " " + location + " " + company).toLowerCase();
+if(!vaudWords.some(v => textLower.includes(v))) return null;
+
+const grades = job.employmentGrades || [];
+const rate = grades.length === 2
+? grades[0] === grades[1] ? `${grades[0]}%` : `${grades[0]}-${grades[1]}%`
+: "";
+
+const CONTRACT_MAP = {"1":"CDI","2":"CDD","3":"Temporaire","4":"Stage","5":"CDI","6":"Apprentissage"};
+const contractId = (job.employmentTypeIds || [])[0] || "";
+const contract = CONTRACT_MAP[contractId] || "";
+
+const date = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
+const salary = job.salary ? `CHF ${job.salary}` : "";
+const jobId = (path.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
+
+return { id: jobId, title, company, location, address, sector: "Administration",
+rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${path}`,
+date, startDate: "", applyBefore: "", salaryGrade: "",
+description: job.lead || "Descriptif non disponible.", salary };
+}
+}catch(e){ /* fallback HTML */ }
+}
+
+/* Essai 2 : extraction depuis le HTML brut */
 const titleMatch = html.match(/<h1[^>]*>([^<]{3,120})<\/h1>/);
 if(!titleMatch) return null;
 const title = titleMatch[1].replace(/&#\d+;/g," ").replace(/&[a-z]+;/g," ").trim();
 if(!looksLikeWantedJob(title)) return null;
 
-const companyMatch =
-html.match(/"hiringOrganization"[^}]*"name"\s*:\s*"([^"]{2,80})"/) ||
-html.match(/class="[^"]*company[^"]*"[^>]*>\s*([^<]{2,80})</);
-const company = companyMatch ? companyMatch[1].replace(/&#\d+;/g," ").trim() : "";
+const companyMatch = html.match(/"hiringOrganization"[^}]*"name"\s*:\s*"([^"]{2,80})"/);
+const company = companyMatch ? companyMatch[1].trim() : "";
 
-const locationMatch = html.match(/Lieu de travail[^:]*:\s*\n?\s*([^\n<]{2,50})/i) ||
-html.match(/\n([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s\-]{2,30}(?:VD|Vaud))\n/);
+const locationMatch = html.match(/content="[^"]*,\s*([A-ZÀ-Ÿ][^"]{2,30}(?:VD|Vaud))"/) ||
+html.match(/<title>[^-]+-[^-]+-[^<]*?([A-ZÀ-Ÿ][a-zà-ÿ\s]+VD)/);
 const location = locationMatch ? locationMatch[1].trim() : "Vaud";
 
-const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve","aclens","tolochenaz","lonay","payerne","grandson","orbe","aigle"];
-const textLower = (title + " " + location + " " + company).toLowerCase();
-if(!vaudWords.some(v => textLower.includes(v)) && !html.includes("region=52")) return null;
+const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
+if(!vaudWords.some(v => (title+location+company).toLowerCase().includes(v)) && !html.includes("region=52")) return null;
 
-const rateMatch = html.match(/\n-\s*(\d{2,3}\s*[–\-]\s*\d{2,3}\s*%|\d{2,3}\s*%)\s*\n/i) ||
-html.match(/Taux d.activit[eé][^:]*:\s*\n?\s*([\d\s%–\-]+%)/i) ||
+const rateMatch = html.match(/"workload"\s*:\s*"([^"]+)"/i) ||
 html.match(/(\d{2,3}\s*[–\-]\s*\d{2,3}\s*%|\d{2,3}\s*%)/);
-const rate = rateMatch ? rateMatch[1].replace(/\s+/g," ").trim() : "";
+const rate = rateMatch ? rateMatch[1].trim() : "";
 
-/* Contrat — chercher uniquement les termes exacts Jobup */
-const contractMatch =
-html.match(/\n-\s*(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage|CDI|CDD)\s*\n/i) ||
-html.match(/\*\*Contrat\s*:\*\*\s*([^\n<]{3,30})/i) ||
-html.match(/Type de contrat[^:]*:\s*\n?\s*([^\n<]{3,30})/i);
+const contractMatch = html.match(/"contractType"\s*:\s*"([^"]+)"/i) ||
+html.match(/(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire)/i);
 let contract = contractMatch ? contractMatch[1].trim() : "";
 contract = contract.replace(/Durée indéterminée/i,"CDI").replace(/Durée déterminée/i,"CDD");
 
-/* Adresse — depuis le lien Google Maps dans le HTML brut */
-const addressMatch =
-html.match(/href="https:\/\/www\.google\.com\/maps[^"]*"[^>]*>([^<]{5,80})<\/a>/i) ||
-html.match(/google\.com\/maps[^>]+>([^<]{5,80})<\/a>/i) ||
-html.match(/(\d{4}\s+[A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s\-]{2,40})/);
-const address = addressMatch ? addressMatch[1].replace(/&amp;/g,"&").replace(/&#\d+;/g," ").trim() : location;
+const addressMatch = html.match(/href="https:\/\/www\.google\.com\/maps[^"]*"[^>]*>([^<]{5,80})<\/a>/i) ||
+html.match(/(\d{4}\s+[A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s]{2,30})/);
+const address = addressMatch ? addressMatch[1].trim() : location;
 
 const salaryMatch = html.match(/(CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois))/i);
-const salary = salaryMatch ? salaryMatch[1].replace(/\s+/g," ").trim() : "";
+const salary = salaryMatch ? salaryMatch[1].trim() : "";
 
-/* Date — prendre la première date raisonnable (2024-2027) */
 const months = {janvier:"01",février:"02",mars:"03",avril:"04",mai:"05",juin:"06",juillet:"07",août:"08",septembre:"09",octobre:"10",novembre:"11",décembre:"12"};
 const allDates = [...html.matchAll(/(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})/gi)];
 let date = new Date().toISOString().split("T")[0];
 for(const d of allDates){
 const year = parseInt(d[3]);
-if(year >= 2024 && year <= 2027){
-date = `${d[3]}-${months[d[2].toLowerCase()]}-${d[1].padStart(2,"0")}`;
-break;
+if(year >= 2024 && year <= 2027){ date = `${d[3]}-${months[d[2].toLowerCase()]}-${d[1].padStart(2,"0")}`; break; }
 }
-}
-
-const startMatch = html.match(/Entr[ée]e en (?:service|fonction)[^\d]*([^\n<]{3,50})/i);
-const startDate = startMatch ? startMatch[1].trim() : "";
-
-const applyMatch = html.match(/Postuler avant[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
-const applyBefore = applyMatch ? applyMatch[1].trim() : "";
-
-const gradeMatch = html.match(/Classe salariale[^:]*:\s*([^\n<]{1,20})/i);
-const salaryGrade = gradeMatch ? gradeMatch[1].trim() : "";
 
 const jobId = (path.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
 
 return { id: jobId, title, company, location, address, sector: "Administration",
 rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${path}`,
-date, startDate, applyBefore, salaryGrade,
+date, startDate: "", applyBefore: "", salaryGrade: "",
 description: "Descriptif non disponible.", salary };
 }
 
