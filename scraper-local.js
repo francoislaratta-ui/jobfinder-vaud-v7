@@ -119,20 +119,27 @@ html.match(/Type de contrat[^:]*:\s*\n?\s*([^\n<]{3,30})/i);
 let contract = contractMatch ? contractMatch[1].trim() : "";
 contract = contract.replace(/Durée indéterminée/i,"CDI").replace(/Durée déterminée/i,"CDD");
 
-/* Adresse — depuis le lien Google Maps dans la page */
+/* Adresse — depuis le lien Google Maps dans le HTML brut */
 const addressMatch =
-html.match(/query=[\d.]+%2C[\d.]+[^"]*"[^>]*>([^<]{5,80})<\/a>/i) ||
-html.match(/maps\/search[^>]+>([^<]{5,80})<\/a>/i) ||
-html.match(/(\d{4}\s+[A-ZÀ-Ÿa-zà-ÿ][^\n<"]{2,40})/);
-const address = addressMatch ? addressMatch[1].replace(/&amp;/g,"&").trim() : location;
+html.match(/href="https:\/\/www\.google\.com\/maps[^"]*"[^>]*>([^<]{5,80})<\/a>/i) ||
+html.match(/google\.com\/maps[^>]+>([^<]{5,80})<\/a>/i) ||
+html.match(/(\d{4}\s+[A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s\-]{2,40})/);
+const address = addressMatch ? addressMatch[1].replace(/&amp;/g,"&").replace(/&#\d+;/g," ").trim() : location;
 
 const salaryMatch = html.match(/(CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois))/i);
 const salary = salaryMatch ? salaryMatch[1].replace(/\s+/g," ").trim() : "";
 
+/* Date — prendre la première date raisonnable (2024-2027) */
 const months = {janvier:"01",février:"02",mars:"03",avril:"04",mai:"05",juin:"06",juillet:"07",août:"08",septembre:"09",octobre:"10",novembre:"11",décembre:"12"};
-const dateMatch = html.match(/(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})/i);
+const allDates = [...html.matchAll(/(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})/gi)];
 let date = new Date().toISOString().split("T")[0];
-if(dateMatch) date = `${dateMatch[3]}-${months[dateMatch[2].toLowerCase()]}-${dateMatch[1].padStart(2,"0")}`;
+for(const d of allDates){
+const year = parseInt(d[3]);
+if(year >= 2024 && year <= 2027){
+date = `${d[3]}-${months[d[2].toLowerCase()]}-${d[1].padStart(2,"0")}`;
+break;
+}
+}
 
 const startMatch = html.match(/Entr[ée]e en (?:service|fonction)[^\d]*([^\n<]{3,50})/i);
 const startDate = startMatch ? startMatch[1].trim() : "";
