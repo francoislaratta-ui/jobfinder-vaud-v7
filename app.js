@@ -1135,14 +1135,21 @@ const CONTRACT_MAP = {
 "unlimited": "CDI",
 "permanent": "CDI",
 "cdi": "CDI",
+"durée indéterminée": "CDI",
+"duree indeterminee": "CDI",
 "limited": "CDD",
-"temporary": "CDD",
 "cdd": "CDD",
+"durée déterminée": "CDD",
+"duree determinee": "CDD",
+"temporary": "CDD",
+"temporaire": "CDD",
 "internship": "Stage",
 "stage": "Stage",
 "apprenticeship": "Apprentissage",
+"apprentissage": "Apprentissage",
 "freelance": "Freelance",
-"mandate": "Mandat"
+"mandate": "Mandat",
+"mandat": "Mandat"
 };
 
 function formatContract(contract){

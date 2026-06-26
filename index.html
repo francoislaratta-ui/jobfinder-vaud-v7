@@ -732,11 +732,6 @@ CDD
 </label>
 
 <label>
-<input type="checkbox" name="contrats" value="Temporaire">
-Temporaire
-</label>
-
-<label>
 <input type="checkbox" name="contrats" value="Stage">
 Stage
 </label>
@@ -1297,36 +1292,6 @@ class="action-btn">
 </div>
 
 <!-- ==========================================
-RECHERCHE PAR COMPATIBILITE CV
-========================================== -->
-
-<div class="objectives-card">
-
-<h3>
-
-🔍 Recherche par compatibilité CV
-
-</h3>
-
-<p style="font-size:13px; color: var(--text-secondary); margin-bottom: 12px;">
-Analyse toutes les offres chargées et les trie par score de compatibilité avec ton CV.
-</p>
-
-<button
-id="analyzeCompatibilityBtn"
-class="action-btn">
-
-🤖 Analyser la compatibilité
-
-</button>
-
-<div id="compatibilityStatus" style="margin-top:10px; font-size:13px; color: var(--text-secondary);"></div>
-
-<div id="compatibilityResults" style="margin-top:16px;"></div>
-
-</div>
-
-<!-- ==========================================
 SCORE IA
 ========================================== -->
 
@@ -1351,6 +1316,27 @@ class="big-score">
 Compatibilité moyenne avec les offres
 
 </p>
+
+</div>
+
+<!-- ==========================================
+MEILLEUR MATCH
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🔥 Meilleur Match du Jour
+
+</h3>
+
+<div
+id="bestMatchContainer">
+
+Aucun résultat disponible
+
+</div>
 
 </div>
 
