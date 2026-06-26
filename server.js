@@ -3559,7 +3559,7 @@ const hasJobup = existingAtStart.some(o => o.source === "Jobup");
 if(hasJobup){
 console.log(`♻️ ${existingAtStart.length} offres en cache dont Jobup — conservées`);
 }
-await scrapeAllOffers();
+// scrapeAllOffers() retiré du démarrage — scraping uniquement sur demande via bouton "Rechercher"
 
 }
 );
