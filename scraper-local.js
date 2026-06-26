@@ -98,24 +98,33 @@ html.match(/"hiringOrganization"[^}]*"name"\s*:\s*"([^"]{2,80})"/) ||
 html.match(/class="[^"]*company[^"]*"[^>]*>\s*([^<]{2,80})</);
 const company = companyMatch ? companyMatch[1].replace(/&#\d+;/g," ").trim() : "";
 
-const locationMatch = html.match(/Lieu de travail[^:]*:\s*\n?\s*([^\n<]{2,50})/i);
+const locationMatch = html.match(/Lieu de travail[^:]*:\s*\n?\s*([^\n<]{2,50})/i) ||
+html.match(/\n([A-ZÀ-Ÿ][a-zà-ÿA-ZÀ-Ÿ\s\-]{2,30}(?:VD|Vaud))\n/);
 const location = locationMatch ? locationMatch[1].trim() : "Vaud";
 
-const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle"];
+const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve","aclens","tolochenaz","lonay","payerne","grandson","orbe","aigle"];
 const textLower = (title + " " + location + " " + company).toLowerCase();
 if(!vaudWords.some(v => textLower.includes(v)) && !html.includes("region=52")) return null;
 
-const rateMatch = html.match(/Taux d.activit[eé][^:]*:\s*\n?\s*([\d\s%–\-]+%)/i) ||
+const rateMatch = html.match(/\n-\s*(\d{2,3}\s*[–\-]\s*\d{2,3}\s*%|\d{2,3}\s*%)\s*\n/i) ||
+html.match(/Taux d.activit[eé][^:]*:\s*\n?\s*([\d\s%–\-]+%)/i) ||
 html.match(/(\d{2,3}\s*[–\-]\s*\d{2,3}\s*%|\d{2,3}\s*%)/);
 const rate = rateMatch ? rateMatch[1].replace(/\s+/g," ").trim() : "";
 
-const contractMatch = html.match(/Type de contrat[^:]*:\s*\n?\s*([^\n<]{3,50})/i) ||
-html.match(/(Durée indéterminée|Durée déterminée|CDI|CDD|Temporaire|Apprentissage)/i);
+/* Contrat — chercher uniquement les termes exacts Jobup */
+const contractMatch =
+html.match(/\n-\s*(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage|CDI|CDD)\s*\n/i) ||
+html.match(/\*\*Contrat\s*:\*\*\s*([^\n<]{3,30})/i) ||
+html.match(/Type de contrat[^:]*:\s*\n?\s*([^\n<]{3,30})/i);
 let contract = contractMatch ? contractMatch[1].trim() : "";
 contract = contract.replace(/Durée indéterminée/i,"CDI").replace(/Durée déterminée/i,"CDD");
 
-const addressMatch = html.match(/(\d{4}\s+[A-ZÀ-Ÿa-zà-ÿ][^\n<]{2,40})/);
-const address = addressMatch ? addressMatch[1].trim() : location;
+/* Adresse — depuis le lien Google Maps dans la page */
+const addressMatch =
+html.match(/query=[\d.]+%2C[\d.]+[^"]*"[^>]*>([^<]{5,80})<\/a>/i) ||
+html.match(/maps\/search[^>]+>([^<]{5,80})<\/a>/i) ||
+html.match(/(\d{4}\s+[A-ZÀ-Ÿa-zà-ÿ][^\n<"]{2,40})/);
+const address = addressMatch ? addressMatch[1].replace(/&amp;/g,"&").trim() : location;
 
 const salaryMatch = html.match(/(CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois))/i);
 const salary = salaryMatch ? salaryMatch[1].replace(/\s+/g," ").trim() : "";
