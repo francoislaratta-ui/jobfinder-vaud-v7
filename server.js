@@ -3524,17 +3524,13 @@ typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
 ]);
 
 const existingOffers = readJson(OFFERS_FILE) || [];
-const existingJobup = existingOffers.filter(o => o.source === "Jobup");
-
-/* Préserver les offres Jobup importées localement si scraping retourne 0 */
-const jobupToUse = jobupOffers.length > 0 ? jobupOffers : existingJobup;
-
-if(jobupToUse.length > 0 && jobupOffers.length === 0){
-console.log(`♻️ Jobup: scraping 0 offres — conservation des ${existingJobup.length} offres importées localement`);
+const savedJobup = existingOffers.filter(o => o.source === "Jobup");
+const jobupToUse = jobupOffers.length > 0 ? jobupOffers : savedJobup;
+if(jobupOffers.length === 0 && savedJobup.length > 0){
+console.log(`♻️ Jobup: 0 scrapées — conservation de ${savedJobup.length} offres locales`);
 }
 
-const allOffers =
-deduplicateOffers([
+const allOffers = deduplicateOffers([
 ...jobupToUse,
 ...vdOffers,
 ...jobscout24Offers,
@@ -3585,10 +3581,11 @@ console.log(
 `Serveur démarré : http://localhost:${PORT}`
 );
 
-console.log(
-"=================================="
-);
-
+const existingAtStart = readJson(OFFERS_FILE) || [];
+const hasJobup = existingAtStart.some(o => o.source === "Jobup");
+if(hasJobup){
+console.log(`♻️ ${existingAtStart.length} offres en cache dont Jobup — conservées`);
+}
 await scrapeAllOffers();
 
 }
