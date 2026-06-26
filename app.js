@@ -1283,9 +1283,9 @@ if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
     result = result.filter(offer => {
         if(!offer.contract) return true;
         // Normaliser la valeur brute (ex: "limited" → "CDD") avant de comparer
-        const contractNorm = formatContract(offer.contract);
+        const contractNorm = formatContract(offer.contract).toLowerCase().trim();
         return selectedContrats.some(c =>
-            containsNormalized(contractNorm, c)
+            contractNorm === c.toLowerCase().trim()
         );
     });
 }
