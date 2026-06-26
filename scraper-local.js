@@ -99,10 +99,13 @@ const title = job.title || "";
 if(!looksLikeWantedJob(title)) return null;
 
 const company = job.company?.name || "";
-const place = job.place || "";
-const street = job.street || "";
-const zipCode = job.zipCode || "";
-const address = [street, `${zipCode} ${place}`.trim()].filter(Boolean).join(", ");
+const street = (job.street || "").trim();
+const zipCode = (job.zipCode || "").trim();
+const place = (job.place || "").trim();
+const addressParts = [];
+if(street) addressParts.push(street);
+if(zipCode || place) addressParts.push(`${zipCode} ${place}`.trim());
+const address = addressParts.length > 0 ? addressParts.join(", ") : place;
 const location = place || "Vaud";
 
 const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
@@ -114,9 +117,9 @@ const rate = grades.length === 2
 ? grades[0] === grades[1] ? `${grades[0]}%` : `${grades[0]}-${grades[1]}%`
 : "";
 
-const CONTRACT_MAP = {"1":"CDI","2":"CDD","3":"Temporaire","4":"Stage","5":"CDI","6":"Apprentissage"};
-const contractId = (job.employmentTypeIds || [])[0] || "";
-const contract = CONTRACT_MAP[contractId] || "";
+const CONTRACT_MAP = {"1":"CDI","2":"CDD","3":"Temporaire","4":"Stage","5":"CDI","6":"Apprentissage","internship":"Stage"};
+const contractId = String((job.employmentTypeIds || [])[0] || job.contractType || "");
+const contract = CONTRACT_MAP[contractId] || CONTRACT_MAP[contractId.toLowerCase()] || "";
 
 const date = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
 const salary = job.salary ? `CHF ${job.salary}` : "";
