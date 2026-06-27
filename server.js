@@ -3258,26 +3258,25 @@ const indeedFiltered = indeedOffers.filter(o => looksLikeWantedJob(o.title));
 const linkedinFiltered = linkedinOffers.filter(o => looksLikeWantedJob(o.title));
 console.log(`🔍 Filtrage: Indeed ${indeedOffers.length}→${indeedFiltered.length} | LinkedIn ${linkedinOffers.length}→${linkedinFiltered.length}`);
 
-// Conserver les offres Jobup existantes si le scraping retourne 0 (Render bloqué)
-let jobupToUse = jobupOffers;
-if(jobupOffers.length === 0){
-const existing = readJson(OFFERS_FILE);
-const existingJobup = existing.filter(o => o.source === "Jobup");
-if(existingJobup.length > 0){
-console.log(`♻️ Jobup bloqué — conservation des ${existingJobup.length} offres existantes`);
-jobupToUse = existingJobup;
-}
-}
+// Lire offers.json existant — source de vérité
+const existingOffers = readJson(OFFERS_FILE) || [];
+// Toujours conserver les offres Jobup existantes (scrapées localement)
+const existingJobup = existingOffers.filter(o => o.source === "Jobup");
+console.log(`♻️ Conservation: ${existingJobup.length} offres Jobup existantes`);
 
-const allOffers =
-deduplicateOffers([
-...jobupToUse,
+// Nouvelles offres non-Jobup scrapées par Render
+const newNonJobup = [
 ...vdOffers,
 ...indeedFiltered,
 ...linkedinFiltered,
 ...migrosOffers,
 ...nestleOffers,
 ...coopOffers
+];
+
+const allOffers = deduplicateOffers([
+...existingJobup,
+...newNonJobup
 ]);
 
 if(allOffers.length > 0){
