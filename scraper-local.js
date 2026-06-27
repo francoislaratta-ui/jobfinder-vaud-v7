@@ -95,9 +95,12 @@ await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5
 await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
 const text = await page.evaluate(() => document.body.innerText);
 const start = text.indexOf("À propos de cette offre");
-const end = text.indexOf("Offres similaires");
+const end = ['Offres similaires', 'Postuler maintenant', 'Comment postuler', 'Partager cette offre', 'Signaler cette offre'].reduce((found, marker) => {
+const idx = text.indexOf(marker, start);
+return (idx > -1 && (found === -1 || idx < found)) ? idx : found;
+}, -1);
 if(start > -1){
-const desc = text.substring(start + 23, end > -1 ? end : start + 3000).trim();
+const desc = text.substring(start + 23, end > -1 ? end : start + 8000).trim();
 return desc.length > 50 ? desc : "Descriptif non disponible.";
 }
 return "Descriptif non disponible.";
