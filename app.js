@@ -1,6 +1,6 @@
 /* ==========================================
 JOB FINDER VAUD V14.6.0 PREMIUM IA
-Créateur : F. Laratta
+Auteur : F. Laratta
 ========================================== */
 
 /* ==========================================
@@ -1271,9 +1271,9 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        // Offre sans taux : acceptée uniquement si 100% est coché
+        // Offre sans taux : sources non-Jobup toujours visibles (taux non fourni)
         if(!offer.rate){
-            return selectedTaux.includes("100");
+            return offer.source !== "Jobup" || selectedTaux.includes("100");
         }
         const rateNorm = normalizeText(offer.rate);
         return selectedTaux.some(t => {
@@ -3813,7 +3813,7 @@ console.log("==================================");
 console.log("JOB FINDER VAUD");
 console.log("V14.6 PREMIUM IA");
 console.log("Extraction CV PDF / DOCX / TXT");
-console.log("Créateur F. Laratta");
+console.log("Auteur F. Laratta");
 console.log("==================================");
 
 });
