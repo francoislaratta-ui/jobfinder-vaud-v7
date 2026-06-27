@@ -248,21 +248,20 @@ preferredContracts: [
 };
 
 const IA_WEIGHTS = {
-
-jobMatch: 25,
-
+// Métier dans le titre/desc = critère principal
+jobMatch: 30,
+// Compétences CV présentes dans l'offre = critère fort
+cvSkillsBonus: 30,
+// Secteur compatible
 sectorMatch: 15,
-
-regionMatch: 15,
-
+// Région compatible
+regionMatch: 10,
+// Taux compatible
 rateMatch: 10,
-
-contractBonus: 5,
-
-cvSkillsBonus: 20,
-
-cvLanguagesBonus: 10
-
+// Langues CV utiles dans l'offre
+cvLanguagesBonus: 5,
+// Contrat compatible
+contractBonus: 5
 };
 
 const MATCH_LEVELS = {
@@ -554,106 +553,122 @@ return "";
 
 function analyzeExtractedText(text){
 
-const normalized =
-normalizeText(text);
+const normalized = normalizeText(text);
 
 const software = [];
-
 const languages = [];
-
 const adminSkills = [];
-
 const supportSkills = [];
 
+// Logiciels ERP / bureautique — compétences réelles du profil
 const softwareKeywords = [
+"sap",
+"pro-concept",
+"pro concept",
+"axapta",
+"filemaker",
+"filemaker pro",
+"hypsis",
+"timeas",
+"tipee",
 "excel",
 "word",
 "outlook",
 "powerpoint",
-"sap",
+"office 365",
+"office",
+"windows",
 "erp",
 "crm",
-"windows",
-"office"
+"linux",
+"unix"
 ];
 
+// Langues
 const languageKeywords = [
-"français",
+"francais",
 "anglais",
 "allemand",
 "italien"
 ];
 
+// Compétences administratives — tirées directement du CV
 const adminKeywords = [
-"gestion administrative",
 "gestion de dossiers",
+"gestion administrative",
+"gestion des dossiers",
+"gestionnaire de dossiers",
+"gestionnaire administratif",
+"secretariat",
 "facturation",
-"comptabilité",
-"classement",
+"comptabilite",
+"contentieux",
+"relances",
+"suivi comptable",
 "archivage",
+"classement",
 "correspondance",
-"service client",
-"téléphone",
-"email",
+"courriers",
+"rapports",
+"statistiques",
 "planification",
-"organisation"
+"organisation",
+"agenda",
+"rendez-vous",
+"accueil",
+"service client",
+"back office",
+"back-office",
+"admission",
+"coordination",
+"budget",
+"cloture",
+"controle",
+"conformite",
+"immobilier",
+"employe de commerce"
 ];
 
+// Compétences support / informatique
 const supportKeywords = [
 "support informatique",
+"support utilisateur",
 "helpdesk",
 "technicien informatique",
+"technicien de maintenance",
+"maintenance informatique",
+"parc informatique",
+"reseau",
+"depannage",
 "installation",
-"maintenance",
-"dépannage"
+"formation des utilisateurs",
+"super user",
+"super-user",
+"coordinateur reseau"
 ];
 
 softwareKeywords.forEach(keyword => {
-
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+if(normalized.includes(normalizeText(keyword))){
 software.push(keyword);
 }
-
 });
 
 languageKeywords.forEach(keyword => {
-
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+if(normalized.includes(normalizeText(keyword))){
 languages.push(keyword);
 }
-
 });
 
 adminKeywords.forEach(keyword => {
-
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+if(normalized.includes(normalizeText(keyword))){
 adminSkills.push(keyword);
 }
-
 });
 
 supportKeywords.forEach(keyword => {
-
-if(
-normalized.includes(
-normalizeText(keyword)
-)
-){
+if(normalized.includes(normalizeText(keyword))){
 supportSkills.push(keyword);
 }
-
 });
 
 const skills = [
@@ -664,19 +679,12 @@ const skills = [
 ];
 
 return {
-
-wordCount:
-text
-.split(/\s+/)
-.filter(Boolean)
-.length,
-
+wordCount: text.split(/\s+/).filter(Boolean).length,
 skills,
 software,
 languages,
 adminSkills,
 supportSkills
-
 };
 
 }
@@ -1590,21 +1598,26 @@ normalizeText(skill)
 
 if(matchingSkills.length > 0){
 
-const skillBonus =
-Math.min(
+// Score progressif : 1 match = 10pts, 2 = 18pts, 3+ = 30pts max
+const skillBonus = Math.min(
 IA_WEIGHTS.cvSkillsBonus,
-matchingSkills.length * 5
+matchingSkills.length === 1 ? 10 :
+matchingSkills.length === 2 ? 18 :
+matchingSkills.length === 3 ? 24 :
+30
 );
 
 score += skillBonus;
 
 reasons.push(
-"CV compatible : " + matchingSkills.join(", ")
+"CV compatible (" + matchingSkills.length + " compétences) : " +
+matchingSkills.slice(0, 4).join(", ") +
+(matchingSkills.length > 4 ? "..." : "")
 );
 
 }else{
 
-missing.push("Compétences CV peu visibles dans l'offre");
+missing.push("Compétences CV peu visibles dans l\'offre");
 
 }
 
