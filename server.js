@@ -3326,7 +3326,8 @@ console.log(
 "=================================="
 );
 
-await scrapeAllOffers();
+// Scraping au démarrage désactivé — géré par scraper-local.js
+// await scrapeAllOffers();
 
 }
 );
