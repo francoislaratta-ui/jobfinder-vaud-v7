@@ -8,6 +8,9 @@ Usage: node scraper-local.js
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+puppeteer.use(StealthPlugin());
 
 const RENDER_URL = "https://jobfinder-vaud-v7-1.onrender.com";
 const OFFERS_FILE = path.join(__dirname, "offers.json");
@@ -84,8 +87,38 @@ console.log(`  → ${urls.length} offres trouvées`);
 return urls;
 }
 
-async function scrapeDetailPage(path){
-const url = `https://www.jobup.ch${path}`;
+async function extractDescriptionWithPuppeteer(offerPath, browser){
+const url = `https://www.jobup.ch${offerPath}`;
+const page = await browser.newPage();
+try {
+await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+const text = await page.evaluate(() => document.body.innerText);
+const start = text.indexOf("À propos de cette offre");
+const end = text.indexOf("Offres similaires");
+if(start > -1){
+const desc = text.substring(start + 23, end > -1 ? end : start + 3000).trim();
+return desc.length > 50 ? desc : "Descriptif non disponible.";
+}
+return "Descriptif non disponible.";
+} catch(e) {
+return "Descriptif non disponible.";
+} finally {
+await page.close();
+}
+}
+
+async function scrapeDetailPage(offerPath, browser, existingOffersMap){
+const jobId = (offerPath.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
+
+// OPTION D : skip si offre déjà connue avec une vraie description
+const existing = existingOffersMap[jobId];
+if(existing && existing.description && existing.description !== "Descriptif non disponible."){
+process.stdout.write(` ♻️ (déjà scrapée)\n`);
+return existing;
+}
+
+const url = `https://www.jobup.ch${offerPath}`;
 const html = await fetchJobupPage(url);
 
 /* Essai 1 : extraction depuis le JSON __INIT__ de Jobup */
@@ -127,12 +160,14 @@ const contract = CONTRACT_MAP[rawContract] || CONTRACT_MAP[rawContract.toLowerCa
 
 const date = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
 const salary = job.salary ? `CHF ${job.salary}` : "";
-const jobId = (path.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
+
+// Description via Puppeteer
+const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
 return { id: jobId, title, company, location, address, sector: "Administration",
-rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${path}`,
+rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${offerPath}`,
 date, startDate: "", applyBefore: "", salaryGrade: "",
-description: job.lead || "Descriptif non disponible.", salary };
+description, salary };
 }
 }catch(e){ /* fallback HTML */ }
 }
@@ -177,12 +212,13 @@ const year = parseInt(d[3]);
 if(year >= 2024 && year <= 2027){ date = `${d[3]}-${months[d[2].toLowerCase()]}-${d[1].padStart(2,"0")}`; break; }
 }
 
-const jobId = (path.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
+// Description via Puppeteer
+const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
 return { id: jobId, title, company, location, address, sector: "Administration",
-rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${path}`,
+rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${offerPath}`,
 date, startDate: "", applyBefore: "", salaryGrade: "",
-description: "Descriptif non disponible.", salary };
+description, salary };
 }
 
 async function main(){
@@ -192,6 +228,16 @@ console.log("====================================\n");
 
 const allPaths = new Set();
 const jobupOffers = [];
+
+// Charger les offres existantes pour Option D
+let existingOffersMap = {};
+if(fs.existsSync(OFFERS_FILE)){
+try{
+const existing = JSON.parse(fs.readFileSync(OFFERS_FILE, "utf8"));
+existing.filter(o => o.source === "Jobup").forEach(o => { existingOffersMap[o.id] = o; });
+console.log(`📂 ${Object.keys(existingOffersMap).length} offres Jobup déjà connues\n`);
+}catch(e){ console.warn("⚠️ offers.json illisible\n"); }
+}
 
 console.log("📋 Étape 1: Collecte des liens...\n");
 for(const keyword of SEARCH_KEYWORDS){
@@ -203,6 +249,11 @@ await sleep(DELAY);
 }
 console.log(`\n📊 Total liens uniques: ${allPaths.size}\n`);
 
+// Lancer Puppeteer une seule fois
+console.log("🌐 Lancement du navigateur...");
+const browser = await puppeteer.launch({ headless: true });
+console.log("✅ Navigateur prêt\n");
+
 console.log("📄 Étape 2: Extraction des détails...\n");
 let count = 0;
 for(const p of allPaths){
@@ -210,12 +261,14 @@ count++;
 process.stdout.write(`  [${count}/${allPaths.size}] ${p.substring(0,45)}...`);
 try{
 await sleep(DELAY);
-const offer = await scrapeDetailPage(p);
+const offer = await scrapeDetailPage(p, browser, existingOffersMap);
 if(offer){ jobupOffers.push(offer); process.stdout.write(` ✓ ${offer.title.substring(0,35)}\n`); }
 else process.stdout.write(` ⏭\n`);
 }catch(e){ process.stdout.write(` ❌ ${e.message}\n`); }
 }
 
+await browser.close();
+console.log("\n🌐 Navigateur fermé");
 console.log(`\n✅ ${jobupOffers.length} offres Jobup extraites\n`);
 
 if(jobupOffers.length === 0){
