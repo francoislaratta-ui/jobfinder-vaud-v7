@@ -3258,9 +3258,20 @@ const indeedFiltered = indeedOffers.filter(o => looksLikeWantedJob(o.title));
 const linkedinFiltered = linkedinOffers.filter(o => looksLikeWantedJob(o.title));
 console.log(`🔍 Filtrage: Indeed ${indeedOffers.length}→${indeedFiltered.length} | LinkedIn ${linkedinOffers.length}→${linkedinFiltered.length}`);
 
+// Conserver les offres Jobup existantes si le scraping retourne 0 (Render bloqué)
+let jobupToUse = jobupOffers;
+if(jobupOffers.length === 0){
+const existing = readJson(OFFERS_FILE);
+const existingJobup = existing.filter(o => o.source === "Jobup");
+if(existingJobup.length > 0){
+console.log(`♻️ Jobup bloqué — conservation des ${existingJobup.length} offres existantes`);
+jobupToUse = existingJobup;
+}
+}
+
 const allOffers =
 deduplicateOffers([
-...jobupOffers,
+...jobupToUse,
 ...vdOffers,
 ...indeedFiltered,
 ...linkedinFiltered,
