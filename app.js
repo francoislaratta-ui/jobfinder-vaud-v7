@@ -1,6 +1,6 @@
 /* ==========================================
 JOB FINDER VAUD V14.6.0 PREMIUM IA
-Auteur : F. Laratta
+Créateur : F. Laratta
 ========================================== */
 
 /* ==========================================
@@ -924,13 +924,13 @@ const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:che
 console.log("Cases cochées:", selectedMetiers);
 saveFilters();
 applyFilters();
-openTab("filters");
+openTab("offers");
 setTimeout(() => {
 const firstOffer = document.querySelector(".offer-card");
 if(firstOffer){
 firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
 }
-}, 300);
+}, 800);
 }finally{
 refreshOffersBtn.disabled = false;
 refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
@@ -3813,7 +3813,7 @@ console.log("==================================");
 console.log("JOB FINDER VAUD");
 console.log("V14.6 PREMIUM IA");
 console.log("Extraction CV PDF / DOCX / TXT");
-console.log("Auteur F. Laratta");
+console.log("Créateur F. Laratta");
 console.log("==================================");
 
 });
