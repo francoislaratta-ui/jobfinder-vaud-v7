@@ -2947,33 +2947,28 @@ return anchors;
 
 function looksLikeWantedJob(text){
 
-const value =
-String(text || "")
+const v = String(text || "")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "");
 
-const keywords = [
-"employe",
-"assistant",
-"assistante",
-"administratif",
-"administrative",
-"gestionnaire",
-"dossier",
-"commerce",
-"support",
-"helpdesk",
-"technicien",
-"informatique",
-"rh",
-"clientele",
-"coordinateur"
+const excluded = [
+"gestionnaire de vente","commerce de detail","conseiller de vente",
+"vendeur","vendeuse","chef de rayon","responsable de rayon",
+"assistante medicale","assistant medical","assistant rh","assistante rh",
+"infirmier","infirmiere","aide soignant","restauration","chef de projet",
+"ingenieur","developpeur","developer","engineer","audiovisuel"
 ];
+if(excluded.some(e => v.includes(e))) return false;
 
-return keywords.some(keyword =>
-value.includes(keyword)
-);
+const keywords = [
+"employe de commerce","assistant administratif","assistante administrative",
+"gestionnaire de dossier","gestionnaire administratif","collaborateur administratif",
+"technicien informatique","support informatique","helpdesk","back office","back-office",
+"secretaire","coordinateur administratif","assistant de direction","employe administratif",
+"facturation","comptabilite","administration","secrétariat"
+];
+return keywords.some(k => v.includes(k));
 
 }
 
