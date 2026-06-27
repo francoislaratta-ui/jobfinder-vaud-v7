@@ -239,9 +239,36 @@ await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
 const text = await page.evaluate(() => document.body.innerText);
 const html = await page.evaluate(() => document.documentElement.innerHTML);
 const h1 = await page.evaluate(() => document.querySelector("h1")?.innerText?.trim() || "");
-return { text, html, h1 };
+
+// Extraction spécifique Indeed
+let indeedData = {};
+if(url.includes("indeed.com")){
+indeedData = await page.evaluate(() => {
+// Employeur — lien sous le h1
+const companyEl = document.querySelector('[data-company-name="true"], .jobsearch-InlineCompanyRating a, [class*="company"] a, [class*="CompanyName"]');
+const company = companyEl ? companyEl.innerText.trim() : "";
+
+// Taux — dans les badges "Type de poste"
+const badges = [...document.querySelectorAll('[class*="badge"], [class*="Badge"], [class*="chip"], [class*="Chip"], [class*="tag"], [class*="Tag"]')];
+const rateBadge = badges.find(b => /\d{2,3}\s*%/.test(b.innerText));
+const rate = rateBadge ? (rateBadge.innerText.match(/\d{1,3}\s*[-–]\s*\d{1,3}\s*%|\d{2,3}\s*%/)?.[0] || "") : "";
+
+// Contrat — chercher dans les détails emploi
+const details = document.querySelector('[class*="JobMetadataHeader"], [class*="jobDetail"], [class*="metadata"]');
+const detailText = details ? details.innerText : document.body.innerText;
+const contractMatch = detailText.match(/(CDI|CDD|Emploi fixe|Durée indéterminée|Durée déterminée|Temporaire|Stage)/i);
+const contract = contractMatch ? contractMatch[0] : "";
+
+// Localisation
+const locationEl = document.querySelector('[data-testid="job-location"], [class*="location"], [class*="Location"]');
+const location = locationEl ? locationEl.innerText.trim() : "";
+
+return { company, rate, contract, location };
+});
+}
+return { text, html, h1, indeedData };
 } catch(e) {
-return { text: "", html: "", h1: "" };
+return { text: "", html: "", h1: "", indeedData: {} };
 } finally {
 await page.close();
 }
@@ -306,10 +333,17 @@ results.push(ex); done++;
 process.stdout.write(`  ♻️ [${done}] ${ex.title.substring(0,40)}\n`);
 return;
 }
-const { text, h1 } = await scrapePagePuppeteer(item.url, browser);
+const { text, h1, indeedData } = await scrapePagePuppeteer(item.url, browser);
 if(!text){ done++; return; }
 const details = extractDetails(text, h1);
 details.text = text; // garder le texte pour le filtre temps partiel
+// Enrichir avec les données Indeed extraites directement
+if(indeedData && Object.keys(indeedData).length > 0){
+if(indeedData.rate) details.rate = indeedData.rate;
+if(indeedData.contract) details.contract = indeedData.contract;
+if(indeedData.company) details.company = indeedData.company;
+if(indeedData.location) details.location = indeedData.location;
+}
 // Utiliser h1 comme titre si disponible et plus précis
 const finalTitle = (h1 && h1.length > 3) ? h1 : item.title;
 // Filtrer par titre réel
