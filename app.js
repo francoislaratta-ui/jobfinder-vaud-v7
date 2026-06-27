@@ -1209,7 +1209,7 @@ function applyFilters(){
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
-    let result = [...offers].filter(o => o.source !== "Migros" && o.source !== "Nestlé");
+    let result = [...offers].filter(o => o.source !== "Migros" && o.source !== "Nestlé" && !(o.source === "Indeed" && !o.rate));
 
     const SCRAPE_KEYWORDS = [
 "employe de commerce",
@@ -1271,9 +1271,9 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        // Offre sans taux : sources non-Jobup toujours visibles (taux non fourni)
+        // Offre sans taux : masquée sauf si 100% coché
         if(!offer.rate){
-            return offer.source !== "Jobup" || selectedTaux.includes("100");
+            return selectedTaux.includes("100");
         }
         const rateNorm = normalizeText(offer.rate);
         return selectedTaux.some(t => {
