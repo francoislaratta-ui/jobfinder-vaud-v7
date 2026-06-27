@@ -167,9 +167,25 @@ const salary = job.salary ? `CHF ${job.salary}` : "";
 // Description via Puppeteer
 const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
+// Extraire startDate depuis la description
+const startDateMatch = description.match(/[Ee]ntr[ée]e en (?:service|fonction)[^:]*:?\s*([^\n.]{3,40})/i) ||
+description.match(/[Dd]ate d'entr[ée]e[^:]*:?\s*([^\n.]{3,40})/i);
+let startDate = startDateMatch ? startDateMatch[1].trim() : "";
+// Convertir date texte en DD.MM.YYYY si possible
+const sdm = startDate.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
+if(sdm) startDate = sdm[1].padStart(2,"0")+"."+sdm[2].padStart(2,"0")+"."+sdm[3];
+
+// Extraire applyBefore depuis la description
+const applyMatch = description.match(/[Pp]ostuler avant[^:]*:?\s*([^\n.]{3,40})/i) ||
+description.match(/[Dd]élai de candidature[^:]*:?\s*([^\n.]{3,40})/i) ||
+description.match(/jusqu'au[^:]*:?\s*([^\n.]{3,40})/i);
+let applyBefore = applyMatch ? applyMatch[1].trim() : "";
+const abm = applyBefore.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
+if(abm) applyBefore = abm[1].padStart(2,"0")+"."+abm[2].padStart(2,"0")+"."+abm[3];
+
 return { id: jobId, title, company, location, address, sector: "Administration",
 rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${offerPath}`,
-date, startDate: "", applyBefore: "", salaryGrade: "",
+date, startDate, applyBefore, salaryGrade: "",
 description, salary };
 }
 }catch(e){ /* fallback HTML */ }
@@ -218,9 +234,22 @@ if(year >= 2024 && year <= 2027){ date = `${d[3]}-${months[d[2].toLowerCase()]}-
 // Description via Puppeteer
 const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
+// Extraire startDate depuis la description
+const startDateMatch2 = description.match(/[Ee]ntr[ée]e en (?:service|fonction)[^:]*:?\s*([^\n.]{3,40})/i) ||
+description.match(/[Dd]ate d'entr[ée]e[^:]*:?\s*([^\n.]{3,40})/i);
+let startDate2 = startDateMatch2 ? startDateMatch2[1].trim() : "";
+const sdm2 = startDate2.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
+if(sdm2) startDate2 = sdm2[1].padStart(2,"0")+"."+sdm2[2].padStart(2,"0")+"."+sdm2[3];
+
+const applyMatch2 = description.match(/[Pp]ostuler avant[^:]*:?\s*([^\n.]{3,40})/i) ||
+description.match(/jusqu'au[^:]*:?\s*([^\n.]{3,40})/i);
+let applyBefore2 = applyMatch2 ? applyMatch2[1].trim() : "";
+const abm2 = applyBefore2.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
+if(abm2) applyBefore2 = abm2[1].padStart(2,"0")+"."+abm2[2].padStart(2,"0")+"."+abm2[3];
+
 return { id: jobId, title, company, location, address, sector: "Administration",
 rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${offerPath}`,
-date, startDate: "", applyBefore: "", salaryGrade: "",
+date, startDate: startDate2, applyBefore: applyBefore2, salaryGrade: "",
 description, salary };
 }
 

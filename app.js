@@ -94,6 +94,13 @@ element.innerHTML = html;
 }
 }
 
+function formatDate(dateStr){
+if(!dateStr) return "";
+const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+if(m) return m[3]+"."+m[2]+"."+m[1];
+return dateStr;
+}
+
 function escapeHTML(value){
 return String(value || "")
 .replace(/&/g, "&amp;")
@@ -2309,13 +2316,13 @@ ${offer.contract ? `
 
 ${offer.startDate ? `
 <div class="offer-meta">
-🗓️ Entrée : ${escapeHTML(offer.startDate)}
+🗓️ Entrée : ${formatDate(offer.startDate)}
 </div>
 ` : ""}
 
 ${offer.applyBefore ? `
 <div class="offer-meta">
-⏳ Postuler avant : ${escapeHTML(offer.applyBefore)}
+⏳ Postuler avant : ${formatDate(offer.applyBefore)}
 </div>
 ` : ""}
 
@@ -2336,7 +2343,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(offer.date)}
+📅 Publié le : ${formatDate(offer.date)}
 </div>
 
 ${offer.offerUrl ? `
