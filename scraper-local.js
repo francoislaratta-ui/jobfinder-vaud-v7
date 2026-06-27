@@ -247,14 +247,16 @@ await page.close();
 }
 }
 
-function extractDetails(text){
-// Taux
-const rateMatch = text.match(/(\d{1,3})\s*[–\-]\s*(\d{1,3})\s*%/) || text.match(/(\d{2,3})\s*%/);
+function extractDetails(text, h1 = ""){
+// Taux — chercher dans h1 d'abord, puis dans le texte
+const rateMatch = (h1 + " " + text).match(/(\d{1,3})\s*[–\-]\s*(\d{1,3})\s*%/) ||
+                  (h1 + " " + text).match(/(\d{2,3})\s*%/);
 const rate = rateMatch ? rateMatch[0].trim() : "";
 
 // Contrat
 const contractRaw = text.match(/(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Stage|Apprentissage)/i);
-const contract = contractRaw ? contractRaw[0].trim() : "";
+let contract = contractRaw ? contractRaw[0].trim() : "";
+contract = contract.replace(/Durée indéterminée/i, "CDI").replace(/Durée déterminée/i, "CDD");
 
 // Description
 const markers = ["Description du poste", "Vos missions", "Votre mission", "Mission", "Responsabilités", "Description de l'emploi", "À propos du rôle", "Le poste"];
@@ -272,13 +274,12 @@ const locationMatch = text.match(/(Lausanne|Vaud|Nyon|Morges|Yverdon|Vevey|Montr
 const location = locationMatch ? locationMatch[0] : "Vaud";
 
 // Salaire
-const salaryMatch = text.match(/(CHF\s*[\d\s'.]+-[\d\s'.]+\s*\/\s*(?:an|mois))/i);
+const salaryMatch = text.match(/(CHF\s*[\d\s'.,]+-[\d\s'.,]+\s*\/\s*(?:an|mois|année))/i);
 const salary = salaryMatch ? salaryMatch[0].trim() : "";
 
-// Entreprise (après "chez" ou avant le titre)
-const companyMatch = text.match(/(?:chez|at|bei)\s+([A-Z][\w\s&.-]{2,40})/);
+// Entreprise — chercher les patterns communs
+const companyMatch = text.match(/(?:chez|at) ([A-Z][A-Za-z &.-]{2,40})(?= |-|$)/m);
 const company = companyMatch ? companyMatch[1].trim() : "";
-
 return { rate, contract, description, location, salary, company };
 }
 
@@ -305,7 +306,7 @@ return;
 }
 const { text, h1 } = await scrapePagePuppeteer(item.url, browser);
 if(!text){ done++; return; }
-const details = extractDetails(text);
+const details = extractDetails(text, h1);
 // Utiliser h1 comme titre si disponible et plus précis
 const finalTitle = (h1 && h1.length > 3) ? h1 : item.title;
 // Filtrer par titre réel
