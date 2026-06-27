@@ -1209,7 +1209,7 @@ function applyFilters(){
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
-    let result = [...offers];
+    let result = [...offers].filter(o => o.source !== "Migros" && o.source !== "Nestlé");
 
     const SCRAPE_KEYWORDS = [
 "employe de commerce",
