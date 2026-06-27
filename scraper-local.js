@@ -373,14 +373,17 @@ const page = await browser.newPage();
 const items = []; const seen = new Set();
 try {
 await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
-const searches = [
-"https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants?query=administratif",
-"https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants?query=assistant+administratif",
-"https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants?query=secretaire"
-];
-for(const url of searches){
-await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+const keywords = ["assistant administratif", "gestionnaire dossier", "secretaire", "employe commerce", "helpdesk"];
+for(const keyword of keywords){
+await page.goto("https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants", { waitUntil: "networkidle2", timeout: 30000 });
+await sleep(1500);
+// Taper dans le champ de recherche
+try{
+await page.click("input[type=text], input[type=search], input[placeholder*=mot], input[placeholder*=Profes]");
+await page.keyboard.type(keyword);
+await page.keyboard.press("Enter");
 await sleep(2000);
+}catch(e){ continue; }
 const links = await page.evaluate(() =>
 [...document.querySelectorAll("a[href*='/job/']")].map(a => ({href: a.href, text: a.innerText.trim()}))
 );
@@ -389,8 +392,9 @@ const cleanHref = href.split("?")[0];
 const id = `migros_${cleanHref.split("/").slice(-2).join("_").substring(0,40)}`;
 if(seen.has(id)) return;
 seen.add(id);
-const title = text.split("\n")[0].trim() || cleanHref.split("/").pop().replace(/-/g," ");
-items.push({ id, url: cleanHref, title: title || "Offre Migros", company: "Migros" });
+const title = text.split("\n")[1]?.trim() || text.split("\n")[0].trim() || "Offre Migros";
+if(!looksLikeWantedJob(title)) return;
+items.push({ id, url: cleanHref, title, company: "Migros" });
 });
 await sleep(1000);
 }
