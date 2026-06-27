@@ -297,20 +297,34 @@ const item = queue.shift();
 active++;
 (async () => {
 try{
-// Option D
+// Option D — skipper uniquement si titre réel et description présente
 const ex = existingMap[item.id];
-if(ex && ex.description && ex.description !== "Descriptif non disponible."){
+const genericTitles = ["Offre Indeed", "Offre Migros", "Offre Coop", "Offre LinkedIn"];
+const hasGenericTitle = genericTitles.some(g => (ex?.title || "").includes(g));
+if(ex && ex.description && ex.description !== "Descriptif non disponible." && !hasGenericTitle){
 results.push(ex); done++;
-process.stdout.write(`  ♻️ [${done}] ${item.title.substring(0,40)}\n`);
+process.stdout.write(`  ♻️ [${done}] ${ex.title.substring(0,40)}\n`);
 return;
 }
 const { text, h1 } = await scrapePagePuppeteer(item.url, browser);
 if(!text){ done++; return; }
 const details = extractDetails(text, h1);
+details.text = text; // garder le texte pour le filtre temps partiel
 // Utiliser h1 comme titre si disponible et plus précis
 const finalTitle = (h1 && h1.length > 3) ? h1 : item.title;
 // Filtrer par titre réel
 if(finalTitle !== item.title && !looksLikeWantedJob(finalTitle)){ done++; return; }
+// Filtre taux pour sources non-Jobup
+if(source !== "Jobup"){
+const rateNum = details.rate ? parseInt((details.rate.match(/\d+/) || ["0"])[0]) : 0;
+const hasPartTime = /temps partiel|part-time|teilzeit|mi-temps/i.test(text);
+if(details.rate && ![40,50,60].some(t => Math.abs(rateNum - t) <= 10)){
+done++; return; // Taux incompatible → écarter
+}
+if(!details.rate && !hasPartTime){
+done++; return; // Pas de taux et pas de mention temps partiel → écarter
+}
+}
 const offer = {
 id: item.id, title: finalTitle,
 company: details.company || item.company || source,
@@ -323,7 +337,7 @@ startDate: "", applyBefore: "", salaryGrade: "",
 description: details.description, salary: details.salary
 };
 results.push(offer); done++;
-process.stdout.write(`  ✓ [${done}] ${item.title.substring(0,40)}\n`);
+process.stdout.write(`  ✓ [${done}] ${finalTitle.substring(0,40)}\n`);
 }catch(e){ done++; process.stdout.write(`  ❌ [${done}] ${e.message}\n`); }
 finally{ active--; next(); }
 })();
