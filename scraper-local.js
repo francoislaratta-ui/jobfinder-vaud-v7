@@ -270,35 +270,47 @@ else process.stdout.write(` ⏭\n`);
 }catch(e){ process.stdout.write(` ❌ ${e.message}\n`); }
 }
 
+// Scraper les sources additionnelles avec le même navigateur
+console.log("\n📋 Étape 3: Scraping sources additionnelles...\n");
+const existingAllMap = {};
+const existingAll = JSON.parse(fs.readFileSync(OFFERS_FILE, "utf8").trim() || "[]").catch?.(() => []) || [];
+try{
+const existingAllOffers = JSON.parse(fs.readFileSync(OFFERS_FILE, "utf8"));
+existingAllOffers.forEach(o => { existingAllMap[o.id] = o; });
+}catch(e){}
+
+const [indeedOffers, migrosOffers, nestleOffers, linkedinOffers] = await Promise.all([
+scrapeIndeedOffers(browser, existingAllMap),
+scrapeMigrosOffers(browser, existingAllMap),
+scrapeNestleOffers(browser, existingAllMap),
+scrapeLinkedInOffers(browser, existingAllMap)
+]);
+
 await browser.close();
 console.log("\n🌐 Navigateur fermé");
-console.log(`\n✅ ${jobupOffers.length} offres Jobup extraites\n`);
+console.log(`\n✅ ${jobupOffers.length} offres Jobup extraites`);
+console.log(`✅ ${indeedOffers.length} offres Indeed`);
+console.log(`✅ ${migrosOffers.length} offres Migros`);
+console.log(`✅ ${nestleOffers.length} offres Nestlé`);
+console.log(`✅ ${linkedinOffers.length} offres LinkedIn\n`);
 
-if(jobupOffers.length === 0){
+if(jobupOffers.length === 0 && indeedOffers.length === 0){
 console.log("⚠️ Aucune offre — offers.json non modifié");
 return;
 }
 
-// Lire offers.json existant, garder les offres non-Jobup, ajouter les nouvelles
-let existing = [];
-if(fs.existsSync(OFFERS_FILE)){
-try{ existing = JSON.parse(fs.readFileSync(OFFERS_FILE, "utf8")); }
-catch(e){ console.warn("⚠️ offers.json illisible — remplacement complet"); }
-}
-
-const otherOffers = existing.filter(o => o.source !== "Jobup");
-const merged = [...jobupOffers, ...otherOffers];
+const allNewOffers = [...jobupOffers, ...indeedOffers, ...migrosOffers, ...nestleOffers, ...linkedinOffers];
 
 // Sauvegarder dans offers.json local
-fs.writeFileSync(OFFERS_FILE, JSON.stringify(merged, null, 2), "utf8");
-console.log(`💾 offers.json mis à jour: ${merged.length} offres (${jobupOffers.length} Jobup + ${otherOffers.length} autres)\n`);
+fs.writeFileSync(OFFERS_FILE, JSON.stringify(allNewOffers, null, 2), "utf8");
+console.log(`💾 offers.json mis à jour: ${allNewOffers.length} offres total\n`);
 
 // Envoyer aussi à Render
 console.log("📤 Envoi à Render...");
 try{
 const response = await axios.post(`${RENDER_URL}/api/offers/import`,
-{ offers: jobupOffers, source: "local-scraper" },
-{ headers: { "Content-Type": "application/json" }, timeout: 30000 }
+{ offers: allNewOffers, source: "local-scraper" },
+{ headers: { "Content-Type": "application/json" }, timeout: 60000 }
 );
 console.log(`✅ Render: ${JSON.stringify(response.data)}`);
 }catch(e){
@@ -312,3 +324,246 @@ console.log("====================================");
 }
 
 main().catch(console.error);
+
+/* ==========================================
+SCRAPER SOURCES ADDITIONNELLES (Puppeteer parallèle)
+========================================== */
+
+const PARALLEL_TABS = 5;
+
+async function scrapePageWithPuppeteer(url, browser){
+const page = await browser.newPage();
+try {
+await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+const text = await page.evaluate(() => document.body.innerText);
+const html = await page.evaluate(() => document.documentElement.innerHTML);
+return { text, html };
+} catch(e) {
+return { text: "", html: "" };
+} finally {
+await page.close();
+}
+}
+
+function extractOfferDetails(text, html, source){
+// Taux
+const rateMatch = text.match(/(\d{1,3})\s*[–\-]\s*(\d{1,3})\s*%/) ||
+text.match(/(\d{2,3})\s*%/);
+const rate = rateMatch ? rateMatch[0].trim() : "";
+
+// Contrat
+const contractRaw = text.match(/(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Stage|Apprentissage|Indépendant)/i);
+const contract = contractRaw ? contractRaw[0].trim() : "";
+
+// Description — chercher le contenu principal
+const markers = ["Description du poste", "Vos missions", "Votre mission", "À propos", "Le poste", "Missions", "Responsabilités", "Description de l'emploi"];
+let description = "Descriptif non disponible.";
+for(const marker of markers){
+const idx = text.indexOf(marker);
+if(idx > -1){
+const end = text.length;
+const desc = text.substring(idx, idx + 3000).trim();
+if(desc.length > 100){
+description = desc;
+break;
+}
+}
+}
+
+// Localisation
+const locationMatch = text.match(/Vaud|Lausanne|Nyon|Morges|Yverdon|Vevey|Montreux|Renens|Prilly|Gland|Rolle/i);
+const location = locationMatch ? locationMatch[0] : "Vaud";
+
+// Salaire
+const salaryMatch = text.match(/(CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois|année))/i);
+const salary = salaryMatch ? salaryMatch[0].trim() : "";
+
+return { rate, contract, description, location, salary };
+}
+
+async function scrapeOffersParallel(offerUrls, browser, source, existingOffersMap){
+const results = [];
+const queue = [...offerUrls];
+let active = 0;
+let processed = 0;
+
+return new Promise((resolve) => {
+const processNext = async () => {
+if(queue.length === 0 && active === 0){
+resolve(results);
+return;
+}
+while(active < PARALLEL_TABS && queue.length > 0){
+const item = queue.shift();
+active++;
+(async () => {
+try{
+const id = item.id;
+const url = item.url;
+const title = item.title;
+
+// Option D : skip si déjà connu avec description
+const existing = existingOffersMap[id];
+if(existing && existing.description && existing.description !== "Descriptif non disponible."){
+results.push(existing);
+processed++;
+process.stdout.write(` ♻️ [${processed}] ${title.substring(0,35)}\n`);
+return;
+}
+
+const { text, html } = await scrapePageWithPuppeteer(url, browser);
+if(!text){ processed++; return; }
+
+const details = extractOfferDetails(text, html, source);
+const offer = {
+id,
+title,
+company: item.company || source,
+location: details.location,
+address: "",
+sector: "Administration",
+rate: details.rate,
+contract: details.contract,
+source,
+offerUrl: url,
+date: new Date().toISOString().split("T")[0],
+startDate: "", applyBefore: "", salaryGrade: "",
+description: details.description,
+salary: details.salary
+};
+results.push(offer);
+processed++;
+process.stdout.write(` ✓ [${processed}] ${title.substring(0,40)}\n`);
+}catch(e){
+processed++;
+process.stdout.write(` ❌ [${processed}] ${e.message}\n`);
+}finally{
+active--;
+processNext();
+}
+})();
+}
+};
+processNext();
+});
+}
+
+async function scrapeIndeedOffers(browser, existingOffersMap){
+console.log("\n🔍 Indeed — collecte des liens...");
+const searchUrls = [
+"https://ch-fr.indeed.com/jobs?q=assistant+administratif&l=vaud",
+"https://ch-fr.indeed.com/jobs?q=gestionnaire+dossiers&l=vaud",
+"https://ch-fr.indeed.com/jobs?q=secretaire&l=vaud",
+"https://ch-fr.indeed.com/jobs?q=employe+commerce&l=vaud"
+];
+
+const offerItems = [];
+const seen = new Set();
+
+for(const searchUrl of searchUrls){
+try{
+const { text, html } = await scrapePageWithPuppeteer(searchUrl, browser);
+const linkMatches = html.match(/href="(\/viewjob\?jk=[a-z0-9]+[^"]*?)"/gi) ||
+html.match(/href="(https:\/\/ch-fr\.indeed\.com\/viewjob\?jk=[^"]+)"/gi) || [];
+const titleMatches = html.match(/<h2[^>]*class="[^"]*jobTitle[^"]*"[^>]*>([\s\S]*?)<\/h2>/gi) || [];
+
+linkMatches.forEach((m, i) => {
+const href = m.replace(/href="|"/g, "");
+const fullUrl = href.startsWith("http") ? href : `https://ch-fr.indeed.com${href}`;
+const jkMatch = fullUrl.match(/jk=([a-z0-9]+)/);
+const id = jkMatch ? `indeed_${jkMatch[1]}` : `indeed_${Date.now()}_${i}`;
+if(seen.has(id)) return;
+seen.add(id);
+
+const rawTitle = titleMatches[i] ? titleMatches[i].replace(/<[^>]+>/g, "").trim() : "";
+const title = rawTitle || "Offre Indeed";
+if(!looksLikeWantedJob(title) && rawTitle) return;
+
+offerItems.push({ id, url: fullUrl, title, company: "Indeed" });
+});
+await sleep(1000);
+}catch(e){ console.warn(`  ⚠️ Indeed search erreur: ${e.message}`); }
+}
+
+console.log(`  → ${offerItems.length} offres Indeed à scraper`);
+if(offerItems.length === 0) return [];
+return await scrapeOffersParallel(offerItems, browser, "Indeed", existingOffersMap);
+}
+
+async function scrapeMigrosOffers(browser, existingOffersMap){
+console.log("\n🔍 Migros — collecte des liens...");
+const searchUrl = "https://jobs.migros.ch/fr/nos-entreprises/postes-vacants?query=administratif&location=Vaud";
+const offerItems = [];
+const seen = new Set();
+
+try{
+const { html } = await scrapePageWithPuppeteer(searchUrl, browser);
+const linkMatches = html.match(/href="(\/fr\/nos-entreprises\/job\/[^"]+)"/gi) || [];
+linkMatches.forEach((m, i) => {
+const path = m.replace(/href="|"/g, "");
+const url = `https://jobs.migros.ch${path}`;
+const id = `migros_${path.replace(/[^a-z0-9]/gi, "_").substring(0, 40)}`;
+if(seen.has(id)) return;
+seen.add(id);
+offerItems.push({ id, url, title: "Offre Migros", company: "Migros" });
+});
+}catch(e){ console.warn(`  ⚠️ Migros erreur: ${e.message}`); }
+
+console.log(`  → ${offerItems.length} offres Migros à scraper`);
+if(offerItems.length === 0) return [];
+
+const offers = await scrapeOffersParallel(offerItems, browser, "Migros", existingOffersMap);
+return offers.filter(o => looksLikeWantedJob(o.title));
+}
+
+async function scrapeNestleOffers(browser, existingOffersMap){
+console.log("\n🔍 Nestlé — collecte des liens...");
+const offerItems = [];
+const seen = new Set();
+
+try{
+const { html } = await scrapePageWithPuppeteer("https://www.nestle.ch/fr/emplois", browser);
+const linkMatches = html.match(/href="([^"]*nestle[^"]*job[^"]*|[^"]*emploi[^"]*nestle[^"]*)"/gi) || [];
+linkMatches.forEach((m, i) => {
+const href = m.replace(/href="|"/g, "");
+if(!href.includes("http")) return;
+const id = `nestle_${i}_${Date.now()}`;
+if(seen.has(href)) return;
+seen.add(href);
+offerItems.push({ id, url: href, title: "Offre Nestlé", company: "Nestlé" });
+});
+}catch(e){ console.warn(`  ⚠️ Nestlé erreur: ${e.message}`); }
+
+console.log(`  → ${offerItems.length} offres Nestlé à scraper`);
+if(offerItems.length === 0) return [];
+
+const offers = await scrapeOffersParallel(offerItems, browser, "Nestlé", existingOffersMap);
+return offers.filter(o => looksLikeWantedJob(o.title));
+}
+
+async function scrapeLinkedInOffers(browser, existingOffersMap){
+console.log("\n🔍 LinkedIn — collecte des liens...");
+const searchUrl = "https://www.linkedin.com/jobs/search/?keywords=assistant+administratif&location=Vaud%2C%20Suisse";
+const offerItems = [];
+const seen = new Set();
+
+try{
+const { html } = await scrapePageWithPuppeteer(searchUrl, browser);
+const linkMatches = html.match(/href="(https:\/\/www\.linkedin\.com\/jobs\/view\/[^"?]+)"/gi) || [];
+linkMatches.forEach((m, i) => {
+const url = m.replace(/href="|"/g, "").split("?")[0];
+const idMatch = url.match(/\/(\d+)\/?$/);
+const id = idMatch ? `linkedin_${idMatch[1]}` : `linkedin_${i}_${Date.now()}`;
+if(seen.has(id)) return;
+seen.add(id);
+offerItems.push({ id, url, title: "Offre LinkedIn", company: "LinkedIn" });
+});
+}catch(e){ console.warn(`  ⚠️ LinkedIn erreur: ${e.message}`); }
+
+console.log(`  → ${offerItems.length} offres LinkedIn à scraper`);
+if(offerItems.length === 0) return [];
+
+const offers = await scrapeOffersParallel(offerItems, browser, "LinkedIn", existingOffersMap);
+return offers.filter(o => looksLikeWantedJob(o.title));
+}
