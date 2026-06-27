@@ -238,9 +238,10 @@ await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5
 await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
 const text = await page.evaluate(() => document.body.innerText);
 const html = await page.evaluate(() => document.documentElement.innerHTML);
-return { text, html };
+const h1 = await page.evaluate(() => document.querySelector("h1")?.innerText?.trim() || "");
+return { text, html, h1 };
 } catch(e) {
-return { text: "", html: "" };
+return { text: "", html: "", h1: "" };
 } finally {
 await page.close();
 }
@@ -302,11 +303,15 @@ results.push(ex); done++;
 process.stdout.write(`  ♻️ [${done}] ${item.title.substring(0,40)}\n`);
 return;
 }
-const { text } = await scrapePagePuppeteer(item.url, browser);
+const { text, h1 } = await scrapePagePuppeteer(item.url, browser);
 if(!text){ done++; return; }
 const details = extractDetails(text);
+// Utiliser h1 comme titre si disponible et plus précis
+const finalTitle = (h1 && h1.length > 3) ? h1 : item.title;
+// Filtrer par titre réel
+if(finalTitle !== item.title && !looksLikeWantedJob(finalTitle)){ done++; return; }
 const offer = {
-id: item.id, title: item.title,
+id: item.id, title: finalTitle,
 company: details.company || item.company || source,
 location: details.location, address: "",
 sector: "Administration", rate: details.rate,
@@ -351,7 +356,7 @@ const fullUrl = `https://ch-fr.indeed.com/viewjob?jk=${jk}`;
 // Titre depuis data-testid ou générique
 const rawTitle = titleEls[i] ? titleEls[i].replace(/<[^>]+>/g,"").trim() : "";
 const title = rawTitle || `Offre Indeed`;
-if(rawTitle && !looksLikeWantedJob(rawTitle)) return;
+// Ne pas filtrer ici — le vrai titre sera extrait depuis le h1 de la page de détail
 items.push({ id, url: fullUrl, title, company: "Indeed" });
 });
 await sleep(1000);
@@ -364,26 +369,32 @@ return offers.filter(o => looksLikeWantedJob(o.title));
 
 async function scrapeMigrosOffers(browser, existingMap){
 console.log("\n🔍 Migros — collecte...");
+const page = await browser.newPage();
+const items = []; const seen = new Set();
+try {
+await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
 const searches = [
 "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants?query=administratif",
-"https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants?query=assistant"
+"https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants?query=assistant+administratif",
+"https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants?query=secretaire"
 ];
-const items = []; const seen = new Set();
 for(const url of searches){
-const { html } = await scrapePagePuppeteer(url, browser);
-const linkMatches = [...html.matchAll(/href="(https:\/\/jobs\.migros\.ch\/(?:fr|de)\/(?:nos-entreprises|unsere-unternehmen)\/job\/[^"]+)"/gi)];
-linkMatches.forEach(m => {
-const href = m[1].split("?")[0];
-const id = `migros_${href.split("/").slice(-2).join("_").substring(0,40)}`;
+await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+await sleep(2000);
+const links = await page.evaluate(() =>
+[...document.querySelectorAll("a[href*='/job/']")].map(a => ({href: a.href, text: a.innerText.trim()}))
+);
+links.forEach(({href, text}) => {
+const cleanHref = href.split("?")[0];
+const id = `migros_${cleanHref.split("/").slice(-2).join("_").substring(0,40)}`;
 if(seen.has(id)) return;
 seen.add(id);
-// Extraire titre depuis l'URL
-const titleFromUrl = href.split("/").pop().replace(/-/g," ").trim();
-if(!looksLikeWantedJob(titleFromUrl) && titleFromUrl.length > 3) return;
-items.push({ id, url: href, title: titleFromUrl || "Offre Migros", company: "Migros" });
+const title = text.split("\n")[0].trim() || cleanHref.split("/").pop().replace(/-/g," ");
+items.push({ id, url: cleanHref, title: title || "Offre Migros", company: "Migros" });
 });
 await sleep(1000);
 }
+} finally { await page.close(); }
 console.log(`  → ${items.length} offres Migros`);
 if(!items.length) return [];
 const offers = await runParallel(items, browser, "Migros", existingMap);
@@ -392,25 +403,26 @@ return offers.filter(o => looksLikeWantedJob(o.title));
 
 async function scrapeCoopOffers(browser, existingMap){
 console.log("\n🔍 Coop — collecte...");
-const searches = [
-"https://jobs.coopjobs.ch/?lang=fr#/jobresults?q=administratif&location=Vaud",
-"https://jobs.coopjobs.ch/?lang=fr#/jobresults?q=assistant&location=Vaud"
-];
+const page = await browser.newPage();
 const items = []; const seen = new Set();
-for(const url of searches){
-const { html } = await scrapePagePuppeteer(url, browser);
-const linkMatches = [...html.matchAll(/href="(https:\/\/jobs\.coopjobs\.ch\/(?:offene-stellen|postes-vacantes)\/[^"]+)"/gi)];
-linkMatches.forEach(m => {
-const href = m[1].split("?")[0];
-const id = `coop_${href.split("/").pop().substring(0,40)}`;
+try {
+await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+await page.goto("https://jobs.coopjobs.ch/?lang=fr", { waitUntil: "networkidle2", timeout: 30000 });
+await sleep(2000);
+const links = await page.evaluate(() =>
+[...document.querySelectorAll("a[href*='/offene-stellen/'], a[href*='/postes-vacantes/']")]
+.map(a => ({href: a.href, text: a.innerText.trim()}))
+);
+links.forEach(({href, text}) => {
+const cleanHref = href.split("?")[0];
+const id = `coop_${cleanHref.split("/").pop().substring(0,40)}`;
 if(seen.has(id)) return;
 seen.add(id);
-const titleFromUrl = href.split("/").pop().replace(/-/g," ").trim();
-if(!looksLikeWantedJob(titleFromUrl) && titleFromUrl.length > 3) return;
-items.push({ id, url: href, title: titleFromUrl || "Offre Coop", company: "Coop" });
+const title = text.split("\n")[0].trim() || cleanHref.split("/").pop().replace(/-/g," ");
+if(!looksLikeWantedJob(title) && title.length > 3) return;
+items.push({ id, url: cleanHref, title: title || "Offre Coop", company: "Coop" });
 });
-await sleep(1000);
-}
+} finally { await page.close(); }
 console.log(`  → ${items.length} offres Coop`);
 if(!items.length) return [];
 const offers = await runParallel(items, browser, "Coop", existingMap);
@@ -419,27 +431,32 @@ return offers.filter(o => looksLikeWantedJob(o.title));
 
 async function scrapeLinkedInOffers(browser, existingMap){
 console.log("\n🔍 LinkedIn — collecte...");
+const page = await browser.newPage();
+const items = []; const seen = new Set();
+try {
+await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
 const searches = [
 "https://www.linkedin.com/jobs/search/?keywords=assistant+administratif&location=Vaud%2C+Suisse",
 "https://www.linkedin.com/jobs/search/?keywords=gestionnaire+dossiers&location=Vaud%2C+Suisse",
 "https://www.linkedin.com/jobs/search/?keywords=secretaire&location=Vaud%2C+Suisse"
 ];
-const items = []; const seen = new Set();
 for(const url of searches){
-const { html } = await scrapePagePuppeteer(url, browser);
-const linkMatches = [...html.matchAll(/href="(https:\/\/(?:ch|www)\.linkedin\.com\/jobs\/view\/[^"?]+)"/gi)];
-linkMatches.forEach(m => {
-const href = m[1].split("?")[0];
+await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+await sleep(2000);
+const links = await page.evaluate(() =>
+[...document.querySelectorAll("a[href*='/jobs/view/']")]
+.map(a => ({href: a.href.split("?")[0], text: (a.querySelector("h3,span") || a).innerText?.trim() || ""}))
+);
+links.forEach(({href, text}) => {
 const idMatch = href.match(/\/([0-9]+)\/?$/);
-const id = idMatch ? `linkedin_${idMatch[1]}` : `linkedin_${Date.now()}_${Math.random()}`;
-if(seen.has(id)) return;
+const id = idMatch ? `linkedin_${idMatch[1]}` : null;
+if(!id || seen.has(id)) return;
 seen.add(id);
-const titleFromUrl = href.split("/").filter(Boolean).pop().replace(/-at-[^-]+$/, "").replace(/-/g," ").trim();
-if(!looksLikeWantedJob(titleFromUrl) && titleFromUrl.length > 3) return;
-items.push({ id, url: href, title: titleFromUrl || "Offre LinkedIn", company: "LinkedIn" });
+items.push({ id, url: href, title: text || "Offre LinkedIn", company: "LinkedIn" });
 });
 await sleep(1500);
 }
+} finally { await page.close(); }
 console.log(`  → ${items.length} offres LinkedIn`);
 if(!items.length) return [];
 const offers = await runParallel(items, browser, "LinkedIn", existingMap);
