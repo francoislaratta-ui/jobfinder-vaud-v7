@@ -113,7 +113,8 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
   const jobId = (offerPath.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
 
   const existing = existingOffersMap[jobId];
-  if(existing && existing.description && existing.description !== "Descriptif non disponible."){
+  const hasValidAddress = existing?.address && /\b[1-9]\d{3}\s+[A-ZÀ-Ÿ][A-Za-zÀ-ÿ\-]{1,}/.test(existing.address);
+  if(existing && existing.description && existing.description !== "Descriptif non disponible." && hasValidAddress){
     process.stdout.write(` ♻️ (déjà scrapée)\n`);
     return existing;
   }
