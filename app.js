@@ -94,13 +94,6 @@ element.innerHTML = html;
 }
 }
 
-function formatDate(dateStr){
-if(!dateStr) return "";
-const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-if(m) return m[3]+"."+m[2]+"."+m[1];
-return dateStr;
-}
-
 function escapeHTML(value){
 return String(value || "")
 .replace(/&/g, "&amp;")
@@ -255,20 +248,21 @@ preferredContracts: [
 };
 
 const IA_WEIGHTS = {
-// Métier dans le titre/desc = critère principal
-jobMatch: 30,
-// Compétences CV présentes dans l'offre = critère fort
-cvSkillsBonus: 30,
-// Secteur compatible
+
+jobMatch: 25,
+
 sectorMatch: 15,
-// Région compatible
-regionMatch: 10,
-// Taux compatible
+
+regionMatch: 15,
+
 rateMatch: 10,
-// Langues CV utiles dans l'offre
-cvLanguagesBonus: 5,
-// Contrat compatible
-contractBonus: 5
+
+contractBonus: 5,
+
+cvSkillsBonus: 20,
+
+cvLanguagesBonus: 10
+
 };
 
 const MATCH_LEVELS = {
@@ -560,122 +554,106 @@ return "";
 
 function analyzeExtractedText(text){
 
-const normalized = normalizeText(text);
+const normalized =
+normalizeText(text);
 
 const software = [];
+
 const languages = [];
+
 const adminSkills = [];
+
 const supportSkills = [];
 
-// Logiciels ERP / bureautique — compétences réelles du profil
 const softwareKeywords = [
-"sap",
-"pro-concept",
-"pro concept",
-"axapta",
-"filemaker",
-"filemaker pro",
-"hypsis",
-"timeas",
-"tipee",
 "excel",
 "word",
 "outlook",
 "powerpoint",
-"office 365",
-"office",
-"windows",
+"sap",
 "erp",
 "crm",
-"linux",
-"unix"
+"windows",
+"office"
 ];
 
-// Langues
 const languageKeywords = [
-"francais",
+"français",
 "anglais",
 "allemand",
 "italien"
 ];
 
-// Compétences administratives — tirées directement du CV
 const adminKeywords = [
-"gestion de dossiers",
 "gestion administrative",
-"gestion des dossiers",
-"gestionnaire de dossiers",
-"gestionnaire administratif",
-"secretariat",
+"gestion de dossiers",
 "facturation",
-"comptabilite",
-"contentieux",
-"relances",
-"suivi comptable",
-"archivage",
+"comptabilité",
 "classement",
+"archivage",
 "correspondance",
-"courriers",
-"rapports",
-"statistiques",
-"planification",
-"organisation",
-"agenda",
-"rendez-vous",
-"accueil",
 "service client",
-"back office",
-"back-office",
-"admission",
-"coordination",
-"budget",
-"cloture",
-"controle",
-"conformite",
-"immobilier",
-"employe de commerce"
+"téléphone",
+"email",
+"planification",
+"organisation"
 ];
 
-// Compétences support / informatique
 const supportKeywords = [
 "support informatique",
-"support utilisateur",
 "helpdesk",
 "technicien informatique",
-"technicien de maintenance",
-"maintenance informatique",
-"parc informatique",
-"reseau",
-"depannage",
 "installation",
-"formation des utilisateurs",
-"super user",
-"super-user",
-"coordinateur reseau"
+"maintenance",
+"dépannage"
 ];
 
 softwareKeywords.forEach(keyword => {
-if(normalized.includes(normalizeText(keyword))){
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
 software.push(keyword);
 }
+
 });
 
 languageKeywords.forEach(keyword => {
-if(normalized.includes(normalizeText(keyword))){
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
 languages.push(keyword);
 }
+
 });
 
 adminKeywords.forEach(keyword => {
-if(normalized.includes(normalizeText(keyword))){
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
 adminSkills.push(keyword);
 }
+
 });
 
 supportKeywords.forEach(keyword => {
-if(normalized.includes(normalizeText(keyword))){
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
 supportSkills.push(keyword);
 }
+
 });
 
 const skills = [
@@ -686,12 +664,19 @@ const skills = [
 ];
 
 return {
-wordCount: text.split(/\s+/).filter(Boolean).length,
+
+wordCount:
+text
+.split(/\s+/)
+.filter(Boolean)
+.length,
+
 skills,
 software,
 languages,
 adminSkills,
 supportSkills
+
 };
 
 }
@@ -931,13 +916,13 @@ const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:che
 console.log("Cases cochées:", selectedMetiers);
 saveFilters();
 applyFilters();
-openTab("offers");
+openTab("filters");
 setTimeout(() => {
 const firstOffer = document.querySelector(".offer-card");
 if(firstOffer){
 firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
 }
-}, 800);
+}, 300);
 }finally{
 refreshOffersBtn.disabled = false;
 refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
@@ -1143,37 +1128,6 @@ applyFilters();
 }
 
 /* ==========================================
-CONTRACT MAP
-========================================== */
-
-const CONTRACT_MAP = {
-"unlimited": "CDI",
-"permanent": "CDI",
-"cdi": "CDI",
-"durée indéterminée": "CDI",
-"duree indeterminee": "CDI",
-"limited": "CDD",
-"cdd": "CDD",
-"durée déterminée": "CDD",
-"duree determinee": "CDD",
-"temporary": "CDD",
-"temporaire": "CDD",
-"internship": "Stage",
-"stage": "Stage",
-"apprenticeship": "Apprentissage",
-"apprentissage": "Apprentissage",
-"freelance": "Freelance",
-"mandate": "Mandat",
-"mandat": "Mandat"
-};
-
-function formatContract(contract){
-if(!contract) return "";
-const key = contract.trim().toLowerCase();
-return CONTRACT_MAP[key] || contract;
-}
-
-/* ==========================================
 APPLY FILTERS
 ========================================== */
 
@@ -1216,7 +1170,7 @@ function applyFilters(){
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
-    let result = [...offers].filter(o => o.source !== "Migros" && o.source !== "Nestlé" && !(o.source === "Indeed" && !o.rate));
+    let result = [...offers];
 
     const SCRAPE_KEYWORDS = [
 "employe de commerce",
@@ -1278,10 +1232,7 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        // Offre sans taux : masquée sauf si 100% coché
-        if(!offer.rate){
-            return selectedTaux.includes("100");
-        }
+        if(!offer.rate) return true;
         const rateNorm = normalizeText(offer.rate);
         return selectedTaux.some(t => {
             const tNum = parseInt(t);
@@ -1295,14 +1246,12 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
 }
 
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
-    result = result.filter(offer => {
-        if(!offer.contract) return true;
-        // Normaliser la valeur brute (ex: "limited" → "CDD") avant de comparer
-        const contractNorm = formatContract(offer.contract).toLowerCase().trim();
-        return selectedContrats.some(c =>
-            contractNorm === c.toLowerCase().trim()
-        );
-    });
+    result = result.filter(offer =>
+        !offer.contract ||
+        selectedContrats.some(c =>
+            containsNormalized(offer.contract, c)
+        )
+    );
 }
 
 if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
@@ -1345,7 +1294,6 @@ if(selectedSources.length > 0 && selectedSources.length < totalSources){
     updateDashboard();
     updateBestMatch();
     updateStatistics();
-    saveFilters();
 
 }
 
@@ -1605,26 +1553,21 @@ normalizeText(skill)
 
 if(matchingSkills.length > 0){
 
-// Score progressif : 1 match = 10pts, 2 = 18pts, 3+ = 30pts max
-const skillBonus = Math.min(
+const skillBonus =
+Math.min(
 IA_WEIGHTS.cvSkillsBonus,
-matchingSkills.length === 1 ? 10 :
-matchingSkills.length === 2 ? 18 :
-matchingSkills.length === 3 ? 24 :
-30
+matchingSkills.length * 5
 );
 
 score += skillBonus;
 
 reasons.push(
-"CV compatible (" + matchingSkills.length + " compétences) : " +
-matchingSkills.slice(0, 4).join(", ") +
-(matchingSkills.length > 4 ? "..." : "")
+"CV compatible : " + matchingSkills.join(", ")
 );
 
 }else{
 
-missing.push("Compétences CV peu visibles dans l\'offre");
+missing.push("Compétences CV peu visibles dans l'offre");
 
 }
 
@@ -2258,24 +2201,14 @@ const descHtml = offer.source === "Jobup"
 // Nettoyage + formatage adresse
 const formatAddress = (addr) => {
 if(!addr) return "";
-
-// Valeurs parasites à masquer (dates, "null", années seules, etc.)
-const isParasite = (s) =>
-/^(null|undefined)$/i.test(s) ||
-/^\d{4}(\s.*)?$/.test(s.trim()) ||
-/^à convenir/i.test(s.trim());
-
-if(isParasite(addr.trim())) return "";
-
 const clean = addr
 .replace(/À propos de cette offre[\s\S]*/i, "")
 .replace(/Autres recherches[\s\S]*/i, "")
 .replace(/Offres similaires[\s\S]*/i, "")
 .trim();
-
 return clean.split("\n")
 .map(l => l.trim())
-.filter(l => l && !isParasite(l))
+.filter(Boolean)
 .join("<br>");
 };
 
@@ -2310,19 +2243,19 @@ ${offer.rate ? `
 
 ${offer.contract ? `
 <div class="offer-meta">
-📄 ${escapeHTML(formatContract(offer.contract))}
+📄 ${escapeHTML(offer.contract)}
 </div>
 ` : ""}
 
 ${offer.startDate ? `
 <div class="offer-meta">
-🗓️ Entrée : ${formatDate(offer.startDate)}
+🗓️ Entrée : ${escapeHTML(offer.startDate)}
 </div>
 ` : ""}
 
 ${offer.applyBefore ? `
 <div class="offer-meta">
-⏳ Postuler avant : ${formatDate(offer.applyBefore)}
+⏳ Postuler avant : ${escapeHTML(offer.applyBefore)}
 </div>
 ` : ""}
 
@@ -2343,7 +2276,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${formatDate(offer.date)}
+📅 Publié le : ${escapeHTML(offer.date)}
 </div>
 
 ${offer.offerUrl ? `
