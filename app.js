@@ -819,16 +819,17 @@ UTILITAIRES
 ========================================== */
 
 function formatDate(date){
-if(!date){
-return "";
-}
-
+if(!date) return "";
 try{
-return new Date(date).toLocaleDateString("fr-CH");
+const d = new Date(date);
+if(isNaN(d.getTime())) return String(date);
+const day = String(d.getDate()).padStart(2,"0");
+const month = String(d.getMonth()+1).padStart(2,"0");
+const year = d.getFullYear();
+return `${day}.${month}.${year}`;
 }catch(e){
 return String(date);
 }
-
 }
 
 function generateId(){
@@ -1286,9 +1287,19 @@ if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
         const desc = offer.description || "";
         return selectedContrats.some(c => {
             const cn = normalizeText(c);
+            // Normaliser le contrat de l'offre
+            const contractNorm = normalizeText(offer.contract || "");
+            const mappedContract =
+                contractNorm === "permanent" ? "cdi" :
+                contractNorm === "limited" ? "cdd" :
+                contractNorm === "temporaire" ? "temporaire" :
+                contractNorm === "internship" ? "stage" :
+                contractNorm;
+            if(mappedContract && mappedContract === cn) return true;
+            // Chercher dans description si contrat vide ou non mappé
             const dn = normalizeText(desc);
-            if(cn === "cdi") return /cdi|duree indeterminee|indeterminee|fixe/.test(dn);
-            if(cn === "cdd") return /cdd|duree determinee|determinee/.test(dn);
+            if(cn === "cdi") return /cdi|duree indeterminee|indeterminee|permanent|fixe/.test(dn);
+            if(cn === "cdd") return /cdd|duree determinee|determinee|limited/.test(dn);
             if(cn === "temporaire") return /temporaire|interim/.test(dn);
             return dn.includes(cn);
         });
@@ -2284,19 +2295,25 @@ ${offer.rate ? `
 
 ${offer.contract ? `
 <div class="offer-meta">
-📄 ${escapeHTML(offer.contract)}
+📄 ${escapeHTML(
+  offer.contract === "permanent" ? "CDI" :
+  offer.contract === "limited" ? "CDD" :
+  offer.contract === "temporaire" ? "Temporaire" :
+  offer.contract === "internship" ? "Stage" :
+  offer.contract
+)}
 </div>
 ` : ""}
 
 ${offer.startDate ? `
 <div class="offer-meta">
-🗓️ Entrée : ${escapeHTML(offer.startDate)}
+🗓️ Entrée : ${escapeHTML(formatDate(offer.startDate))}
 </div>
 ` : ""}
 
 ${offer.applyBefore ? `
 <div class="offer-meta">
-⏳ Postuler avant : ${escapeHTML(offer.applyBefore)}
+⏳ Postuler avant : ${escapeHTML(formatDate(offer.applyBefore))}
 </div>
 ` : ""}
 
@@ -2317,7 +2334,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(offer.date)}
+📅 Publié le : ${escapeHTML(formatDate(offer.date))}
 </div>
 
 ${offer.offerUrl ? `
