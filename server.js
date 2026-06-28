@@ -2527,6 +2527,39 @@ error:error.message
 );
 
 /* ==========================================
+API TEST INDEED
+========================================== */
+
+app.get("/api/test-indeed", async (req, res) => {
+try {
+const response = await axios.get(
+"https://ch-fr.indeed.com/jobs?q=assistant+administratif&l=vaud",
+{
+headers: {
+"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+"Accept": "text/html",
+"Accept-Language": "fr-CH,fr;q=0.9"
+},
+timeout: 10000
+}
+);
+const hasJobs = response.data.includes("jobTitle") || response.data.includes("jk=");
+res.json({
+success: true,
+status: response.status,
+length: response.data.length,
+hasJobs
+});
+} catch(e) {
+res.json({
+success: false,
+error: e.message,
+status: e.response?.status || 0
+});
+}
+});
+
+/* ==========================================
 API SCRAPE ON DEMAND
 ========================================== */
 
