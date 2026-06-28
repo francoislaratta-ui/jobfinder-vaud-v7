@@ -114,7 +114,6 @@ await page.close();
 async function scrapeDetailPage(offerPath, browser, existingOffersMap){
 const jobId = (offerPath.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
 
-// OPTION D : skip si offre déjà connue avec une vraie description
 const existing = existingOffersMap[jobId];
 if(existing && existing.description && existing.description !== "Descriptif non disponible."){
 process.stdout.write(` ♻️ (déjà scrapée)\n`);
@@ -141,7 +140,7 @@ const place = (job.place || "").trim();
 const addressParts = [];
 if(street && street.length < 60) addressParts.push(street);
 if(zipCode) addressParts.push(`${zipCode} ${place}`.trim());
-const address = addressParts.length > 0 ? addressParts.join(", ") : "";
+const address = addressParts.length > 0 ? addressParts.join(", ") : (place || "Vaud");
 const location = place || "Vaud";
 
 const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
@@ -162,16 +161,27 @@ const rawContract = String((job.employmentTypeIds || [])[0] || job.contractType 
 const contract = CONTRACT_MAP[rawContract] || CONTRACT_MAP[rawContract.toLowerCase()] || "";
 
 const date = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
-const salary = job.salary ? `CHF ${job.salary}` : "";
 
-// Description via Puppeteer
+// FIX BUG [object Object] pour le salaire :
+let salary = "";
+if (job.salary) {
+if (typeof job.salary === 'object') {
+salary = job.salary.text || job.salary.amount || job.salary.formatted || "";
+} else {
+salary = String(job.salary);
+}
+}
+if (salary && !salary.startsWith("CHF")) {
+salary = `CHF ${salary}`;
+}
+
+// Description via Puppeteer (Descriptif utile complet)
 const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
-// Extraire startDate depuis la description
+// Extraire startDate (date d'entrée en fonction) depuis la description
 const startDateMatch = description.match(/[Ee]ntr[ée]e en (?:service|fonction)[^:]*:?\s*([^\n.]{3,40})/i) ||
 description.match(/[Dd]ate d'entr[ée]e[^:]*:?\s*([^\n.]{3,40})/i);
 let startDate = startDateMatch ? startDateMatch[1].trim() : "";
-// Convertir date texte en DD.MM.YYYY si possible
 const sdm = startDate.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
 if(sdm) startDate = sdm[1].padStart(2,"0")+"."+sdm[2].padStart(2,"0")+"."+sdm[3];
 
@@ -231,10 +241,8 @@ const year = parseInt(d[3]);
 if(year >= 2024 && year <= 2027){ date = `${d[3]}-${months[d[2].toLowerCase()]}-${d[1].padStart(2,"0")}`; break; }
 }
 
-// Description via Puppeteer
 const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
-// Extraire startDate depuis la description
 const startDateMatch2 = description.match(/[Ee]ntr[ée]e en (?:service|fonction)[^:]*:?\s*([^\n.]{3,40})/i) ||
 description.match(/[Dd]ate d'entr[ée]e[^:]*:?\s*([^\n.]{3,40})/i);
 let startDate2 = startDateMatch2 ? startDateMatch2[1].trim() : "";
@@ -253,7 +261,6 @@ date, startDate: startDate2, applyBefore: applyBefore2, salaryGrade: "",
 description, salary };
 }
 
-
 /* ==========================================
 SCRAPER SOURCES ADDITIONNELLES
 ========================================== */
@@ -269,32 +276,7 @@ const text = await page.evaluate(() => document.body.innerText);
 const html = await page.evaluate(() => document.documentElement.innerHTML);
 const h1 = await page.evaluate(() => document.querySelector("h1")?.innerText?.trim() || "");
 
-// Extraction spécifique Indeed
 let indeedData = {};
-if(url.includes("indeed.com")){
-indeedData = await page.evaluate(() => {
-// Employeur — lien sous le h1
-const companyEl = document.querySelector('[data-company-name="true"], .jobsearch-InlineCompanyRating a, [class*="company"] a, [class*="CompanyName"]');
-const company = companyEl ? companyEl.innerText.trim() : "";
-
-// Taux — dans les badges "Type de poste"
-const badges = [...document.querySelectorAll('[class*="badge"], [class*="Badge"], [class*="chip"], [class*="Chip"], [class*="tag"], [class*="Tag"]')];
-const rateBadge = badges.find(b => /\d{2,3}\s*%/.test(b.innerText));
-const rate = rateBadge ? (rateBadge.innerText.match(/\d{1,3}\s*[-–]\s*\d{1,3}\s*%|\d{2,3}\s*%/)?.[0] || "") : "";
-
-// Contrat — chercher dans les détails emploi
-const details = document.querySelector('[class*="JobMetadataHeader"], [class*="jobDetail"], [class*="metadata"]');
-const detailText = details ? details.innerText : document.body.innerText;
-const contractMatch = detailText.match(/(CDI|CDD|Emploi fixe|Durée indéterminée|Durée déterminée|Temporaire|Stage)/i);
-const contract = contractMatch ? contractMatch[0] : "";
-
-// Localisation
-const locationEl = document.querySelector('[data-testid="job-location"], [class*="location"], [class*="Location"]');
-const location = locationEl ? locationEl.innerText.trim() : "";
-
-return { company, rate, contract, location };
-});
-}
 return { text, html, h1, indeedData };
 } catch(e) {
 return { text: "", html: "", h1: "", indeedData: {} };
@@ -304,17 +286,14 @@ await page.close();
 }
 
 function extractDetails(text, h1 = ""){
-// Taux — chercher dans h1 d'abord, puis dans le texte
 const rateMatch = (h1 + " " + text).match(/(\d{1,3})\s*[–\-]\s*(\d{1,3})\s*%/) ||
                   (h1 + " " + text).match(/(\d{2,3})\s*%/);
 const rate = rateMatch ? rateMatch[0].trim() : "";
 
-// Contrat
 const contractRaw = text.match(/(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Stage|Apprentissage)/i);
 let contract = contractRaw ? contractRaw[0].trim() : "";
 contract = contract.replace(/Durée indéterminée/i, "CDI").replace(/Durée déterminée/i, "CDD");
 
-// Description
 const markers = ["Description du poste", "Vos missions", "Votre mission", "Mission", "Responsabilités", "Description de l'emploi", "À propos du rôle", "Le poste"];
 let description = "Descriptif non disponible.";
 for(const marker of markers){
@@ -325,15 +304,12 @@ if(desc.length > 100){ description = desc; break; }
 }
 }
 
-// Localisation
 const locationMatch = text.match(/(Lausanne|Vaud|Nyon|Morges|Yverdon|Vevey|Montreux|Renens|Prilly|Gland|Rolle|Bussigny|Pully|Crissier)/i);
 const location = locationMatch ? locationMatch[0] : "Vaud";
 
-// Salaire
 const salaryMatch = text.match(/(CHF\s*[\d\s'.,]+-[\d\s'.,]+\s*\/\s*(?:an|mois|année))/i);
 const salary = salaryMatch ? salaryMatch[0].trim() : "";
 
-// Entreprise — chercher les patterns communs
 const companyMatch = text.match(/(?:chez|at) ([A-Z][A-Za-z &.-]{2,40})(?= |-|$)/m);
 const company = companyMatch ? companyMatch[1].trim() : "";
 return { rate, contract, description, location, salary, company };
@@ -353,7 +329,6 @@ const item = queue.shift();
 active++;
 (async () => {
 try{
-// Option D — skipper uniquement si titre réel et description présente
 const ex = existingMap[item.id];
 const genericTitles = ["Offre Indeed", "Offre Migros", "Offre Coop", "Offre LinkedIn"];
 const hasGenericTitle = genericTitles.some(g => (ex?.title || "").includes(g));
@@ -362,30 +337,22 @@ results.push(ex); done++;
 process.stdout.write(`  ♻️ [${done}] ${ex.title.substring(0,40)}\n`);
 return;
 }
-const { text, h1, indeedData } = await scrapePagePuppeteer(item.url, browser);
+const { text, h1 } = await scrapePagePuppeteer(item.url, browser);
 if(!text){ done++; return; }
 const details = extractDetails(text, h1);
-details.text = text; // garder le texte pour le filtre temps partiel
-// Enrichir avec les données Indeed extraites directement
-if(indeedData && Object.keys(indeedData).length > 0){
-if(indeedData.rate) details.rate = indeedData.rate;
-if(indeedData.contract) details.contract = indeedData.contract;
-if(indeedData.company) details.company = indeedData.company;
-if(indeedData.location) details.location = indeedData.location;
-}
-// Utiliser h1 comme titre si disponible et plus précis
+details.text = text;
+
 const finalTitle = (h1 && h1.length > 3) ? h1 : item.title;
-// Filtrer par titre réel
 if(finalTitle !== item.title && !looksLikeWantedJob(finalTitle)){ done++; return; }
-// Filtre taux pour sources non-Jobup
+
 if(source !== "Jobup"){
 const rateNum = details.rate ? parseInt((details.rate.match(/\d+/) || ["0"])[0]) : 0;
 const hasPartTime = /temps partiel|part-time|teilzeit|mi-temps/i.test(text);
 if(details.rate && ![40,50,60].some(t => Math.abs(rateNum - t) <= 10)){
-done++; return; // Taux incompatible → écarter
+done++; return;
 }
 if(!details.rate && !hasPartTime){
-done++; return; // Pas de taux et pas de mention temps partiel → écarter
+done++; return;
 }
 }
 const offer = {
@@ -410,39 +377,10 @@ next();
 });
 }
 
+// Désactivation de la collecte Indeed en temps réel en raison des protections anti-bot
 async function scrapeIndeedOffers(browser, existingMap){
-console.log("\n🔍 Indeed — collecte...");
-const searches = [
-"https://ch-fr.indeed.com/jobs?q=assistant+administratif&l=vaud",
-"https://ch-fr.indeed.com/jobs?q=gestionnaire+dossiers&l=vaud",
-"https://ch-fr.indeed.com/jobs?q=secretaire&l=vaud",
-"https://ch-fr.indeed.com/jobs?q=employe+commerce&l=vaud"
-];
-const items = []; const seen = new Set();
-for(const url of searches){
-const { html, text } = await scrapePagePuppeteer(url, browser);
-// Extraire titres via texte de la page
-const titleEls = html.match(/data-testid="jobTitle"[^>]*>\s*<[^>]+>([^<]+)<\/[^>]+>/gi) || [];
-// Extraire liens rc/clk avec jk=
-const linkMatches = [...html.matchAll(/href="((?:https:\/\/ch-fr\.indeed\.com)?\/rc\/clk\?jk=([a-z0-9]+)[^"]*?)"/gi)];
-linkMatches.forEach((m, i) => {
-const jk = m[2];
-const id = `indeed_${jk}`;
-if(seen.has(id)) return;
-seen.add(id);
-const fullUrl = `https://ch-fr.indeed.com/viewjob?jk=${jk}`;
-// Titre depuis data-testid ou générique
-const rawTitle = titleEls[i] ? titleEls[i].replace(/<[^>]+>/g,"").trim() : "";
-const title = rawTitle || `Offre Indeed`;
-// Ne pas filtrer ici — le vrai titre sera extrait depuis le h1 de la page de détail
-items.push({ id, url: fullUrl, title, company: "Indeed" });
-});
-await sleep(1000);
-}
-console.log(`  → ${items.length} offres Indeed`);
-if(!items.length) return [];
-const offers = await runParallel(items, browser, "Indeed", existingMap);
-return offers.filter(o => looksLikeWantedJob(o.title));
+console.log("\n🔍 Indeed — (Passé / Désactivé pour cause de blocages anti-bot)");
+return []; 
 }
 
 async function scrapeMigrosOffers(browser, existingMap){
@@ -455,7 +393,6 @@ const keywords = ["assistant administratif", "gestionnaire dossier", "secretaire
 for(const keyword of keywords){
 await page.goto("https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants", { waitUntil: "networkidle2", timeout: 30000 });
 await sleep(1500);
-// Taper dans le champ de recherche
 try{
 await page.click("input[type=text], input[type=search], input[placeholder*=mot], input[placeholder*=Profes]");
 await page.keyboard.type(keyword);
@@ -553,7 +490,6 @@ console.log("====================================\n");
 const allPaths = new Set();
 const jobupOffers = [];
 
-// Charger les offres existantes pour Option D
 let existingOffersMap = {};
 if(fs.existsSync(OFFERS_FILE)){
 try{
@@ -573,7 +509,6 @@ await sleep(DELAY);
 }
 console.log(`\n📊 Total liens uniques: ${allPaths.size}\n`);
 
-// Lancer Puppeteer une seule fois
 console.log("🌐 Lancement du navigateur...");
 const browser = await puppeteer.launch({ headless: true });
 console.log("✅ Navigateur prêt\n");
@@ -591,10 +526,8 @@ else process.stdout.write(` ⏭\n`);
 }catch(e){ process.stdout.write(` ❌ ${e.message}\n`); }
 }
 
-// Scraper les sources additionnelles avec le même navigateur
 console.log("\n📋 Étape 3: Sources additionnelles...\n");
 
-// Charger toutes les offres existantes pour Option D
 const existingAllMap = {};
 try{
 const existingAll = JSON.parse(fs.readFileSync(OFFERS_FILE, "utf8"));
@@ -619,11 +552,9 @@ return;
 
 const allOffers = [...jobupOffers, ...indeedOffers, ...migrosOffers, ...coopOffers, ...linkedinOffers];
 
-// Sauvegarder dans offers.json local
 fs.writeFileSync(OFFERS_FILE, JSON.stringify(allOffers, null, 2), "utf8");
 console.log(`💾 offers.json mis à jour: ${allOffers.length} offres total\n`);
 
-// Envoyer aussi à Render
 console.log("📤 Envoi à Render...");
 try{
 const response = await axios.post(`${RENDER_URL}/api/offers/import`,
