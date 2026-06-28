@@ -2,8 +2,8 @@ name: Scraper Jobup + Indeed
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Tous les jours à 6h UTC
-  workflow_dispatch:       # Lancement manuel possible
+    - cron: '0 6 * * *'
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -19,7 +19,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install axios
+        run: npm install --ignore-scripts
 
       - name: Run scraper
         run: node .github/scripts/scraper.js
