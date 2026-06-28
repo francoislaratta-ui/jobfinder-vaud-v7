@@ -146,7 +146,7 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         const addressParts = [];
         if(street && street.length < 60) addressParts.push(street);
         if(validZip && place) addressParts.push(`${zipCode} ${place}`.trim());
-        const address = addressParts.length > 0 ? addressParts.join(", ") : "";
+        const address = addressParts.length > 0 ? addressParts.join(", ") : place;
         const location = place || "Vaud";
 
         const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
