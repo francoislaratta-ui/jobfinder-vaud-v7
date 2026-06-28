@@ -137,15 +137,23 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         const street = (job.street || "").trim();
         const zipCode = (job.zipCode || "").trim();
         const place = (job.place || "").trim();
+        
         const addressParts = [];
-        if(street && street.length < 60) addressParts.push(street);
-        if(zipCode) addressParts.push(`${zipCode} ${place}`.trim());
+        if(street && street.toLowerCase() !== "null" && street.length < 60) addressParts.push(street);
+        if(zipCode && zipCode.toLowerCase() !== "null" && zipCode !== "2026") {
+          const cleanPlace = (place && place.toLowerCase() !== "null") ? place : "";
+          addressParts.push(`${zipCode} ${cleanPlace}`.trim());
+        } else if (place && place.toLowerCase() !== "null" && !place.toLowerCase().includes("jobcloud")) {
+          addressParts.push(place);
+        }
         
         let address = addressParts.length > 0 ? addressParts.join(", ") : (place || "Vaud");
-        if (address.includes("null")) {
-          address = address.replace("null,", "").replace("null", "").trim() || place || "Vaud";
+        
+        // Nettoyage final anti-null et anti-JobCloud
+        if (address.includes("null") || address.includes("JobCloud")) {
+          address = address.replace(/null,?/gi, "").replace(/2026\s*JobCloud\s*SA/gi, "").trim() || place || "Vaud";
         }
-        const location = place || "Vaud";
+        const location = (place && place.toLowerCase() !== "null") ? place : "Vaud";
 
         const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
         const textLower = (title + " " + location + " " + company).toLowerCase();
@@ -228,18 +236,18 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
 
   const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
-  // FIX BUG ADRESSE NETTOYÉE
+  // FIX BUG ADRESSE NETTOYÉE ET SECURISEE
   let address = location;
   const zipMatch = html.match(/(\d{4})\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,30})/);
   if (zipMatch) {
     const zip = zipMatch[1];
     const town = zipMatch[2].split("\n")[0].split(",")[0].trim();
-    if (town.length < 30) {
+    if (town.length < 30 && !town.toLowerCase().includes("jobcloud") && zip !== "2026") {
       address = `${zip} ${town}`;
     }
   }
-  if (address.includes("null")) {
-    address = address.replace("null,", "").replace("null", "").trim() || location;
+  if (address.includes("null") || address.includes("JobCloud")) {
+    address = address.replace(/null,?/gi, "").replace(/2026\s*JobCloud\s*SA/gi, "").trim() || location;
   }
 
   const salaryMatch = html.match(/(CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois))/i);
