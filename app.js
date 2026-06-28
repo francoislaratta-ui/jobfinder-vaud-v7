@@ -911,7 +911,7 @@ if(isFirst){
 refreshOffersBtn.disabled = true;
 refreshOffersBtn.innerHTML = `🔄 Chargement...<br>⏳ Veuillez patienter...`;
 try{
-await loadOffers(true);
+await loadOffers(true, false);
 const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:checked')].map(cb => cb.value);
 console.log("Cases cochées:", selectedMetiers);
 saveFilters();
@@ -939,12 +939,7 @@ refreshOffersBtn.innerHTML = `
 
 try{
 
-await refreshOffers();
-
-updateDashboard();
-updateBestMatch();
-updateStatistics();
-updateApplicationCounters();
+await loadOffers(true, true);
 
 saveFilters();
 applyFilters();
@@ -1954,7 +1949,7 @@ return results;
 CHARGEMENT OFFRES
 ========================================== */
 
-async function loadOffers(skipRender = false){
+async function loadOffers(skipRender = false, skipRestore = false){
 
 try{
 
@@ -2057,7 +2052,7 @@ const hasAny = rawFilters && Object.keys(rawFilters)
     .filter(k => k !== "sort")
     .some(k => (rawFilters[k] || []).length > 0);
 
-if(hasAny){
+if(hasAny && !skipRestore){
     restoreSavedFilters();
 }else if(!skipRender){
     renderOffers(filteredOffers);
