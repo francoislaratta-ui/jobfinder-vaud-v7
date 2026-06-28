@@ -6,6 +6,9 @@ Jobup + Indeed → offers.json
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+puppeteer.use(StealthPlugin());
 
 const OFFERS_FILE = path.join(__dirname, "../../offers.json");
 
@@ -194,74 +197,82 @@ async function scrapeJobup(){
 }
 
 /* ==========================================
-SCRAPING INDEED
+SCRAPING INDEED - PUPPETEER+STEALTH
 ========================================== */
 
 async function scrapeIndeed(){
-  console.log("\n📋 Scraping Indeed...");
+  console.log("\n📋 Scraping Indeed (Puppeteer)...");
   const offers = [];
   const seen = new Set();
 
-  const searches = [
-    "https://ch-fr.indeed.com/jobs?q=assistant+administratif&l=vaud",
-    "https://ch-fr.indeed.com/jobs?q=gestionnaire+dossiers&l=vaud",
-    "https://ch-fr.indeed.com/jobs?q=secretaire&l=vaud",
-    "https://ch-fr.indeed.com/jobs?q=employe+commerce&l=vaud",
-    "https://ch-fr.indeed.com/jobs?q=collaborateur+administratif&l=vaud"
-  ];
+  let browser;
+  try{
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+    });
 
-  for(const searchUrl of searches){
-    try{
-      await sleep(1500);
-      const response = await axios.get(searchUrl, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          "Accept": "text/html",
-          "Accept-Language": "fr-CH,fr;q=0.9"
-        },
-        timeout: 15000
-      });
+    const searches = [
+      "https://ch-fr.indeed.com/jobs?q=assistant+administratif&l=vaud",
+      "https://ch-fr.indeed.com/jobs?q=gestionnaire+dossiers&l=vaud",
+      "https://ch-fr.indeed.com/jobs?q=secretaire&l=vaud",
+      "https://ch-fr.indeed.com/jobs?q=employe+commerce&l=vaud",
+      "https://ch-fr.indeed.com/jobs?q=collaborateur+administratif&l=vaud"
+    ];
 
-      const html = response.data;
+    for(const searchUrl of searches){
+      const page = await browser.newPage();
+      try{
+        await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+        await page.goto(searchUrl, { waitUntil: "networkidle2", timeout: 30000 });
+        await sleep(2000);
 
-      // Extraire les jk= (job keys)
-      const jkMatches = [...html.matchAll(/jk=([a-f0-9]+)/gi)];
-      const titleMatches = [...html.matchAll(/class="jobTitle[^"]*"[^>]*>\s*<[^>]+>([^<]+)<\/[^>]+>/gi)];
+        const html = await page.evaluate(() => document.documentElement.innerHTML);
+        const jkMatches = [...html.matchAll(/jk=([a-f0-9]+)/gi)];
+        const titleMatches = [...html.matchAll(/class="jobTitle[^"]*"[^>]*>\s*<[^>]+>([^<]+)<\/[^>]+>/gi)];
 
-      console.log(`  ${searchUrl.split("q=")[1].split("&")[0]}: ${jkMatches.length} liens`);
+        const keyword = searchUrl.split("q=")[1].split("&")[0];
+        console.log(`  ${keyword}: ${jkMatches.length} liens`);
 
-      jkMatches.forEach((m, i) => {
-        const jk = m[1];
-        const id = `indeed_${jk}`;
-        if(seen.has(id)) return;
-        seen.add(id);
+        jkMatches.forEach((m, i) => {
+          const jk = m[1];
+          const id = `indeed_${jk}`;
+          if(seen.has(id)) return;
+          seen.add(id);
 
-        const rawTitle = titleMatches[i] ? titleMatches[i][1].trim() : "";
-        if(rawTitle && !looksLikeWantedJob(rawTitle)) return;
+          const rawTitle = titleMatches[i] ? titleMatches[i][1].trim() : "";
+          if(rawTitle && !looksLikeWantedJob(rawTitle)) return;
 
-        offers.push({
-          id,
-          title: rawTitle || "Offre Indeed",
-          company: "Indeed",
-          location: "Vaud",
-          address: "",
-          sector: "Administration",
-          rate: "",
-          contract: "CDI",
-          source: "Indeed",
-          offerUrl: `https://ch-fr.indeed.com/viewjob?jk=${jk}`,
-          date: new Date().toISOString().split("T")[0],
-          description: "Descriptif non disponible.",
-          salary: ""
+          offers.push({
+            id,
+            title: rawTitle || "Offre Indeed",
+            company: "Indeed",
+            location: "Vaud",
+            address: "",
+            sector: "Administration",
+            rate: "",
+            contract: "CDI",
+            source: "Indeed",
+            offerUrl: `https://ch-fr.indeed.com/viewjob?jk=${jk}`,
+            date: new Date().toISOString().split("T")[0],
+            startDate: "",
+            description: "Descriptif non disponible.",
+            salary: ""
+          });
         });
-      });
 
-    }catch(e){
-      console.warn(`  ⚠️ Erreur Indeed: ${e.message}`);
+      }catch(e){
+        console.warn(`  ⚠️ Erreur Indeed: ${e.message}`);
+      }finally{
+        await page.close();
+      }
+      await sleep(1500);
     }
+
+  }finally{
+    if(browser) await browser.close();
   }
 
-  // Filtrer par titre
   const filtered = offers.filter(o => o.title === "Offre Indeed" || looksLikeWantedJob(o.title));
   console.log(`  ✅ Indeed: ${filtered.length} offres retenues`);
   return filtered;
