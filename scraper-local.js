@@ -114,8 +114,9 @@ async function extractDescriptionWithPuppeteer(offerPath, browser){
 async function scrapeDetailPage(offerPath, browser, existingOffersMap){
   const jobId = (offerPath.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
 
+  // Désactivation forcée de la réutilisation des anciennes offres mal formées
   const existing = existingOffersMap[jobId];
-  if(existing && existing.description && existing.description !== "Descriptif non disponible."){
+  if(existing && existing.description && existing.description !== "Descriptif non disponible." && !existing.salary.includes("Object") && !existing.address.includes("null") && !existing.address.includes("JobCloud")){
     process.stdout.write(` ♻️ (déjà scrapée)\n`);
     return existing;
   }
@@ -149,7 +150,6 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         
         let address = addressParts.length > 0 ? addressParts.join(", ") : (place || "Vaud");
         
-        // Nettoyage final anti-null et anti-JobCloud
         if (address.includes("null") || address.includes("JobCloud")) {
           address = address.replace(/null,?/gi, "").replace(/2026\s*JobCloud\s*SA/gi, "").trim() || place || "Vaud";
         }
@@ -174,16 +174,20 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
 
         const date = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
 
+        // FIX BUG SALAIRE [object Object]
         let salary = "";
         if (job.salary) {
           if (typeof job.salary === 'object') {
-            salary = job.salary.text || job.salary.amount || job.salary.formatted || "";
+            salary = job.salary.text || job.salary.formatted || (job.salary.amount ? `CHF ${job.salary.amount}` : "");
           } else {
             salary = String(job.salary);
           }
         }
-        if (salary && !salary.startsWith("CHF")) {
+        if (salary && !salary.startsWith("CHF") && !salary.includes("[object")) {
           salary = `CHF ${salary}`;
+        }
+        if (salary.includes("[object")) {
+          salary = "";
         }
 
         const description = await extractDescriptionWithPuppeteer(offerPath, browser);
@@ -236,7 +240,6 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
 
   const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
-  // FIX BUG ADRESSE NETTOYÉE ET SECURISEE
   let address = location;
   const zipMatch = html.match(/(\d{4})\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\s-]{2,30})/);
   if (zipMatch) {
@@ -251,7 +254,8 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
   }
 
   const salaryMatch = html.match(/(CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois))/i);
-  const salary = salaryMatch ? salaryMatch[1].trim() : "";
+  let salary = salaryMatch ? salaryMatch[1].trim() : "";
+  if (salary.includes("[object")) { salary = ""; }
 
   const months = {janvier:"01",février:"02",mars:"03",avril:"04",mai:"05",juin:"06",juillet:"07",août:"08",septembre:"09",octobre:"10",novembre:"11",décembre:"12"};
   const allDates = [...html.matchAll(/(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})/gi)];
