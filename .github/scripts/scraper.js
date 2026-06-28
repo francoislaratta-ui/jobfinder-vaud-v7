@@ -113,6 +113,10 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
   const jobId = (offerPath.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
 
   const existing = existingOffersMap[jobId];
+  if(existing && existing.description && existing.description !== "Descriptif non disponible."){
+    process.stdout.write(` ♻️ (déjà scrapée)\n`);
+    return existing;
+  }
 
   const url = `https://www.jobup.ch${offerPath}`;
   const html = await fetchJobupPage(url);
@@ -136,12 +140,10 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         const street = (job.street || "").trim();
         const zipCode = (job.zipCode || "").trim();
         const place = (job.place || "").trim();
-        const zipNum = parseInt(zipCode);
-        const validZip = zipNum >= 1000 && zipNum <= 9999;
         const addressParts = [];
         if(street && street.length < 60) addressParts.push(street);
-        if(validZip && place) addressParts.push(`${zipCode} ${place}`.trim());
-        const address = addressParts.length > 0 ? addressParts.join(", ") : place;
+        if(zipCode) addressParts.push(`${zipCode} ${place}`.trim());
+        const address = addressParts.length > 0 ? addressParts.join(", ") : "";
         const location = place || "Vaud";
 
         const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
