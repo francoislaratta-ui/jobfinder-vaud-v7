@@ -1,6 +1,5 @@
 name: Scraper Jobup + Indeed
 
-
 on:
   schedule:
     - cron: '0 6 * * *'
