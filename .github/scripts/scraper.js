@@ -158,6 +158,14 @@ async function scrapeJobup(){
         if(street) addressParts.push(street);
         if(zipCode || place) addressParts.push(`${zipCode} ${place}`.trim());
 
+        const lead = job.lead || "";
+        const startDateMatch = lead.match(/entr[eé]e en (?:service|fonction)[^\w]*([^\n.]{3,40})/i) ||
+          lead.match(/d[eè]s le ([^\n.]{3,20})/i) ||
+          lead.match(/d[eè]s que possible/i);
+        const startDate = startDateMatch
+          ? (startDateMatch[1] || startDateMatch[0]).trim()
+          : "";
+
         offers.push({
           id: jobId,
           title,
@@ -170,7 +178,8 @@ async function scrapeJobup(){
           source: "Jobup",
           offerUrl: `https://www.jobup.ch/fr/emplois/detail/${jobId}/`,
           date: job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0],
-          description: job.lead || "Descriptif non disponible.",
+          startDate,
+          description: lead || "Descriptif non disponible.",
           salary: job.salary ? `CHF ${job.salary}` : ""
         });
       }
