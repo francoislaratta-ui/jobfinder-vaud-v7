@@ -140,9 +140,11 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         const street = (job.street || "").trim();
         const zipCode = (job.zipCode || "").trim();
         const place = (job.place || "").trim();
+        const zipNum = parseInt(zipCode);
+        const validZip = zipNum >= 1000 && zipNum <= 9999;
         const addressParts = [];
         if(street && street.length < 60) addressParts.push(street);
-        if(zipCode) addressParts.push(`${zipCode} ${place}`.trim());
+        if(validZip && place) addressParts.push(`${zipCode} ${place}`.trim());
         const address = addressParts.length > 0 ? addressParts.join(", ") : "";
         const location = place || "Vaud";
 
