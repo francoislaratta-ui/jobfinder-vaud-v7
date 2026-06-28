@@ -944,6 +944,8 @@ await loadOffers(true, true);
 saveFilters();
 applyFilters();
 
+showSuccess(`${filteredOffers.length} offres correspondent à vos critères !`);
+
 openTab("filters");
 
 }catch(error){
@@ -1201,18 +1203,36 @@ function applyFilters(){
 
 const selectAllMetiers = document.getElementById("selectAllMetiers");
 
+const METIER_KEYWORDS = {
+    "Employé de commerce": ["employe de commerce","employé de commerce"],
+    "Employé administratif": ["employe administratif","employé administratif"],
+    "Assistant administratif": ["assistant administratif","assistante administrative"],
+    "Assistant de direction": ["assistant de direction","assistante de direction"],
+    "Gestionnaire de dossier": ["gestionnaire de dossier","gestionnaire dossier"],
+    "Gestionnaire administratif": ["gestionnaire administratif"],
+    "Collaborateur administratif": ["collaborateur administratif","collaboratrice administrative"],
+    "Coordinateur administratif": ["coordinateur administratif","coordinatrice administrative"],
+    "Assistant RH": ["assistant rh","assistante rh","ressources humaines"],
+    "Conseiller clientèle": ["conseiller clientele","conseillere clientele","service client"],
+    "Support utilisateur": ["support utilisateur","support informatique","it support"],
+    "Technicien informatique": ["technicien informatique","technicienne informatique"],
+    "Helpdesk": ["helpdesk","help desk"],
+    "Back-office": ["back office","back-office"]
+};
+
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
-        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
-            k.split(" ").filter(w => w.length > 4)
-            .some(w => titleNorm.includes(w))
-        );
-        if(selectAllMetiers?.checked) return matchesKeyword;
-        const matchesMetier = selectedMetiers.some(m =>
-            containsNormalized(offer.title, m)
-        );
-        return matchesKeyword || matchesMetier;
+        if(selectAllMetiers?.checked){
+            return SCRAPE_KEYWORDS.some(k =>
+                k.split(" ").filter(w => w.length > 4)
+                .some(w => titleNorm.includes(w))
+            );
+        }
+        return selectedMetiers.some(m => {
+            const keywords = METIER_KEYWORDS[m] || [normalizeText(m)];
+            return keywords.some(k => titleNorm.includes(normalizeText(k)));
+        });
     });
 }
 
@@ -1226,10 +1246,25 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 }
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
+    const hasPartialTaux = selectedTaux.some(t => {
+        const n = parseInt(t);
+        return (!isNaN(n) && n <= 80) || t === "Temps partiel";
+    });
+    const has100 = selectedTaux.includes("100") || selectedTaux.includes("Temps plein");
+
     result = result.filter(offer => {
-        if(!offer.rate) return true;
+        const desc = normalizeText(offer.description || "");
+        const hasPartTimeDesc = /temps partiel|part-time|teilzeit|mi-temps/.test(desc);
+
+        if(!offer.rate){
+            if(hasPartialTaux && hasPartTimeDesc) return true;
+            if(has100 && !hasPartTimeDesc) return true;
+            return false;
+        }
         const rateNorm = normalizeText(offer.rate);
         return selectedTaux.some(t => {
+            if(t === "Temps partiel") return hasPartTimeDesc;
+            if(t === "Temps plein") return !hasPartTimeDesc;
             const tNum = parseInt(t);
             if(isNaN(tNum)) return containsNormalized(offer.rate, t);
             const match = rateNorm.match(/(\d+)/g);
@@ -1241,21 +1276,32 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
 }
 
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
-    result = result.filter(offer =>
-        !offer.contract ||
-        selectedContrats.some(c =>
-            containsNormalized(offer.contract, c)
-        )
-    );
+    result = result.filter(offer => {
+        if(offer.contract){
+            return selectedContrats.some(c =>
+                containsNormalized(offer.contract, c)
+            );
+        }
+        // Chercher dans la description si contrat non renseigné
+        const desc = offer.description || "";
+        return selectedContrats.some(c => {
+            const cn = normalizeText(c);
+            const dn = normalizeText(desc);
+            if(cn === "cdi") return /cdi|duree indeterminee|indeterminee|fixe/.test(dn);
+            if(cn === "cdd") return /cdd|duree determinee|determinee/.test(dn);
+            if(cn === "temporaire") return /temporaire|interim/.test(dn);
+            return dn.includes(cn);
+        });
+    });
 }
 
 if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
-    result = result.filter(offer =>
-        !offer.location ||
-        selectedRegions.some(r =>
+    result = result.filter(offer => {
+        if(!offer.location) return false;
+        return selectedRegions.some(r =>
             containsNormalized(offer.location, r)
-        )
-    );
+        );
+    });
 }
 
 if(selectedSources.length > 0 && selectedSources.length < totalSources){
