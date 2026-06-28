@@ -20,7 +20,7 @@ MIDDLEWARES
 ========================================== */
 
 app.use(cors());
-app.use(express.json({ limit: "50mb" }));
+app.use(express.json());
 
 /* ==========================================
 FICHIERS
@@ -2947,28 +2947,33 @@ return anchors;
 
 function looksLikeWantedJob(text){
 
-const v = String(text || "")
+const value =
+String(text || "")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "");
 
-const excluded = [
-"gestionnaire de vente","commerce de detail","conseiller de vente",
-"vendeur","vendeuse","chef de rayon","responsable de rayon",
-"assistante medicale","assistant medical","assistant rh","assistante rh",
-"infirmier","infirmiere","aide soignant","restauration","chef de projet",
-"ingenieur","developpeur","developer","engineer","audiovisuel"
-];
-if(excluded.some(e => v.includes(e))) return false;
-
 const keywords = [
-"employe de commerce","assistant administratif","assistante administrative",
-"gestionnaire de dossier","gestionnaire administratif","collaborateur administratif",
-"technicien informatique","support informatique","helpdesk","back office","back-office",
-"secretaire","coordinateur administratif","assistant de direction","employe administratif",
-"facturation","comptabilite","administration","secrétariat"
+"employe",
+"assistant",
+"assistante",
+"administratif",
+"administrative",
+"gestionnaire",
+"dossier",
+"commerce",
+"support",
+"helpdesk",
+"technicien",
+"informatique",
+"rh",
+"clientele",
+"coordinateur"
 ];
-return keywords.some(k => v.includes(k));
+
+return keywords.some(keyword =>
+value.includes(keyword)
+);
 
 }
 
@@ -3233,72 +3238,20 @@ return result;
 
 async function scrapeAllOffers(){
 
-console.log("🔄 Scraping des offres en cours...");
-
-const [
-jobupOffers,
-vdOffers,
-indeedOffers,
-linkedinOffers,
-migrosOffers,
-nestleOffers,
-coopOffers
-] = await Promise.all([
-fetchJobupOffers(),
-fetchVdOffers(),
-typeof fetchIndeedOffers === "function" ? fetchIndeedOffers() : Promise.resolve([]),
-typeof fetchLinkedInOffers === "function" ? fetchLinkedInOffers() : Promise.resolve([]),
-typeof fetchMigrosOffers === "function" ? fetchMigrosOffers() : Promise.resolve([]),
-typeof fetchNestleOffers === "function" ? fetchNestleOffers() : Promise.resolve([]),
-typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
-]);
-
-// Filtrer LinkedIn et Indeed sur le profil recherché
-const indeedFiltered = indeedOffers.filter(o => looksLikeWantedJob(o.title));
-const linkedinFiltered = linkedinOffers.filter(o => looksLikeWantedJob(o.title));
-console.log(`🔍 Filtrage: Indeed ${indeedOffers.length}→${indeedFiltered.length} | LinkedIn ${linkedinOffers.length}→${linkedinFiltered.length}`);
-
-// Lire offers.json existant — source de vérité
 const existingOffers = readJson(OFFERS_FILE) || [];
-// Toujours conserver les offres Jobup ET Indeed existantes (scrapées localement)
 const existingJobup = existingOffers.filter(o => o.source === "Jobup");
 const existingIndeed = existingOffers.filter(o => o.source === "Indeed" && o.rate);
-console.log(`♻️ Conservation: ${existingJobup.length} offres Jobup + ${existingIndeed.length} offres Indeed existantes`);
 
-// Nouvelles offres non-Jobup/Indeed scrapées par Render
-const newNonJobup = [
-...vdOffers,
-...linkedinFiltered,
-...migrosOffers,
-...nestleOffers,
-...coopOffers
-];
+console.log(`♻️ Conservation: ${existingJobup.length} offres Jobup + ${existingIndeed.length} offres Indeed`);
 
 const allOffers = deduplicateOffers([
 ...existingJobup,
-...existingIndeed,
-...newNonJobup
+...existingIndeed
 ]);
-
-if(allOffers.length > 0){
 
 writeJson(OFFERS_FILE, allOffers);
 
-console.log(
-`✅ ${allOffers.length} offres scrapées et sauvegardées`
-);
-
-console.log(
-`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | Indeed: ${indeedOffers.length} | LinkedIn: ${linkedinOffers.length} | Migros: ${migrosOffers.length} | Nestlé: ${nestleOffers.length} | Coop: ${coopOffers.length}`
-);
-
-}else{
-
-console.warn(
-"⚠️ Aucune offre récupérée — offers.json conservé"
-);
-
-}
+console.log(`✅ ${allOffers.length} offres conservées`);
 
 }
 
@@ -3327,12 +3280,11 @@ console.log(
 "=================================="
 );
 
-// Scraping au démarrage désactivé — géré par scraper-local.js
-// await scrapeAllOffers();
+await scrapeAllOffers();
 
 }
 );
 
 /* ==========================================
 FIN SERVER.JS
-=========================================== */
+========================================== */
