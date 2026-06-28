@@ -1293,13 +1293,15 @@ if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
                 contractNorm === "permanent" ? "cdi" :
                 contractNorm === "limited" ? "cdd" :
                 contractNorm === "temporaire" ? "temporaire" :
-                contractNorm === "internship" ? "stage" :
+                contractNorm === "internship" ? "temporaire" :
                 contractNorm;
-            if(mappedContract && mappedContract === cn) return true;
+            // Temporaire = CDD dans le filtre
+            const effectiveContract = mappedContract === "temporaire" ? "cdd" : mappedContract;
+            if(effectiveContract && (effectiveContract === cn || mappedContract === cn)) return true;
             // Chercher dans description si contrat vide ou non mappé
             const dn = normalizeText(desc);
             if(cn === "cdi") return /cdi|duree indeterminee|indeterminee|permanent|fixe/.test(dn);
-            if(cn === "cdd") return /cdd|duree determinee|determinee|limited/.test(dn);
+            if(cn === "cdd" || cn === "temporaire") return /cdd|cdi|duree determinee|determinee|limited|temporaire|interim/.test(dn);
             if(cn === "temporaire") return /temporaire|interim/.test(dn);
             return dn.includes(cn);
         });
@@ -2299,15 +2301,15 @@ ${offer.contract ? `
   offer.contract === "permanent" ? "CDI" :
   offer.contract === "limited" ? "CDD" :
   offer.contract === "temporaire" ? "Temporaire" :
-  offer.contract === "internship" ? "Stage" :
+  offer.contract === "internship" ? "Temporaire" :
   offer.contract
 )}
 </div>
 ` : ""}
 
-${offer.startDate ? `
+${(offer.startDate || offer.startdate) ? `
 <div class="offer-meta">
-🗓️ Entrée : ${escapeHTML(formatDate(offer.startDate))}
+🗓️ Entrée : ${escapeHTML(formatDate(offer.startDate || offer.startdate))}
 </div>
 ` : ""}
 
