@@ -1204,20 +1204,32 @@ function applyFilters(){
 "conseiller clientele"
 ];
 
+const METIER_KEYWORDS = {
+    "Employé de commerce": ["employe de commerce","cfc de commerce","cfc d employe de commerce","gestion","administration","administratif"],
+    "Employé administratif": ["employe administratif","administratif","administration","gestion","bureau"],
+    "Assistant administratif": ["assistant administratif","assistante administrative","assistant","administration","administratif","employe de commerce"],
+    "Assistant de direction": ["assistant de direction","assistante de direction","direction","secretaire","executive"],
+    "Gestionnaire de dossier": ["gestionnaire de dossier","gestionnaire","dossier","gestion","administration","administratif","employe de commerce"],
+    "Gestionnaire administratif": ["gestionnaire administratif","gestionnaire","administration","administratif","employe de commerce"],
+    "Collaborateur administratif": ["collaborateur administratif","collaborateur","administration","administratif","employe de commerce"],
+    "Coordinateur administratif": ["coordinateur administratif","coordinateur","coordination","administration","administratif"],
+    "Assistant RH": ["assistant rh","assistante rh","ressources humaines","rh","personnel","recrutement"],
+    "Conseiller clientèle": ["conseiller clientele","conseillere clientele","service client","relation client","clientele"],
+    "Support utilisateur": ["support utilisateur","support","helpdesk","assistance","utilisateur"],
+    "Technicien informatique": ["technicien informatique","technicien","informatique","it","systeme"],
+    "Helpdesk": ["helpdesk","help desk","support","assistance","hotline"],
+    "Back-office": ["back-office","back office","administration","gestion","operations"]
+};
+
 const selectAllMetiers = document.getElementById("selectAllMetiers");
 
-if(selectedMetiers.length > 0){
+if(selectedMetiers.length > 0 && selectedMetiers.length < totalMetiers){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
-        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
-            k.split(" ").filter(w => w.length > 4)
-            .some(w => titleNorm.includes(w))
-        );
-        if(selectAllMetiers?.checked) return matchesKeyword;
-        const matchesMetier = selectedMetiers.some(m =>
-            containsNormalized(offer.title, m)
-        );
-        return matchesKeyword || matchesMetier;
+        return selectedMetiers.some(m => {
+            const keywords = METIER_KEYWORDS[m] || [normalizeText(m)];
+            return keywords.some(k => titleNorm.includes(normalizeText(k)));
+        });
     });
 }
 
