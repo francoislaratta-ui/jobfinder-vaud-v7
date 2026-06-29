@@ -2527,37 +2527,61 @@ error:error.message
 );
 
 /* ==========================================
-API TEST INDEED
+API IMPORT OFFRES (scraper-local.js)
 ========================================== */
 
-app.get("/api/test-indeed", async (req, res) => {
-try {
-const response = await axios.get(
-"https://ch-fr.indeed.com/jobs?q=assistant+administratif&l=vaud",
-{
-headers: {
-"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-"Accept": "text/html",
-"Accept-Language": "fr-CH,fr;q=0.9"
-},
-timeout: 10000
+app.post(
+"/api/offers/import",
+(req, res) => {
+
+try{
+
+const { offers: newOffers, source } = req.body;
+
+if(!Array.isArray(newOffers) || newOffers.length === 0){
+return res.status(400).json({ success: false, message: "Aucune offre reçue" });
 }
-);
-const hasJobs = response.data.includes("jobTitle") || response.data.includes("jk=");
+
+const existing = readJson(OFFERS_FILE) || [];
+
+// Garder offres Jobup existantes
+const jobupOffers = existing.filter(o => o.source === "Jobup");
+
+// Fusionner avec nouvelles offres (Indeed + autres)
+const newNonJobup = newOffers.filter(o => o.source !== "Jobup");
+
+const seen = new Set();
+const merged = [];
+
+for(const offer of [...jobupOffers, ...newNonJobup]){
+if(!seen.has(offer.id)){
+seen.add(offer.id);
+merged.push(offer);
+}
+}
+
+writeJson(OFFERS_FILE, merged);
+
+console.log(`📥 Import: ${newNonJobup.length} offres reçues | Total: ${merged.length}`);
+
 res.json({
 success: true,
-status: response.status,
-length: response.data.length,
-hasJobs
+imported: newNonJobup.length,
+total: merged.length
 });
-} catch(e) {
-res.json({
+
+}catch(error){
+
+res.status(500).json({
 success: false,
-error: e.message,
-status: e.response?.status || 0
+message: "Erreur import",
+error: error.message
 });
+
 }
-});
+
+}
+);
 
 /* ==========================================
 API SCRAPE ON DEMAND
@@ -3271,20 +3295,56 @@ return result;
 
 async function scrapeAllOffers(){
 
-const existingOffers = readJson(OFFERS_FILE) || [];
-const existingJobup = existingOffers.filter(o => o.source === "Jobup");
-const existingIndeed = existingOffers.filter(o => o.source === "Indeed" && o.rate);
+console.log("🔄 Scraping des offres en cours...");
 
-console.log(`♻️ Conservation: ${existingJobup.length} offres Jobup + ${existingIndeed.length} offres Indeed`);
-
-const allOffers = deduplicateOffers([
-...existingJobup,
-...existingIndeed
+const [
+jobupOffers,
+vdOffers,
+indeedOffers,
+linkedinOffers,
+migrosOffers,
+nestleOffers,
+coopOffers
+] = await Promise.all([
+fetchJobupOffers(),
+fetchVdOffers(),
+typeof fetchIndeedOffers === "function" ? fetchIndeedOffers() : Promise.resolve([]),
+typeof fetchLinkedInOffers === "function" ? fetchLinkedInOffers() : Promise.resolve([]),
+typeof fetchMigrosOffers === "function" ? fetchMigrosOffers() : Promise.resolve([]),
+typeof fetchNestleOffers === "function" ? fetchNestleOffers() : Promise.resolve([]),
+typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
 ]);
+
+const allOffers =
+deduplicateOffers([
+...jobupOffers,
+...vdOffers,
+...indeedOffers,
+...linkedinOffers,
+...migrosOffers,
+...nestleOffers,
+...coopOffers
+]);
+
+if(allOffers.length > 0){
 
 writeJson(OFFERS_FILE, allOffers);
 
-console.log(`✅ ${allOffers.length} offres conservées`);
+console.log(
+`✅ ${allOffers.length} offres scrapées et sauvegardées`
+);
+
+console.log(
+`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | Indeed: ${indeedOffers.length} | LinkedIn: ${linkedinOffers.length} | Migros: ${migrosOffers.length} | Nestlé: ${nestleOffers.length} | Coop: ${coopOffers.length}`
+);
+
+}else{
+
+console.warn(
+"⚠️ Aucune offre récupérée — offers.json conservé"
+);
+
+}
 
 }
 
