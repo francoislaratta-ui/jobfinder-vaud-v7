@@ -119,7 +119,22 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
   }
 
   const url = `https://www.jobup.ch${offerPath}`;
-  const html = await fetchJobupPage(url);
+
+  // Utiliser Puppeteer pour fetcher la page de détail (axios bloqué par Jobup depuis GitHub Actions)
+  let html = "";
+  let pageText = "";
+  const detailPage = await browser.newPage();
+  try {
+    await detailPage.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+    await detailPage.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+    html = await detailPage.evaluate(() => document.documentElement.innerHTML);
+    pageText = await detailPage.evaluate(() => document.body.innerText);
+  } catch(e) {
+    process.stdout.write(` ❌ Puppeteer: ${e.message}\n`);
+    return null;
+  } finally {
+    await detailPage.close();
+  }
 
   const CONTRACT_MAP = {
     "1":"CDI","2":"CDD","3":"Temporaire","4":"Stage","5":"CDI","6":"Apprentissage",
@@ -175,7 +190,15 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
           }
         }
 
-        const description = await extractDescriptionWithPuppeteer(offerPath, browser);
+        // Extraire description depuis le texte déjà récupéré
+        const start = pageText.indexOf("À propos de cette offre");
+        const end = ['Offres similaires', 'Postuler maintenant', 'Comment postuler', 'Partager cette offre', 'Signaler cette offre'].reduce((found, marker) => {
+          const idx = pageText.indexOf(marker, start);
+          return (idx > -1 && (found === -1 || idx < found)) ? idx : found;
+        }, -1);
+        const description = start > -1
+          ? (pageText.substring(start + 23, end > -1 ? end : start + 8000).trim() || "Descriptif non disponible.")
+          : "Descriptif non disponible.";
 
         const startDateMatch = description.match(/[Ee]ntr[ée]e en (?:service|fonction)[^:]*:?\s*([^\n.]{3,40})/i) ||
           description.match(/[Dd]ate d'entr[ée]e[^:]*:?\s*([^\n.]{3,40})/i) ||
