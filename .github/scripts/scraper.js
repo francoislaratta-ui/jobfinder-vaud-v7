@@ -202,10 +202,19 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
 
         const startDateMatch = description.match(/[Ee]ntr[ée]e en (?:service|fonction)[^:]*:?\s*([^\n.]{3,40})/i) ||
           description.match(/[Dd]ate d'entr[ée]e[^:]*:?\s*([^\n.]{3,40})/i) ||
-          description.match(/[Dd][eè]s le ([^\n.]{3,20})/i);
-        let startDate = startDateMatch ? startDateMatch[1].trim() : "";
+          description.match(/[Dd][eè]s le ([^\n.]{3,20})/i) ||
+          description.match(/[Dd][eè]s que possible/i);
+        let startDate = startDateMatch
+          ? (startDateMatch[1] || "Dès que possible").trim()
+          : "";
         const sdm = startDate.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
         if(sdm) startDate = sdm[1].padStart(2,"0")+"."+sdm[2].padStart(2,"0")+"."+sdm[3];
+
+        // Salaire depuis HTML si pas trouvé dans __INIT__
+        if(!salary){
+          const salaryHtmlMatch = html.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
+          if(salaryHtmlMatch) salary = salaryHtmlMatch[0].replace(/\s+/g," ").trim();
+        }
 
         return { id: jobId, title, company, location, address, sector: "Administration",
           rate, contract, source: "Jobup", offerUrl: `https://www.jobup.ch${offerPath}`,

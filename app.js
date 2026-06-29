@@ -819,16 +819,17 @@ UTILITAIRES
 ========================================== */
 
 function formatDate(date){
-if(!date){
-return "";
-}
-
+if(!date) return "";
 try{
-return new Date(date).toLocaleDateString("fr-CH");
+const d = new Date(date);
+if(isNaN(d.getTime())) return String(date);
+const day = String(d.getDate()).padStart(2,"0");
+const month = String(d.getMonth()+1).padStart(2,"0");
+const year = d.getFullYear();
+return `${day}.${month}.${year}`;
 }catch(e){
 return String(date);
 }
-
 }
 
 function generateId(){
@@ -1252,7 +1253,7 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
             const match = rateNorm.match(/(\d+)/g);
             if(!match) return false;
             const nums = match.map(Number);
-            return nums.some(n => Math.abs(n - tNum) <= 10);
+            return nums.some(n => Math.abs(n - tNum) <= 5);
         });
     });
 }
@@ -2297,7 +2298,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(offer.date)}
+📅 Publié le : ${escapeHTML(formatDate(offer.date))}
 </div>
 
 ${offer.offerUrl ? `
