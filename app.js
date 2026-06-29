@@ -819,17 +819,16 @@ UTILITAIRES
 ========================================== */
 
 function formatDate(date){
-if(!date) return "";
+if(!date){
+return "";
+}
+
 try{
-const d = new Date(date);
-if(isNaN(d.getTime())) return String(date);
-const day = String(d.getDate()).padStart(2,"0");
-const month = String(d.getMonth()+1).padStart(2,"0");
-const year = d.getFullYear();
-return `${day}.${month}.${year}`;
+return new Date(date).toLocaleDateString("fr-CH");
 }catch(e){
 return String(date);
 }
+
 }
 
 function generateId(){
@@ -912,7 +911,7 @@ if(isFirst){
 refreshOffersBtn.disabled = true;
 refreshOffersBtn.innerHTML = `🔄 Chargement...<br>⏳ Veuillez patienter...`;
 try{
-await loadOffers(true, false);
+await loadOffers(true);
 const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:checked')].map(cb => cb.value);
 console.log("Cases cochées:", selectedMetiers);
 saveFilters();
@@ -940,12 +939,15 @@ refreshOffersBtn.innerHTML = `
 
 try{
 
-await loadOffers(true, true);
+await refreshOffers();
+
+updateDashboard();
+updateBestMatch();
+updateStatistics();
+updateApplicationCounters();
 
 saveFilters();
 applyFilters();
-
-showSuccess(`${filteredOffers.length} offres correspondent à vos critères !`);
 
 openTab("filters");
 
@@ -1204,36 +1206,18 @@ function applyFilters(){
 
 const selectAllMetiers = document.getElementById("selectAllMetiers");
 
-const METIER_KEYWORDS = {
-    "Employé de commerce": ["employe de commerce","employé de commerce"],
-    "Employé administratif": ["employe administratif","employé administratif"],
-    "Assistant administratif": ["assistant administratif","assistante administrative"],
-    "Assistant de direction": ["assistant de direction","assistante de direction"],
-    "Gestionnaire de dossier": ["gestionnaire de dossier","gestionnaire dossier"],
-    "Gestionnaire administratif": ["gestionnaire administratif"],
-    "Collaborateur administratif": ["collaborateur administratif","collaboratrice administrative"],
-    "Coordinateur administratif": ["coordinateur administratif","coordinatrice administrative"],
-    "Assistant RH": ["assistant rh","assistante rh","ressources humaines"],
-    "Conseiller clientèle": ["conseiller clientele","conseillere clientele","service client"],
-    "Support utilisateur": ["support utilisateur","support informatique","it support"],
-    "Technicien informatique": ["technicien informatique","technicienne informatique"],
-    "Helpdesk": ["helpdesk","help desk"],
-    "Back-office": ["back office","back-office"]
-};
-
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
-        if(selectAllMetiers?.checked){
-            return SCRAPE_KEYWORDS.some(k =>
-                k.split(" ").filter(w => w.length > 4)
-                .some(w => titleNorm.includes(w))
-            );
-        }
-        return selectedMetiers.some(m => {
-            const keywords = METIER_KEYWORDS[m] || [normalizeText(m)];
-            return keywords.some(k => titleNorm.includes(normalizeText(k)));
-        });
+        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
+            k.split(" ").filter(w => w.length > 4)
+            .some(w => titleNorm.includes(w))
+        );
+        if(selectAllMetiers?.checked) return matchesKeyword;
+        const matchesMetier = selectedMetiers.some(m =>
+            containsNormalized(offer.title, m)
+        );
+        return matchesKeyword || matchesMetier;
     });
 }
 
@@ -1247,25 +1231,10 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 }
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
-    const hasPartialTaux = selectedTaux.some(t => {
-        const n = parseInt(t);
-        return (!isNaN(n) && n <= 80) || t === "Temps partiel";
-    });
-    const has100 = selectedTaux.includes("100") || selectedTaux.includes("Temps plein");
-
     result = result.filter(offer => {
-        const desc = normalizeText(offer.description || "");
-        const hasPartTimeDesc = /temps partiel|part-time|teilzeit|mi-temps/.test(desc);
-
-        if(!offer.rate){
-            if(hasPartialTaux && hasPartTimeDesc) return true;
-            if(has100 && !hasPartTimeDesc) return true;
-            return false;
-        }
+        if(!offer.rate) return true;
         const rateNorm = normalizeText(offer.rate);
         return selectedTaux.some(t => {
-            if(t === "Temps partiel") return hasPartTimeDesc;
-            if(t === "Temps plein") return !hasPartTimeDesc;
             const tNum = parseInt(t);
             if(isNaN(tNum)) return containsNormalized(offer.rate, t);
             const match = rateNorm.match(/(\d+)/g);
@@ -1278,43 +1247,28 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
 
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
     result = result.filter(offer => {
-        if(offer.contract){
-            return selectedContrats.some(c =>
-                containsNormalized(offer.contract, c)
-            );
-        }
-        // Chercher dans la description si contrat non renseigné
-        const desc = offer.description || "";
-        return selectedContrats.some(c => {
-            const cn = normalizeText(c);
-            // Normaliser le contrat de l'offre
-            const contractNorm = normalizeText(offer.contract || "");
-            const mappedContract =
-                contractNorm === "permanent" ? "cdi" :
-                contractNorm === "limited" ? "cdd" :
-                contractNorm === "temporaire" ? "temporaire" :
-                contractNorm === "internship" ? "temporaire" :
-                contractNorm;
-            // Temporaire = CDD dans le filtre
-            const effectiveContract = mappedContract === "temporaire" ? "cdd" : mappedContract;
-            if(effectiveContract && (effectiveContract === cn || mappedContract === cn)) return true;
-            // Chercher dans description si contrat vide ou non mappé
-            const dn = normalizeText(desc);
-            if(cn === "cdi") return /cdi|duree indeterminee|indeterminee|permanent|fixe/.test(dn);
-            if(cn === "cdd" || cn === "temporaire") return /cdd|cdi|duree determinee|determinee|limited|temporaire|interim/.test(dn);
-            if(cn === "temporaire") return /temporaire|interim/.test(dn);
-            return dn.includes(cn);
+        if(!offer.contract) return true;
+        const c = normalizeText(offer.contract);
+        const isCDI = c.includes("cdi") || c.includes("indeterminee") || c === "permanent" || c.includes("fixe");
+        const isCDD = c.includes("cdd") || c.includes("determinee") || c === "limited";
+        const isTemp = c.includes("temporaire") || c.includes("interim") || c === "internship";
+        return selectedContrats.some(sel => {
+            const s = normalizeText(sel);
+            if(s === "cdi") return isCDI;
+            if(s === "cdd") return isCDD || isTemp;
+            if(s === "stage") return c.includes("stage") || c.includes("apprentissage");
+            return containsNormalized(offer.contract, sel);
         });
     });
 }
 
 if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
-    result = result.filter(offer => {
-        if(!offer.location) return false;
-        return selectedRegions.some(r =>
+    result = result.filter(offer =>
+        !offer.location ||
+        selectedRegions.some(r =>
             containsNormalized(offer.location, r)
-        );
-    });
+        )
+    );
 }
 
 if(selectedSources.length > 0 && selectedSources.length < totalSources){
@@ -1348,6 +1302,7 @@ if(selectedSources.length > 0 && selectedSources.length < totalSources){
     updateDashboard();
     updateBestMatch();
     updateStatistics();
+    saveFilters();
 
 }
 
@@ -2008,7 +1963,7 @@ return results;
 CHARGEMENT OFFRES
 ========================================== */
 
-async function loadOffers(skipRender = false, skipRestore = false){
+async function loadOffers(skipRender = false){
 
 try{
 
@@ -2111,7 +2066,7 @@ const hasAny = rawFilters && Object.keys(rawFilters)
     .filter(k => k !== "sort")
     .some(k => (rawFilters[k] || []).length > 0);
 
-if(hasAny && !skipRestore){
+if(hasAny){
     restoreSavedFilters();
 }else if(!skipRender){
     renderOffers(filteredOffers);
@@ -2297,25 +2252,19 @@ ${offer.rate ? `
 
 ${offer.contract ? `
 <div class="offer-meta">
-📄 ${escapeHTML(
-  offer.contract === "permanent" ? "CDI" :
-  offer.contract === "limited" ? "CDD" :
-  offer.contract === "temporaire" ? "Temporaire" :
-  offer.contract === "internship" ? "Temporaire" :
-  offer.contract
-)}
+📄 ${escapeHTML(offer.contract)}
 </div>
 ` : ""}
 
-${(offer.startDate || offer.startdate) ? `
+${offer.startDate ? `
 <div class="offer-meta">
-🗓️ Entrée : ${escapeHTML(formatDate(offer.startDate || offer.startdate))}
+🗓️ Entrée : ${escapeHTML(offer.startDate)}
 </div>
 ` : ""}
 
 ${offer.applyBefore ? `
 <div class="offer-meta">
-⏳ Postuler avant : ${escapeHTML(formatDate(offer.applyBefore))}
+⏳ Postuler avant : ${escapeHTML(offer.applyBefore)}
 </div>
 ` : ""}
 
@@ -2336,7 +2285,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(formatDate(offer.date))}
+📅 Publié le : ${escapeHTML(offer.date)}
 </div>
 
 ${offer.offerUrl ? `
