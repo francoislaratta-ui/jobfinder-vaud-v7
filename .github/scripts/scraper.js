@@ -247,9 +247,10 @@ async function scrapeIndeedOffers(browser, existingMap){
       await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
       await sleep(2000);
       const html = await page.evaluate(() => document.documentElement.innerHTML);
-      const linkMatches = [...html.matchAll(/href="((?:https:\/\/ch-fr\.indeed\.com)?\/rc\/clk\?jk=([a-z0-9]+)[^"]*?)"/gi)];
+      console.log(`  HTML Indeed (300 chars): ${html.substring(0, 300)}`);
+      const linkMatches = [...html.matchAll(/jk=([a-f0-9]{16})/gi)];
       linkMatches.forEach(m => {
-        const jk = m[2];
+        const jk = m[1];
         const id = `indeed_${jk}`;
         if(seen.has(id)) return;
         seen.add(id);
