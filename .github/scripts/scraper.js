@@ -232,10 +232,11 @@ SCRAPING INDEED - PUPPETEER+STEALTH
 async function scrapeIndeedOffers(browser, existingMap){
   console.log("\n🔍 Indeed — collecte...");
   const searches = [
-    "https://ch-fr.indeed.com/jobs?q=assistant+administratif&l=vaud",
-    "https://ch-fr.indeed.com/jobs?q=gestionnaire+dossiers&l=vaud",
-    "https://ch-fr.indeed.com/jobs?q=secretaire&l=vaud",
-    "https://ch-fr.indeed.com/jobs?q=employe+commerce&l=vaud"
+    "https://ch.indeed.com/jobs?q=assistant+administratif&l=lausanne%2C+vd&lang=fr",
+    "https://ch.indeed.com/jobs?q=gestionnaire+dossiers&l=lausanne%2C+vd&lang=fr",
+    "https://ch.indeed.com/jobs?q=secretaire&l=lausanne%2C+vd&lang=fr",
+    "https://ch.indeed.com/jobs?q=employe+commerce&l=lausanne%2C+vd&lang=fr",
+    "https://ch.indeed.com/jobs?q=collaborateur+administratif&l=lausanne%2C+vd&lang=fr"
   ];
   const items = []; const seen = new Set();
 
@@ -252,7 +253,7 @@ async function scrapeIndeedOffers(browser, existingMap){
         const id = `indeed_${jk}`;
         if(seen.has(id)) return;
         seen.add(id);
-        items.push({ id, url: `https://ch-fr.indeed.com/viewjob?jk=${jk}`, title: "Offre Indeed", company: "Indeed" });
+        items.push({ id, url: `https://ch.indeed.com/viewjob?jk=${jk}`, title: "Offre Indeed", company: "Indeed" });
       });
     }catch(e){
       console.warn(`  ⚠️ Erreur Indeed liste: ${e.message}`);
