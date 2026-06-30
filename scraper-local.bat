@@ -7,3 +7,4 @@ node scraper-local.js
 echo ====================================
 echo TERMINE
 echo ====================================
+pause
