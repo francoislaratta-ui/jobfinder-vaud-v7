@@ -364,7 +364,7 @@ async function runParallel(items, browser, source, existingMap){
             // Filtre taux strict pour toutes les sources non-Jobup
             const rateNum = details.rate ? parseInt((details.rate.match(/\d+/) || ["0"])[0]) : 0;
             const hasPartTime = /temps partiel|part-time|teilzeit|mi-temps/i.test(text);
-            if(details.rate && ![40,50,60].some(t => Math.abs(rateNum - t) <= 10)){
+            if(details.rate && ![40,50,60].some(t => Math.abs(rateNum - t) <= 5)){
               done++; return;
             }
             if(!details.rate && !hasPartTime){

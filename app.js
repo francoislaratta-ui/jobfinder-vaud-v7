@@ -819,17 +819,16 @@ UTILITAIRES
 ========================================== */
 
 function formatDate(date){
-if(!date) return "";
+if(!date){
+return "";
+}
+
 try{
-const d = new Date(date);
-if(isNaN(d.getTime())) return String(date);
-const day = String(d.getDate()).padStart(2,"0");
-const month = String(d.getMonth()+1).padStart(2,"0");
-const year = d.getFullYear();
-return `${day}.${month}.${year}`;
+return new Date(date).toLocaleDateString("fr-CH");
 }catch(e){
 return String(date);
 }
+
 }
 
 function generateId(){
@@ -940,12 +939,7 @@ refreshOffersBtn.innerHTML = `
 
 try{
 
-await refreshOffers();
-
-updateDashboard();
-updateBestMatch();
-updateStatistics();
-updateApplicationCounters();
+await loadOffers(true, true);
 
 saveFilters();
 applyFilters();
@@ -1205,32 +1199,20 @@ function applyFilters(){
 "conseiller clientele"
 ];
 
-const METIER_KEYWORDS = {
-    "Employé de commerce": ["employe de commerce","cfc de commerce","cfc d employe de commerce","gestion","administration","administratif"],
-    "Employé administratif": ["employe administratif","administratif","administration","gestion","bureau"],
-    "Assistant administratif": ["assistant administratif","assistante administrative","assistant","administration","administratif","employe de commerce"],
-    "Assistant de direction": ["assistant de direction","assistante de direction","direction","secretaire","executive"],
-    "Gestionnaire de dossier": ["gestionnaire de dossier","gestionnaire","dossier","gestion","administration","administratif","employe de commerce"],
-    "Gestionnaire administratif": ["gestionnaire administratif","gestionnaire","administration","administratif","employe de commerce"],
-    "Collaborateur administratif": ["collaborateur administratif","collaborateur","administration","administratif","employe de commerce"],
-    "Coordinateur administratif": ["coordinateur administratif","coordinateur","coordination","administration","administratif"],
-    "Assistant RH": ["assistant rh","assistante rh","ressources humaines","rh","personnel","recrutement"],
-    "Conseiller clientèle": ["conseiller clientele","conseillere clientele","service client","relation client","clientele"],
-    "Support utilisateur": ["support utilisateur","support","helpdesk","assistance","utilisateur"],
-    "Technicien informatique": ["technicien informatique","technicien","informatique","it","systeme"],
-    "Helpdesk": ["helpdesk","help desk","support","assistance","hotline"],
-    "Back-office": ["back-office","back office","administration","gestion","operations"]
-};
-
 const selectAllMetiers = document.getElementById("selectAllMetiers");
 
-if(selectedMetiers.length > 0 && selectedMetiers.length < totalMetiers){
+if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
-        return selectedMetiers.some(m => {
-            const keywords = METIER_KEYWORDS[m] || [normalizeText(m)];
-            return keywords.some(k => titleNorm.includes(normalizeText(k)));
-        });
+        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
+            k.split(" ").filter(w => w.length > 4)
+            .some(w => titleNorm.includes(w))
+        );
+        if(selectAllMetiers?.checked) return matchesKeyword;
+        const matchesMetier = selectedMetiers.some(m =>
+            containsNormalized(offer.title, m)
+        );
+        return matchesKeyword || matchesMetier;
     });
 }
 
@@ -1259,20 +1241,12 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
 }
 
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
-    result = result.filter(offer => {
-        if(!offer.contract) return true;
-        const c = normalizeText(offer.contract);
-        const isCDI = c.includes("cdi") || c.includes("indeterminee") || c === "permanent" || c.includes("fixe");
-        const isCDD = c.includes("cdd") || c.includes("determinee") || c === "limited";
-        const isTemp = c.includes("temporaire") || c.includes("interim") || c === "internship";
-        return selectedContrats.some(sel => {
-            const s = normalizeText(sel);
-            if(s === "cdi") return isCDI;
-            if(s === "cdd") return isCDD || isTemp;
-            if(s === "stage") return c.includes("stage") || c.includes("apprentissage");
-            return containsNormalized(offer.contract, sel);
-        });
-    });
+    result = result.filter(offer =>
+        !offer.contract ||
+        selectedContrats.some(c =>
+            containsNormalized(offer.contract, c)
+        )
+    );
 }
 
 if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
@@ -1976,7 +1950,7 @@ return results;
 CHARGEMENT OFFRES
 ========================================== */
 
-async function loadOffers(skipRender = false){
+async function loadOffers(skipRender = false, skipRestore = false){
 
 try{
 
@@ -2079,7 +2053,7 @@ const hasAny = rawFilters && Object.keys(rawFilters)
     .filter(k => k !== "sort")
     .some(k => (rawFilters[k] || []).length > 0);
 
-if(hasAny){
+if(hasAny && !skipRestore){
     restoreSavedFilters();
 }else if(!skipRender){
     renderOffers(filteredOffers);
@@ -2298,7 +2272,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(formatDate(offer.date))}
+📅 Publié le : ${escapeHTML(offer.date)}
 </div>
 
 ${offer.offerUrl ? `
