@@ -114,9 +114,8 @@ async function extractDescriptionWithPuppeteer(offerPath, browser){
 async function scrapeDetailPage(offerPath, browser, existingOffersMap){
   const jobId = (offerPath.match(/detail\/([^/]+)\//) || [])[1] || String(Date.now());
 
-  // Désactivation forcée de la réutilisation des anciennes offres mal formées
   const existing = existingOffersMap[jobId];
-  if(existing && existing.description && existing.description !== "Descriptif non disponible." && !existing.salary.includes("Object") && !existing.address.includes("null") && !existing.address.includes("JobCloud")){
+  if(existing && existing.description && existing.description !== "Descriptif non disponible." && !String(existing.salary||"").includes("Object") && !String(existing.address||"").includes("null") && !String(existing.address||"").includes("JobCloud")){
     process.stdout.write(` ♻️ (déjà scrapée)\n`);
     return existing;
   }
@@ -124,7 +123,6 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
   const url = `https://www.jobup.ch${offerPath}`;
   const html = await fetchJobupPage(url);
 
-  /* Essai 1 : extraction depuis le JSON __INIT__ de Jobup */
   const initMatch = html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__|<\/script>)/);
   if(initMatch){
     try{
@@ -138,7 +136,7 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         const street = (job.street || "").trim();
         const zipCode = (job.zipCode || "").trim();
         const place = (job.place || "").trim();
-        
+
         const addressParts = [];
         if(street && street.toLowerCase() !== "null" && street.length < 60) addressParts.push(street);
         if(zipCode && zipCode.toLowerCase() !== "null" && zipCode !== "2026") {
@@ -147,9 +145,9 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         } else if (place && place.toLowerCase() !== "null" && !place.toLowerCase().includes("jobcloud")) {
           addressParts.push(place);
         }
-        
+
         let address = addressParts.length > 0 ? addressParts.join(", ") : (place || "Vaud");
-        
+
         if (address.includes("null") || address.includes("JobCloud")) {
           address = address.replace(/null,?/gi, "").replace(/2026\s*JobCloud\s*SA/gi, "").trim() || place || "Vaud";
         }
@@ -174,7 +172,6 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
 
         const date = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
 
-        // FIX BUG SALAIRE [object Object]
         let salary = "";
         if (job.salary) {
           if (typeof job.salary === 'object') {
@@ -193,8 +190,9 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         const description = await extractDescriptionWithPuppeteer(offerPath, browser);
 
         const startDateMatch = description.match(/[Ee]ntr[ée]e en (?:service|fonction)[^:]*:?\s*([^\n.]{3,40})/i) ||
-                               description.match(/[Dd]ate d'entr[ée]e[^:]*:?\s*([^\n.]{3,40})/i);
-        let startDate = startDateMatch ? startDateMatch[1].trim() : "";
+                               description.match(/[Dd]ate d'entr[ée]e[^:]*:?\s*([^\n.]{3,40})/i) ||
+                               description.match(/[Dd][eè]s que possible/i);
+        let startDate = startDateMatch ? (startDateMatch[1] || "Dès que possible").trim() : "";
         const sdm = startDate.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
         if(sdm) startDate = sdm[1].padStart(2,"0")+"."+sdm[2].padStart(2,"0")+"."+sdm[3];
 
@@ -213,7 +211,6 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
     }catch(e){ /* fallback HTML */ }
   }
 
-  /* Essai 2 : extraction depuis le HTML brut */
   const titleMatch = html.match(/<h1[^>]*>([^<]{3,120})<\/h1>/);
   if(!titleMatch) return null;
   const title = titleMatch[1].replace(/&#\d+;/g," ").replace(/&[a-z]+;/g," ").trim();
@@ -297,9 +294,9 @@ async function scrapePagePuppeteer(url, browser){
     const text = await page.evaluate(() => document.body.innerText);
     const html = await page.evaluate(() => document.documentElement.innerHTML);
     const h1 = await page.evaluate(() => document.querySelector("h1")?.innerText?.trim() || "");
-    return { text, html, h1, indeedData: {} };
+    return { text, html, h1 };
   } catch(e) {
-    return { text: "", html: "", h1: "", indeedData: {} };
+    return { text: "", html: "", h1: "" };
   } finally {
     await page.close();
   }
@@ -360,21 +357,20 @@ async function runParallel(items, browser, source, existingMap){
             const { text, h1 } = await scrapePagePuppeteer(item.url, browser);
             if(!text){ done++; return; }
             const details = extractDetails(text, h1);
-            details.text = text;
 
             const finalTitle = (h1 && h1.length > 3) ? h1 : item.title;
             if(finalTitle !== item.title && !looksLikeWantedJob(finalTitle)){ done++; return; }
 
-            if(source !== "Jobup"){
-              const rateNum = details.rate ? parseInt((details.rate.match(/\d+/) || ["0"])[0]) : 0;
-              const hasPartTime = /temps partiel|part-time|teilzeit|mi-temps/i.test(text);
-              if(details.rate && ![40,50,60].some(t => Math.abs(rateNum - t) <= 10)){
-                done++; return;
-              }
-              if(!details.rate && !hasPartTime){
-                done++; return;
-              }
+            // Filtre taux strict pour toutes les sources non-Jobup
+            const rateNum = details.rate ? parseInt((details.rate.match(/\d+/) || ["0"])[0]) : 0;
+            const hasPartTime = /temps partiel|part-time|teilzeit|mi-temps/i.test(text);
+            if(details.rate && ![40,50,60].some(t => Math.abs(rateNum - t) <= 10)){
+              done++; return;
             }
+            if(!details.rate && !hasPartTime){
+              done++; return;
+            }
+
             const offer = {
               id: item.id, title: finalTitle,
               company: details.company || item.company || source,
@@ -398,8 +394,30 @@ async function runParallel(items, browser, source, existingMap){
 }
 
 async function scrapeIndeedOffers(browser, existingMap){
-  console.log("\n🔍 Indeed — (Passé / Désactivé pour cause de blocages anti-bot)");
-  return []; 
+  console.log("\n🔍 Indeed — collecte...");
+  const searches = [
+    "https://ch-fr.indeed.com/jobs?q=assistant+administratif&l=vaud",
+    "https://ch-fr.indeed.com/jobs?q=gestionnaire+dossiers&l=vaud",
+    "https://ch-fr.indeed.com/jobs?q=secretaire&l=vaud",
+    "https://ch-fr.indeed.com/jobs?q=employe+commerce&l=vaud"
+  ];
+  const items = []; const seen = new Set();
+  for(const url of searches){
+    const { html } = await scrapePagePuppeteer(url, browser);
+    const linkMatches = [...html.matchAll(/href="((?:https:\/\/ch-fr\.indeed\.com)?\/rc\/clk\?jk=([a-z0-9]+)[^"]*?)"/gi)];
+    linkMatches.forEach((m) => {
+      const jk = m[2];
+      const id = `indeed_${jk}`;
+      if(seen.has(id)) return;
+      seen.add(id);
+      items.push({ id, url: `https://ch-fr.indeed.com/viewjob?jk=${jk}`, title: `Offre Indeed`, company: "Indeed" });
+    });
+    await sleep(1000);
+  }
+  console.log(`  → ${items.length} offres Indeed`);
+  if(!items.length) return [];
+  const offers = await runParallel(items, browser, "Indeed", existingMap);
+  return offers.filter(o => looksLikeWantedJob(o.title));
 }
 
 async function scrapeMigrosOffers(browser, existingMap){
