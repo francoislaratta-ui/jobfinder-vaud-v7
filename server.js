@@ -2536,8 +2536,6 @@ async (req,res)=>{
 
 try{
 
-await scrapeAllOffers();
-
 const offers = readJson(OFFERS_FILE);
 
 res.json({
