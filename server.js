@@ -2527,63 +2527,6 @@ error:error.message
 );
 
 /* ==========================================
-API IMPORT OFFRES (scraper-local.js)
-========================================== */
-
-app.post(
-"/api/offers/import",
-(req, res) => {
-
-try{
-
-const { offers: newOffers, source } = req.body;
-
-if(!Array.isArray(newOffers) || newOffers.length === 0){
-return res.status(400).json({ success: false, message: "Aucune offre reçue" });
-}
-
-const existing = readJson(OFFERS_FILE) || [];
-
-// Garder offres Jobup existantes
-const jobupOffers = existing.filter(o => o.source === "Jobup");
-
-// Fusionner avec nouvelles offres (Indeed + autres)
-const newNonJobup = newOffers.filter(o => o.source !== "Jobup");
-
-const seen = new Set();
-const merged = [];
-
-for(const offer of [...jobupOffers, ...newNonJobup]){
-if(!seen.has(offer.id)){
-seen.add(offer.id);
-merged.push(offer);
-}
-}
-
-writeJson(OFFERS_FILE, merged);
-
-console.log(`📥 Import: ${newNonJobup.length} offres reçues | Total: ${merged.length}`);
-
-res.json({
-success: true,
-imported: newNonJobup.length,
-total: merged.length
-});
-
-}catch(error){
-
-res.status(500).json({
-success: false,
-message: "Erreur import",
-error: error.message
-});
-
-}
-
-}
-);
-
-/* ==========================================
 API SCRAPE ON DEMAND
 ========================================== */
 
@@ -3373,7 +3316,10 @@ console.log(
 "=================================="
 );
 
-await scrapeAllOffers();
+const startupOffers = readJson(OFFERS_FILE) || [];
+const startupJobup = startupOffers.filter(o => o.source === "Jobup");
+const startupOther = startupOffers.filter(o => o.source !== "Jobup");
+console.log(`♻️ Conservation: ${startupJobup.length} offres Jobup + ${startupOther.length} autres offres`);
 
 }
 );
