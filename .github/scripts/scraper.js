@@ -393,7 +393,11 @@ async function main(){
 
   const seen = new Set();
   const allOffers = [];
-  for(const offer of [...jobupOffers, ...indeedOffers]){
+
+  // Préserver les offres non-Jobup existantes (Indeed ajouté par scraper-local.js)
+  const preservedNonJobup = Object.values(existingOffersMap).filter(o => o.source && o.source !== "Jobup");
+
+  for(const offer of [...jobupOffers, ...indeedOffers, ...preservedNonJobup]){
     if(!seen.has(offer.id)){ seen.add(offer.id); allOffers.push(offer); }
   }
 
