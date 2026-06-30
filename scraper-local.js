@@ -12,7 +12,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(StealthPlugin());
 
-const RENDER_URL = "https://jobfinder-vaud-v7-1.onrender.com";
+const RENDER_URL = "https://jobfinder-vaud-v7.onrender.com";
 const OFFERS_FILE = path.join(__dirname, "offers.json");
 
 const SEARCH_KEYWORDS = [
@@ -404,9 +404,9 @@ async function scrapeIndeedOffers(browser, existingMap){
   const items = []; const seen = new Set();
   for(const url of searches){
     const { html } = await scrapePagePuppeteer(url, browser);
-    const linkMatches = [...html.matchAll(/href="((?:https:\/\/ch-fr\.indeed\.com)?\/rc\/clk\?jk=([a-z0-9]+)[^"]*?)"/gi)];
+    const linkMatches = [...html.matchAll(/jk=([a-z0-9]{16})/gi)];
     linkMatches.forEach((m) => {
-      const jk = m[2];
+      const jk = m[1];
       const id = `indeed_${jk}`;
       if(seen.has(id)) return;
       seen.add(id);
