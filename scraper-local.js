@@ -572,12 +572,12 @@ async function main(){
     existingAll.forEach(o => { existingAllMap[o.id] = o; });
   }catch(e){}
 
-  const [indeedOffers, migrosOffers, coopOffers, linkedinOffers] = await Promise.all([
-    scrapeIndeedOffers(browser, existingAllMap),
-    scrapeMigrosOffers(browser, existingAllMap),
-    scrapeCoopOffers(browser, existingAllMap),
-    scrapeLinkedInOffers(browser, existingAllMap)
-  ]);
+  console.log("\n📋 Scraping séquentiel des sources additionnelles...\n");
+
+  const indeedOffers = await scrapeIndeedOffers(browser, existingAllMap);
+  const migrosOffers = await scrapeMigrosOffers(browser, existingAllMap);
+  const coopOffers = await scrapeCoopOffers(browser, existingAllMap);
+  const linkedinOffers = await scrapeLinkedInOffers(browser, existingAllMap);
 
   await browser.close();
   console.log("\n🌐 Navigateur fermé");
