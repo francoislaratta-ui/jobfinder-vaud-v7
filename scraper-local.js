@@ -584,36 +584,169 @@ async function scrapeCoopOffers(browser, existingMap){
 
 async function scrapeLinkedInOffers(browser, existingMap){
   console.log("\n🔍 LinkedIn — collecte...");
-  const page = await browser.newPage();
-  const items = []; const seen = new Set();
-  try {
-    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
-    const searches = [
-      "https://www.linkedin.com/jobs/search/?keywords=assistant+administratif&location=Vaud%2C+Suisse",
-      "https://www.linkedin.com/jobs/search/?keywords=gestionnaire+dossiers&location=Vaud%2C+Suisse",
-      "https://www.linkedin.com/jobs/search/?keywords=secretaire&location=Vaud%2C+Suisse"
-    ];
-    for(const url of searches){
-      await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
-      await sleep(2000);
+
+  const SEARCH_URLS = [
+    "https://ch.linkedin.com/jobs/search/?keywords=assistant+administratif&location=Vaud%2C+Suisse",
+    "https://ch.linkedin.com/jobs/search/?keywords=gestionnaire+dossiers&location=Vaud%2C+Suisse",
+    "https://ch.linkedin.com/jobs/search/?keywords=secretaire+administratif&location=Vaud%2C+Suisse",
+    "https://ch.linkedin.com/jobs/search/?keywords=employe+de+commerce&location=Vaud%2C+Suisse",
+    "https://ch.linkedin.com/jobs/search/?keywords=helpdesk+support+informatique&location=Vaud%2C+Suisse"
+  ];
+
+  const CONTRACT_MAP = {
+    "FULL_TIME": "CDI",
+    "PART_TIME": "CDI",
+    "CONTRACT": "CDD",
+    "TEMPORARY": "Temporaire",
+    "INTERNSHIP": "Stage",
+    "OTHER": ""
+  };
+
+  // Étape 1 : collecter tous les liens /jobs/view/ depuis les pages de liste
+  const seen = new Set();
+  const jobUrls = [];
+
+  for(const searchUrl of SEARCH_URLS){
+    const page = await browser.newPage();
+    try{
+      await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+      await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await sleep(3000);
+
       const links = await page.evaluate(() =>
         [...document.querySelectorAll("a[href*='/jobs/view/']")]
-          .map(a => ({href: a.href.split("?")[0], text: (a.querySelector("h3,span") || a).innerText?.trim() || ""}))
+          .map(a => a.href.split("?")[0])
       );
-      links.forEach(({href, text}) => {
-        const idMatch = href.match(/\/([0-9]+)\/?$/);
-        const id = idMatch ? `linkedin_${idMatch[1]}` : null;
-        if(!id || seen.has(id)) return;
+
+      links.forEach(href => {
+        const idMatch = href.match(/\/([0-9]{7,})\/?$/);
+        if(!idMatch) return;
+        const id = `linkedin_${idMatch[1]}`;
+        if(seen.has(id)) return;
         seen.add(id);
-        items.push({ id, url: href, title: text || "Offre LinkedIn", company: "LinkedIn" });
+        jobUrls.push({ id, url: href });
       });
-      await sleep(1500);
+
+      console.log(`  LinkedIn "${searchUrl.match(/keywords=([^&]+)/)?.[1] || ""}": ${links.length} liens trouvés`);
+    }catch(e){
+      console.warn(`  ⚠️ LinkedIn liste: ${e.message}`);
+    }finally{
+      await page.close();
     }
-  } finally { await page.close(); }
-  console.log(`  → ${items.length} offres LinkedIn`);
-  if(!items.length) return [];
-  const offers = await runParallel(items, browser, "LinkedIn", existingMap);
-  return offers.filter(o => looksLikeWantedJob(o.title));
+    await sleep(1500);
+  }
+
+  console.log(`  → ${jobUrls.length} offres LinkedIn uniques à analyser`);
+  if(!jobUrls.length) return [];
+
+  // Étape 2 : visiter chaque page de détail et extraire le JSON-LD
+  const offers = [];
+
+  for(const { id, url } of jobUrls){
+    // Vérifier cache existant
+    const ex = existingMap[id];
+    if(ex && ex.description && ex.description !== "Descriptif non disponible." && ex.title && ex.title !== "Offre LinkedIn"){
+      if(looksLikeWantedJob(ex.title)){
+        offers.push(ex);
+        process.stdout.write(`  ♻️ ${ex.title.substring(0,40)}\n`);
+      }
+      continue;
+    }
+
+    const page = await browser.newPage();
+    try{
+      await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await sleep(1000);
+
+      // Extraire le JSON-LD depuis le <script type="application/ld+json">
+      const jsonLd = await page.evaluate(() => {
+        const script = document.querySelector('script[type="application/ld+json"]');
+        if(!script) return null;
+        try{ return JSON.parse(script.textContent); }catch(e){ return null; }
+      });
+
+      if(!jsonLd || jsonLd["@type"] !== "JobPosting"){
+        process.stdout.write(`  ⏭ (pas de JSON-LD)\n`);
+        continue;
+      }
+
+      const title = (jsonLd.title || "").trim();
+      if(!title || !looksLikeWantedJob(title)){
+        process.stdout.write(`  ⏭ ${title.substring(0,40)}\n`);
+        continue;
+      }
+
+      const company = jsonLd.hiringOrganization?.name || "Entreprise";
+      const locality = jsonLd.jobLocation?.address?.addressLocality || "";
+      const description = (jsonLd.description || "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&")
+        .replace(/\s+/g," ").trim()
+        .substring(0, 3000);
+
+      // Filtre Vaud
+      const vaudWords = ["lausanne","vaud","nyon","morges","yverdon","vevey","montreux","renens","prilly","gland","rolle","bussigny","pully","crissier","aigle","villeneuve","echallens","orbe","payerne","romanel","chavannes","ecublens","saint-sulpice","tolochenaz","etoy","allaman","aubonne"];
+      const locLower = normalizeText(locality);
+      if(!vaudWords.some(v => locLower.includes(v))){
+        process.stdout.write(`  ⏭ hors Vaud: ${locality}\n`);
+        continue;
+      }
+
+      // Extraire taux depuis la description (ex: "60% et 80%" ou "80 – 100%")
+      const rateMatch = description.match(/(\d{2,3})\s*[%–\-]\s*(?:et\s+)?(\d{2,3})\s*%/i) ||
+                        description.match(/(\d{2,3})\s*%/);
+      const rateRaw = rateMatch ? rateMatch[0].replace(/\s+/g,"").replace("et","-") : "";
+      const rateNums = (rateRaw.match(/\d+/g) || []).map(Number);
+
+      // Filtre taux strict 40/50/60 ±5%
+      const hasPartTime = jsonLd.employmentType === "PART_TIME" ||
+                          /temps partiel|part.time|mi.temps/i.test(description);
+      if(rateNums.length > 0 && ![40,50,60].some(t => rateNums.some(n => Math.abs(n - t) <= 5))){
+        process.stdout.write(`  ⏭ taux hors cible: ${rateRaw}\n`);
+        continue;
+      }
+      if(rateNums.length === 0 && !hasPartTime){
+        process.stdout.write(`  ⏭ taux inconnu\n`);
+        continue;
+      }
+
+      const contract = CONTRACT_MAP[jsonLd.employmentType] || "";
+      const date = jsonLd.datePosted ? jsonLd.datePosted.split("T")[0] : new Date().toISOString().split("T")[0];
+      const applyBefore = jsonLd.validThrough ? jsonLd.validThrough.split("T")[0] : "";
+
+      const offer = {
+        id,
+        title,
+        company,
+        location: locality,
+        address: locality,
+        sector: "Administration",
+        rate: rateRaw || (hasPartTime ? "temps partiel" : ""),
+        contract,
+        source: "LinkedIn",
+        offerUrl: url,
+        date,
+        startDate: "",
+        applyBefore,
+        salaryGrade: "",
+        description,
+        salary: ""
+      };
+
+      offers.push(offer);
+      process.stdout.write(`  ✓ ${title.substring(0,45)}\n`);
+
+    }catch(e){
+      process.stdout.write(`  ❌ ${e.message.substring(0,50)}\n`);
+    }finally{
+      await page.close();
+    }
+    await sleep(800);
+  }
+
+  console.log(`  → ${offers.length} offres LinkedIn (Vaud, taux compatibles)`);
+  return offers;
 }
 
 async function main(){
