@@ -404,7 +404,6 @@ async function scrapeIndeedOffers(browser, existingMap){
   const items = []; const seen = new Set();
   for(const url of searches){
     const { html } = await scrapePagePuppeteer(url, browser);
-    console.log(`  [DEBUG] HTML length: ${html.length} | extrait: ${html.substring(0,200).replace(/\s+/g," ")}`);
     const linkMatches = [...html.matchAll(/jk=([a-z0-9]{16})/gi)];
     linkMatches.forEach((m) => {
       const jk = m[1];
@@ -423,39 +422,136 @@ async function scrapeIndeedOffers(browser, existingMap){
 
 async function scrapeMigrosOffers(browser, existingMap){
   console.log("\n🔍 Migros — collecte...");
-  const page = await browser.newPage();
-  const items = []; const seen = new Set();
-  try {
-    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
-    const keywords = ["assistant administratif", "gestionnaire dossier", "secretaire", "employe commerce", "helpdesk"];
-    for(const keyword of keywords){
-      await page.goto("https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants", { waitUntil: "networkidle2", timeout: 30000 });
-      await sleep(1500);
-      try{
-        await page.click("input[type=text], input[type=search], input[placeholder*=mot], input[placeholder*=Profes]");
-        await page.keyboard.type(keyword);
-        await page.keyboard.press("Enter");
-        await sleep(2000);
-      }catch(e){ continue; }
-      const links = await page.evaluate(() =>
-        [...document.querySelectorAll("a[href*='/job/']")].map(a => ({href: a.href, text: a.innerText.trim()}))
-      );
-      links.forEach(({href, text}) => {
-        const cleanHref = href.split("?")[0];
-        const id = `migros_${cleanHref.split("/").slice(-2).join("_").substring(0,40)}`;
-        if(seen.has(id)) return;
-        seen.add(id);
-        const title = text.split("\n")[1]?.trim() || text.split("\n")[0].trim() || "Offre Migros";
-        if(!looksLikeWantedJob(title)) return;
-        items.push({ id, url: cleanHref, title, company: "Migros" });
-      });
-      await sleep(1000);
+
+  const VAUD_NPA = /^1[0-9]{3}$/;
+  const VAUD_VILLES = ["lausanne","vaud","nyon","morges","yverdon","vevey","montreux","renens","prilly","gland","rolle","bussigny","pully","crissier","aigle","villeneuve","echallens","orbe","payerne","moudon","grandson","ste-croix","vallorbe","romanel","chavannes","crissier","ecublens","saint-sulpice","bussigny","tolochenaz","etoy","allaman","perroy","vinzel","longirod","aubonne","mollens","apples","bignasco"];
+
+  function isVaud(locality, postalCode){
+    if(VAUD_NPA.test(String(postalCode || ""))) return true;
+    const loc = normalizeText(String(locality || ""));
+    return VAUD_VILLES.some(v => loc.includes(v));
+  }
+
+  const SEARCH_KEYWORDS = [
+    "assistant administratif",
+    "gestionnaire dossier",
+    "secretaire",
+    "employe commerce",
+    "helpdesk",
+    "support informatique"
+  ];
+
+  const CONTRACT_MAP = {
+    "emploi fixe": "CDI",
+    "duree indeterminee": "CDI",
+    "indeterminee": "CDI",
+    "duree determinee": "CDD",
+    "temporaire": "Temporaire",
+    "stage": "Stage",
+    "apprentissage": "Apprentissage"
+  };
+
+  function parseContract(text){
+    const v = normalizeText(text);
+    for(const [key, val] of Object.entries(CONTRACT_MAP)){
+      if(v.includes(key)) return val;
     }
-  } finally { await page.close(); }
-  console.log(`  → ${items.length} offres Migros`);
-  if(!items.length) return [];
-  const offers = await runParallel(items, browser, "Migros", existingMap);
-  return offers.filter(o => looksLikeWantedJob(o.title));
+    return "";
+  }
+
+  const offers = [];
+  const seen = new Set();
+
+  for(const keyword of SEARCH_KEYWORDS){
+    const url = `https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants?text=${encodeURIComponent(keyword)}`;
+    const page = await browser.newPage();
+    try{
+      await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+      await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+      await sleep(1500);
+
+      const items = await page.evaluate(() => {
+        const results = [];
+        const links = document.querySelectorAll("a[href*='/nos-entreprises/job/'], a[href*='/unsere-unternehmen/job/']");
+        links.forEach(a => {
+          const href = a.href.split("?")[0];
+          // Titre : premier <span> dans le <h3>
+          const h3 = a.querySelector("h3");
+          const spans = h3 ? [...h3.querySelectorAll("span")] : [];
+          const title = spans[0]?.innerText?.trim() || "";
+          // Taux : deuxième <span> dans le <h3>
+          const rate = spans[1]?.innerText?.trim() || "";
+          // Entreprise : <p> avant le h3
+          const company = a.querySelector("p")?.innerText?.trim() || "";
+          // Localité et contrat : items de la <ul>
+          const listItems = [...(a.querySelectorAll("ul li") || [])].map(li => li.innerText.trim());
+          const locality = listItems[0] || "";
+          const contractRaw = listItems[1] || "";
+          results.push({ href, title, rate, company, locality, contractRaw });
+        });
+        return results;
+      });
+
+      for(const item of items){
+        const uuid = item.href.split("/").pop();
+        const id = `migros_${uuid.substring(0,36)}`;
+        if(seen.has(id)) continue;
+        seen.add(id);
+
+        if(!item.title || !looksLikeWantedJob(item.title)) continue;
+
+        // Extraire NPA et ville depuis locality (ex: "1227 Carouge" ou "Baar")
+        const localityMatch = item.locality.match(/^(\d{4})\s+(.+)$/);
+        const postalCode = localityMatch ? localityMatch[1] : "";
+        const city = localityMatch ? localityMatch[2] : item.locality;
+
+        if(!isVaud(city, postalCode)) continue;
+
+        // Taux : normaliser "80 – 100%" → "80-100%"
+        const rateClean = item.rate.replace(/\s*[–—]\s*/g, "-").replace(/\s+/g, "");
+
+        // Filtre taux strict (40, 50, 60 ± 5%)
+        const rateNums = rateClean.match(/\d+/g) || [];
+        const rateNum = rateNums.length > 0 ? parseInt(rateNums[0]) : 0;
+        const hasPartTime = /temps partiel|part-time|mi-temps/i.test(item.contractRaw + " " + item.title);
+        if(rateClean && ![40,50,60].some(t => rateNums.some(n => Math.abs(parseInt(n) - t) <= 5))){
+          continue;
+        }
+        if(!rateClean && !hasPartTime) continue;
+
+        const contract = parseContract(item.contractRaw);
+
+        offers.push({
+          id,
+          title: item.title,
+          company: item.company || "Migros",
+          location: city || item.locality || "Vaud",
+          address: item.locality || city || "Vaud",
+          sector: "Administration",
+          rate: rateClean,
+          contract,
+          source: "Migros",
+          offerUrl: item.href,
+          date: new Date().toISOString().split("T")[0],
+          startDate: "",
+          applyBefore: "",
+          salaryGrade: "",
+          description: "Descriptif non disponible.",
+          salary: ""
+        });
+      }
+
+      console.log(`  Migros "${keyword}": ${items.length} trouvées, ${offers.filter(o => seen.has(`migros_${o.id.replace("migros_","")}`) || true).length} retenues`);
+    }catch(e){
+      console.warn(`  ⚠️ Migros "${keyword}": ${e.message}`);
+    }finally{
+      await page.close();
+    }
+    await sleep(1000);
+  }
+
+  console.log(`  → ${offers.length} offres Migros (Vaud, taux compatibles)`);
+  return offers;
 }
 
 async function scrapeCoopOffers(browser, existingMap){
