@@ -1239,7 +1239,11 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        if(!offer.rate) return false;
+        if(!offer.rate){
+            // Pas de taux -> garder si temps partiel mentionne dans titre ou description
+            const fullText = normalizeText((offer.title || "") + " " + (offer.description || ""));
+            return /temps partiel|part.time|teilzeit|mi.temps/.test(fullText);
+        }
         const rateNorm = normalizeText(offer.rate);
         return selectedTaux.some(t => {
             const tNum = parseInt(t);
