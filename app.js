@@ -824,7 +824,12 @@ return "";
 }
 
 try{
-return new Date(date).toLocaleDateString("fr-CH");
+const d = new Date(date);
+if(isNaN(d.getTime())) return String(date);
+const dd = String(d.getDate()).padStart(2,"0");
+const mm = String(d.getMonth()+1).padStart(2,"0");
+const yyyy = d.getFullYear();
+return `${dd}.${mm}.${yyyy}`;
 }catch(e){
 return String(date);
 }
@@ -939,7 +944,12 @@ refreshOffersBtn.innerHTML = `
 
 try{
 
-await loadOffers(true, true);
+await refreshOffers();
+
+updateDashboard();
+updateBestMatch();
+updateStatistics();
+updateApplicationCounters();
 
 saveFilters();
 applyFilters();
@@ -1235,7 +1245,7 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
             const match = rateNorm.match(/(\d+)/g);
             if(!match) return false;
             const nums = match.map(Number);
-            return nums.some(n => Math.abs(n - tNum) <= 5);
+            return nums.some(n => Math.abs(n - tNum) <= 10);
         });
     });
 }
@@ -1950,7 +1960,7 @@ return results;
 CHARGEMENT OFFRES
 ========================================== */
 
-async function loadOffers(skipRender = false, skipRestore = false){
+async function loadOffers(skipRender = false){
 
 try{
 
@@ -2009,9 +2019,12 @@ offer.workRate ||
 "",
 
 contract:
-offer.contract ||
-offer.contractType ||
-"",
+(function(c){
+const v = String(c || "").toLowerCase().trim();
+if(v === "permanent" || v === "unbefristet" || v === "indéterminée" || v === "durée indéterminée") return "CDI";
+if(v === "limited" || v === "befristet" || v === "déterminée" || v === "durée déterminée") return "CDD";
+return c || "";
+})(offer.contract || offer.contractType || ""),
 
 title:
 offer.title || "",
@@ -2053,7 +2066,7 @@ const hasAny = rawFilters && Object.keys(rawFilters)
     .filter(k => k !== "sort")
     .some(k => (rawFilters[k] || []).length > 0);
 
-if(hasAny && !skipRestore){
+if(hasAny){
     restoreSavedFilters();
 }else if(!skipRender){
     renderOffers(filteredOffers);
@@ -2204,7 +2217,13 @@ const clean = addr
 .trim();
 return clean.split("\n")
 .map(l => l.trim())
-.filter(Boolean)
+.filter(l => {
+  if(!l) return false;
+  // Supprimer les lignes contenant un NPA non-vaudois (4 chiffres ne commençant pas par 1)
+  const npaMatch = l.match(/\b(\d{4})\b/);
+  if(npaMatch && !npaMatch[1].startsWith("1")) return false;
+  return true;
+})
 .join("<br>");
 };
 
@@ -2245,7 +2264,7 @@ ${offer.contract ? `
 
 ${offer.startDate ? `
 <div class="offer-meta">
-🗓️ Entrée : ${escapeHTML(offer.startDate)}
+🗓️ Entrée en fonction : ${escapeHTML(formatDate(offer.startDate) || offer.startDate)}
 </div>
 ` : ""}
 
@@ -2272,7 +2291,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(offer.date)}
+📅 Publié le : ${escapeHTML(formatDate(offer.date) || offer.date)}
 </div>
 
 ${offer.offerUrl ? `

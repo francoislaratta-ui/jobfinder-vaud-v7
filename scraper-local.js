@@ -715,6 +715,26 @@ async function scrapeLinkedInOffers(browser, existingMap){
       const date = jsonLd.datePosted ? jsonLd.datePosted.split("T")[0] : new Date().toISOString().split("T")[0];
       const applyBefore = jsonLd.validThrough ? jsonLd.validThrough.split("T")[0] : "";
 
+      // Extraction date d'entrée en fonction depuis la description
+      const startDateMatch =
+        description.match(/[Ee]ntr[ée]e en (?:service|fonction)[^:.]{0,20}:?\s*([^.]{3,40})/i) ||
+        description.match(/[Dd]ate d.entr[ée]e[^:.]{0,20}:?\s*([^.]{3,40})/i) ||
+        description.match(/[Dd][eè]but du travail[^:.]{0,20}:?\s*([^.]{3,40})/i) ||
+        description.match(/[Pp]rise de poste[^:.]{0,20}:?\s*([^.]{3,40})/i) ||
+        description.match(/[Ss]tart date[^:.]{0,20}:?\s*([^.]{3,40})/i);
+      let startDate = startDateMatch ? startDateMatch[1].trim() : "";
+      // Normaliser date numérique jj.mm.aaaa ou jj/mm/aaaa
+      const sdNum = startDate.match(/(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/);
+      if(sdNum) startDate = `${sdNum[1].padStart(2,"0")}.${sdNum[2].padStart(2,"0")}.${sdNum[3]}`;
+      // Normaliser "3 août 2026" → "03.08.2026"
+      const MONTHS = {janvier:"01",février:"02",mars:"03",avril:"04",mai:"05",juin:"06",juillet:"07",août:"08",septembre:"09",octobre:"10",novembre:"11",décembre:"12"};
+      const sdLit = startDate.match(/(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})/i);
+      if(sdLit) startDate = `${sdLit[1].padStart(2,"0")}.${MONTHS[sdLit[2].toLowerCase()]}.${sdLit[3]}`;
+      // Garder "dès que possible" / "immédiatement" comme texte
+      if(!startDate && /dès que possible|immédiatement|asap|dès maintenant/i.test(description)){
+        startDate = "Dès que possible";
+      }
+
       const offer = {
         id,
         title,
@@ -727,7 +747,7 @@ async function scrapeLinkedInOffers(browser, existingMap){
         source: "LinkedIn",
         offerUrl: url,
         date,
-        startDate: "",
+        startDate,
         applyBefore,
         salaryGrade: "",
         description,
