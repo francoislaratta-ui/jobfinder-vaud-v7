@@ -619,7 +619,7 @@ async function scrapeLinkedInOffers(browser, existingMap){
       );
 
       links.forEach(href => {
-        const idMatch = href.match(/\/([0-9]{7,})\/?$/);
+        const idMatch = href.match(/[-\/]([0-9]{7,})$/);
         if(!idMatch) return;
         const id = `linkedin_${idMatch[1]}`;
         if(seen.has(id)) return;
