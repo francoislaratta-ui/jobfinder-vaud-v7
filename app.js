@@ -1211,9 +1211,15 @@ function applyFilters(){
 
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
-        const titleNorm = normalizeText(offer.title);
+        // Nettoyer le titre : supprimer parenthèses genre (e) (ve) (trice) et tirets intercalés
+        const cleanTitle = normalizeText(offer.title)
+            .replace(/\(e\)|\(ve\)|\(trice\)|\(-ve\)|\(ive\)|\(h\/f\)|\(f\/h\)|\(m\/f\)/gi, "")
+            .replace(/(\w+)-e/g, "$1")
+            .replace(/(\w+)-ve/g, "$1")
+            .replace(/(\w+)-trice/g, "$1")
+            .replace(/\s+/g, " ").trim();
         const descNorm  = normalizeText(offer.description || "");
-        const text = titleNorm + " " + descNorm;
+        const text = cleanTitle + " " + descNorm;
         return selectedMetiers.some(m => {
             const key = normalizeText(m);
             const keywords = METIER_KEYWORDS[key] || [normalizeText(m)];
