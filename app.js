@@ -824,6 +824,21 @@ return "";
 }
 
 try{
+const MOIS = {
+"janvier":"01","février":"02","fevrier":"02","mars":"03","avril":"04",
+"mai":"05","juin":"06","juillet":"07","août":"08","aout":"08",
+"septembre":"09","octobre":"10","novembre":"11","décembre":"12","decembre":"12"
+};
+// Format "23 juin 2026" ou "23 juin 2026"
+const litMatch = String(date).match(/^(\d{1,2})\s+([a-zéûô]+)\s+(\d{4})$/i);
+if(litMatch){
+const mNum = MOIS[litMatch[2].toLowerCase()];
+if(mNum) return `${litMatch[1].padStart(2,"0")}.${mNum}.${litMatch[3]}`;
+}
+// Format "jj.mm.aaaa" déjà correct — retourner tel quel
+const dotMatch = String(date).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+if(dotMatch) return date;
+// Format ISO "2026-06-23" ou autres parseable
 const d = new Date(date);
 if(isNaN(d.getTime())) return String(date);
 const dd = String(d.getDate()).padStart(2,"0");
@@ -1177,52 +1192,33 @@ function applyFilters(){
 
     let result = [...offers];
 
-    const SCRAPE_KEYWORDS = [
-"employe de commerce",
-"assistant administratif",
-"assistante administrative",
-"gestionnaire de dossier",
-"gestionnaire administratif",
-"gestionnaire de depot",
-"gestionnaire contentieux",
-"gestionnaire logistique",
-"gestionnaire approvisionnement",
-"technicien informatique",
-"technicien support",
-"technicien maintenance",
-"technicien systeme",
-"technicien alarme",
-"support informatique",
-"support utilisateur",
-"it support",
-"network support",
-"specialiste support",
-"helpdesk",
-"back office",
-"collaborateur administratif",
-"collaborateur service",
-"coordinateur administratif",
-"administrateur gestionnaire",
-"employe administratif",
-"assistant de direction",
-"assistant rh",
-"conseiller clientele"
-];
+    const CFC = ["cfc de commerce","cfc employe de commerce","cfc d employe de commerce"];
 
-const selectAllMetiers = document.getElementById("selectAllMetiers");
+    const METIER_KEYWORDS = {
+"Employe de commerce":              ["employe de commerce","employee de commerce",...CFC],
+"Employe administratif":            ["employe administratif","employee administratif","agent administratif","administration",...CFC],
+"Assistant administratif":          ["assistant administratif","assistante administrative","assistant e administratif",...CFC],
+"Gestionnaire de dossier":          ["gestionnaire de dossier","gestionnaire dossier","gestionnaire specialise",...CFC],
+"Gestionnaire administratif":       ["gestionnaire administratif",...CFC],
+"Collaborateur administratif":      ["collaborateur administratif","collaboratrice administrative",...CFC],
+"Coordinateur administratif":       ["coordinateur administratif","coordinatrice administrative",...CFC],
+"Secretaire d unite administration":["secretaire","secretaire administrative","secretaire d unite","secretaire de direction",...CFC],
+"Support utilisateur":              ["support utilisateur","support user","it support","support informatique"],
+"Technicien informatique":          ["technicien informatique","technicien it","technicien systeme"],
+"Helpdesk":                         ["helpdesk","help desk","help-desk"],
+"Back-office":                      ["back office","back-office","backoffice"]
+};
 
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
-        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
-            k.split(" ").filter(w => w.length > 4)
-            .some(w => titleNorm.includes(w))
-        );
-        if(selectAllMetiers?.checked) return matchesKeyword;
-        const matchesMetier = selectedMetiers.some(m =>
-            containsNormalized(offer.title, m)
-        );
-        return matchesKeyword || matchesMetier;
+        const descNorm  = normalizeText(offer.description || "");
+        const text = titleNorm + " " + descNorm;
+        return selectedMetiers.some(m => {
+            const key = normalizeText(m);
+            const keywords = METIER_KEYWORDS[key] || [normalizeText(m)];
+            return keywords.some(kw => text.includes(kw));
+        });
     });
 }
 
@@ -1300,6 +1296,12 @@ if(selectedSources.length > 0 && selectedSources.length < totalSources){
     updateBestMatch();
     updateStatistics();
     saveFilters();
+
+    // Scroll automatique sur la première offre après recherche
+    setTimeout(() => {
+        const firstOffer = document.querySelector(".offer-card");
+        if(firstOffer) firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 150);
 
 }
 
