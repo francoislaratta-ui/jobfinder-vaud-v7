@@ -1233,7 +1233,7 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        if(!offer.rate) return true;
+        if(!offer.rate) return false;
         const rateNorm = normalizeText(offer.rate);
         return selectedTaux.some(t => {
             const tNum = parseInt(t);
@@ -1241,7 +1241,7 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
             const match = rateNorm.match(/(\d+)/g);
             if(!match) return false;
             const nums = match.map(Number);
-            return nums.some(n => Math.abs(n - tNum) <= 10);
+            return nums.some(n => Math.abs(n - tNum) <= 5);
         });
     });
 }
