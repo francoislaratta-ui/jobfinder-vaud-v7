@@ -829,16 +829,16 @@ const MOIS = {
 "mai":"05","juin":"06","juillet":"07","août":"08","aout":"08",
 "septembre":"09","octobre":"10","novembre":"11","décembre":"12","decembre":"12"
 };
-// Format "23 juin 2026" ou "23 juin 2026"
+// Format "jj.mm.aaaa" déjà correct — retourner tel quel
+const dotMatch = String(date).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+if(dotMatch) return date;
+// Format "23 juin 2026"
 const litMatch = String(date).match(/^(\d{1,2})\s+([a-zéûô]+)\s+(\d{4})$/i);
 if(litMatch){
 const mNum = MOIS[litMatch[2].toLowerCase()];
 if(mNum) return `${litMatch[1].padStart(2,"0")}.${mNum}.${litMatch[3]}`;
 }
-// Format "jj.mm.aaaa" déjà correct — retourner tel quel
-const dotMatch = String(date).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-if(dotMatch) return date;
-// Format ISO "2026-06-23" ou autres parseable
+// Format ISO "2026-06-23" ou autres
 const d = new Date(date);
 if(isNaN(d.getTime())) return String(date);
 const dd = String(d.getDate()).padStart(2,"0");
@@ -849,6 +849,27 @@ return `${dd}.${mm}.${yyyy}`;
 return String(date);
 }
 
+}
+
+function handleTempsPlein(cb){
+// Quand "Temps plein" est coché → décoche tout, coche uniquement 100%
+if(cb.checked){
+    document.querySelectorAll('input[name="taux"]').forEach(inp => {
+        inp.checked = (inp.value === "100" || inp.id === "tempsPlein");
+    });
+} else {
+    // Décoche aussi 100%
+    const t100 = document.getElementById("taux100");
+    if(t100) t100.checked = false;
+}
+applyFilters();
+}
+
+function syncTempsPlein(cb){
+// Quand 100% est coché/décoché → synchronise "Temps plein"
+const tempsPlein = document.getElementById("tempsPlein");
+if(tempsPlein) tempsPlein.checked = cb.checked;
+applyFilters();
 }
 
 function generateId(){
@@ -1197,12 +1218,12 @@ function applyFilters(){
     const METIER_KEYWORDS = {
 "Employe de commerce":              ["employe de commerce","employee de commerce",...CFC],
 "Employe administratif":            ["employe administratif","employee administratif","agent administratif","administration",...CFC],
-"Assistant administratif":          ["assistant administratif","assistante administrative","assistant e administratif",...CFC],
+"Assistant administratif":          ["assistant administratif","assistante administrative","assistant e administratif","assistant technique",...CFC],
 "Gestionnaire de dossier":          ["gestionnaire de dossier","gestionnaire dossier","gestionnaire specialise",...CFC],
 "Gestionnaire administratif":       ["gestionnaire administratif",...CFC],
 "Collaborateur administratif":      ["collaborateur administratif","collaboratrice administrative",...CFC],
 "Coordinateur administratif":       ["coordinateur administratif","coordinatrice administrative",...CFC],
-"Secretaire d unite administration":["secretaire","secretaire administrative","secretaire d unite","secretaire de direction",...CFC],
+"Secretaire d unite administration":["secretaire","secretaire administrative","secretaire d unite","secretaire de direction","secretaire technique",...CFC],
 "Support utilisateur":              ["support utilisateur","support user","it support","support informatique"],
 "Technicien informatique":          ["technicien informatique","technicien it","technicien systeme"],
 "Helpdesk":                         ["helpdesk","help desk","help-desk"],
@@ -1211,7 +1232,6 @@ function applyFilters(){
 
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
-        // Nettoyer le titre : supprimer parenthèses genre (e) (ve) (trice) et tirets intercalés
         const cleanTitle = normalizeText(offer.title)
             .replace(/\(e\)|\(ve\)|\(trice\)|\(-ve\)|\(ive\)|\(h\/f\)|\(f\/h\)|\(m\/f\)/gi, "")
             .replace(/(\w+)-e/g, "$1")
@@ -1240,14 +1260,15 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
         if(!offer.rate){
-            // Pas de taux -> garder si temps partiel mentionne dans titre ou description
             const fullText = normalizeText((offer.title || "") + " " + (offer.description || ""));
             return /temps partiel|part.time|teilzeit|mi.temps/.test(fullText);
         }
         const rateNorm = normalizeText(offer.rate);
-        return selectedTaux.some(t => {
+        // Filtrer uniquement les valeurs numériques (ignorer "Temps plein" etc.)
+        const numericTaux = selectedTaux.filter(t => !isNaN(parseInt(t)));
+        if(numericTaux.length === 0) return true;
+        return numericTaux.some(t => {
             const tNum = parseInt(t);
-            if(isNaN(tNum)) return containsNormalized(offer.rate, t);
             const match = rateNorm.match(/(\d+)/g);
             if(!match) return false;
             const nums = match.map(Number);
@@ -1307,7 +1328,6 @@ if(selectedSources.length > 0 && selectedSources.length < totalSources){
     updateStatistics();
     saveFilters();
 
-    // Scroll automatique sur la première offre après recherche
     setTimeout(() => {
         const firstOffer = document.querySelector(".offer-card");
         if(firstOffer) firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2231,7 +2251,6 @@ return clean.split("\n")
 .map(l => l.trim())
 .filter(l => {
   if(!l) return false;
-  // Supprimer les lignes contenant un NPA non-vaudois (4 chiffres ne commençant pas par 1)
   const npaMatch = l.match(/\b(\d{4})\b/);
   if(npaMatch && !npaMatch[1].startsWith("1")) return false;
   return true;
