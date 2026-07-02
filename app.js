@@ -1230,7 +1230,7 @@ function applyFilters(){
 "Back-office":                      ["back office","back-office","backoffice"]
 };
 
-if(selectedMetiers.length > 0){
+if(selectedMetiers.length > 0 && selectedMetiers.length < totalMetiers){
     result = result.filter(offer => {
         const cleanTitle = normalizeText(offer.title)
             .replace(/\([^)]*\)/g, "")
