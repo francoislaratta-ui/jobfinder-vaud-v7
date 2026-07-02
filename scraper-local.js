@@ -18,12 +18,17 @@ const OFFERS_FILE = path.join(__dirname, "offers.json");
 const SEARCH_KEYWORDS = [
   "assistant administratif",
   "assistante administrative",
+  "assistant technique",
   "gestionnaire de dossier",
   "gestionnaire administratif",
   "collaborateur administratif",
   "secrétaire",
   "secrétaire administratif",
+  "secrétaire technique",
   "employé de commerce",
+  "employé administratif",
+  "adjoint administratif",
+  "chargé administratif",
   "technicien informatique",
   "support informatique",
   "helpdesk",
@@ -50,9 +55,11 @@ function looksLikeWantedJob(title){
   if(excluded.some(e => v.includes(e))) return false;
   const keywords = [
     "employe de commerce","assistant administratif","assistante administrative",
-    "gestionnaire de dossier","gestionnaire administratif","collaborateur administratif",
-    "technicien informatique","support informatique","helpdesk","back office","back-office",
-    "secretaire","coordinateur administratif","assistant de direction","employe administratif"
+    "assistant technique","gestionnaire de dossier","gestionnaire administratif",
+    "collaborateur administratif","technicien informatique","support informatique",
+    "helpdesk","back office","back-office","secretaire","secretaire technique",
+    "coordinateur administratif","employe administratif","adjoint administratif",
+    "charge administratif"
   ];
   return keywords.some(k => v.includes(k));
 }
@@ -404,13 +411,14 @@ async function scrapeIndeedOffers(browser, existingMap){
   const items = []; const seen = new Set();
   for(const url of searches){
     const { html } = await scrapePagePuppeteer(url, browser);
+    console.log(`  [DEBUG] HTML length: ${html.length} | extrait: ${html.substring(0,200).replace(/\s+/g," ")}`);
     const linkMatches = [...html.matchAll(/jk=([a-z0-9]{16})/gi)];
     linkMatches.forEach((m) => {
       const jk = m[1];
       const id = `indeed_${jk}`;
       if(seen.has(id)) return;
       seen.add(id);
-      items.push({ id, url: `https://ch-fr.indeed.com/viewjob?jk=${jk}`, title: "Offre Indeed", company: "Indeed" });
+      items.push({ id, url: `https://ch-fr.indeed.com/viewjob?jk=${jk}`, title: `Offre Indeed`, company: "Indeed" });
     });
     await sleep(1000);
   }
@@ -419,6 +427,7 @@ async function scrapeIndeedOffers(browser, existingMap){
   const offers = await runParallel(items, browser, "Indeed", existingMap);
   return offers.filter(o => looksLikeWantedJob(o.title));
 }
+
 async function scrapeMigrosOffers(browser, existingMap){
   console.log("\n🔍 Migros — collecte...");
   const page = await browser.newPage();
