@@ -160,9 +160,7 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         }
         const location = (place && place.toLowerCase() !== "null") ? place : "Vaud";
 
-        const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
-        const textLower = (title + " " + location + " " + company).toLowerCase();
-        if(!vaudWords.some(v => textLower.includes(v))) return null;
+        // Filtre vaudWords supprimé — region=52 dans l'URL garantit déjà Vaud
 
         const grades = job.employmentGrades || [];
         const rate = grades.length === 2
@@ -230,8 +228,7 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
                         html.match(/<title>[^-]+-[^-]+-[^<]*?([A-ZÀ-Ÿ][a-zà-ÿ\s]+VD)/);
   const location = locationMatch ? locationMatch[1].trim() : "Vaud";
 
-  const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
-  if(!vaudWords.some(v => (title+location+company).toLowerCase().includes(v)) && !html.includes("region=52")) return null;
+  // Filtre vaudWords supprimé — region=52 dans l'URL garantit déjà Vaud
 
   const rateMatch = html.match(/"workload"\s*:\s*"([^"]+)"/i) ||
                     html.match(/(\d{2,3}\s*[–\-]\s*\d{2,3}\s*%|\d{2,3}\s*%)/);
