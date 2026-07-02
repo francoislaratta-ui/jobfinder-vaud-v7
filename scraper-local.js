@@ -88,8 +88,8 @@ async function scrapeListPage(keyword){
   const url = `https://www.jobup.ch/fr/emplois/?region=${VAUD_REGION}&term=${encodedKeyword}`;
   console.log(`  Scraping: "${keyword}"...`);
   const html = await fetchJobupPage(url);
-  const linkMatches = html.match(/href="(\/fr\/emplois\/detail\/[a-z0-9-]+\/)"/g) || [];
-  const urls = [...new Set(linkMatches.map(m => m.replace(/href="|"/g, "")))];
+  const idMatches = html.match(/"id":"([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})"/g) || [];
+  const urls = [...new Set(idMatches.map(m => `/fr/emplois/detail/${m.match(/"id":"([^"]+)"/)[1]}/`))];
   console.log(`  → ${urls.length} offres trouvées`);
   return urls;
 }
