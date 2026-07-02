@@ -411,8 +411,8 @@ async function scrapeIndeedOffers(browser, existingMap){
   const items = []; const seen = new Set();
   for(const url of searches){
     const { html } = await scrapePagePuppeteer(url, browser);
-    console.log(`  [DEBUG] HTML length: ${html.length} | extrait: ${html.substring(0,200).replace(/\s+/g," ")}`);
     const linkMatches = [...html.matchAll(/jk=([a-z0-9]{16})/gi)];
+    console.log(`  Indeed "${url.match(/q=([^&]+)/)?.[1] || ""}": ${linkMatches.length} liens trouvés`);
     linkMatches.forEach((m) => {
       const jk = m[1];
       const id = `indeed_${jk}`;
