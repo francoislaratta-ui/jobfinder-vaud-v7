@@ -1233,10 +1233,9 @@ function applyFilters(){
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const cleanTitle = normalizeText(offer.title)
-            .replace(/\(e\)|\(ve\)|\(trice\)|\(-ve\)|\(ive\)|\(h\/f\)|\(f\/h\)|\(m\/f\)/gi, "")
-            .replace(/(\w+)-e/g, "$1")
-            .replace(/(\w+)-ve/g, "$1")
-            .replace(/(\w+)-trice/g, "$1")
+            .replace(/\([^)]*\)/g, "")
+            .replace(/-e/g, "")
+            .replace(/-ve/g, "")
             .replace(/\s+/g, " ").trim();
         const descNorm  = normalizeText(offer.description || "");
         const text = cleanTitle + " " + descNorm;
