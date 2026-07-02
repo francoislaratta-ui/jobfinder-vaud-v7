@@ -1259,8 +1259,10 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
         if(!offer.rate){
-            const fullText = normalizeText((offer.title || "") + " " + (offer.description || ""));
-            return /temps partiel|part.time|teilzeit|mi.temps/.test(fullText);
+            const rateInTitle = (offer.title || "").match(/(\d{2,3})\s*%/);
+            if(!rateInTitle) return true;
+            const n = parseInt(rateInTitle[1]);
+            return numericTaux.some(t => Math.abs(n - parseInt(t)) <= 5);
         }
         const rateNorm = normalizeText(offer.rate);
         // Filtrer uniquement les valeurs numériques (ignorer "Temps plein" etc.)
