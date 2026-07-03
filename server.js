@@ -2611,13 +2611,33 @@ SCRAPING OFFRES AU DEMARRAGE
 
 const SEARCH_KEYWORDS = [
 "employé de commerce",
+"employée de commerce",
+"employé administratif",
+"employée administrative",
 "assistant administratif",
+"assistante administrative",
 "gestionnaire de dossier",
+"gestionnaire administratif",
+"gestionnaire back office",
+"collaborateur administratif",
+"collaboratrice administrative",
+"collaborateur back office",
+"coordinateur administratif",
+"coordinatrice administrative",
 "technicien informatique",
+"technicien support",
 "support informatique",
+"informaticien de gestion",
 "helpdesk",
 "back-office",
-"collaborateur administratif"
+"secrétaire",
+"secrétaire administrative",
+"secrétaire d'unité",
+"secrétaire comptable",
+"secrétaire médicale",
+"CFC employé de commerce",
+"secrétaire technique",
+"secrétaire de chantier"
 ];
 
 const VAUD_REGIONS = [
