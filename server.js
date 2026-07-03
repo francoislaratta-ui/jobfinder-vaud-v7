@@ -3239,31 +3239,16 @@ console.log("🔄 Scraping des offres en cours...");
 
 const [
 jobupOffers,
-vdOffers,
-indeedOffers,
-linkedinOffers,
-migrosOffers,
-nestleOffers,
-coopOffers
+vdOffers
 ] = await Promise.all([
 fetchJobupOffers(),
-fetchVdOffers(),
-typeof fetchIndeedOffers === "function" ? fetchIndeedOffers() : Promise.resolve([]),
-typeof fetchLinkedInOffers === "function" ? fetchLinkedInOffers() : Promise.resolve([]),
-typeof fetchMigrosOffers === "function" ? fetchMigrosOffers() : Promise.resolve([]),
-typeof fetchNestleOffers === "function" ? fetchNestleOffers() : Promise.resolve([]),
-typeof fetchCoopOffers === "function" ? fetchCoopOffers() : Promise.resolve([])
+fetchVdOffers()
 ]);
 
 const allOffers =
 deduplicateOffers([
 ...jobupOffers,
-...vdOffers,
-...indeedOffers,
-...linkedinOffers,
-...migrosOffers,
-...nestleOffers,
-...coopOffers
+...vdOffers
 ]);
 
 if(allOffers.length > 0){
@@ -3275,7 +3260,7 @@ console.log(
 );
 
 console.log(
-`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | Indeed: ${indeedOffers.length} | LinkedIn: ${linkedinOffers.length} | Migros: ${migrosOffers.length} | Nestlé: ${nestleOffers.length} | Coop: ${coopOffers.length}`
+`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length}`
 );
 
 }else{
