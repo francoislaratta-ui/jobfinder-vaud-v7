@@ -153,14 +153,10 @@ async function scrapeDetailPage(offerPath, browser, existingOffersMap){
         }
         const location = (place && place.toLowerCase() !== "null") ? place : "Vaud";
 
-        const vaudWords = ["lausanne","vaud","morges","nyon","vevey","renens","yverdon","prilly","crissier","pully","bussigny","gland","rolle","montreux","aigle","villeneuve"];
-        const textLower = (title + " " + location + " " + company).toLowerCase();
-        if(!vaudWords.some(v => textLower.includes(v))) return null;
-
         const grades = job.employmentGrades || [];
-        const rate = grades.length === 2
+        const rate = grades.length >= 2
           ? grades[0] === grades[1] ? `${grades[0]}%` : `${grades[0]}-${grades[1]}%`
-          : "";
+          : grades.length === 1 ? `${grades[0]}%` : "";
 
         const CONTRACT_MAP = {
           "1":"CDI","2":"CDD","3":"Temporaire","4":"Stage","5":"CDI","6":"Apprentissage",
