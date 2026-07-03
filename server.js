@@ -1018,13 +1018,15 @@ if(salaryFound) salary = salaryFound[0].replace(/\s+/g," ").trim();
 const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
 if(dateMatch) date = dateMatch[1].trim();
 
-// Date postulation — formats variés
+// Date postulation — exige format complet DD.MM.YYYY ou DD/MM/YYYY
 const applyBeforeMatch = jobupText.match(
 /(?:Postuler avant|jusqu.au|délai)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4})/i
 );
-if(applyBeforeMatch) applyBefore = applyBeforeMatch[1].trim();
+if(applyBeforeMatch && /^\d{1,2}[./]\d{1,2}[./]\d{4}$/.test(applyBeforeMatch[1].trim())){
+  applyBefore = applyBeforeMatch[1].trim();
+}
 
-const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i);
+const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n]{3,60})/i);
 if(startDateMatch) startDate = startDateMatch[1].trim();
 }
 
