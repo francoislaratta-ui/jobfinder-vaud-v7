@@ -2709,16 +2709,58 @@ if(initMatch){
   }catch(e){}
 }
 
-// Fallback HTML
+// Fallback HTML — adresse
 if(!address){
-  const addrMatch = html.match(/"streetAddress"\s*:\s*"([^"]{5,80})"/) ||
-                    html.match(/(\d{4}[^<]{3,30}(?:Lausanne|Vaud|Nyon|Morges|Vevey|Yverdon|Renens|Prilly|Gland|Crissier|Rolle|Montreux|Villeneuve|Bussigny|Pully))/i);
-  if(addrMatch) address = addrMatch[1].trim();
+  // 1. JSON-LD streetAddress
+  const addrJsonLd = html.match(/"streetAddress"\s*:\s*"([^"]{5,80})"/);
+  if(addrJsonLd){
+    // Compléter avec postalCode + addressLocality si disponibles
+    const zip = (html.match(/"postalCode"\s*:\s*"(\d{4})"/) || [])[1] || "";
+    const city = (html.match(/"addressLocality"\s*:\s*"([^"]{2,40})"/) || [])[1] || "";
+    const street = addrJsonLd[1].trim();
+    address = [street, zip && city ? `${zip} ${city}` : city || zip].filter(Boolean).join(", ");
+  }
+  // 2. Lien Google Maps dans le HTML
+  if(!address){
+    const mapsMatch = html.match(/maps\.google[^"]*q=([^"&]{5,80})/);
+    if(mapsMatch){
+      address = decodeURIComponent(mapsMatch[1]).replace(/\+/g, " ").trim();
+    }
+  }
+  // 3. NPA + ville dans le texte visible
+  if(!address){
+    const npaMatch = html.match(/(\d{4})\s+(Lausanne|Nyon|Morges|Vevey|Yverdon|Renens|Prilly|Gland|Crissier|Rolle|Montreux|Villeneuve|Bussigny|Pully|Aigle|Bex|Orbe|Payerne|Echallens|Moudon)[^<]{0,30}/i);
+    if(npaMatch) address = npaMatch[0].replace(/<[^>]+>/g,"").trim();
+  }
 }
 
+// Fallback HTML — salaire
 if(!salary){
-  const salMatch = html.match(/CHF\s*[\d\s\']+[\u2013\-][\d\s\']+\/(?:an|mois)/i);
-  if(salMatch) salary = salMatch[0].trim();
+  // Format: CHF 2 000 /mois ou CHF 49'405 - 89'405/an
+  const salMatch = html.match(/CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/\s*(?:an|mois)/i);
+  if(salMatch) salary = salMatch[0].replace(/\s+/g," ").trim();
+}
+
+// Fallback HTML — startDate
+if(!startDate){
+  const cleanHtml2 = html.replace(/<[^>]+>/g," ").replace(/\s+/g," ");
+  const startMatch = cleanHtml2.match(/Date d.entr[eé]e en (?:service|fonction)\s*[:\-]?\s*([^.]{3,50})/i) ||
+                     cleanHtml2.match(/Entr[eé]e en (?:service|fonction)\s*[:\-]?\s*([^.]{3,50})/i) ||
+                     cleanHtml2.match(/D[eé]but\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
+  if(startMatch){
+    startDate = startMatch[1].trim().substring(0, 50);
+  }
+}
+
+// Fallback HTML — applyBefore
+if(!applyBefore){
+  const cleanHtml = html.replace(/<[^>]+>/g," ").replace(/\s+/g," ");
+  const applyMatch = cleanHtml.match(/Postuler avant\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i) ||
+                     cleanHtml.match(/jusqu.au\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i) ||
+                     cleanHtml.match(/D[eé]lai\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
+  if(applyMatch && /^\d{1,2}[./]\d{1,2}[./]\d{4}$/.test(applyMatch[1].trim())){
+    applyBefore = applyMatch[1].trim();
+  }
 }
 
 if(!description){
