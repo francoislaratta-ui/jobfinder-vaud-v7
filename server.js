@@ -2735,7 +2735,8 @@ if(!keywordWords.some(w => w.length > 4 && titleLower.includes(w))) continue;
 const apprentiKeywords = [
 "apprenti","apprentie","apprenant",
 "préapprentissage","préapprenti",
-"cfc en cours","stage","stagiaire"
+"cfc en cours","stage","stagiaire",
+"assistante médicale","assistant médical"
 ];
 if(apprentiKeywords.some(a => titleLower.includes(a))) continue;
 
