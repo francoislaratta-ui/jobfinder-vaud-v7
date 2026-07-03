@@ -2734,14 +2734,19 @@ if(!salary){
 }
 
 if(!description){
-  // Chercher le texte entre "À propos de cette offre" et les sections suivantes
-  const descStart = html.indexOf("\u00c0 propos de cette offre") > -1
-    ? html.indexOf("\u00c0 propos de cette offre")
-    : html.indexOf("propos de cette offre");
+  // Extraire uniquement le contenu HTML visible après le script __INIT__
+  const scriptEnd = html.lastIndexOf("</script>");
+  const htmlBody = scriptEnd > -1 ? html.substring(scriptEnd) : html;
+  const descStart = htmlBody.indexOf("propos de cette offre");
   if(descStart > -1){
-    const descEnd = html.indexOf("Offres similaires", descStart);
-    const rawDesc = html.substring(descStart, descEnd > -1 ? descEnd : descStart + 10000);
-    description = rawDesc.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 5000);
+    const endMarkers = ["Offres similaires", "D'autres utilisateurs", "À propos de l'entreprise", "data-testid"];
+    let descEnd = htmlBody.length;
+    for(const marker of endMarkers){
+      const pos = htmlBody.indexOf(marker, descStart);
+      if(pos > -1 && pos < descEnd) descEnd = pos;
+    }
+    const rawDesc = htmlBody.substring(descStart, descEnd);
+    description = rawDesc.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ").trim().substring(0, 5000);
   }
 }
 
