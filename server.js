@@ -2721,7 +2721,9 @@ const street = (job.street || "").trim();
 const zipCode = (job.zipCode || "").trim();
 const addressParts = [];
 if(street) addressParts.push(street);
-if(zipCode || place) addressParts.push(`${zipCode} ${place}`.trim());
+const zipIsVaud = /^1\d{3}$/.test(zipCode);
+if(zipIsVaud) addressParts.push(`${zipCode} ${place}`.trim());
+else if(place) addressParts.push(place);
 const address = addressParts.join("\n");
 
 const contractId = (job.employmentTypeIds || [])[0] || "";
