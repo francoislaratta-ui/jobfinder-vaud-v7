@@ -1258,6 +1258,8 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
 
 if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
+        const numericTaux = selectedTaux.filter(t => !isNaN(parseInt(t)));
+        if(numericTaux.length === 0) return true;
         if(!offer.rate){
             const rateInTitle = (offer.title || "").match(/(\d{2,3})\s*%/);
             if(!rateInTitle) return true;
@@ -1265,9 +1267,6 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
             return numericTaux.some(t => Math.abs(n - parseInt(t)) <= 5);
         }
         const rateNorm = normalizeText(offer.rate);
-        // Filtrer uniquement les valeurs numériques (ignorer "Temps plein" etc.)
-        const numericTaux = selectedTaux.filter(t => !isNaN(parseInt(t)));
-        if(numericTaux.length === 0) return true;
         return numericTaux.some(t => {
             const tNum = parseInt(t);
             const match = rateNorm.match(/(\d+)/g);
