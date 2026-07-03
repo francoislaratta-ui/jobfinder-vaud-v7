@@ -2967,38 +2967,38 @@ const contractId = (job.employmentTypeIds || [])[0] || "";
 const contractRaw = CONTRACT_TYPE_MAP[contractId] || "";
 const contract = contractRaw.replace(/\s*(droit public|droit prive|de droit public|de droit prive).*/i, "").trim();
 
-// Description depuis lead (page liste)
-const descRaw = job.lead || "";
-
 // Date publication
 const raw = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
 const dp = raw.split("-");
 const dateFormatted = dp.length === 3 ? `${dp[2]}.${dp[1]}.${dp[0]}` : raw;
 
-// Date limite postulation depuis publicationEndDate
+// Date limite depuis page liste
 let applyBefore = "";
 if(job.publicationEndDate){
   const ep = job.publicationEndDate.split("T")[0].split("-");
   if(ep.length === 3) applyBefore = `${ep[2]}.${ep[1]}.${ep[0]}`;
 }
 
-// Date entrée depuis contractStart
+// Date entrée depuis page liste
 let startDate = "";
 if(job.contractStart){
   const sp = job.contractStart.split("T")[0].split("-");
   if(sp.length === 3) startDate = `${sp[2]}.${sp[1]}.${sp[0]}`;
 }
 
-// Salaire
-const salaryRaw = job.salary || job.salaryMin || "";
-const salary = salaryRaw ? `CHF ${salaryRaw}` : "";
+// Salaire depuis page liste
+const salaryRaw = job.salary || "";
+const salaryList = salaryRaw ? `CHF ${salaryRaw}` : "";
+
+// Enrichissement depuis page de detail
+const detail = jobId ? await enrichJobupOffer(jobId) : {};
 
 offers.push({
 id: String(jobId || generateServerId()),
 title: job.title || "",
 company: job.company?.name || "",
 location: city || place,
-address: address,
+address: detail.address || address,
 sector: "",
 rate: job.employmentGrades
 ? job.employmentGrades[0] === job.employmentGrades[1]
@@ -3011,10 +3011,10 @@ offerUrl: jobId
 ? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
 : "",
 date: dateFormatted,
-startDate: startDate,
-applyBefore: applyBefore,
-description: descRaw || "Descriptif non disponible.",
-salary: salary,
+startDate: detail.startDate || startDate,
+applyBefore: detail.applyBefore || applyBefore,
+description: detail.description || job.lead || "Descriptif non disponible.",
+salary: detail.salary || salaryList,
 });
 
 }
