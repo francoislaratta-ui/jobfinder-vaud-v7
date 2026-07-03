@@ -2668,6 +2668,93 @@ const VAUD_PLACES = [
 "vd","vaud","west lausanne","lausanne district"
 ];
 
+async function enrichJobupOffer(jobId){
+try{
+const url = `https://www.jobup.ch/fr/emplois/detail/${jobId}/`;
+const html = await fetchExternalText(url);
+
+let address = "";
+let salary = "";
+let description = "";
+let startDate = "";
+let applyBefore = "";
+
+// Tentative 1 : extraire depuis __INIT__
+const initMatch = html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__|<\/script>)/);
+if(initMatch){
+  try{
+    const data = JSON.parse(initMatch[1]);
+    const job = data?.vacancy?.detail?.vacancy;
+    if(job){
+      const street = (job.street || "").trim();
+      const zipCode = (job.zipCode || "").trim();
+      const place = (job.place || "").trim();
+      const parts = [];
+      if(street && street.toLowerCase() !== "null") parts.push(street);
+      const zipIsVaud = /^1\d{3}$/.test(zipCode);
+      if(zipIsVaud) parts.push(`${zipCode} ${place}`.trim());
+      else if(place && place.toLowerCase() !== "null") parts.push(place);
+      address = parts.filter(Boolean).join(", ");
+
+      if(job.salary){
+        if(typeof job.salary === "object") salary = job.salary.text || job.salary.formatted || "";
+        else salary = String(job.salary);
+        if(salary && !salary.startsWith("CHF")) salary = `CHF ${salary}`;
+        if(salary.includes("[object")) salary = "";
+      }
+      description = job.description || job.lead || "";
+      startDate = job.startDate || "";
+      applyBefore = job.applicationDeadline ? job.applicationDeadline.split("T")[0] : "";
+    }
+  }catch(e){}
+}
+
+// Fallback HTML
+if(!address){
+  const addrMatch = html.match(/"streetAddress"\s*:\s*"([^"]{5,80})"/) ||
+                    html.match(/(\d{4}[^<]{3,30}(?:Lausanne|Vaud|Nyon|Morges|Vevey|Yverdon|Renens|Prilly|Gland|Crissier|Rolle|Montreux|Villeneuve|Bussigny|Pully))/i);
+  if(addrMatch) address = addrMatch[1].trim();
+}
+
+if(!salary){
+  const salMatch = html.match(/CHF\s*[\d\s\']+[\u2013\-][\d\s\']+\/(?:an|mois)/i);
+  if(salMatch) salary = salMatch[0].trim();
+}
+
+if(!description){
+  const scriptEnd = html.lastIndexOf("</script>");
+  const htmlBody = scriptEnd > -1 ? html.substring(scriptEnd) : html;
+  const descStart = htmlBody.search(/propos de cette offre|Votre mission|Vos t\u00e2ches|Description du poste/i);
+  if(descStart > -1){
+    const endMarkers = ["Offres similaires", "D'autres utilisateurs", "\u00c0 propos de l'entreprise", "data-testid"];
+    let descEnd = htmlBody.length;
+    for(const marker of endMarkers){
+      const pos = htmlBody.indexOf(marker, descStart);
+      if(pos > -1 && pos < descEnd) descEnd = pos;
+    }
+    const rawDesc = htmlBody.substring(descStart, Math.min(descStart + 5000, descEnd));
+    description = rawDesc.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ").trim();
+  }
+}
+
+// Format applyBefore en jj.mm.aaaa
+if(applyBefore && /^\d{4}-\d{2}-\d{2}$/.test(applyBefore)){
+  const p = applyBefore.split("-");
+  applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
+}
+
+return {
+  address: address || "",
+  salary: salary || "",
+  description: description || "Descriptif non disponible.",
+  startDate: startDate || "",
+  applyBefore: applyBefore || ""
+};
+}catch(e){
+return {};
+}
+}
+
 async function fetchJobupOffers(){
 
 const CONTRACT_TYPE_MAP = {
@@ -2750,7 +2837,10 @@ else if(place) addressParts.push(place);
 const address = addressParts.join("\n");
 
 const contractId = (job.employmentTypeIds || [])[0] || "";
-const contract = CONTRACT_TYPE_MAP[contractId] || "";
+const contractRaw = CONTRACT_TYPE_MAP[contractId] || "";
+const contract = contractRaw.replace(/\s*(droit public|droit prive|de droit public|de droit prive).*/i, "").trim();
+
+const detail = jobId ? await enrichJobupOffer(jobId) : {};
 
 offers.push({
 id: String(jobId || generateServerId()),
@@ -2769,13 +2859,15 @@ source: "Jobup",
 offerUrl: jobId
 ? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
 : "",
-date: job.publicationDate
-? job.publicationDate.split("T")[0]
-: new Date().toISOString().split("T")[0],
-description: job.lead || "Descriptif non disponible.",
-salary: job.salary
-? `CHF ${job.salary}`
-: "",
+date: (()=>{
+const raw = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
+const p = raw.split("-");
+return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : raw;
+})(),
+startDate: detail.startDate || "",
+applyBefore: detail.applyBefore || "",
+description: detail.description || job.lead || "Descriptif non disponible.",
+salary: detail.salary || (job.salary ? `CHF ${job.salary}` : ""),
 });
 
 }
