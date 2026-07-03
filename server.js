@@ -2679,198 +2679,104 @@ let description = "";
 let startDate = "";
 let applyBefore = "";
 
-// Niveau 1 : extraire depuis JSON-LD (application/ld+json) — toujours présent
+// Extraction depuis __REACT_QUERY_STATE__ — source primaire fiable
 try{
-  const ldMatches = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || [];
-  for(const ldScript of ldMatches){
-    const ldJson = ldScript.replace(/<script[^>]*>/, "").replace(/<\/script>/, "").trim();
-    const ld = JSON.parse(ldJson);
-    if(ld["@type"] === "JobPosting"){
-      // Adresse
-      const loc = ld.jobLocation?.address || {};
-      const street = (loc.streetAddress || "").trim();
-      const zip = (loc.postalCode || "").trim();
-      const city = (loc.addressRegion || "").trim();
-      const parts = [];
-      if(street) parts.push(street);
-      if(zip && city) parts.push(`${zip} ${city}`);
-      else if(city) parts.push(city);
-      if(parts.length) address = parts.join(", ");
+  const rqMatch = html.match(/__REACT_QUERY_STATE__\s*=\s*([\s\S]*?);<\/script>/);
+  if(rqMatch){
+    const rq = JSON.parse(rqMatch[1]);
+    const queries = rq?.queries || [];
+    for(const q of queries){
+      const d = q?.state?.data;
+      if(!d || !d.locations) continue;
 
-      // Date début
-      const rawStart = ld.jobStartDate || "";
-      if(rawStart){
-        const p = rawStart.split("T")[0].split("-");
-        if(p.length === 3) startDate = `${p[2]}.${p[1]}.${p[0]}`;
+      // Adresse depuis locations[0]
+      if(d.locations.length > 0){
+        const loc = d.locations[0];
+        const s = (loc.street || "").trim();
+        const z = (loc.postalCode || "").trim();
+        const c = (loc.city || "").trim();
+        const parts = [];
+        if(s) parts.push(s);
+        if(z && c) parts.push(`${z} ${c}`);
+        else if(c) parts.push(c);
+        if(parts.length) address = parts.join(", ");
       }
 
-      // Date limite postulation (publicationEndDate)
-      const rawEnd = ld.validThrough || "";
-      if(rawEnd){
-        const p = rawEnd.split("T")[0].split("-");
+      // Date limite postulation
+      if(d.publicationEndDate){
+        const p = d.publicationEndDate.split("T")[0].split("-");
         if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
       }
 
-      // Description — mise en forme avec sauts de ligne
-      if(ld.description){
-        const sectionKeywords = [
-          "Votre mission", "Vos missions", "Vos tâches", "Vos responsabilités",
-          "Votre profil", "Profil recherché", "Nous offrons", "Ce que nous offrons",
-          "Pourquoi nous rejoindre", "Ce que tu vas accomplir", "Ce qu'il te faut",
-          "Qualifications", "Responsabilités", "Description de l'emploi",
-          "À propos de", "A propos de", "Avantages", "Nous cherchons",
-          "Votre rôle", "Besoin de précision", "Contact"
-        ];
-        let raw = ld.description
+      // Date entrée en fonction
+      if(d.contractStart){
+        const p = d.contractStart.split("T")[0].split("-");
+        if(p.length === 3) startDate = `${p[2]}.${p[1]}.${p[0]}`;
+      }
+
+      // Description depuis template.text
+      if(d.template?.text){
+        let raw = d.template.text
           .replace(/<br\s*\/?>/gi, "\n")
           .replace(/<\/li>/gi, "\n")
           .replace(/<\/p>/gi, "\n")
           .replace(/<\/h[1-6]>/gi, "\n")
+          .replace(/<strong>([^<]*)<\/strong>/gi, "$1")
           .replace(/<[^>]+>/g, "")
           .replace(/&nbsp;/g, " ")
           .replace(/&amp;/g, "&")
-          .replace(/&quot;/g, "\"")
+          .replace(/&quot;/g, '"')
           .replace(/&#39;/g, "'")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
           .replace(/\n[ \t]+/g, "\n")
           .replace(/\n{3,}/g, "\n\n")
           .trim();
-        // Ajouter saut de ligne avant les sections
-        for(const kw of sectionKeywords){
-          const re = new RegExp("(" + kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*:?)", "gi");
-          raw = raw.replace(re, "\n\n$1");
-        }
-        description = raw.replace(/\n{3,}/g, "\n\n").trim().substring(0, 5000);
+        description = raw.substring(0, 5000);
       }
-      break;
+
+      if(address) break;
     }
   }
 }catch(e){}
 
-// Niveau 2 : extraire depuis __REACT_QUERY_STATE__
-if(!address || !description){
+// Fallback JSON-LD si REACT_QUERY_STATE vide
+if(!address){
   try{
-    const rqMatch = html.match(/__REACT_QUERY_STATE__\s*=\s*([\s\S]*?);<\/script>/);
-    if(rqMatch){
-      const rq = JSON.parse(rqMatch[1]);
-      const queries = rq?.queries || [];
-      for(const q of queries){
-        const d = q?.state?.data;
-        if(!d) continue;
-        // Adresse depuis locations[]
-        if(!address && d.locations && d.locations.length > 0){
-          const loc = d.locations[0];
-          const s = (loc.street || "").trim();
-          const z = (loc.postalCode || "").trim();
-          const c = (loc.city || "").trim();
-          const parts = [];
-          if(s) parts.push(s);
-          if(z && c) parts.push(`${z} ${c}`);
-          else if(c) parts.push(c);
-          if(parts.length) address = parts.join(", ");
-        }
-        // Description depuis template.text
-        if(!description && d.template?.text){
-          description = d.template.text.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().substring(0,5000);
-        }
-        // Date début depuis contractStart
-        if(!startDate && d.contractStart){
-          const p = d.contractStart.split("T")[0].split("-");
-          if(p.length === 3) startDate = `${p[2]}.${p[1]}.${p[0]}`;
-        }
-        // Date limite depuis publicationEndDate
-        if(!applyBefore && d.publicationEndDate){
-          const p = d.publicationEndDate.split("T")[0].split("-");
+    const ldMatches = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || [];
+    for(const ldScript of ldMatches){
+      const ldJson = ldScript.replace(/<script[^>]*>/, "").replace(/<\/script>/, "").trim();
+      const ld = JSON.parse(ldJson);
+      if(ld["@type"] === "JobPosting"){
+        const loc = ld.jobLocation?.address || {};
+        const s = (loc.streetAddress || "").trim();
+        const z = (loc.postalCode || "").trim();
+        const c = (loc.addressRegion || "").trim();
+        const parts = [];
+        if(s) parts.push(s);
+        if(z && c) parts.push(`${z} ${c}`);
+        else if(c) parts.push(c);
+        if(parts.length) address = parts.join(", ");
+        if(!applyBefore && ld.validThrough){
+          const p = ld.validThrough.split("T")[0].split("-");
           if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
         }
-        if(address && description) break;
+        break;
       }
     }
   }catch(e){}
 }
 
-// Fallback HTML — adresse
-if(!address){
-  // 1. JSON-LD streetAddress
-  const addrJsonLd = html.match(/"streetAddress"\s*:\s*"([^"]{5,80})"/);
-  if(addrJsonLd){
-    // Compléter avec postalCode + addressLocality si disponibles
-    const zip = (html.match(/"postalCode"\s*:\s*"(\d{4})"/) || [])[1] || "";
-    const city = (html.match(/"addressLocality"\s*:\s*"([^"]{2,40})"/) || [])[1] || "";
-    const street = addrJsonLd[1].trim();
-    address = [street, zip && city ? `${zip} ${city}` : city || zip].filter(Boolean).join(", ");
-  }
-  // 2. Lien Google Maps dans le HTML
-  if(!address){
-    const mapsMatch = html.match(/maps\.google[^"]*q=([^"&]{5,80})/);
-    if(mapsMatch){
-      address = decodeURIComponent(mapsMatch[1]).replace(/\+/g, " ").trim();
-    }
-  }
-  // 3. NPA + ville dans le texte visible
-  if(!address){
-    const npaMatch = html.match(/(\d{4})\s+(Lausanne|Nyon|Morges|Vevey|Yverdon|Renens|Prilly|Gland|Crissier|Rolle|Montreux|Villeneuve|Bussigny|Pully|Aigle|Bex|Orbe|Payerne|Echallens|Moudon)[^<]{0,30}/i);
-    if(npaMatch) address = npaMatch[0].replace(/<[^>]+>/g,"").trim();
-  }
-}
-
-// Fallback HTML — salaire
+// Fallback salaire depuis HTML
 if(!salary){
-  // Format: CHF 2 000 /mois ou CHF 49'405 - 89'405/an
-  const salMatch = html.match(/CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/\s*(?:an|mois)/i);
+  const salMatch = html.match(/CHF\s*[\d\s'.]+(?:\s*[-\u2013]\s*[\d\s'.]+)?\s*\/\s*(?:an|mois)/i);
   if(salMatch) salary = salMatch[0].replace(/\s+/g," ").trim();
-}
-
-// Fallback HTML — startDate
-if(!startDate){
-  const cleanHtml2 = html.replace(/<[^>]+>/g," ").replace(/\s+/g," ");
-  const startMatch = cleanHtml2.match(/Date d.entr[eé]e en (?:service|fonction)\s*[:\-]?\s*([^.]{3,50})/i) ||
-                     cleanHtml2.match(/Entr[eé]e en (?:service|fonction)\s*[:\-]?\s*([^.]{3,50})/i) ||
-                     cleanHtml2.match(/D[eé]but\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
-  if(startMatch){
-    startDate = startMatch[1].trim().substring(0, 50);
-  }
-}
-
-// Fallback HTML — applyBefore
-if(!applyBefore){
-  const cleanHtml = html.replace(/<[^>]+>/g," ").replace(/\s+/g," ");
-  const applyMatch = cleanHtml.match(/Postuler avant\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i) ||
-                     cleanHtml.match(/jusqu.au\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i) ||
-                     cleanHtml.match(/D[eé]lai\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})/i);
-  if(applyMatch && /^\d{1,2}[./]\d{1,2}[./]\d{4}$/.test(applyMatch[1].trim())){
-    applyBefore = applyMatch[1].trim();
-  }
-}
-
-if(!description){
-  const scriptEnd = html.lastIndexOf("</script>");
-  const htmlBody = scriptEnd > -1 ? html.substring(scriptEnd) : html;
-  const descStart = htmlBody.search(/propos de cette offre|Votre mission|Vos t\u00e2ches|Description du poste/i);
-  if(descStart > -1){
-    const endMarkers = ["Offres similaires", "D'autres utilisateurs", "\u00c0 propos de l'entreprise", "data-testid"];
-    let descEnd = htmlBody.length;
-    for(const marker of endMarkers){
-      const pos = htmlBody.indexOf(marker, descStart);
-      if(pos > -1 && pos < descEnd) descEnd = pos;
-    }
-    const rawDesc = htmlBody.substring(descStart, Math.min(descStart + 5000, descEnd));
-    description = rawDesc.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ").trim();
-  }
-}
-
-// Normaliser applyBefore en jj.mm.aaaa (accepte - et /)
-if(applyBefore){
-  applyBefore = applyBefore.replace(/\//g, ".");
-  if(/^\d{4}[\.-]\d{2}[\.-]\d{2}$/.test(applyBefore)){
-    const p = applyBefore.split(/[\.-]/);
-    applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
-  }
 }
 
 return {
   address: address || "",
   salary: salary || "",
-  description: description || "Descriptif non disponible.",
+  description: description || "",
   startDate: startDate || "",
   applyBefore: applyBefore || ""
 };
