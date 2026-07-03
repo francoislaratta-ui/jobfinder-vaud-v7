@@ -2711,9 +2711,35 @@ try{
         if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
       }
 
-      // Description
+      // Description — mise en forme avec sauts de ligne
       if(ld.description){
-        description = ld.description.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().substring(0, 5000);
+        const sectionKeywords = [
+          "Votre mission", "Vos missions", "Vos tâches", "Vos responsabilités",
+          "Votre profil", "Profil recherché", "Nous offrons", "Ce que nous offrons",
+          "Pourquoi nous rejoindre", "Ce que tu vas accomplir", "Ce qu'il te faut",
+          "Qualifications", "Responsabilités", "Description de l'emploi",
+          "À propos de", "A propos de", "Avantages", "Nous cherchons",
+          "Votre rôle", "Besoin de précision", "Contact"
+        ];
+        let raw = ld.description
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/<\/li>/gi, "\n")
+          .replace(/<\/p>/gi, "\n")
+          .replace(/<\/h[1-6]>/gi, "\n")
+          .replace(/<[^>]+>/g, "")
+          .replace(/&nbsp;/g, " ")
+          .replace(/&amp;/g, "&")
+          .replace(/&quot;/g, "\"")
+          .replace(/&#39;/g, "'")
+          .replace(/\n[ \t]+/g, "\n")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+        // Ajouter saut de ligne avant les sections
+        for(const kw of sectionKeywords){
+          const re = new RegExp("(" + kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*:?)", "gi");
+          raw = raw.replace(re, "\n\n$1");
+        }
+        description = raw.replace(/\n{3,}/g, "\n\n").trim().substring(0, 5000);
       }
       break;
     }
@@ -2832,10 +2858,13 @@ if(!description){
   }
 }
 
-// Format applyBefore en jj.mm.aaaa
-if(applyBefore && /^\d{4}-\d{2}-\d{2}$/.test(applyBefore)){
-  const p = applyBefore.split("-");
-  applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
+// Normaliser applyBefore en jj.mm.aaaa (accepte - et /)
+if(applyBefore){
+  applyBefore = applyBefore.replace(/\//g, ".");
+  if(/^\d{4}[\.-]\d{2}[\.-]\d{2}$/.test(applyBefore)){
+    const p = applyBefore.split(/[\.-]/);
+    applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
+  }
 }
 
 return {
