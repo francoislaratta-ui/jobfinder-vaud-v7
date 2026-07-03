@@ -2951,26 +2951,53 @@ const apprentiKeywords = [
 ];
 if(apprentiKeywords.some(a => titleLower.includes(a))) continue;
 
-const street = (job.street || "").trim();
-const zipCode = (job.zipCode || "").trim();
+// Adresse depuis locations[0] (lieu de travail réel)
+const loc = (job.locations || [])[0] || {};
+const street = (loc.street || job.street || "").trim();
+const zipCode = (loc.postalCode || loc.zipCode || job.zipCode || "").trim();
+const city = (loc.city || place || "").trim();
 const addressParts = [];
 if(street) addressParts.push(street);
 const zipIsVaud = /^1\d{3}$/.test(zipCode);
-if(zipIsVaud) addressParts.push(`${zipCode} ${place}`.trim());
-else if(place) addressParts.push(place);
-const address = addressParts.join("\n");
+if(zipIsVaud && city) addressParts.push(`${zipCode} ${city}`);
+else if(city) addressParts.push(city);
+const address = addressParts.join(", ");
 
 const contractId = (job.employmentTypeIds || [])[0] || "";
 const contractRaw = CONTRACT_TYPE_MAP[contractId] || "";
 const contract = contractRaw.replace(/\s*(droit public|droit prive|de droit public|de droit prive).*/i, "").trim();
 
-const detail = jobId ? await enrichJobupOffer(jobId) : {};
+// Description depuis lead (page liste)
+const descRaw = job.lead || "";
+
+// Date publication
+const raw = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
+const dp = raw.split("-");
+const dateFormatted = dp.length === 3 ? `${dp[2]}.${dp[1]}.${dp[0]}` : raw;
+
+// Date limite postulation depuis publicationEndDate
+let applyBefore = "";
+if(job.publicationEndDate){
+  const ep = job.publicationEndDate.split("T")[0].split("-");
+  if(ep.length === 3) applyBefore = `${ep[2]}.${ep[1]}.${ep[0]}`;
+}
+
+// Date entrée depuis contractStart
+let startDate = "";
+if(job.contractStart){
+  const sp = job.contractStart.split("T")[0].split("-");
+  if(sp.length === 3) startDate = `${sp[2]}.${sp[1]}.${sp[0]}`;
+}
+
+// Salaire
+const salaryRaw = job.salary || job.salaryMin || "";
+const salary = salaryRaw ? `CHF ${salaryRaw}` : "";
 
 offers.push({
 id: String(jobId || generateServerId()),
 title: job.title || "",
 company: job.company?.name || "",
-location: place,
+location: city || place,
 address: address,
 sector: "",
 rate: job.employmentGrades
@@ -2983,15 +3010,11 @@ source: "Jobup",
 offerUrl: jobId
 ? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
 : "",
-date: (()=>{
-const raw = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
-const p = raw.split("-");
-return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : raw;
-})(),
-startDate: detail.startDate || "",
-applyBefore: detail.applyBefore || "",
-description: detail.description || job.lead || "Descriptif non disponible.",
-salary: detail.salary || (job.salary ? `CHF ${job.salary}` : ""),
+date: dateFormatted,
+startDate: startDate,
+applyBefore: applyBefore,
+description: descRaw || "Descriptif non disponible.",
+salary: salary,
 });
 
 }
