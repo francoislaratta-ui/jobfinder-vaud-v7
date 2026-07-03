@@ -3261,12 +3261,12 @@ fetchVdOffers(),
 fetchChuvOffers()
 ]);
 
-const allOffers =
-deduplicateOffers([
-...jobupOffers,
-...vdOffers,
-...chuvOffers
-]);
+const seen = new Set();
+const allOffers = [...jobupOffers, ...vdOffers, ...chuvOffers].filter(o => {
+  if(!o || !o.id || seen.has(o.id)) return false;
+  seen.add(o.id);
+  return true;
+});
 
 if(allOffers.length > 0){
 
