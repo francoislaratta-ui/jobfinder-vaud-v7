@@ -14,8 +14,7 @@ settings: "jobfinder_settings",
 stats: "jobfinder_stats",
 offers: "jobfinder_offers",
 letters: "jobfinder_letters",
-filters: "jobfinder_filters",
-seenOffers: "jobfinder_seen_offers"
+filters: "jobfinder_filters"
 };
 
 /* ==========================================
@@ -116,61 +115,6 @@ return String(value || "")
 .trim();
 }
 
-function extractNormalizedRate(offer){
-
-const normalize = str => String(str || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "")
-.replace(/&nbsp;/g, " ")
-.replace(/&#160;/g, " ")
-.replace(/&#8203;/g, "")
-.replace(/&amp;/g, "&")
-.replace(/&ndash;/g, "-")
-.replace(/&mdash;/g, "-")
-.replace(/–|—/g, "-")
-.replace(/\s+a\s+/g, " - ")
-.replace(/\s+à\s+/g, " - ")
-.replace(/\s+/g, " ")
-.trim();
-
-/* Priorité 1 : champ rate seul */
-const rateOnly = normalize(
-`${offer.rate || ""} ${offer.workRate || ""}`
-);
-
-/* Priorité 2 : fallback sur description si rate vide */
-const source = rateOnly.length > 1
-? rateOnly
-: normalize(`${offer.description || ""}`);
-
-/* Pattern multiples de 5 entre 5 et 100 */
-const PCT = "(5|10|15|20|25|30|35|40|45|50|55|60|65|70|75|80|85|90|95|100)";
-const RANGE = new RegExp(`\\b${PCT}\\s*-\\s*${PCT}\\s*%`);
-const RANGE2 = new RegExp(`\\b${PCT}\\s*%\\s*-\\s*${PCT}\\s*%`);
-const SINGLE = new RegExp(`\\b${PCT}\\s*%`);
-
-const rangeMatch = source.match(RANGE) || source.match(RANGE2);
-if(rangeMatch){
-const minRate = Math.min(Number(rangeMatch[1]), Number(rangeMatch[2]));
-const maxRate = Math.max(Number(rangeMatch[1]), Number(rangeMatch[2]));
-const values = [];
-for(let rate = minRate; rate <= maxRate; rate += 5){
-values.push(rate);
-}
-return { hasRate:true, type:"range", min:minRate, max:maxRate, values, label:`${minRate}-${maxRate}%` };
-}
-
-const singleMatch = source.match(SINGLE);
-if(singleMatch){
-const rate = Number(singleMatch[1]);
-return { hasRate:true, type:"single", min:rate, max:rate, values:[rate], label:`${rate}%` };
-}
-
-return { hasRate:false, type:"", min:null, max:null, values:[], label:"" };
-
-}
-
 function containsNormalized(source, search){
 const s = normalizeText(source);
 const q = normalizeText(search);
@@ -231,8 +175,6 @@ let deferredPrompt = null;
 let bestOffer = null;
 let filteredOffers = [];
 let employersList = [];
-let newOffers = [];
-let seenOffers = safeArray(safeJSON(getStorage(STORAGE_KEYS.seenOffers), []));
 
 /* ==========================================
 PROFIL IA V14.6.0
@@ -882,6 +824,36 @@ return "";
 }
 
 try{
+const s = String(date).trim();
+
+// Déjà au format jj.mm.aaaa
+if(/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s)){
+return s;
+}
+
+// Format YYYY-MM-DD → jj.mm.aaaa
+if(/^\d{4}-\d{2}-\d{2}/.test(s)){
+const p = s.substring(0, 10).split("-");
+return `${p[2]}.${p[1]}.${p[0]}`;
+}
+
+// Format jj/mm/aaaa → jj.mm.aaaa
+if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){
+return s.replace(/\//g, ".");
+}
+
+// Date littérale française ex: "23 juin 2026"
+const mois = {
+"janvier":"01","février":"02","mars":"03","avril":"04",
+"mai":"05","juin":"06","juillet":"07","août":"08",
+"septembre":"09","octobre":"10","novembre":"11","décembre":"12"
+};
+const m = s.match(/^(\d{1,2})\s+([a-zéûô]+)\s+(\d{4})$/i);
+if(m && mois[m[2].toLowerCase()]){
+return `${m[1].padStart(2,"0")}.${mois[m[2].toLowerCase()]}.${m[3]}`;
+}
+
+// Fallback
 return new Date(date).toLocaleDateString("fr-CH");
 }catch(e){
 return String(date);
@@ -938,23 +910,6 @@ top: 0,
 behavior: "smooth"
 });
 }
-}
-
-function handleTempsPlein(checkbox){
-
-const taux = document.querySelectorAll('input[name="taux"]');
-
-taux.forEach(cb => {
-cb.checked = false;
-});
-
-if(checkbox.checked){
-const taux100 = document.getElementById("taux100");
-if(taux100) taux100.checked = true;
-}
-
-applyFilters();
-
 }
 
 /* ==========================================
@@ -1305,20 +1260,21 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
     );
 }
 
-const selectAllTaux = document.getElementById("selectAllTaux");
-const numericTaux = selectedTaux.filter(t => !isNaN(parseInt(t)));
-
-if(numericTaux.length > 0 && !selectAllTaux?.checked){
+if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
     result = result.filter(offer => {
-        const rateInfo = extractNormalizedRate(offer);
-        if(!rateInfo.hasRate) return true;
-        return numericTaux.some(t => {
+        if(!offer.rate) return true;
+        const rateNorm = normalizeText(offer.rate);
+        return selectedTaux.some(t => {
             const tNum = parseInt(t);
-            /* Vérifier si la valeur cochée tombe dans la plage min-max */
-            return tNum >= rateInfo.min && tNum <= rateInfo.max;
+            if(isNaN(tNum)) return containsNormalized(offer.rate, t);
+            const match = rateNorm.match(/(\d+)/g);
+            if(!match) return false;
+            const nums = match.map(Number);
+            return nums.some(n => Math.abs(n - tNum) <= 10);
         });
     });
 }
+
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
     result = result.filter(offer =>
         !offer.contract ||
@@ -1876,6 +1832,153 @@ cleanUrl.includes("/offre/")
 RAPATRIEMENT DESCRIPTIFS
 ========================================== */
 
+async function enrichOffersDescriptions(list){
+
+if(!Array.isArray(list)){
+return [];
+}
+
+const results = await Promise.all(
+list.map(async (offer) => {
+
+const isEtatVaud = offer.source === "État de Vaud";
+
+const descriptionMissing =
+!offer.description ||
+offer.description === "Descriptif non disponible." ||
+isEtatVaud;
+
+const realOfferUrl =
+isRealOfferUrlClient(offer.offerUrl);
+
+if(!descriptionMissing || !realOfferUrl){
+return offer;
+}
+
+if(!offer.offerUrl){
+return offer;
+}
+
+try{
+
+const response =
+await fetch("/api/extract-description", {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+url:offer.offerUrl,
+source:offer.source || "",
+id:offer.id || ""
+})
+});
+
+if(!response.ok){
+throw new Error("HTTP " + response.status);
+}
+
+const data =
+await response.json();
+
+return {
+...offer,
+description: data.description || "Descriptif non disponible.",
+rate: data.rate || offer.rate || "",
+contract: offer.source === "Jobup"
+? (offer.contract || data.contract || "")
+: (data.contract || offer.contract || ""),
+address: data.address || offer.address || "",
+startDate: data.startDate || offer.startDate || "",
+applyBefore: data.applyBefore || offer.applyBefore || "",
+salaryGrade: data.salaryGrade || offer.salaryGrade || "",
+salary: data.salary || offer.salary || "",
+date: data.date || offer.date || ""
+};
+
+}catch(error){
+
+console.warn(
+"Description non récupérée :",
+offer.title,
+error
+);
+
+return offer;
+
+}
+
+})
+);
+
+return results;
+
+}
+
+/* ==========================================
+DECOUVERTE URLS REELLES
+========================================== */
+
+async function discoverRealOfferUrls(list){
+
+const safeList =
+Array.isArray(list) ? list : [];
+
+const results = await Promise.all(
+safeList.map(async (offer) => {
+
+try{
+
+if(!offer || !offer.offerUrl){
+return offer;
+}
+
+if(isRealOfferUrlClient(offer.offerUrl)){
+return offer;
+}
+
+const response =
+await fetch("/api/discover-offer-url", {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({ offer })
+});
+
+if(!response.ok) return offer;
+
+const result = await response.json();
+
+if(result.success && result.discoveredUrl){
+return {
+...offer,
+offerUrl: result.discoveredUrl,
+originalOfferUrl: offer.offerUrl,
+urlDiscovered: true
+};
+}
+
+return offer;
+
+}catch(error){
+
+console.warn(
+"Découverte URL impossible :",
+offer?.title || "",
+error
+);
+
+return offer;
+
+}
+
+})
+);
+
+return results;
+
+}
 
 
 /* ==========================================
@@ -1971,6 +2074,12 @@ offer.mission ||
 offer.responsibilities ||
 "Descriptif non disponible."
 }));
+
+offers =
+await discoverRealOfferUrls(offers);
+
+offers =
+await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
 
@@ -2214,20 +2323,20 @@ ${offer.offerUrl ? `
 <div class="offer-reasons">
 
 <div class="ia-reasons-grid">
-${details.reasons.length > 0
-? details.reasons.map(r => `<div>✓ ${escapeHTML(r)}</div>`).join("")
-: "<div>Aucun point fort détecté</div>"
-}
+<div>✓ Métier compatible</div>
+<div>✓ Contrat compatible</div>
+<div>✓ Secteur intéressant</div>
+<div>✓ Salaire intéressant</div>
+<div>✓ Expérience cohérente</div>
 </div>
 
-${details.missing.length > 0 ? `
 <div class="ia-check-block">
 <strong>🧐 Points à vérifier :</strong>
 <ul>
-${details.missing.map(m => `<li>${escapeHTML(m)}</li>`).join("")}
+<li>Compétences spécifiques à confirmer</li>
+<li>Compétences CV peu visibles</li>
 </ul>
 </div>
-` : ""}
 
 </div>
 
@@ -3458,90 +3567,44 @@ dashboardOffers.length > 0
 NOTIFICATIONS
 ========================================== */
 
-function getOfferMemoryId(offer){
-
-return String(
-offer.externalId ||
-offer.offerUrl ||
-offer.url ||
-`${offer.company || ""}-${offer.title || ""}-${offer.location || ""}`
-)
-.toLowerCase()
-.trim();
-
-}
-
-function detectNewOffers(){
-
-newOffers = [];
-
-offers.forEach(offer => {
-
-const memoryId =
-getOfferMemoryId(offer);
-
-if(!memoryId){
-return;
-}
-
-if(!seenOffers.includes(memoryId)){
-
-newOffers.push(offer);
-seenOffers.push(memoryId);
-
-}
-
-});
-
-localStorage.setItem(
-STORAGE_KEYS.seenOffers,
-JSON.stringify(seenOffers)
-);
-
-}
-
 function updateNotifications(){
 
-const badge =
-document.getElementById("notificationsBadge");
+const sourceCounts = {};
 
-if(badge){
+offers.forEach(offer => {
+const source =
+offer.source || offer.company || "Autre";
 
-badge.textContent =
-newOffers.length
-? ` 🔴${newOffers.length}`
-: "";
+sourceCounts[source] =
+(sourceCounts[source] || 0) + 1;
+});
 
-}
+const sourceLines =
+Object.entries(sourceCounts)
+.slice(0, 6)
+.map(([source,count]) => {
+return `
+<div class="alert-source-line">
+<span>• ${escapeHTML(source)}</span>
+<span>: ${count}</span>
+</div>
+`;
+})
+.join("");
 
 const newOffersBox =
 document.getElementById("newOffersNotifications");
 
 if(newOffersBox){
-
 newOffersBox.innerHTML =
-newOffers.length
-? newOffers
-.map(offer => `
-<div class="notification-item">
-
-<div>
-🆕 <strong>${escapeHTML(offer.title)}</strong>
+offers.length
+? `
+<div class="alert-line">
+• ${offers.length} nouvelles offres
 </div>
-
-<div>
-🏢 ${escapeHTML(offer.company)}
-</div>
-
-<div>
-📍 ${escapeHTML(offer.location)}
-</div>
-
-</div>
-`)
-.join("")
-: "Aucune nouvelle offre détectée";
-
+${sourceLines}
+`
+: "Aucune nouvelle offre";
 }
 
 safeSetText(
@@ -3561,7 +3624,7 @@ applications.length
 safeSetText(
 document.getElementById("aiNotifications"),
 offers.length
-? "• " + offers.filter(offer => calculateMatch(offer) >= 90).length + " offres avec Match > 90%"
+? "• " + offers.filter(offer => Number(offer.match || offer.score || 0) >= 90).length + " offres avec Match > 90%"
 : "Aucune alerte IA"
 );
 
