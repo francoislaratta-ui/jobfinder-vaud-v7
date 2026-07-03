@@ -2817,125 +2817,6 @@ return offers;
 
 }
 
-async function fetchJobScout24Offers(){
-
-const offers = [];
-
-try{
-
-for(const keyword of SEARCH_KEYWORDS){
-
-const encodedKeyword =
-encodeURIComponent(keyword);
-
-const url =
-`https://www.jobscout24.ch/fr/jobs/rss/${encodedKeyword}/vaud/`;
-
-const xml =
-await fetchExternalText(url);
-
-const items =
-xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
-
-console.log(`JobScout24 RSS "${keyword}": ${items.length} offres`);
-
-for(const item of items){
-
-const title =
-(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] ||
-(item.match(/<title>(.*?)<\/title>/) || [])[1] || "";
-
-const company =
-(item.match(/<author>(.*?)<\/author>/) ||
-item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) || [])[1] || "";
-
-const link =
-(item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
-
-const description =
-(item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
-
-const pubDate =
-(item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
-
-const location =
-(item.match(/<city>(.*?)<\/city>/) ||
-item.match(/<region>(.*?)<\/region>/) || [])[1] || "Vaud";
-
-if(!title) continue;
-
-/* Extraction HTML page annonce — modèle Jobup */
-let rate = "";
-let contract = "";
-let address = "";
-let startDate = "";
-let salary = "";
-let detailDescription = description || "Descriptif non disponible.";
-
-if(link){
-try{
-const detailHtml = await fetchExternalText(link);
-const detailText = cleanHtmlText(detailHtml);
-
-const rateMatch = detailText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
-if(rateMatch) rate = rateMatch[1].trim();
-
-const contractMatch = detailText.match(/(CDI|CDD|Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
-if(contractMatch) contract = contractMatch[1].trim()
-.replace(/Durée indéterminée/i, "CDI")
-.replace(/Durée déterminée/i, "CDD");
-
-const addressMatch = detailText.match(/(\d{4}\s+[A-ZÀ-Ÿa-zà-ÿ][\wÀ-ÿ\s\-]{1,40})/);
-if(addressMatch) address = addressMatch[1].trim();
-
-const startMatch = detailText.match(/(?:entrée en fonction|entrée en service|dès le|à partir du)[^\w]*([^\n.]{3,50})/i);
-if(startMatch) startDate = startMatch[1].trim();
-
-const salaryMatch = detailText.match(/(CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/\s*(?:an|mois))/i);
-if(salaryMatch) salary = salaryMatch[1].replace(/\s+/g," ").trim();
-
-const usefulDesc = extractUsefulDescription(detailHtml);
-if(usefulDesc && usefulDesc.length > 100) detailDescription = usefulDesc;
-
-}catch(err){
-console.warn("JobScout24 détail impossible :", link, err.message);
-}
-}
-
-offers.push({
-id: generateServerId(),
-title: title.trim(),
-company: company.trim(),
-location: location.trim(),
-address: address,
-sector: "",
-rate: rate,
-contract: contract,
-source: "JobScout24",
-offerUrl: link.trim(),
-url: link.trim(),
-date: pubDate
-? new Date(pubDate).toISOString().split("T")[0]
-: new Date().toISOString().split("T")[0],
-description: detailDescription,
-salary: salary,
-startDate: startDate
-});
-
-}
-
-}
-
-}catch(error){
-
-console.warn("Erreur scraping JobScout24 RSS :", error.message);
-
-}
-
-return offers;
-
-}
-
 async function fetchVdOffers(){
 
 const offers = [];
@@ -3259,229 +3140,6 @@ return offers;
 
 }
 
-async function fetchIndeedOffers(){
-
-const offers = [];
-
-try{
-
-for(const keyword of SEARCH_KEYWORDS){
-
-const encodedKeyword = encodeURIComponent(keyword);
-
-const url = `https://ch-fr.indeed.com/jobs?q=${encodedKeyword}&l=Vaud`;
-
-const result = await fetchGenericJobPageOffers({
-source: "Indeed",
-company: "Indeed",
-url,
-defaultTitle: "Offre Indeed Vaud",
-linkPatterns: ["/viewjob", "jk="],
-blockedLinkPatterns: [
-"/career/", "/salaires/", "/salary/",
-"/entreprises/", "/forum/", "/rc/clk"
-],
-extractDetails: true
-});
-
-// Filtrer les offres sans vraie company (page expirée/invalide)
-offers.push(...result.filter(o => o.company && o.company !== "Indeed"));
-
-}
-
-}catch(error){
-console.warn("Erreur scraping Indeed :", error.message);
-}
-
-return offers;
-
-}
-
-async function fetchFreshJobsOffers(){
-
-const offers = [];
-
-try{
-
-for(const keyword of SEARCH_KEYWORDS){
-
-const encodedKeyword = encodeURIComponent(keyword);
-const url = `https://freshjobs.ch?s=${encodedKeyword}&feed=rss2`;
-
-const xml = await fetchExternalText(url);
-const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
-
-console.log(`FreshJobs RSS "${keyword}": ${items.length} offres`);
-
-for(const item of items){
-
-const title =
-(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] ||
-(item.match(/<title>(.*?)<\/title>/) || [])[1] || "";
-
-const link =
-(item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
-
-const description =
-(item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
-
-const pubDate =
-(item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
-
-const company =
-(item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) ||
-item.match(/<author>(.*?)<\/author>/) || [])[1] || "";
-
-if(!title) continue;
-if(!looksLikeWantedJob(title)) continue;
-
-const isVaud = VAUD_PLACES.some(v =>
-(title + " " + description + " " + link).toLowerCase().includes(v)
-);
-if(!isVaud) continue;
-
-offers.push({
-id: generateServerId(),
-title: title.trim(),
-company: company.trim(),
-location: "Vaud",
-address: "",
-sector: "",
-rate: "",
-contract: "",
-source: "FreshJobs",
-offerUrl: link.trim(),
-url: link.trim(),
-date: pubDate
-? new Date(pubDate).toISOString().split("T")[0]
-: new Date().toISOString().split("T")[0],
-description: description || "Descriptif non disponible.",
-salary: ""
-});
-
-}
-
-}
-
-}catch(error){
-console.warn("Erreur scraping FreshJobs :", error.message);
-}
-
-return offers;
-
-}
-
-async function fetchEmploisVaudOffers(){
-
-const offers = [];
-
-try{
-
-for(const keyword of SEARCH_KEYWORDS){
-
-const encodedKeyword = encodeURIComponent(keyword);
-const url = `https://emplois-vaud.ch/jobs?q=${encodedKeyword}`;
-
-const html = await fetchExternalText(url);
-const anchors = extractAnchorsFromHtml(html, url);
-const seen = new Set();
-
-for(const anchor of anchors){
-
-const href = anchor.href || "";
-const rawTitle = (anchor.text || "").trim();
-
-const cleanTitle = rawTitle
-.replace(/&#\d+;/g, " ")
-.replace(/&[a-z]+;/gi, " ")
-.split(/[\n\r·•|]+/)
-.map(l => l.trim())
-.filter(l => l.length > 3 && l.length < 120)
-.find(l => /[a-zA-ZÀ-ÿ]{3}/.test(l)) || "";
-
-if(!cleanTitle || seen.has(href)) continue;
-seen.add(href);
-
-const hrefLower = href.toLowerCase();
-if(!hrefLower.includes("emplois-vaud.ch") &&
-!hrefLower.includes("/offre") &&
-!hrefLower.includes("/job") &&
-!hrefLower.includes("/emploi")) continue;
-
-if(!looksLikeWantedJob(cleanTitle)) continue;
-
-offers.push({
-id: generateServerId(),
-title: cleanTitle,
-company: "",
-location: "Vaud",
-address: "",
-sector: "",
-rate: "",
-contract: "",
-source: "EmploisVaud",
-offerUrl: href,
-url: href,
-date: new Date().toISOString().split("T")[0],
-description: "Descriptif non disponible.",
-salary: ""
-});
-
-}
-
-console.log(`EmploisVaud "${keyword}": ${offers.length} offres`);
-
-}
-
-}catch(error){
-console.warn("Erreur scraping EmploisVaud :", error.message);
-}
-
-return offers;
-
-}
-
-async function fetchLinkedInOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "LinkedIn",
-company: "LinkedIn",
-url: "https://www.linkedin.com/jobs/search/?keywords=assistant+administratif&location=Vaud%2C%20Suisse",
-defaultTitle: "Offre LinkedIn Vaud",
-linkPatterns: ["/jobs/view/"],
-extractDetails: true
-});
-
-}
-
-function generateServerId(){
-return Date.now().toString() +
-Math.random().toString(36).substring(2, 8);
-}
-
-function deduplicateOffers(offers){
-
-const seen = new Set();
-const result = [];
-
-for(const offer of offers){
-
-const key =
-`${offer.title}-${offer.company}-${offer.location}`
-.toLowerCase()
-.replace(/\s+/g, "");
-
-if(!seen.has(key)){
-seen.add(key);
-result.push(offer);
-}
-
-}
-
-return result;
-
-}
-
 async function fetchChuvOffers(){
 
 const offers = [];
@@ -3593,9 +3251,22 @@ async function scrapeAllOffers(){
 
 console.log("🔄 Scraping des offres en cours...");
 
-const jobupOffers = await fetchJobupOffers();
+const [
+jobupOffers,
+vdOffers,
+chuvOffers
+] = await Promise.all([
+fetchJobupOffers(),
+fetchVdOffers(),
+fetchChuvOffers()
+]);
 
-const allOffers = deduplicateOffers([...jobupOffers]);
+const allOffers =
+deduplicateOffers([
+...jobupOffers,
+...vdOffers,
+...chuvOffers
+]);
 
 if(allOffers.length > 0){
 
@@ -3606,7 +3277,7 @@ console.log(
 );
 
 console.log(
-`📊 Jobup: ${jobupOffers.length}`
+`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | CHUV: ${chuvOffers.length}`
 );
 
 }else{

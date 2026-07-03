@@ -14,7 +14,8 @@ settings: "jobfinder_settings",
 stats: "jobfinder_stats",
 offers: "jobfinder_offers",
 letters: "jobfinder_letters",
-filters: "jobfinder_filters"
+filters: "jobfinder_filters",
+seenOffers: "jobfinder_seen_offers"
 };
 
 /* ==========================================
@@ -115,6 +116,61 @@ return String(value || "")
 .trim();
 }
 
+function extractNormalizedRate(offer){
+
+const normalize = str => String(str || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "")
+.replace(/&nbsp;/g, " ")
+.replace(/&#160;/g, " ")
+.replace(/&#8203;/g, "")
+.replace(/&amp;/g, "&")
+.replace(/&ndash;/g, "-")
+.replace(/&mdash;/g, "-")
+.replace(/–|—/g, "-")
+.replace(/\s+a\s+/g, " - ")
+.replace(/\s+à\s+/g, " - ")
+.replace(/\s+/g, " ")
+.trim();
+
+/* Priorité 1 : champ rate seul */
+const rateOnly = normalize(
+`${offer.rate || ""} ${offer.workRate || ""}`
+);
+
+/* Priorité 2 : fallback sur description si rate vide */
+const source = rateOnly.length > 1
+? rateOnly
+: normalize(`${offer.description || ""}`);
+
+/* Pattern multiples de 5 entre 5 et 100 */
+const PCT = "(5|10|15|20|25|30|35|40|45|50|55|60|65|70|75|80|85|90|95|100)";
+const RANGE = new RegExp(`\\b${PCT}\\s*-\\s*${PCT}\\s*%`);
+const RANGE2 = new RegExp(`\\b${PCT}\\s*%\\s*-\\s*${PCT}\\s*%`);
+const SINGLE = new RegExp(`\\b${PCT}\\s*%`);
+
+const rangeMatch = source.match(RANGE) || source.match(RANGE2);
+if(rangeMatch){
+const minRate = Math.min(Number(rangeMatch[1]), Number(rangeMatch[2]));
+const maxRate = Math.max(Number(rangeMatch[1]), Number(rangeMatch[2]));
+const values = [];
+for(let rate = minRate; rate <= maxRate; rate += 5){
+values.push(rate);
+}
+return { hasRate:true, type:"range", min:minRate, max:maxRate, values, label:`${minRate}-${maxRate}%` };
+}
+
+const singleMatch = source.match(SINGLE);
+if(singleMatch){
+const rate = Number(singleMatch[1]);
+return { hasRate:true, type:"single", min:rate, max:rate, values:[rate], label:`${rate}%` };
+}
+
+return { hasRate:false, type:"", min:null, max:null, values:[], label:"" };
+
+}
+
 function containsNormalized(source, search){
 const s = normalizeText(source);
 const q = normalizeText(search);
@@ -175,6 +231,8 @@ let deferredPrompt = null;
 let bestOffer = null;
 let filteredOffers = [];
 let employersList = [];
+let newOffers = [];
+let seenOffers = safeArray(safeJSON(getStorage(STORAGE_KEYS.seenOffers), []));
 
 /* ==========================================
 PROFIL IA V14.6.0
@@ -824,52 +882,11 @@ return "";
 }
 
 try{
-const MOIS = {
-"janvier":"01","février":"02","fevrier":"02","mars":"03","avril":"04",
-"mai":"05","juin":"06","juillet":"07","août":"08","aout":"08",
-"septembre":"09","octobre":"10","novembre":"11","décembre":"12","decembre":"12"
-};
-// Format "jj.mm.aaaa" déjà correct — retourner tel quel
-const dotMatch = String(date).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-if(dotMatch) return date;
-// Format "23 juin 2026"
-const litMatch = String(date).match(/^(\d{1,2})\s+([a-zéûô]+)\s+(\d{4})$/i);
-if(litMatch){
-const mNum = MOIS[litMatch[2].toLowerCase()];
-if(mNum) return `${litMatch[1].padStart(2,"0")}.${mNum}.${litMatch[3]}`;
-}
-// Format ISO "2026-06-23" ou autres
-const d = new Date(date);
-if(isNaN(d.getTime())) return String(date);
-const dd = String(d.getDate()).padStart(2,"0");
-const mm = String(d.getMonth()+1).padStart(2,"0");
-const yyyy = d.getFullYear();
-return `${dd}.${mm}.${yyyy}`;
+return new Date(date).toLocaleDateString("fr-CH");
 }catch(e){
 return String(date);
 }
 
-}
-
-function handleTempsPlein(cb){
-// Quand "Temps plein" est coché → décoche tout, coche uniquement 100%
-if(cb.checked){
-    document.querySelectorAll('input[name="taux"]').forEach(inp => {
-        inp.checked = (inp.value === "100" || inp.id === "tempsPlein");
-    });
-} else {
-    // Décoche aussi 100%
-    const t100 = document.getElementById("taux100");
-    if(t100) t100.checked = false;
-}
-applyFilters();
-}
-
-function syncTempsPlein(cb){
-// Quand 100% est coché/décoché → synchronise "Temps plein"
-const tempsPlein = document.getElementById("tempsPlein");
-if(tempsPlein) tempsPlein.checked = cb.checked;
-applyFilters();
 }
 
 function generateId(){
@@ -921,6 +938,23 @@ top: 0,
 behavior: "smooth"
 });
 }
+}
+
+function handleTempsPlein(checkbox){
+
+const taux = document.querySelectorAll('input[name="taux"]');
+
+taux.forEach(cb => {
+cb.checked = false;
+});
+
+if(checkbox.checked){
+const taux100 = document.getElementById("taux100");
+if(taux100) taux100.checked = true;
+}
+
+applyFilters();
+
 }
 
 /* ==========================================
@@ -1213,37 +1247,52 @@ function applyFilters(){
 
     let result = [...offers];
 
-    const CFC = ["cfc de commerce","cfc employe de commerce","cfc d employe de commerce"];
+    const SCRAPE_KEYWORDS = [
+"employe de commerce",
+"assistant administratif",
+"assistante administrative",
+"gestionnaire de dossier",
+"gestionnaire administratif",
+"gestionnaire de depot",
+"gestionnaire contentieux",
+"gestionnaire logistique",
+"gestionnaire approvisionnement",
+"technicien informatique",
+"technicien support",
+"technicien maintenance",
+"technicien systeme",
+"technicien alarme",
+"support informatique",
+"support utilisateur",
+"it support",
+"network support",
+"specialiste support",
+"helpdesk",
+"back office",
+"collaborateur administratif",
+"collaborateur service",
+"coordinateur administratif",
+"administrateur gestionnaire",
+"employe administratif",
+"assistant de direction",
+"assistant rh",
+"conseiller clientele"
+];
 
-    const METIER_KEYWORDS = {
-"Employe de commerce":              ["employe de commerce","employee de commerce",...CFC],
-"Employe administratif":            ["employe administratif","employee administratif","agent administratif","administration",...CFC],
-"Assistant administratif":          ["assistant administratif","assistante administrative","assistant e administratif","assistant technique",...CFC],
-"Gestionnaire de dossier":          ["gestionnaire de dossier","gestionnaire dossier","gestionnaire specialise",...CFC],
-"Gestionnaire administratif":       ["gestionnaire administratif",...CFC],
-"Collaborateur administratif":      ["collaborateur administratif","collaboratrice administrative",...CFC],
-"Coordinateur administratif":       ["coordinateur administratif","coordinatrice administrative",...CFC],
-"Secretaire d unite administration":["secretaire","secretaire administrative","secretaire d unite","secretaire de direction","secretaire technique",...CFC],
-"Support utilisateur":              ["support utilisateur","support user","it support","support informatique"],
-"Technicien informatique":          ["technicien informatique","technicien it","technicien systeme"],
-"Helpdesk":                         ["helpdesk","help desk","help-desk"],
-"Back-office":                      ["back office","back-office","backoffice"]
-};
+const selectAllMetiers = document.getElementById("selectAllMetiers");
 
-if(selectedMetiers.length > 0 && selectedMetiers.length < totalMetiers){
+if(selectedMetiers.length > 0){
     result = result.filter(offer => {
-        const cleanTitle = normalizeText(offer.title)
-            .replace(/\([^)]*\)/g, "")
-            .replace(/-e/g, "")
-            .replace(/-ve/g, "")
-            .replace(/\s+/g, " ").trim();
-        const descNorm  = normalizeText(offer.description || "");
-        const text = cleanTitle + " " + descNorm;
-        return selectedMetiers.some(m => {
-            const key = normalizeText(m);
-            const keywords = METIER_KEYWORDS[key] || [normalizeText(m)];
-            return keywords.some(kw => text.includes(kw));
-        });
+        const titleNorm = normalizeText(offer.title);
+        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
+            k.split(" ").filter(w => w.length > 4)
+            .some(w => titleNorm.includes(w))
+        );
+        if(selectAllMetiers?.checked) return matchesKeyword;
+        const matchesMetier = selectedMetiers.some(m =>
+            containsNormalized(offer.title, m)
+        );
+        return matchesKeyword || matchesMetier;
     });
 }
 
@@ -1256,27 +1305,20 @@ if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
     );
 }
 
-if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
+const selectAllTaux = document.getElementById("selectAllTaux");
+const numericTaux = selectedTaux.filter(t => !isNaN(parseInt(t)));
+
+if(numericTaux.length > 0 && !selectAllTaux?.checked){
     result = result.filter(offer => {
-        const numericTaux = selectedTaux.filter(t => !isNaN(parseInt(t)));
-        if(numericTaux.length === 0) return true;
-        if(!offer.rate){
-            const rateInTitle = (offer.title || "").match(/(\d{2,3})\s*%/);
-            if(!rateInTitle) return true;
-            const n = parseInt(rateInTitle[1]);
-            return numericTaux.some(t => Math.abs(n - parseInt(t)) <= 5);
-        }
-        const rateNorm = normalizeText(offer.rate);
+        const rateInfo = extractNormalizedRate(offer);
+        if(!rateInfo.hasRate) return true;
         return numericTaux.some(t => {
             const tNum = parseInt(t);
-            const match = rateNorm.match(/(\d+)/g);
-            if(!match) return false;
-            const nums = match.map(Number);
-            return nums.some(n => Math.abs(n - tNum) <= 5);
+            /* Vérifier si la valeur cochée tombe dans la plage min-max */
+            return tNum >= rateInfo.min && tNum <= rateInfo.max;
         });
     });
 }
-
 if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
     result = result.filter(offer =>
         !offer.contract ||
@@ -1327,11 +1369,6 @@ if(selectedSources.length > 0 && selectedSources.length < totalSources){
     updateBestMatch();
     updateStatistics();
     saveFilters();
-
-    setTimeout(() => {
-        const firstOffer = document.querySelector(".offer-card");
-        if(firstOffer) firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 150);
 
 }
 
@@ -1839,153 +1876,6 @@ cleanUrl.includes("/offre/")
 RAPATRIEMENT DESCRIPTIFS
 ========================================== */
 
-async function enrichOffersDescriptions(list){
-
-if(!Array.isArray(list)){
-return [];
-}
-
-const results = await Promise.all(
-list.map(async (offer) => {
-
-const isEtatVaud = offer.source === "État de Vaud";
-
-const descriptionMissing =
-!offer.description ||
-offer.description === "Descriptif non disponible." ||
-isEtatVaud;
-
-const realOfferUrl =
-isRealOfferUrlClient(offer.offerUrl);
-
-if(!descriptionMissing || !realOfferUrl){
-return offer;
-}
-
-if(!offer.offerUrl){
-return offer;
-}
-
-try{
-
-const response =
-await fetch("/api/extract-description", {
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-url:offer.offerUrl,
-source:offer.source || "",
-id:offer.id || ""
-})
-});
-
-if(!response.ok){
-throw new Error("HTTP " + response.status);
-}
-
-const data =
-await response.json();
-
-return {
-...offer,
-description: data.description || "Descriptif non disponible.",
-rate: data.rate || offer.rate || "",
-contract: offer.source === "Jobup"
-? (offer.contract || data.contract || "")
-: (data.contract || offer.contract || ""),
-address: data.address || offer.address || "",
-startDate: data.startDate || offer.startDate || "",
-applyBefore: data.applyBefore || offer.applyBefore || "",
-salaryGrade: data.salaryGrade || offer.salaryGrade || "",
-salary: data.salary || offer.salary || "",
-date: data.date || offer.date || ""
-};
-
-}catch(error){
-
-console.warn(
-"Description non récupérée :",
-offer.title,
-error
-);
-
-return offer;
-
-}
-
-})
-);
-
-return results;
-
-}
-
-/* ==========================================
-DECOUVERTE URLS REELLES
-========================================== */
-
-async function discoverRealOfferUrls(list){
-
-const safeList =
-Array.isArray(list) ? list : [];
-
-const results = await Promise.all(
-safeList.map(async (offer) => {
-
-try{
-
-if(!offer || !offer.offerUrl){
-return offer;
-}
-
-if(isRealOfferUrlClient(offer.offerUrl)){
-return offer;
-}
-
-const response =
-await fetch("/api/discover-offer-url", {
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({ offer })
-});
-
-if(!response.ok) return offer;
-
-const result = await response.json();
-
-if(result.success && result.discoveredUrl){
-return {
-...offer,
-offerUrl: result.discoveredUrl,
-originalOfferUrl: offer.offerUrl,
-urlDiscovered: true
-};
-}
-
-return offer;
-
-}catch(error){
-
-console.warn(
-"Découverte URL impossible :",
-offer?.title || "",
-error
-);
-
-return offer;
-
-}
-
-})
-);
-
-return results;
-
-}
 
 
 /* ==========================================
@@ -2051,12 +1941,9 @@ offer.workRate ||
 "",
 
 contract:
-(function(c){
-const v = String(c || "").toLowerCase().trim();
-if(v === "permanent" || v === "unbefristet" || v === "indéterminée" || v === "durée indéterminée") return "CDI";
-if(v === "limited" || v === "befristet" || v === "déterminée" || v === "durée déterminée") return "CDD";
-return c || "";
-})(offer.contract || offer.contractType || ""),
+offer.contract ||
+offer.contractType ||
+"",
 
 title:
 offer.title || "",
@@ -2084,12 +1971,6 @@ offer.mission ||
 offer.responsibilities ||
 "Descriptif non disponible."
 }));
-
-offers =
-await discoverRealOfferUrls(offers);
-
-offers =
-await enrichOffersDescriptions(offers);
 
 filteredOffers = [...offers];
 
@@ -2249,12 +2130,7 @@ const clean = addr
 .trim();
 return clean.split("\n")
 .map(l => l.trim())
-.filter(l => {
-  if(!l) return false;
-  const npaMatch = l.match(/\b(\d{4})\b/);
-  if(npaMatch && !npaMatch[1].startsWith("1")) return false;
-  return true;
-})
+.filter(Boolean)
 .join("<br>");
 };
 
@@ -2295,7 +2171,7 @@ ${offer.contract ? `
 
 ${offer.startDate ? `
 <div class="offer-meta">
-🗓️ Entrée en fonction : ${escapeHTML(formatDate(offer.startDate) || offer.startDate)}
+🗓️ Entrée : ${escapeHTML(offer.startDate)}
 </div>
 ` : ""}
 
@@ -2322,7 +2198,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(formatDate(offer.date) || offer.date)}
+📅 Publié le : ${escapeHTML(offer.date)}
 </div>
 
 ${offer.offerUrl ? `
@@ -2338,20 +2214,20 @@ ${offer.offerUrl ? `
 <div class="offer-reasons">
 
 <div class="ia-reasons-grid">
-<div>✓ Métier compatible</div>
-<div>✓ Contrat compatible</div>
-<div>✓ Secteur intéressant</div>
-<div>✓ Salaire intéressant</div>
-<div>✓ Expérience cohérente</div>
+${details.reasons.length > 0
+? details.reasons.map(r => `<div>✓ ${escapeHTML(r)}</div>`).join("")
+: "<div>Aucun point fort détecté</div>"
+}
 </div>
 
+${details.missing.length > 0 ? `
 <div class="ia-check-block">
 <strong>🧐 Points à vérifier :</strong>
 <ul>
-<li>Compétences spécifiques à confirmer</li>
-<li>Compétences CV peu visibles</li>
+${details.missing.map(m => `<li>${escapeHTML(m)}</li>`).join("")}
 </ul>
 </div>
+` : ""}
 
 </div>
 
@@ -3582,44 +3458,90 @@ dashboardOffers.length > 0
 NOTIFICATIONS
 ========================================== */
 
-function updateNotifications(){
+function getOfferMemoryId(offer){
 
-const sourceCounts = {};
+return String(
+offer.externalId ||
+offer.offerUrl ||
+offer.url ||
+`${offer.company || ""}-${offer.title || ""}-${offer.location || ""}`
+)
+.toLowerCase()
+.trim();
+
+}
+
+function detectNewOffers(){
+
+newOffers = [];
 
 offers.forEach(offer => {
-const source =
-offer.source || offer.company || "Autre";
 
-sourceCounts[source] =
-(sourceCounts[source] || 0) + 1;
+const memoryId =
+getOfferMemoryId(offer);
+
+if(!memoryId){
+return;
+}
+
+if(!seenOffers.includes(memoryId)){
+
+newOffers.push(offer);
+seenOffers.push(memoryId);
+
+}
+
 });
 
-const sourceLines =
-Object.entries(sourceCounts)
-.slice(0, 6)
-.map(([source,count]) => {
-return `
-<div class="alert-source-line">
-<span>• ${escapeHTML(source)}</span>
-<span>: ${count}</span>
-</div>
-`;
-})
-.join("");
+localStorage.setItem(
+STORAGE_KEYS.seenOffers,
+JSON.stringify(seenOffers)
+);
+
+}
+
+function updateNotifications(){
+
+const badge =
+document.getElementById("notificationsBadge");
+
+if(badge){
+
+badge.textContent =
+newOffers.length
+? ` 🔴${newOffers.length}`
+: "";
+
+}
 
 const newOffersBox =
 document.getElementById("newOffersNotifications");
 
 if(newOffersBox){
+
 newOffersBox.innerHTML =
-offers.length
-? `
-<div class="alert-line">
-• ${offers.length} nouvelles offres
+newOffers.length
+? newOffers
+.map(offer => `
+<div class="notification-item">
+
+<div>
+🆕 <strong>${escapeHTML(offer.title)}</strong>
 </div>
-${sourceLines}
-`
-: "Aucune nouvelle offre";
+
+<div>
+🏢 ${escapeHTML(offer.company)}
+</div>
+
+<div>
+📍 ${escapeHTML(offer.location)}
+</div>
+
+</div>
+`)
+.join("")
+: "Aucune nouvelle offre détectée";
+
 }
 
 safeSetText(
@@ -3639,7 +3561,7 @@ applications.length
 safeSetText(
 document.getElementById("aiNotifications"),
 offers.length
-? "• " + offers.filter(offer => Number(offer.match || offer.score || 0) >= 90).length + " offres avec Match > 90%"
+? "• " + offers.filter(offer => calculateMatch(offer) >= 90).length + " offres avec Match > 90%"
 : "Aucune alerte IA"
 );
 
