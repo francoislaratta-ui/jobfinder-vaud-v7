@@ -2684,34 +2684,74 @@ async function enrichJobupOffer(jobId){
 try{
 const url = `https://www.jobup.ch/fr/emplois/detail/${jobId}/`;
 const html = await fetchExternalText(url);
-const initMatch = html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__|<\/script>)/);
-if(!initMatch) return {};
-const data = JSON.parse(initMatch[1]);
-const job = data?.vacancy?.detail?.vacancy;
-if(!job) return {};
 
-const street = (job.street || "").trim();
-const zipCode = (job.zipCode || "").trim();
-const place = (job.place || "").trim();
-const addressParts = [];
-if(street && street.toLowerCase() !== "null") addressParts.push(street);
-if(zipCode && zipCode !== "2026") addressParts.push(`${zipCode} ${place}`.trim());
-else if(place && place.toLowerCase() !== "null") addressParts.push(place);
-const address = addressParts.filter(Boolean).join(", ");
-
+let address = "";
 let salary = "";
-if(job.salary){
-  if(typeof job.salary === "object") salary = job.salary.text || job.salary.formatted || "";
-  else salary = String(job.salary);
-  if(salary && !salary.startsWith("CHF")) salary = `CHF ${salary}`;
-  if(salary.includes("[object")) salary = "";
+let description = "";
+let startDate = "";
+let applyBefore = "";
+
+// Tentative 1 : extraire depuis __INIT__
+const initMatch = html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__|<\/script>)/);
+if(initMatch){
+  try{
+    const data = JSON.parse(initMatch[1]);
+    const job = data?.vacancy?.detail?.vacancy;
+    if(job){
+      const street = (job.street || "").trim();
+      const zipCode = (job.zipCode || "").trim();
+      const place = (job.place || "").trim();
+      const parts = [];
+      if(street && street.toLowerCase() !== "null") parts.push(street);
+      if(zipCode && zipCode !== "2026") parts.push(`${zipCode} ${place}`.trim());
+      else if(place && place.toLowerCase() !== "null") parts.push(place);
+      address = parts.filter(Boolean).join(", ");
+
+      if(job.salary){
+        if(typeof job.salary === "object") salary = job.salary.text || job.salary.formatted || "";
+        else salary = String(job.salary);
+        if(salary && !salary.startsWith("CHF")) salary = `CHF ${salary}`;
+        if(salary.includes("[object")) salary = "";
+      }
+      description = job.description || job.lead || "";
+      startDate = job.startDate || "";
+      applyBefore = job.applicationDeadline ? job.applicationDeadline.split("T")[0] : "";
+    }
+  }catch(e){}
 }
 
-const desc = job.description || job.lead || "";
-const startDate = job.startDate || "";
-const applyBefore = job.applicationDeadline ? job.applicationDeadline.split("T")[0] : "";
+// Fallback : extraire depuis le HTML brut
+if(!address){
+  const addrMatch = html.match(/(?:href="https:\/\/maps\.google[^"]*">|"streetAddress"[^"]*"[^"]+",|<a[^>]*href="https:\/\/maps[^"]*">)([^<]{5,80})<\/a>/) ||
+                    html.match(/"streetAddress"\s*:\s*"([^"]{5,80})"/) ||
+                    html.match(/(\d{4}[^<]{3,30}(?:Lausanne|Vaud|Nyon|Morges|Vevey|Yverdon|Renens|Prilly|Gland|Crissier|Rolle|Montreux|Villeneuve|Bussigny|Pully))/i);
+  if(addrMatch) address = addrMatch[1].trim();
+}
 
-return { address, salary, description: desc || "Descriptif non disponible.", startDate, applyBefore };
+if(!salary){
+  const salMatch = html.match(/CHF\s*[\d\s\']+[–\-][\d\s\']+\/(?:an|mois)/i);
+  if(salMatch) salary = salMatch[0].trim();
+}
+
+if(!description){
+  // Chercher le texte entre "À propos de cette offre" et les sections suivantes
+  const descStart = html.indexOf("\u00c0 propos de cette offre") > -1
+    ? html.indexOf("\u00c0 propos de cette offre")
+    : html.indexOf("propos de cette offre");
+  if(descStart > -1){
+    const descEnd = html.indexOf("Offres similaires", descStart);
+    const rawDesc = html.substring(descStart, descEnd > -1 ? descEnd : descStart + 10000);
+    description = rawDesc.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 5000);
+  }
+}
+
+return {
+  address: address || "",
+  salary: salary || "",
+  description: description || "Descriptif non disponible.",
+  startDate: startDate || "",
+  applyBefore: applyBefore || ""
+};
 }catch(e){
 return {};
 }
