@@ -2785,10 +2785,12 @@ company: job.company?.name || "",
 location: place,
 address: address,
 sector: "",
-rate: job.employmentGrades &&
-job.employmentGrades[0] !== job.employmentGrades[1]
-? `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
-: "",
+rate: (()=>{
+  const g = job.employmentGrades || [];
+  if(g.length >= 2) return g[0] === g[1] ? `${g[0]}%` : `${g[0]}-${g[1]}%`;
+  if(g.length === 1) return `${g[0]}%`;
+  return "";
+})(),
 contract: contract,
 source: "Jobup",
 offerUrl: jobId
