@@ -2679,32 +2679,85 @@ let description = "";
 let startDate = "";
 let applyBefore = "";
 
-// Tentative 1 : extraire depuis __INIT__
-const initMatch = html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__|<\/script>)/);
-if(initMatch){
-  try{
-    const data = JSON.parse(initMatch[1]);
-    const job = data?.vacancy?.detail?.vacancy;
-    if(job){
-      const street = (job.street || "").trim();
-      const zipCode = (job.zipCode || "").trim();
-      const place = (job.place || "").trim();
+// Niveau 1 : extraire depuis JSON-LD (application/ld+json) — toujours présent
+try{
+  const ldMatches = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || [];
+  for(const ldScript of ldMatches){
+    const ldJson = ldScript.replace(/<script[^>]*>/, "").replace(/<\/script>/, "").trim();
+    const ld = JSON.parse(ldJson);
+    if(ld["@type"] === "JobPosting"){
+      // Adresse
+      const loc = ld.jobLocation?.address || {};
+      const street = (loc.streetAddress || "").trim();
+      const zip = (loc.postalCode || "").trim();
+      const city = (loc.addressRegion || "").trim();
       const parts = [];
-      if(street && street.toLowerCase() !== "null") parts.push(street);
-      const zipIsVaud = /^1\d{3}$/.test(zipCode);
-      if(zipIsVaud) parts.push(`${zipCode} ${place}`.trim());
-      else if(place && place.toLowerCase() !== "null") parts.push(place);
-      address = parts.filter(Boolean).join(", ");
+      if(street) parts.push(street);
+      if(zip && city) parts.push(`${zip} ${city}`);
+      else if(city) parts.push(city);
+      if(parts.length) address = parts.join(", ");
 
-      if(job.salary){
-        if(typeof job.salary === "object") salary = job.salary.text || job.salary.formatted || "";
-        else salary = String(job.salary);
-        if(salary && !salary.startsWith("CHF")) salary = `CHF ${salary}`;
-        if(salary.includes("[object")) salary = "";
+      // Date début
+      const rawStart = ld.jobStartDate || "";
+      if(rawStart){
+        const p = rawStart.split("T")[0].split("-");
+        if(p.length === 3) startDate = `${p[2]}.${p[1]}.${p[0]}`;
       }
-      description = job.description || job.lead || "";
-      startDate = job.startDate || "";
-      applyBefore = job.applicationDeadline ? job.applicationDeadline.split("T")[0] : "";
+
+      // Date limite postulation (publicationEndDate)
+      const rawEnd = ld.validThrough || "";
+      if(rawEnd){
+        const p = rawEnd.split("T")[0].split("-");
+        if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
+      }
+
+      // Description
+      if(ld.description){
+        description = ld.description.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().substring(0, 5000);
+      }
+      break;
+    }
+  }
+}catch(e){}
+
+// Niveau 2 : extraire depuis __REACT_QUERY_STATE__
+if(!address || !description){
+  try{
+    const rqMatch = html.match(/__REACT_QUERY_STATE__\s*=\s*([\s\S]*?);<\/script>/);
+    if(rqMatch){
+      const rq = JSON.parse(rqMatch[1]);
+      const queries = rq?.queries || [];
+      for(const q of queries){
+        const d = q?.state?.data;
+        if(!d) continue;
+        // Adresse depuis locations[]
+        if(!address && d.locations && d.locations.length > 0){
+          const loc = d.locations[0];
+          const s = (loc.street || "").trim();
+          const z = (loc.postalCode || "").trim();
+          const c = (loc.city || "").trim();
+          const parts = [];
+          if(s) parts.push(s);
+          if(z && c) parts.push(`${z} ${c}`);
+          else if(c) parts.push(c);
+          if(parts.length) address = parts.join(", ");
+        }
+        // Description depuis template.text
+        if(!description && d.template?.text){
+          description = d.template.text.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().substring(0,5000);
+        }
+        // Date début depuis contractStart
+        if(!startDate && d.contractStart){
+          const p = d.contractStart.split("T")[0].split("-");
+          if(p.length === 3) startDate = `${p[2]}.${p[1]}.${p[0]}`;
+        }
+        // Date limite depuis publicationEndDate
+        if(!applyBefore && d.publicationEndDate){
+          const p = d.publicationEndDate.split("T")[0].split("-");
+          if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
+        }
+        if(address && description) break;
+      }
     }
   }catch(e){}
 }
