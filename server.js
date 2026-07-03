@@ -2687,10 +2687,10 @@ try{
     const queries = rq?.queries || [];
     for(const q of queries){
       const d = q?.state?.data;
-      if(!d || !d.locations) continue;
+      if(!d) continue;
 
       // Adresse depuis locations[0]
-      if(d.locations.length > 0){
+      if(!address && d.locations && d.locations.length > 0){
         const loc = d.locations[0];
         const s = (loc.street || "").trim();
         const z = (loc.postalCode || "").trim();
@@ -2703,19 +2703,19 @@ try{
       }
 
       // Date limite postulation
-      if(d.publicationEndDate){
+      if(!applyBefore && d.publicationEndDate){
         const p = d.publicationEndDate.split("T")[0].split("-");
         if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
       }
 
       // Date entrée en fonction
-      if(d.contractStart){
+      if(!startDate && d.contractStart){
         const p = d.contractStart.split("T")[0].split("-");
         if(p.length === 3) startDate = `${p[2]}.${p[1]}.${p[0]}`;
       }
 
       // Description depuis template.text
-      if(d.template?.text){
+      if(!description && d.template?.text){
         let raw = d.template.text
           .replace(/<br\s*\/?>/gi, "\n")
           .replace(/<\/li>/gi, "\n")
@@ -2735,7 +2735,7 @@ try{
         description = raw.substring(0, 5000);
       }
 
-      if(address) break;
+      if(address && description && applyBefore) break;
     }
   }
 }catch(e){}
