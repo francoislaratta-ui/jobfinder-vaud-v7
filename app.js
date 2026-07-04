@@ -3780,7 +3780,19 @@ openTab("filters");
 // Scraping auto une seule fois par session
 if(!sessionStorage.getItem("scraping_done")){
 sessionStorage.setItem("scraping_done", "1");
+const refreshOffersBtn = document.getElementById("refreshOffersBtn");
+if(refreshOffersBtn){
+refreshOffersBtn.disabled = true;
+refreshOffersBtn.innerHTML = `🔄 Actualisation des offres...<br>⏳ Veuillez patienter...`;
+}
+try{
 await refreshOffers();
+}finally{
+if(refreshOffersBtn){
+refreshOffersBtn.disabled = false;
+refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
+}
+}
 }
 }
 
