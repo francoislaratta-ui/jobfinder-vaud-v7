@@ -1270,7 +1270,7 @@ if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
             const match = rateNorm.match(/(\d+)/g);
             if(!match) return false;
             const nums = match.map(Number);
-            return nums.some(n => Math.abs(n - tNum) <= 10);
+            return nums.some(n => Math.abs(n - tNum) <= 5);
         });
     });
 }
