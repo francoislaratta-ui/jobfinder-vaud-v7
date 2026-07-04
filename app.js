@@ -1881,19 +1881,48 @@ throw new Error("HTTP " + response.status);
 const data =
 await response.json();
 
+// Normalisation contrat
+const CONTRACT_FR_MAP = {
+"permanent":"CDI","unlimited":"CDI","durée indéterminée":"CDI","duree indeterminee":"CDI",
+"fixed-term":"CDD","temporaire":"CDD","temporary":"CDD","befristet":"CDD",
+"internship":"Stage","stage":"Stage","apprentissage":"Apprentissage","apprenticeship":"Apprentissage"
+};
+function normalizeContract(val){
+if(!val) return "";
+const low = val.toLowerCase().replace(/\s*(droit public|droit privé|de droit public|de droit privé).*/i,"").trim();
+return CONTRACT_FR_MAP[low] || val.replace(/\s*(droit public|droit privé|de droit public|de droit privé).*/i,"").trim();
+}
+
+// Formatage date avec texte libre conservé (ex: "01.08.2026 ou à convenir")
+function formatDateField(val){
+if(!val) return "";
+// Remplacer une date ISO ou jj/mm/aaaa en début de chaîne
+return val.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3.$2.$1")
+          .replace(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/, "$1.$2.$3");
+}
+
+// Validation applyBefore — rejeter si pas une date réelle
+function validApplyBefore(val){
+if(!val) return "";
+const clean = String(val).trim();
+// Doit contenir au moins DD.MM.YYYY ou YYYY-MM-DD
+if(/\d{1,2}[./]\d{1,2}[./]\d{4}/.test(clean) || /\d{4}-\d{2}-\d{2}/.test(clean)){
+  return formatDateField(clean);
+}
+return "";
+}
+
 return {
 ...offer,
 description: data.description || "Descriptif non disponible.",
 rate: data.rate || offer.rate || "",
-contract: offer.source === "Jobup"
-? (offer.contract || data.contract || "")
-: (data.contract || offer.contract || ""),
+contract: normalizeContract(data.contract) || offer.contract || "",
 address: data.address || offer.address || "",
-startDate: data.startDate || offer.startDate || "",
-applyBefore: data.applyBefore || offer.applyBefore || "",
+startDate: formatDateField(data.startDate || offer.startDate || ""),
+applyBefore: validApplyBefore(data.applyBefore || offer.applyBefore || ""),
 salaryGrade: data.salaryGrade || offer.salaryGrade || "",
 salary: data.salary || offer.salary || "",
-date: data.date || offer.date || ""
+date: formatDateField(data.date || offer.date || "")
 };
 
 }catch(error){
