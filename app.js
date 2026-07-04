@@ -994,6 +994,13 @@ applyFilters();
 
 openTab("filters");
 
+setTimeout(() => {
+const firstOffer = document.querySelector(".offer-card");
+if(firstOffer){
+firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+}, 300);
+
 }catch(error){
 
 console.error("Erreur actualisation manuelle :", error);
@@ -3814,6 +3821,12 @@ countdown3 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres
 }
 try{
 await refreshOffers();
+setTimeout(() => {
+const firstOffer = document.querySelector(".offer-card");
+if(firstOffer){
+firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+}, 300);
 }finally{
 if(refreshOffersBtn){
 clearInterval(countdown3);
