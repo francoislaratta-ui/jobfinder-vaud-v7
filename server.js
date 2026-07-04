@@ -1415,7 +1415,7 @@ const headers = isJobup ? {
 
 const response = await axios.get(url, {
 headers,
-timeout: 10000,
+timeout: 20000,
 maxRedirects: 5,
 responseType: "text",
 decompress: true
@@ -2874,7 +2874,9 @@ const address = addressParts.join(", ");
 
 const contractId = (job.employmentTypeIds || [])[0] || "";
 const contractRaw = CONTRACT_TYPE_MAP[contractId] || "";
-const contract = contractRaw.replace(/\s*(droit public|droit prive|de droit public|de droit prive).*/i, "").trim();
+const contractClean = contractRaw.replace(/\s*(droit public|droit prive|de droit public|de droit prive).*/i, "").trim();
+const CONTRACT_FR = {"permanent":"CDI","unlimited":"CDI","durée indéterminée":"CDI","fixed-term":"CDD","temporary":"Temporaire","internship":"Stage","apprenticeship":"Apprentissage"};
+const contract = CONTRACT_FR[contractClean.toLowerCase()] || contractClean;
 
 // Date publication
 const raw = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
@@ -2900,7 +2902,9 @@ const salaryRaw = job.salary || "";
 const salaryList = salaryRaw ? `CHF ${salaryRaw}` : "";
 
 // Enrichissement depuis page de detail
-const detail = jobId ? await enrichJobupOffer(jobId) : {};
+// Délai pour éviter blocage Jobup
+await new Promise(r => setTimeout(r, 500));
+const detail = jobId ? await enrichJobupOffer(jobId).catch(() => ({})) : {};
 
 offers.push({
 id: String(jobId || generateServerId()),
