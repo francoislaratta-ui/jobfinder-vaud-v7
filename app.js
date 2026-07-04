@@ -1161,6 +1161,12 @@ if(sortFilter){
 sortFilter.addEventListener("change", applyFilters);
 }
 
+document.querySelectorAll(
+'input[name="metiers"], input[name="secteurs"], input[name="taux"], input[name="contrats"], input[name="regions"], input[name="sources"], input[name="matches"]'
+).forEach(cb => {
+cb.addEventListener("change", applyFilters);
+});
+
 }
 
 /* ==========================================
