@@ -902,6 +902,32 @@ behavior: "smooth"
 }
 
 /* ==========================================
+COMPTE A REBOURS BOUTON RECHERCHE/REFRESH
+========================================== */
+
+function startCountdown(button, seconds, label){
+
+let remaining = seconds;
+
+button.innerHTML = `${label}<br>⏳ Environ ${remaining}s restantes...`;
+
+const interval = setInterval(() => {
+
+remaining--;
+
+if(remaining > 0){
+button.innerHTML = `${label}<br>⏳ Environ ${remaining}s restantes...`;
+}else{
+button.innerHTML = `${label}<br>⏳ Presque terminé...`;
+}
+
+}, 1000);
+
+return interval;
+
+}
+
+/* ==========================================
 INITIALISATION UI
 ========================================== */
 
@@ -928,7 +954,7 @@ const isFirst = !localStorage.getItem("jobfinder_filters");
 
 if(isFirst){
 refreshOffersBtn.disabled = true;
-refreshOffersBtn.innerHTML = `🔄 Chargement...<br>⏳ Veuillez patienter...`;
+const countdown1 = startCountdown(refreshOffersBtn, 21, "🔄 Chargement...");
 try{
 await loadOffers(true);
 const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:checked')].map(cb => cb.value);
@@ -943,6 +969,7 @@ firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 }, 300);
 }finally{
+clearInterval(countdown1);
 refreshOffersBtn.disabled = false;
 refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
 }
@@ -951,10 +978,7 @@ return;
 
 refreshOffersBtn.disabled = true;
 
-refreshOffersBtn.innerHTML = `
-🔄 Actualisation des offres...<br>
-⏳ Veuillez patienter...
-`;
+const countdown2 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres...");
 
 try{
 
@@ -975,6 +999,8 @@ openTab("filters");
 console.error("Erreur actualisation manuelle :", error);
 
 }finally{
+
+clearInterval(countdown2);
 
 refreshOffersBtn.disabled = false;
 
@@ -3781,14 +3807,16 @@ openTab("filters");
 if(!sessionStorage.getItem("scraping_done")){
 sessionStorage.setItem("scraping_done", "1");
 const refreshOffersBtn = document.getElementById("refreshOffersBtn");
+let countdown3 = null;
 if(refreshOffersBtn){
 refreshOffersBtn.disabled = true;
-refreshOffersBtn.innerHTML = `🔄 Actualisation des offres...<br>⏳ Veuillez patienter...`;
+countdown3 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres...");
 }
 try{
 await refreshOffers();
 }finally{
 if(refreshOffersBtn){
+clearInterval(countdown3);
 refreshOffersBtn.disabled = false;
 refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
 }
