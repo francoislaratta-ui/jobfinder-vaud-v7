@@ -2280,13 +2280,13 @@ ${offer.contract ? `
 
 ${offer.startDate ? `
 <div class="offer-meta">
-🗓️ Entrée : ${escapeHTML(offer.startDate)}
+🗓️ Entrée : ${escapeHTML(formatDate(offer.startDate))}
 </div>
 ` : ""}
 
 ${offer.applyBefore ? `
 <div class="offer-meta">
-⏳ Postuler avant : ${escapeHTML(offer.applyBefore)}
+⏳ Postuler avant : ${escapeHTML(formatDate(offer.applyBefore))}
 </div>
 ` : ""}
 
@@ -2307,7 +2307,7 @@ ${offer.salary ? `
 </div>
 
 <div class="offer-date">
-📅 Publié le : ${escapeHTML(offer.date)}
+📅 Publié le : ${escapeHTML(formatDate(offer.date))}
 </div>
 
 ${offer.offerUrl ? `
