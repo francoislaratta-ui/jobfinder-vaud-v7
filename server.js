@@ -2803,7 +2803,13 @@ const offers = [];
 
 try{
 
-for(const keyword of SEARCH_KEYWORDS){
+const JOBUP_BATCH_SIZE = 5;
+
+for(let batchStart = 0; batchStart < SEARCH_KEYWORDS.length; batchStart += JOBUP_BATCH_SIZE){
+
+const keywordBatch = SEARCH_KEYWORDS.slice(batchStart, batchStart + JOBUP_BATCH_SIZE);
+
+await Promise.all(keywordBatch.map(async (keyword) => {
 
 const encodedKeyword =
 encodeURIComponent(keyword);
@@ -2819,7 +2825,7 @@ html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__)/);
 
 if(!initMatch){
 console.log(`Jobup "${keyword}": __INIT__ non trouvé`);
-continue;
+return;
 }
 
 const data = JSON.parse(initMatch[1]);
@@ -2926,6 +2932,8 @@ salary: salaryList,
 });
 
 }
+
+}));
 
 }
 
