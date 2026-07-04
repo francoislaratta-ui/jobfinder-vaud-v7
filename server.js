@@ -2806,7 +2806,7 @@ const offers = [];
 
 try{
 
-const JOBUP_BATCH_SIZE = 1;
+const JOBUP_BATCH_SIZE = 5;
 
 for(let batchStart = 0; batchStart < SEARCH_KEYWORDS.length; batchStart += JOBUP_BATCH_SIZE){
 
