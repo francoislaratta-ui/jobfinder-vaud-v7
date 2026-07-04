@@ -2637,7 +2637,10 @@ const SEARCH_KEYWORDS = [
 "secrétaire médicale",
 "CFC employé de commerce",
 "secrétaire technique",
-"secrétaire de chantier"
+"secrétaire de chantier",
+"secrétaire facturation",
+"secrétaire scolaire",
+"secrétaire communale"
 ];
 
 const VAUD_REGIONS = [
