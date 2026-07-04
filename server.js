@@ -2902,8 +2902,6 @@ const salaryRaw = job.salary || "";
 const salaryList = salaryRaw ? `CHF ${salaryRaw}` : "";
 
 // Enrichissement depuis page de detail
-// Délai pour éviter blocage Jobup
-await new Promise(r => setTimeout(r, 500));
 const detail = jobId ? await enrichJobupOffer(jobId).catch(() => ({})) : {};
 
 offers.push({

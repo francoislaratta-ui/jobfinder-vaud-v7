@@ -3761,7 +3761,6 @@ const isFirstVisit = !hasAny;
 if(!isFirstVisit){
 restoreSavedFilters();
 openTab("filters");
-await loadOffers();
 }
 
 if(isFirstVisit){
