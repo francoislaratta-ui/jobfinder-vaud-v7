@@ -2901,15 +2901,12 @@ if(job.contractStart){
 const salaryRaw = job.salary || "";
 const salaryList = salaryRaw ? `CHF ${salaryRaw}` : "";
 
-// Enrichissement depuis page de detail
-const detail = jobId ? await enrichJobupOffer(jobId).catch(() => ({})) : {};
-
 offers.push({
 id: String(jobId || generateServerId()),
 title: job.title || "",
 company: job.company?.name || "",
 location: city || place,
-address: detail.address || address,
+address: address,
 sector: "",
 rate: job.employmentGrades
 ? job.employmentGrades[0] === job.employmentGrades[1]
@@ -2922,10 +2919,10 @@ offerUrl: jobId
 ? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
 : "",
 date: dateFormatted,
-startDate: detail.startDate || startDate,
-applyBefore: detail.applyBefore || applyBefore,
-description: detail.description || job.lead || "Descriptif non disponible.",
-salary: detail.salary || salaryList,
+startDate: startDate,
+applyBefore: applyBefore,
+description: job.lead || "",
+salary: salaryList,
 });
 
 }

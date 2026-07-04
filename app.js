@@ -3761,6 +3761,11 @@ const isFirstVisit = !hasAny;
 if(!isFirstVisit){
 restoreSavedFilters();
 openTab("filters");
+// Scraping auto une seule fois par session
+if(!sessionStorage.getItem("scraping_done")){
+sessionStorage.setItem("scraping_done", "1");
+await refreshOffers();
+}
 }
 
 if(isFirstVisit){
