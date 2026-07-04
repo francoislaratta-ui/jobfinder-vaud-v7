@@ -819,46 +819,35 @@ UTILITAIRES
 ========================================== */
 
 function formatDate(date){
-if(!date){
-return "";
-}
-
+if(!date) return "";
 try{
 const s = String(date).trim();
-
-// Déjà au format jj.mm.aaaa
-if(/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s)){
-return s;
-}
-
-// Format YYYY-MM-DD → jj.mm.aaaa
+// Déjà jj.mm.aaaa (avec ou sans texte après)
+if(/^\d{1,2}\.\d{1,2}\.\d{4}/.test(s)) return s;
+// YYYY-MM-DD (avec ou sans texte après)
 if(/^\d{4}-\d{2}-\d{2}/.test(s)){
-const p = s.substring(0, 10).split("-");
-return `${p[2]}.${p[1]}.${p[0]}`;
+  const p = s.substring(0,10).split("-");
+  const suffix = s.substring(10).trim();
+  return `${p[2]}.${p[1]}.${p[0]}` + (suffix ? " " + suffix : "");
 }
-
-// Format jj/mm/aaaa → jj.mm.aaaa
-if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){
-return s.replace(/\//g, ".");
+// jj/mm/aaaa (avec ou sans texte après)
+const m2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(.*)/);
+if(m2){
+  const suffix = m2[4].trim();
+  return `${m2[1].padStart(2,"0")}.${m2[2].padStart(2,"0")}.${m2[3]}` + (suffix ? " " + suffix : "");
 }
-
-// Date littérale française ex: "23 juin 2026"
-const mois = {
-"janvier":"01","février":"02","mars":"03","avril":"04",
-"mai":"05","juin":"06","juillet":"07","août":"08",
-"septembre":"09","octobre":"10","novembre":"11","décembre":"12"
-};
-const m = s.match(/^(\d{1,2})\s+([a-zéûô]+)\s+(\d{4})$/i);
+// Date littérale française "23 juin 2026 ou à convenir"
+const mois={"janvier":"01","février":"02","mars":"03","avril":"04","mai":"05","juin":"06","juillet":"07","août":"08","septembre":"09","octobre":"10","novembre":"11","décembre":"12"};
+const m = s.match(/^(\d{1,2})\s+([a-zéûô]+)\s+(\d{4})(.*)/i);
 if(m && mois[m[2].toLowerCase()]){
-return `${m[1].padStart(2,"0")}.${mois[m[2].toLowerCase()]}.${m[3]}`;
+  const suffix = m[4].trim();
+  return `${m[1].padStart(2,"0")}.${mois[m[2].toLowerCase()]}.${m[3]}` + (suffix ? " " + suffix : "");
 }
-
-// Fallback
-return new Date(date).toLocaleDateString("fr-CH");
+// Fallback — retourner tel quel sans new Date()
+return s;
 }catch(e){
 return String(date);
 }
-
 }
 
 function generateId(){
@@ -1922,7 +1911,7 @@ startDate: formatDateField(data.startDate || offer.startDate || ""),
 applyBefore: validApplyBefore(data.applyBefore || offer.applyBefore || ""),
 salaryGrade: data.salaryGrade || offer.salaryGrade || "",
 salary: data.salary || offer.salary || "",
-date: formatDateField(data.date || offer.date || "")
+date: offer.date || ""
 };
 
 }catch(error){
@@ -2307,7 +2296,7 @@ ${offer.contract ? `
 
 ${offer.startDate ? `
 <div class="offer-meta">
-🗓️ Entrée : ${escapeHTML(formatDate(offer.startDate))}
+🗓️ Entrée : ${escapeHTML(offer.startDate)}
 </div>
 ` : ""}
 
