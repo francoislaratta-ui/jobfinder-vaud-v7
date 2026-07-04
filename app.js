@@ -2380,19 +2380,15 @@ card.querySelector(".offer-description");
 
 favBtn?.addEventListener("click", () => addFavorite(offer));
 
-descriptionToggle?.addEventListener("click", () => {
-
+if(descriptionToggle && descriptionBlock){
+descriptionToggle.addEventListener("click", () => {
 descriptionBlock.classList.toggle("hidden");
-
-const isHidden =
-descriptionBlock.classList.contains("hidden");
-
-descriptionToggle.innerHTML =
-isHidden
+const isHidden = descriptionBlock.classList.contains("hidden");
+descriptionToggle.textContent = isHidden
 ? "▼ Voir le descriptif complet"
 : "▲ Masquer le descriptif";
-
 });
+}
 
 applyBtn?.addEventListener("click", () => addApplication(offer));
 

@@ -2704,8 +2704,11 @@ try{
 
       // Date limite postulation
       if(!applyBefore && d.publicationEndDate){
-        const p = d.publicationEndDate.split("T")[0].split("-");
-        if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
+        const rawEnd = String(d.publicationEndDate).split("T")[0];
+        const p = rawEnd.split("-");
+        if(p.length === 3 && p[0].length === 4 && parseInt(p[0]) >= 2020){
+          applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
+        }
       }
 
       // Date entrée en fonction
