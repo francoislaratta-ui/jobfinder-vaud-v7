@@ -1,3487 +1,3869 @@
-/* ==========================================
-JOB FINDER VAUD V14.6 PREMIUM IA
+/* =========== ===============================
+JOB FINDER VAUD V14.6.0 PREMIUM IA
 Créateur : F. Laratta
 ========================================== */
 
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const cors = require("cors");
-const https = require("https");
-const http = require("http");
-const axios = require("axios");
-
-const app = express();
-
-const PORT = process.env.PORT || 3000;
-
 /* ==========================================
-MIDDLEWARES
+STORAGE
 ========================================== */
 
-app.use(cors());
-app.use(express.json());
+const STORAGE_KEYS = {
+favorites: "jobfinder_favorites",
+applications: "jobfinder_applications",
+settings: "jobfinder_settings",
+stats: "jobfinder_stats",
+offers: "jobfinder_offers",
+letters: "jobfinder_letters",
+filters: "jobfinder_filters"
+};
 
 /* ==========================================
-FICHIERS
+CONFIGURATION
 ========================================== */
 
-const OFFERS_FILE = path.join(
-__dirname,
-"offers.json"
-);
+const APP_VERSION = "14.2.4";
 
-const FAVORITES_FILE = path.join(
-__dirname,
-"favorites.json"
-);
-
-const APPLICATIONS_FILE = path.join(
-__dirname,
-"candidatures.json"
-);
-
-const LETTERS_FILE = path.join(
-__dirname,
-"letters.json"
-);
+const WEEKLY_TARGET = 3;
+const MONTHLY_TARGET = 12;
 
 /* ==========================================
-LECTURE JSON
+SAFE HELPERS
 ========================================== */
 
-function readJson(file){
+function safeArray(arr){
+return Array.isArray(arr) ? arr : [];
+}
+
+function safeJSON(value, fallback){
+if(value === null || value === undefined){
+return fallback;
+}
 
 try{
-
-if(!fs.existsSync(file)){
-return [];
+return JSON.parse(value);
+}catch(e){
+return fallback;
+}
 }
 
-const data =
-fs.readFileSync(
-file,
-"utf8"
-);
-
-return JSON.parse(data);
-
-}
-catch(error){
-
-console.error(error);
-
-return [];
-
-}
-
-}
-
-/* ==========================================
-ECRITURE JSON
-========================================== */
-
-function writeJson(
-file,
-data
-){
-
+function getStorage(key, fallback = null){
 try{
-
-fs.writeFileSync(
-file,
-JSON.stringify(
-data,
-null,
-2
-),
-"utf8"
-);
-
-return true;
-
-}
-catch(error){
-
-console.error(error);
-
-return false;
-
+if(typeof localStorage === "undefined"){
+return fallback;
 }
 
-}
+const value = localStorage.getItem(key);
 
-/* ==========================================
-NETTOYAGE HTML DESCRIPTION
-========================================== */
-
-function cleanHtmlText(html){
-
-if(!html){
-return "";
-}
-
-return html
-.replace(/<script[\s\S]*?<\/script>/gi, " ")
-.replace(/<style[\s\S]*?<\/style>/gi, " ")
-.replace(/<nav[\s\S]*?<\/nav>/gi, " ")
-.replace(/<header[\s\S]*?<\/header>/gi, " ")
-.replace(/<footer[\s\S]*?<\/footer>/gi, " ")
-.replace(/<br\s*\/?>/gi, "\n")
-.replace(/<\/p>/gi, "\n")
-.replace(/<\/li>/gi, "\n")
-.replace(/<\/div>/gi, "\n")
-.replace(/<[^>]+>/g, " ")
-.replace(/&nbsp;/g, " ")
-.replace(/&amp;/g, "&")
-.replace(/&quot;/g, "\"")
-.replace(/&#39;/g, "'")
-.replace(/&#x27;/g, "'")
-.replace(/&#x2F;/g, "/")
-.replace(/&#x3A;/g, ":")
-.replace(/[ \t]+/g, " ")
-.replace(/\n[ \t]+/g, "\n")
-.replace(/\n{3,}/g, "\n\n")
-.trim();
-
-}
-
-function cleanHtmlTextJobup(html){
-
-if(!html){
-return "";
-}
-
-return html
-.replace(/<script[\s\S]*?<\/script>/gi, "")
-.replace(/<style[\s\S]*?<\/style>/gi, "")
-.replace(/<br\s*\/?>/gi, "\n")
-.replace(/<\/p>/gi, "\n")
-.replace(/<\/li>/gi, "\n")
-.replace(/<\/h[1-6]>/gi, "\n")
-.replace(/<\/div>/gi, "\n")
-.replace(/<[^>]+>/g, "")
-.replace(/&nbsp;/g, " ")
-.replace(/&amp;/g, "&")
-.replace(/&quot;/g, "\"")
-.replace(/&#39;/g, "'")
-.replace(/&#x27;/g, "'")
-.replace(/[ \t]+/g, " ")
-.replace(/\n[ \t]+/g, "\n")
-.replace(/\n{3,}/g, "\n\n")
-.trim();
-
-}
-
-function extractUsefulDescription(html){
-
-const text = cleanHtmlText(html);
-
-if(!text){
-return "";
-}
-
-// Détection État de Vaud
-const isEtatVaud =
-html.includes("offres-emploi.vd.ch") ||
-html.includes("Pourquoi rejoindre l") ||
-html.includes("POSTULER MAINTENANT");
-
-if(isEtatVaud){
-
-const sections = [
-"DESCRIPTION DE L'EMPLOI",
-"Description de l'emploi",
-"RESPONSABILITÉS",
-"Responsabilités",
-"QUALIFICATIONS",
-"Qualifications",
-"QUI SOMMES-NOUS",
-"Qui sommes-nous",
-"POURQUOI REJOINDRE",
-"Pourquoi rejoindre"
-];
-
-const fields = [
-{ label: "Taux d'activité", regex: /Taux d'activité\s*([^\n]{3,30})/i },
-{ label: "Type de contrat", regex: /Type de contrat\s*([^\n]{3,30})/i },
-{ label: "Date d'entrée", regex: /Date d'entr[ée]+e? en fonction\s*([^\n]{3,30})/i },
-{ label: "Postuler avant", regex: /Postuler avant\s*([^\n]{3,30})/i },
-{ label: "Classe salariale", regex: /Classe salariale\s*([^\n]{1,10})/i },
-{ label: "Adresse", regex: /Adresse\s*([\s\S]{10,120}?)(?=Date|Taux|Type|Classe|Postuler|$)/i }
-];
-
-let result = "";
-
-const structuredFields = fields
-.map(f => {
-const m = text.match(f.regex);
-return m ? `${f.label} : ${m[1].trim()}` : null;
-})
-.filter(Boolean)
-.join("\n");
-
-if(structuredFields){
-result += structuredFields + "\n\n";
-}
-
-let startIndex = -1;
-for(const section of sections){
-const index = text.toLowerCase().indexOf(section.toLowerCase());
-if(index !== -1){
-startIndex = index;
-break;
+return value === null ? fallback : value;
+}catch(e){
+return fallback;
 }
 }
 
-if(startIndex !== -1){
-let extracted = text.substring(startIndex, startIndex + 5000);
-
-const stopWords = [
-"Emplois similaires",
-"Offres similaires",
-"POSTULER MAINTENANT"
-];
-
-for(const stop of stopWords){
-const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
-if(idx > 200){
-extracted = extracted.substring(0, idx).trim();
-}
-}
-
-result += extracted;
-}
-
-return result.trim() || text.substring(0, 3500).trim();
-
-}
-
-// Détection Jobup
-const isJobup = html.includes("jobup.ch");
-
-if(isJobup){
-
-const jobupText = cleanHtmlTextJobup(html);
-
-// Supprimer le bloc navigation Jobup en début de texte
-const navStopWords = [
-"Aller directement au contenu",
-"Espace recruteurs",
-"Se connecter",
-"Choix de la langue"
-];
-
-let jobupClean = jobupText;
-for(const nav of navStopWords){
-const idx = jobupClean.indexOf(nav);
-if(idx !== -1 && idx < 500){
-const afterNav = jobupClean.indexOf("À propos de cette offre", idx);
-const afterNav2 = jobupClean.indexOf("A propos du rôle", idx);
-const afterNav3 = jobupClean.indexOf("Votre mission", idx);
-const afterNav4 = jobupClean.indexOf("Vos tâches", idx);
-const afterNav5 = jobupClean.indexOf("Tâches", idx);
-const afterNav6 = jobupClean.indexOf("Nous cherchons", idx);
-const cutStart = Math.min(
-...[afterNav, afterNav2, afterNav3, afterNav4, afterNav5, afterNav6].filter(i => i > 0)
-);
-if(cutStart > 0){
-jobupClean = jobupClean.substring(cutStart);
-}
-break;
-}
-}
-
-const jobupFields = [
-{ label: "Date de parution", regex: /(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i },
-{ label: "Taux", regex: /(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i },
-{ label: "Contrat", regex: /(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i },
-{ label: "Lieu de travail", regex: /Lieu de travail\s*[:\s]+([A-Za-zÀ-ÿ\s,.-]+?)(?=\n|$)/i },
-{ label: "Adresse", regex: /([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i },
-{ label: "Salaire", regex: /(CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/(?:an|mois))/i },
-{ label: "Entrée en service", regex: /Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i }
-];
-
-let jobupResult = "";
-
-jobupFields.forEach(f => {
-const m = jobupClean.match(f.regex);
-if(m) jobupResult += `${f.label} : ${(m[1] || m[0]).trim()}\n`;
-});
-
-if(jobupResult) jobupResult += "\n";
-
-const keywords = [
-"Votre mission",
-"Vos missions",
-"Vos tâches",
-"Vos responsabilités",
-"Votre profil",
-"Profil recherché",
-"Description du poste",
-"A propos du rôle",
-"À propos du rôle",
-"Tâches",
-"Nous cherchons"
-];
-
-let startIndex = -1;
-for(const keyword of keywords){
-const index = jobupClean.toLowerCase().indexOf(keyword.toLowerCase());
-if(index !== -1){ startIndex = index; break; }
-}
-
-let extracted = startIndex === -1
-? jobupClean.substring(0, 3500)
-: jobupClean.substring(startIndex, startIndex + 4500);
-
-// StopWords — texte parasite uniquement
-const stopWords = [
-"Autres recherches",
-"Offres similaires",
-"Emplois similaires",
-"Estimateur de salaire",
-"D'autres utilisateurs ont",
-"D'autres utilisateurs",
-"Afficher plus d'emplois",
-"Catégories :",
-"Date de publication"
-];
-
-for(const stop of stopWords){
-const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
-if(idx > 200) extracted = extracted.substring(0, idx).trim();
-}
-
-return (jobupResult + extracted).trim();
-}
-
-// Autres sources
-const keywords = [
-"Votre mission",
-"Vos missions",
-"Vos tâches",
-"Vos responsabilités",
-"Votre profil",
-"Profil recherché",
-"Description du poste",
-"Ce que vous faites",
-"Nous offrons",
-"Votre rôle"
-];
-
-let startIndex = -1;
-
-for(const keyword of keywords){
-const index = text.toLowerCase().indexOf(keyword.toLowerCase());
-if(index !== -1){
-startIndex = index;
-break;
-}
-}
-
-let result =
-startIndex === -1
-? text.substring(0, 3500)
-: text.substring(startIndex, startIndex + 4500);
-
-const stopWords = [
-"Autres recherches",
-"Catégories :",
-"Estimateur de salaire",
-"Offres similaires",
-"Emplois similaires"
-];
-
-for(const stopWord of stopWords){
-const index = result.toLowerCase().indexOf(stopWord.toLowerCase());
-if(index > 800){
-result = result.substring(0, index).trim();
-}
-}
-
-if(result.length < 300){
-return text.substring(0, 3500).trim();
-}
-
-return result.trim();
-
-}
-
-
-/* ==========================================
-API HEALTH
-========================================== */
-
-app.get(
-"/api/health",
-(req,res)=>{
-
-res.json({
-
-status:"OK",
-
-version:"14.3.1",
-
-application:
-"Job Finder Vaud",
-
-timestamp:
-new Date().toISOString()
-
-});
-
-}
-);
-
-
-/* ==========================================
-VALIDATION URL ANNONCE
-========================================== */
-
-function isGenericSourceUrl(url){
-
-if(!url){
-return true;
-}
-
-const cleanUrl =
-String(url).toLowerCase().trim().replace(/\/$/, "");
-
-const genericUrls = [
-"https://www.vd.ch",
-"http://www.vd.ch",
-"https://vd.ch",
-"http://vd.ch",
-
-"https://www.lausanne.ch",
-"http://www.lausanne.ch",
-"https://lausanne.ch",
-"http://lausanne.ch",
-
-"https://www.retraitespopulaires.ch",
-"http://www.retraitespopulaires.ch",
-"https://retraitespopulaires.ch",
-"http://retraitespopulaires.ch",
-
-"https://www.epfl.ch/fr",
-"https://www.epfl.ch",
-"http://www.epfl.ch",
-"https://epfl.ch",
-"http://epfl.ch",
-
-"https://www.migros.ch/fr",
-"https://www.migros.ch",
-"http://www.migros.ch",
-"https://migros.ch",
-"http://migros.ch",
-
-"https://www.chuv.ch/fr",
-"https://www.chuv.ch",
-"http://www.chuv.ch",
-"https://chuv.ch",
-"http://chuv.ch",
-
-"https://www.jobup.ch",
-"http://www.jobup.ch",
-"https://jobup.ch",
-"http://jobup.ch",
-
-"https://www.indeed.com",
-"http://www.indeed.com",
-"https://indeed.com",
-"http://indeed.com",
-
-"https://www.jobscout24.ch",
-"http://www.jobscout24.ch",
-"https://jobscout24.ch",
-"http://jobscout24.ch",
-
-"https://www.linkedin.com",
-"http://www.linkedin.com",
-"https://linkedin.com",
-"http://linkedin.com"
-];
-
-return genericUrls.includes(cleanUrl);
-
-}
-
-function isRealOfferUrl(url){
-
-if(!url){
+function setStorage(key, value){
+try{
+if(typeof localStorage === "undefined"){
 return false;
 }
 
-const value =
-String(url).toLowerCase().trim();
+localStorage.setItem(
+key,
+JSON.stringify(value)
+);
 
-if(isGenericSourceUrl(value)){
+return true;
+}catch(e){
+console.error("Erreur stockage :", e);
 return false;
 }
-
-/* JOBUP */
-if(value.includes("jobup.ch") &&
-(value.includes("/emplois/detail/") ||
-value.includes("/jobs/detail/"))){
-return true;
 }
 
-/* INDEED */
-if(value.includes("indeed.") &&
-(value.includes("/viewjob") ||
-value.includes("jk="))){
-return true;
+function safeGetValue(element){
+return element ? element.value : "";
 }
 
-/* JOBSCOUT24 */
-if(value.includes("jobscout24.ch") &&
-(value.includes("/job/") ||
-value.includes("/jobs/") ||
-value.includes("/detail/"))){
-return true;
-}
-
-/* LINKEDIN */
-if(value.includes("linkedin.com") &&
-(value.includes("/jobs/view/") ||
-value.includes("currentjobid="))){
-return true;
-}
-
-/* VD.CH */
-if(value.includes("vd.ch") &&
-(value.includes("/offres-demploi/") ||
-value.includes("/emploi/") ||
-value.includes("/jobs/") ||
-value.includes("jobid=") ||
-value.includes("offre="))){
-return true;
-}
-
-/* LAUSANNE.CH */
-if(value.includes("lausanne.ch") &&
-(value.includes("/emploi/") ||
-value.includes("/offres-demploi/") ||
-value.includes("/postes-vacants/") ||
-value.includes("/jobs/"))){
-return true;
-}
-
-/* RETRAITES POPULAIRES */
-if(value.includes("retraitespopulaires.ch") &&
-(value.includes("/emploi/") ||
-value.includes("/carrieres/") ||
-value.includes("/offres-demploi/") ||
-value.includes("/jobs/"))){
-return true;
-}
-
-/* EPFL */
-if(value.includes("epfl.ch") &&
-(value.includes("/about/working/") ||
-value.includes("/careers/") ||
-value.includes("/jobs/") ||
-value.includes("/emploi/") ||
-value.includes("jobid="))){
-return true;
-}
-
-/* MIGROS */
-if(value.includes("migros.ch") &&
-(value.includes("/jobs/") ||
-value.includes("/career/") ||
-value.includes("/carriere/") ||
-value.includes("/emploi/") ||
-value.includes("jobid="))){
-return true;
-}
-
-/* CHUV */
-if(value.includes("chuv.ch") &&
-(value.includes("/emploi/") ||
-value.includes("/jobs/") ||
-value.includes("/carrieres/") ||
-value.includes("/offres-demploi/") ||
-value.includes("jobid="))){
-return true;
-}
-
-return false;
-}
-
-/* ==========================================
-DETECTION SOURCE EMPLOYEUR
-========================================== */
-
-function getEmployerSource(url){
-
-if(!url){
-return "";
-}
-
-const value =
-String(url).toLowerCase();
-
-if(value.includes("vd.ch")){
-return "vd";
-}
-
-if(value.includes("lausanne.ch")){
-return "lausanne";
-}
-
-if(value.includes("retraitespopulaires.ch")){
-return "retraitespopulaires";
-}
-
-if(value.includes("epfl.ch")){
-return "epfl";
-}
-
-if(value.includes("migros.ch")){
-return "migros";
-}
-
-if(value.includes("chuv.ch")){
-return "chuv";
-}
-
-if(value.includes("jobup.ch")){
-return "jobup";
-}
-
-if(value.includes("indeed")){
-return "indeed";
-}
-
-if(value.includes("jobscout24")){
-return "jobscout24";
-}
-
-if(value.includes("linkedin")){
-return "linkedin";
-}
-
-return "";
-
-}
-
-/* ==========================================
-API VALIDATION URL ANNONCE
-========================================== */
-
-app.get(
-"/api/validate-offer-url",
-(req,res)=>{
-
-try{
-
-const url =
-req.query.url || "";
-
-res.json({
-
-success:true,
-
-url,
-
-isGeneric:
-isGenericSourceUrl(url),
-
-isRealOffer:
-isRealOfferUrl(url),
-
-source:
-getEmployerSource(url)
-
-});
-
-}catch(error){
-
-res.status(500).json({
-
-success:false,
-
-message:"Erreur validate-offer-url",
-
-error:error.message
-
-});
-
-}
-
-}
-);
-
-
-
-
-/* ==========================================
-API FAVORIS
-========================================== */
-
-app.get(
-"/api/favorites",
-(req,res)=>{
-
-const favorites =
-readJson(
-FAVORITES_FILE
-);
-
-res.json(
-favorites
-);
-
-}
-);
-
-app.post(
-"/api/favorites",
-(req,res)=>{
-
-const favorites =
-readJson(
-FAVORITES_FILE
-);
-
-favorites.push(
-req.body
-);
-
-writeJson(
-FAVORITES_FILE,
-favorites
-);
-
-res.json({
-
-success:true,
-
-message:
-"Favori ajouté"
-
-});
-
-}
-);
-
-app.delete(
-"/api/favorites/:id",
-(req,res)=>{
-
-let favorites =
-readJson(
-FAVORITES_FILE
-);
-
-favorites =
-favorites.filter(
-item =>
-item.id !== req.params.id
-);
-
-writeJson(
-FAVORITES_FILE,
-favorites
-);
-
-res.json({
-
-success:true,
-
-message:
-"Favori supprimé"
-
-});
-
-}
-);
-
-/* ==========================================
-API CANDIDATURES
-========================================== */
-
-app.get(
-"/api/candidatures",
-(req,res)=>{
-
-const candidatures =
-readJson(
-APPLICATIONS_FILE
-);
-
-res.json(
-candidatures
-);
-
-}
-);
-
-app.post(
-"/api/candidatures",
-(req,res)=>{
-
-const candidatures =
-readJson(
-APPLICATIONS_FILE
-);
-
-candidatures.push(
-req.body
-);
-
-writeJson(
-APPLICATIONS_FILE,
-candidatures
-);
-
-res.json({
-
-success:true,
-
-message:
-"Candidature ajoutée"
-
-});
-
-}
-);
-
-
-
-/* ==========================================
-API EXTRACTION DESCRIPTION URL
-========================================== */
-app.post(
-"/api/extract-description",
-async (req,res)=>{
-
-try{
-
-const url = req.body?.url;
-
-if(!url){
-return res.status(400).json({
-success:false,
-description:"",
-message:"URL manquante"
-});
-}
-
-// Détection État de Vaud (Oracle HCM)
-const etatVaudMatch = url.match(/#fr\/sites\/CX_1\/job\/(\d+)/);
-const jobId = etatVaudMatch ? etatVaudMatch[1] : req.body?.id;
-
-if(jobId && (url.includes("offres-emploi.vd.ch") || req.body?.source === "État de Vaud")){
-
-const apiUrl = `https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?expand=all&onlyData=true&finder=ById;Id=%22${jobId}%22,siteNumber=CX_1`;
-
-const axios = require("axios");
-
-const response = await axios.get(apiUrl, {
-headers:{
-"Accept": "application/json",
-"Accept-Language": "fr"
-},
-timeout: 10000
-});
-
-const items = response.data?.items;
-if(!items || items.length === 0){
-return res.json({ success:false, description:"Descriptif non disponible." });
-}
-
-const job = items[0];
-
-const stripHtml = s => s ? s
-.replace(/<[^>]+>/g," ")
-.replace(/&nbsp;/g," ")
-.replace(/&amp;/g,"&")
-.replace(/&quot;/g,"\"")
-.replace(/&#39;/g,"'")
-.replace(/&eacute;/g,"é")
-.replace(/&egrave;/g,"è")
-.replace(/&agrave;/g,"à")
-.replace(/&ccedil;/g,"ç")
-.replace(/&\w+;/g," ")
-.replace(/\s+/g," ")
-.trim() : "";
-
-const description = job.ExternalDescriptionStr || "";
-const responsibilities = job.ExternalResponsibilitiesStr || "";
-const qualifications = job.ExternalQualificationsStr || "";
-const whoWeAre = job.OrganizationDescriptionStr || "";
-const whyJoin = job.CorporateDescriptionStr || "";
-
-const flexFields = job.requisitionFlexFields || [];
-const getField = label => (flexFields.find(f => f.Prompt === label)?.Value || "");
-
-const workRate = getField("Taux d'activité");
-const salaryGrade = getField("Classe salariale");
-const startDate = getField("Date d'entrée en fonction");
-const contractType = getField("Type de contrat");
-const applyBefore = job.ExternalPostedEndDate || "";
-const applyBeforeFormatted = applyBefore ? new Date(applyBefore).toLocaleDateString("fr-CH") : "";
-
-// Adresse Oracle HCM — chaque ligne séparée par \n
-const rawAddress = getField("Adresse");
-const address = rawAddress
-.split(/\n/)
-.map(l => l.trim())
-.filter(Boolean)
-.join("\n");
-
-let result = "";
-if(workRate) result += `Taux d'activité : ${workRate}\n`;
-if(contractType) result += `Type de contrat : ${contractType}\n`;
-if(salaryGrade) result += `Classe salariale : ${salaryGrade}\n`;
-if(startDate) result += `Date d'entrée : ${startDate}\n`;
-if(applyBeforeFormatted) result += `Postuler avant : ${applyBeforeFormatted}\n`;
-if(address) result += `Adresse :\n${address}\n`;
-if(result) result += "\n";
-if(description) result += `DESCRIPTION DE L'EMPLOI\n${stripHtml(description)}\n\n`;
-if(responsibilities) result += `RESPONSABILITÉS\n${stripHtml(responsibilities)}\n\n`;
-if(qualifications) result += `QUALIFICATIONS\n${stripHtml(qualifications)}\n\n`;
-if(whoWeAre) result += `QUI SOMMES-NOUS?\n${stripHtml(whoWeAre)}\n\n`;
-if(whyJoin) result += `POURQUOI REJOINDRE L'ÉTAT DE VAUD?\n${stripHtml(whyJoin)}\n\n`;
-
-return res.json({
-success: true,
-url,
-description: result.trim() || "Descriptif non disponible.",
-rate: workRate,
-contract: contractType,
-address: address,
-startDate: startDate,
-applyBefore: applyBeforeFormatted,
-salaryGrade: salaryGrade
-});
-
-}
-
-// Autres sources — extraction HTML classique
-const client = url.startsWith("https") ? https : http;
-
-client.get(url,(response)=>{
-
-let html = "";
-response.on("data", chunk => { html += chunk; });
-response.on("end", ()=>{
-
-try{
-const description = extractUsefulDescription(html);
-
-// Extraction champs séparés pour Jobup
-let rate = "";
-let contract = "";
-let address = "";
-let salary = "";
-let date = "";
-let applyBefore = "";
-let startDate = "";
-
-if(url.includes("jobup.ch")){
-const jobupText = cleanHtmlTextJobup(html);
-
-const rateMatch = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
-if(rateMatch) rate = rateMatch[1].trim();
-
-const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
-if(contractMatch) contract = contractMatch[1].trim();
-
-// Adresse — uniquement si bloc "Adresse" propre trouvé avec NPA
-const addressBlockMatch = jobupText.match(/Adresse\s*\n([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories|D'autres utilisateurs)/i);
-if(addressBlockMatch){
-const lines = addressBlockMatch[1]
-.split("\n")
-.map(l => l.trim())
-.filter(Boolean)
-.filter(l => l.length < 80); // évite les longues phrases parasites
-// Garde uniquement les lignes qui ressemblent à une adresse
-const addressLines = lines.filter(l =>
-/\d{4}/.test(l) || // NPA
-/^[A-ZÀ-Ÿa-zà-ÿ\s,.-]{3,50}$/.test(l) // texte court = rue ou lieu
-);
-if(addressLines.length > 0){
-address = addressLines.join("\n");
+function safeSetText(element, text){
+if(element){
+element.textContent = text;
 }
 }
 
-// Estimation salariale Jobup
-const salaryMatchRaw = html.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
-const salaryMatchText = jobupText.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
-const salaryFound = salaryMatchRaw || salaryMatchText;
-if(salaryFound) salary = salaryFound[0].replace(/\s+/g," ").trim();
-
-const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
-if(dateMatch) date = dateMatch[1].trim();
-
-// Date postulation — exige format complet DD.MM.YYYY ou DD/MM/YYYY
-const applyBeforeMatch = jobupText.match(
-/(?:Postuler avant|jusqu.au|délai)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4})/i
-);
-if(applyBeforeMatch && /^\d{1,2}[./]\d{1,2}[./]\d{4}$/.test(applyBeforeMatch[1].trim())){
-  applyBefore = applyBeforeMatch[1].trim();
+function safeSetHTML(element, html){
+if(element){
+element.innerHTML = html;
+}
 }
 
-const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n]{3,60})/i);
-if(startDateMatch) startDate = startDateMatch[1].trim();
+function escapeHTML(value){
+return String(value || "")
+.replace(/&/g, "&amp;")
+.replace(/</g, "&lt;")
+.replace(/>/g, "&gt;")
+.replace(/"/g, "&quot;")
+.replace(/'/g, "&#039;");
 }
 
-res.json({
-success:true,
-url,
-description: description || "Descriptif non disponible.",
-rate,
-contract,
-address,
-salary,
-date,
-applyBefore,
-startDate
-});
-}catch(error){
-console.error("Erreur analyse HTML :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur analyse HTML" });
-}
-
-});
-
-}).on("error",(error)=>{
-console.error("Erreur téléchargement :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur téléchargement page" });
-});
-
-}
-catch(error){
-console.error("Erreur extraction description :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur extraction description" });
-}
-
-}
-);
-
-
-/* ==========================================
-API OFFRES
-========================================== */
-
-app.get(
-"/api/offers",
-(req,res)=>{
-
-const offers =
-readJson(
-OFFERS_FILE
-);
-
-res.json(
-offers
-);
-
-}
-);
-
-app.delete("/api/offers/cache", (req,res)=>{
-writeJson(OFFERS_FILE, []);
-res.json({ success:true, message:"Cache vidé" });
-});
-
-/* ==========================================
-API LETTRES
-========================================== */
-
-app.get(
-"/api/letters",
-(req,res)=>{
-
-const letters =
-readJson(
-LETTERS_FILE
-);
-
-res.json(
-letters
-);
-
-}
-);
-
-app.post(
-"/api/letters",
-(req,res)=>{
-
-const letters =
-readJson(
-LETTERS_FILE
-);
-
-letters.push(
-req.body
-);
-
-writeJson(
-LETTERS_FILE,
-letters
-);
-
-res.json({
-
-success:true,
-
-message:
-"Lettre sauvegardée"
-
-});
-
-}
-);
-
-app.delete(
-"/api/letters/:id",
-(req,res)=>{
-
-let letters =
-readJson(
-LETTERS_FILE
-);
-
-letters =
-letters.filter(
-item =>
-item.id !== req.params.id
-);
-
-writeJson(
-LETTERS_FILE,
-letters
-);
-
-res.json({
-
-success:true,
-
-message:
-"Lettre supprimée"
-
-});
-
-}
-);
-
-/* ==========================================
-API STATISTIQUES
-========================================== */
-
-app.get(
-"/api/stats",
-(req,res)=>{
-
-const offers =
-readJson(
-OFFERS_FILE
-);
-
-const favorites =
-readJson(
-FAVORITES_FILE
-);
-
-const candidatures =
-readJson(
-APPLICATIONS_FILE
-);
-
-const letters =
-readJson(
-LETTERS_FILE
-);
-
-const sent =
-candidatures.filter(
-item =>
-item.status === "Envoyée"
-).length;
-
-const responses =
-candidatures.filter(
-item =>
-item.status === "Réponse"
-).length;
-
-const interviews =
-candidatures.filter(
-item =>
-item.status === "Entretien"
-).length;
-
-const hired =
-candidatures.filter(
-item =>
-item.status === "Embauche"
-).length;
-
-res.json({
-
-offers:
-offers.length,
-
-favorites:
-favorites.length,
-
-applications:
-candidatures.length,
-
-letters:
-letters.length,
-
-sent,
-
-responses,
-
-interviews,
-
-hired,
-
-responseRate:
-candidatures.length
-? Math.round(
-(responses /
-candidatures.length)
-
-* 100
-  )
-  : 0,
-
-interviewRate:
-candidatures.length
-? Math.round(
-(interviews /
-candidatures.length)
-
-* 100
-  )
-  : 0,
-
-successRate:
-candidatures.length
-? Math.round(
-(hired /
-candidatures.length)
-
-* 100
-  )
-  : 0
-
-});
-
-}
-);
-
-/* ==========================================
-API RESET
-========================================== */
-
-app.post(
-"/api/reset",
-(req,res)=>{
-
-writeJson(
-FAVORITES_FILE,
-[]
-);
-
-writeJson(
-APPLICATIONS_FILE,
-[]
-);
-
-writeJson(
-LETTERS_FILE,
-[]
-);
-
-res.json({
-
-success:true,
-
-message:
-"Application réinitialisée"
-
-});
-
-}
-);
-
-/* ==========================================
-ROUTE PRINCIPALE
-========================================== */
-
-app.use(express.static(path.join(__dirname)));
-
-app.get(
-"/",
-(req,res)=>{
-
-res.sendFile(
-path.join(
-__dirname,
-"index.html"
-)
-);
-
-}
-);
-
-
-
-/* ==========================================
-OUTILS DECOUVERTE URL REELLE
-========================================== */
-
-function normalizeDiscoveryText(value){
-
+function normalizeText(value){
 return String(value || "")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "")
-.replace(/[^a-z0-9]+/g, " ")
+.replace(/[-–—·•·]/g, " ")
+.replace(/[()\/«»"']/g, " ")
+.replace(/\./g, " ")
+.replace(/\s+/g, " ")
 .trim();
-
 }
 
-function scoreDiscoveryMatch(title, text){
+function containsNormalized(source, search){
+const s = normalizeText(source);
+const q = normalizeText(search);
 
-const cleanTitle =
-normalizeDiscoveryText(title);
+if(!s || !q) return false;
 
-const cleanText =
-normalizeDiscoveryText(text);
+if(s.includes(q)) return true;
 
-if(!cleanTitle || !cleanText){
-return 0;
-}
-
-const words =
-cleanTitle
-.split(" ")
-.filter(word => word.length >= 4);
-
-if(words.length === 0){
-return 0;
-}
-
-let hits = 0;
-
-for(const word of words){
-
-if(cleanText.includes(word)){
-hits++;
-}
-
-}
-
-return hits / words.length;
-
-}
-
-async function fetchExternalText(url){
-
-const isJobup = url.includes("jobup.ch");
-const isJobScout = url.includes("jobscout24.ch");
-
-const headers = isJobup ? {
-"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-"Accept-Language":"fr-CH,fr;q=0.9",
-"Referer":"https://www.jobup.ch/fr/emplois/",
-"Origin":"https://www.jobup.ch"
-} : isJobScout ? {
-"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-"Accept-Language":"fr-CH,fr;q=0.9",
-"Referer":"https://www.jobscout24.ch/fr/jobs/",
-"Origin":"https://www.jobscout24.ch"
-} : {
-"User-Agent":"Mozilla/5.0 JobFinderVaud/14.5",
-"Accept":"application/json,text/html,application/xhtml+xml,*/*",
-"Accept-Language":"fr",
-"Origin":"https://offres-emploi.vd.ch",
-"Referer":"https://offres-emploi.vd.ch/",
-"ora-irc-language":"fr"
-};
-
-const response = await axios.get(url, {
-headers,
-timeout: 20000,
-maxRedirects: 5,
-responseType: "text",
-decompress: true
-});
-
-return response.data;
-
-}
-
-function extractLinksFromHtml(html, baseUrl){
-
-const links = [];
-
-const regex =
-/href=["']([^"']+)["']/gi;
-
-let match;
-
-while((match = regex.exec(html)) !== null){
-
-try{
-
-const absoluteUrl =
-new URL(match[1], baseUrl).href;
-
-links.push(absoluteUrl);
-
-}catch(error){
-
-}
-
-}
-
-return [...new Set(links)];
-
+const words = q.split(" ").filter(w => w.length > 3);
+return words.every(w => s.includes(w));
 }
 
 /* ==========================================
-DECOUVERTE URL REELLE ANNONCE V14.3.2
-Recherche ciblée title + company + location
+ETAT APPLICATION
 ========================================== */
 
-function isBadDiscoveryUrlV1433(url){
-
-const value =
-String(url || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-const blockedPatterns = [
-"arc-emploi",
-"arc emploi",
-"programme-demploi",
-"programme-emploi",
-"programme emploi",
-"emploi-temporaire",
-"emploi temporaire",
-"mesure",
-"insertion",
-"reinsertion",
-"apprentissage",
-"apprenti",
-"places-dapprentissage",
-"stage",
-"stagiaire",
-"formation",
-"ecole",
-"ecoles",
-"campus",
-"newsletter",
-"agenda",
-"actualite",
-"actualites",
-"communique",
-"media",
-"medias",
-"portrait",
-"temoignage",
-"benevolat"
-];
-
-return blockedPatterns.some(pattern =>
-value.includes(pattern)
-);
-
-}
-
-
-function scoreDiscoveryUrlV1433(url, offer){
-
-const value =
-String(url || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-if(isBadDiscoveryUrlV1433(url)){
-return 0;
-}
-
-let score =
-scoreDiscoveryMatch(
-`${offer.title || ""} ${offer.company || ""} ${offer.location || ""}`,
-url
-);
-
-if(value.includes("job") || value.includes("jobs")){
-score += 0.25;
-}
-
-if(value.includes("emploi") || value.includes("emplois")){
-score += 0.2;
-}
-
-if(value.includes("offre") || value.includes("offres")){
-score += 0.25;
-}
-
-if(value.includes("poste") || value.includes("postes")){
-score += 0.2;
-}
-
-if(value.includes("recrutement")){
-score += 0.2;
-}
-
-if(value.includes("career") || value.includes("carriere")){
-score += 0.15;
-}
-
-if(value.includes("postuler") || value.includes("apply")){
-score += 0.25;
-}
-
-return Math.max(0,score);
-
-}
-
-
-/* ==========================================
-DECOUVERTE URL REELLE ANNONCE V14.4
-Recherche précise + fallback carrière fiable
-========================================== */
-
-function getDiscoverySearchPages(domain){
-
-const searchPagesMap = {
-"vd.ch":[
-"https://offres-emploi.vd.ch/#fr/sites/CX_1"
-],
-"lausanne.ch":[
-"https://www.lausanne.ch/portrait/travailler-pour-la-ville/offres-emploi.html"
-],
-"chuv.ch":[
-"https://www.chuv.ch/fr/chuv-home/carrieres/emplois"
-],
-"epfl.ch":[
-"https://www.epfl.ch/about/working/fr/offres-emploi/"
-],
-"migros.ch":[
-"https://jobs.migros.ch/fr"
-],
-"retraitespopulaires.ch":[
-"https://www.retraitespopulaires.ch/emploi"
-],
-"jobup.ch":[
-"https://www.jobup.ch/fr/emploi/"
-],
-"indeed.com":[
-"https://ch.indeed.com/jobs"
-],
-"jobscout24.ch":[
-"https://www.jobscout24.ch/fr/jobs/"
-],
-"linkedin.com":[
-"https://www.linkedin.com/jobs/"
-]
-};
-
-return searchPagesMap[domain] || [];
-
-}
-
-function getDiscoveryFallbackUrl(domain){
-
-const pages =
-getDiscoverySearchPages(domain);
-
-return pages[0] || "";
-
-}
-
-function isBadDiscoveryUrl(url){
-
-const value =
-String(url || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-const blockedPatterns = [
-"arc-emploi",
-"arc emploi",
-"programme-demploi",
-"programme-emploi",
-"programme emploi",
-"emploi-temporaire",
-"emploi temporaire",
-"mesure",
-"mesures",
-"insertion",
-"reinsertion",
-"apprentissage",
-"apprenti",
-"places-dapprentissage",
-"stage",
-"stagiaire",
-"formation",
-"ecole",
-"ecoles",
-"campus",
-"newsletter",
-"agenda",
-"actualite",
-"actualites",
-"communique",
-"media",
-"medias",
-"portrait",
-"temoignage",
-"benevolat",
-"login",
-"connexion"
-];
-
-return blockedPatterns.some(pattern =>
-value.includes(pattern)
-);
-
-}
-
-function scoreDiscoveryUrlV144(url, offer){
-
-const title =
-String(offer.title || "").toLowerCase();
-
-const company =
-String(offer.company || "").toLowerCase();
-
-const location =
-String(offer.location || "").toLowerCase();
-
-const value =
-String(url || "").toLowerCase();
-
-if(isBadDiscoveryUrl(value)){
-return 0;
-}
-
-let score = 0;
-
-/* TITRE */
-
-const titleWords =
-title
-.split(/\s+/)
-.filter(word => word.length >= 4);
-
-let titleMatches = 0;
-
-titleWords.forEach(word => {
-if(value.includes(word)){
-titleMatches++;
-}
-});
-
-if(titleWords.length){
-score += Math.min(
-0.50,
-(titleMatches / titleWords.length) * 0.50
-);
-}
-
-/* ENTREPRISE */
-
-const companyWords =
-company
-.split(/\s+/)
-.filter(word => word.length >= 3);
-
-let companyMatches = 0;
-
-companyWords.forEach(word => {
-if(value.includes(word)){
-companyMatches++;
-}
-});
-
-if(companyWords.length){
-score += Math.min(
-0.20,
-(companyMatches / companyWords.length) * 0.20
-);
-}
-
-/* LOCALISATION */
-
-if(location && value.includes(location)){
-score += 0.15;
-}
-
-/* MOTS POSITIFS */
-
-if(value.includes("offre")){
-score += 0.15;
-}
-
-if(value.includes("emploi")){
-score += 0.10;
-}
-
-if(value.includes("job")){
-score += 0.10;
-}
-
-if(value.includes("poste")){
-score += 0.10;
-}
-
-if(value.includes("recrutement")){
-score += 0.10;
-}
-
-if(value.includes("postuler")){
-score += 0.10;
-}
-
-if(value.includes("apply")){
-score += 0.10;
-}
-
-/* PENALITES PAGES GENERIQUES */
-
-if(value.includes("carriere")){
-score -= 0.10;
-}
-
-if(value.includes("career")){
-score -= 0.10;
-}
-
-if(value.includes("etat-employeur")){
-score -= 0.30;
-}
-
-if(value.includes("travailler-pour")){
-score -= 0.20;
-}
-
-if(value.includes("ressources-humaines")){
-score -= 0.20;
-}
-
-if(isGenericSourceUrl(value)){
-score -= 0.30;
-}
-
-return Math.max(0, Number(score.toFixed(2)));
-
-}
-
-async function discoverGenericOfferUrl(offer, domain){
-
-const searchPages =
-getDiscoverySearchPages(domain);
-
-const fallbackUrl =
-getDiscoveryFallbackUrl(domain);
-
-const isVd =
-domain === "vd.ch";
-
-const allowedDomains =
-isVd
-? [
-"vd.ch",
-"offres-emploi.vd.ch",
-"oraclecloud.com",
-"oraclecloud.eu"
-]
-: [domain];
-
-let bestUrl = "";
-let bestScore = 0;
-
-function extractExtraUrlsFromHtml(html, baseUrl){
-
-const results = [];
-
-const raw =
-String(html || "");
-
-const absoluteMatches =
-raw.match(/https?:\/\/[^"' <>()\\]+/g) || [];
-
-for(const url of absoluteMatches){
-results.push(url);
-}
-
-const relativeMatches =
-raw.match(/["'](\/[^"']+)["']/g) || [];
-
-for(const item of relativeMatches){
-
-try{
-
-const clean =
-item.replace(/^["']|["']$/g,"");
-
-const absolute =
-new URL(clean, baseUrl).href;
-
-results.push(absolute);
-
-}catch(error){}
-
-}
-
-return [...new Set(results)];
-
-}
-
-for(const pageUrl of searchPages){
-
-try{
-
-const html =
-await fetchExternalText(pageUrl);
-
-console.log("V14.4.3 SEARCH PAGE:", pageUrl);
-console.log("V14.4.3 HTML LENGTH:", html ? html.length : 0);
-
-const directMatches =
-String(html || "")
-.match(/detail-offre-emploi\/pj[0-9]+\.html/g) || [];
-
-const directLinks =
-directMatches.map(path =>
-new URL(path, pageUrl).href
-);
-
-const links =
-[
-...extractLinksFromHtml(html, pageUrl),
-...extractExtraUrlsFromHtml(html, pageUrl),
-...directLinks
-];
-
-const uniqueLinks =
-[...new Set(links)];
-
-console.log(
-"V14.5 DIRECT LAUSANNE LINKS:",
-directLinks.length
-);
-
-console.log("V14.4.3 LINKS FOUND:", uniqueLinks.length);
-console.log("V14.4.3 FIRST LINKS:", uniqueLinks.slice(0,10));
-
-const candidateLinks =
-uniqueLinks.filter(link => {
-
-const value =
-String(link || "").toLowerCase();
-
-const blockedTechnicalLinks = [
-".css",
-".js",
-".png",
-".jpg",
-".jpeg",
-".svg",
-".ico",
-".webmanifest",
-"favicon",
-"typo3conf",
-"typo3temp",
-"assets",
-"resources/public",
-"fonts",
-"analytics",
-"matomo",
-"cookie",
-"privacy",
-"mentions-legales"
-];
-
-const isTechnicalLink =
-blockedTechnicalLinks.some(pattern =>
-value.includes(pattern)
-);
-
-const isAllowedDomain =
-allowedDomains.some(allowed =>
-value.includes(allowed)
-);
-
-const looksLikeJobUrl =
-value.includes("job") ||
-value.includes("emploi") ||
-value.includes("offer") ||
-value.includes("offre") ||
-value.includes("requisition") ||
-value.includes("requisitions") ||
-value.includes("posting") ||
-value.includes("career") ||
-value.includes("cx_1");
-
-return (
-isAllowedDomain &&
-!isTechnicalLink &&
-!isBadDiscoveryUrl(value) &&
-(
-!isVd ||
-looksLikeJobUrl
+let offers = [];
+
+let favorites =
+safeArray(
+safeJSON(
+getStorage(STORAGE_KEYS.favorites),
+[]
 )
 );
 
-});
-
-console.log("V14.4.3 CANDIDATE LINKS:", candidateLinks.length);
-console.log("V14.4.3 FIRST CANDIDATES:", candidateLinks.slice(0,20));
-
-for(const link of candidateLinks){
-
-const score =
-scoreDiscoveryUrlV144(link, offer);
-
-if(score > bestScore){
-
-bestScore = score;
-bestUrl = link;
-
-}
-
-}
-
-}catch(error){
-
-console.warn(
-"Découverte V14.4.3 impossible :",
-domain,
-error.message
+let applications =
+safeArray(
+safeJSON(
+getStorage(STORAGE_KEYS.applications),
+[]
+)
 );
 
-}
-
-}
-
-console.log(
-"V14.4.3 BEST URL:",
-bestUrl,
-"BEST SCORE:",
-bestScore
+let settings =
+safeJSON(
+getStorage(STORAGE_KEYS.settings),
+{}
 );
 
-if(bestUrl && bestScore >= 0.65 && !isBadDiscoveryUrl(bestUrl)){
-
-return {
-success:true,
-message:"URL réelle trouvée par recherche ciblée V14.4.3",
-discoveredUrl:bestUrl,
-score:bestScore,
-fallback:false
-};
-
-}
-
-if(fallbackUrl){
-
-return {
-success:true,
-message:"Aucune annonce précise trouvée, retour vers la page officielle des offres",
-discoveredUrl:fallbackUrl,
-score:0.25,
-fallback:true
-};
-
-}
-
-return {
-success:false,
-message:"Aucune annonce réelle trouvée",
-discoveredUrl:"",
-score:bestScore,
-fallback:false
-};
-
-}
-
-async function discoverVdOfferUrl(offer){
-
-const title =
-offer.title || offer.jobTitle || "";
-
-const location =
-offer.location || "";
-
-const keyword =
-encodeURIComponent(`"${title}"`);
-
-const oracleUrl =
-`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations,requisitionList.secondaryLocations,flexFieldsFacet.values,requisitionList.requisitionFlexFields&finder=findReqs;siteNumber=CX_1,facetsList=LOCATIONS%3BWORK_LOCATIONS%3BWORKPLACE_TYPES%3BTITLES%3BCATEGORIES%3BORGANIZATIONS%3BPOSTING_DATES%3BFLEX_FIELDS,limit=25,keyword=${keyword},sortBy=RELEVANCY`;
-
-try{
-
-const jsonText =
-await fetchExternalText(oracleUrl);
-
-const data =
-JSON.parse(jsonText);
-
-const requisitions =
-data?.items?.[0]?.requisitionList || [];
-
-console.log("V14.5 VD ORACLE JOBS FOUND:", requisitions.length);
-
-let bestJob = null;
-let bestScore = 0;
-
-for(const job of requisitions){
-
-const jobTitle =
-job.Title || "";
-
-const jobLocation =
-job.PrimaryLocation || "";
-
-const shortDescription =
-job.ShortDescriptionStr || "";
-
-let score = 0;
-
-const cleanTextLocal = value =>
-String(value || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g,"")
-.replace(/[^a-z0-9\s]/g," ")
-.replace(/\s+/g," ")
-.trim();
-
-const cleanA =
-cleanTextLocal(jobTitle + " " + jobLocation + " " + shortDescription);
-
-const cleanTitle =
-cleanTextLocal(title);
-
-const cleanLocation =
-cleanTextLocal(location);
-
-const cleanCompany =
-cleanTextLocal(offer.company || "Etat de Vaud");
-
-if(cleanTitle && cleanA.includes(cleanTitle)){
-score += 0.7;
-}
-
-if(cleanLocation && cleanA.includes(cleanLocation)){
-score += 0.2;
-}
-
-if(cleanCompany && cleanA.includes(cleanCompany)){
-score += 0.1;
-}
-
-score += Number(job.Relevancy || 0) / 100;
-
-if(score > bestScore){
-
-bestScore = score;
-bestJob = job;
-
-}
-
-}
-
-if(bestJob && bestJob.Id){
-
-const discoveredUrl =
-`https://offres-emploi.vd.ch/#fr/sites/CX_1/job/${bestJob.Id}`;
-
-return {
-success:true,
-message:"Annonce VD trouvée via Oracle Recruiting Cloud",
-discoveredUrl,
-score:bestScore,
-fallback:false,
-oracleId:bestJob.Id,
-title:bestJob.Title || "",
-location:bestJob.PrimaryLocation || "",
-description:bestJob.ShortDescriptionStr || ""
-};
-
-}
-
-}catch(error){
-
-console.warn(
-"Découverte VD Oracle impossible :",
-error.message
+let lettersHistory =
+safeArray(
+safeJSON(
+getStorage(STORAGE_KEYS.letters),
+[]
+)
 );
 
-}
-
-return await discoverGenericOfferUrl(offer,"vd.ch");
-
-}
-
-async function discoverLausanneOfferUrl(offer){
-
-const searchUrl =
-"https://www.lausanne.ch/officiel/travailler-a-la-ville/nous-rejoindre/offres-emploi.html";
-
-const fallbackUrl =
-searchUrl;
-
-const title =
-offer.title || offer.jobTitle || "";
-
-const cleanTextLocal = value =>
-String(value || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g,"")
-.replace(/[^a-z0-9\s]/g," ")
-.replace(/\s+/g," ")
-.trim();
-
-try{
-
-const html =
-await fetchExternalText(searchUrl);
-
-const links =
-extractLinksFromHtml(html, searchUrl);
-
-const raw =
-String(html || "");
-
-const directMatches =
-raw.match(/detail-offre-emploi\/pj[0-9]+\.html/g) || [];
-
-const directLinks =
-directMatches.map(path =>
-new URL(path, searchUrl).href
-);
-
-const candidates =
-[...new Set([
-...links,
-...directLinks
-])]
-.filter(link =>
-String(link || "").includes("detail-offre-emploi/pj") &&
-String(link || "").includes(".html")
-);
-
-console.log("V14.5 LAUSANNE CANDIDATES:", candidates.length);
-console.log("V14.5 LAUSANNE FIRST CANDIDATES:", candidates.slice(0,10));
-
-let bestUrl = "";
-let bestScore = 0;
-
-for(const link of candidates){
-
-try{
-
-const detailHtml =
-await fetchExternalText(link);
-
-const cleanPage =
-cleanTextLocal(detailHtml);
-
-const cleanTitle =
-cleanTextLocal(title);
-
-let score = 0;
-
-if(cleanTitle && cleanPage.includes(cleanTitle)){
-score += 0.8;
-}
-
-if(cleanPage.includes("lausanne")){
-score += 0.1;
-}
-
-if(cleanPage.includes("ville de lausanne")){
-score += 0.1;
-}
-
-if(score > bestScore){
-bestScore = score;
-bestUrl = link;
-}
-
-}catch(error){
-
-console.warn(
-"Lecture annonce Lausanne impossible :",
-link,
-error.message
-);
-
-}
-
-}
-
-if(bestUrl && bestScore >= 0.7){
-
-return {
-success:true,
-message:"Annonce Lausanne trouvée via page officielle",
-discoveredUrl:bestUrl,
-score:bestScore,
-fallback:false
-};
-
-}
-
-}catch(error){
-
-console.warn(
-"Découverte Lausanne impossible :",
-error.message
-);
-
-}
-
-return {
-success:true,
-message:"Aucune annonce Lausanne précise trouvée, retour vers la page officielle des offres",
-discoveredUrl:fallbackUrl,
-score:0.25,
-fallback:true
-};
-
-}
-
-async function discoverChuvOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"chuv.ch");
-}
-
-async function discoverEpflOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"epfl.ch");
-}
-
-async function discoverMigrosOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"migros.ch");
-}
-
-async function discoverRetraitesOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"retraitespopulaires.ch");
-}
-
-async function discoverJobupOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"jobup.ch");
-}
-
-async function discoverIndeedOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"indeed.com");
-}
-
-async function discoverJobScoutOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"jobscout24.ch");
-}
-
-async function discoverLinkedInOfferUrl(offer){
-
-const discovery =
-await discoverGenericOfferUrl(offer,"linkedin.com");
-
-const url =
-String(discovery?.discoveredUrl || "");
-
-const match =
-url.match(/[?&]currentJobId=([0-9]+)/i);
-
-if(match && match[1]){
-
-return {
-...discovery,
-success:true,
-discoveredUrl:`https://www.linkedin.com/jobs/view/${match[1]}`,
-changed:true,
-score:Math.max(Number(discovery?.score || 0),0.85)
-};
-
-}
-
-return discovery;
-
-}
-
-async function discoverRealOfferUrl(offer){
-
-const originalUrl =
-offer.offerUrl || offer.url || "";
-
-const source =
-getEmployerSource(originalUrl);
-
-switch(source){
-
-case "vd":
-return await discoverVdOfferUrl(offer);
-
-case "lausanne":
-return await discoverLausanneOfferUrl(offer);
-
-case "chuv":
-return await discoverChuvOfferUrl(offer);
-
-case "epfl":
-return await discoverEpflOfferUrl(offer);
-
-case "migros":
-return await discoverMigrosOfferUrl(offer);
-
-case "retraites":
-return await discoverRetraitesOfferUrl(offer);
-
-case "jobup":
-return await discoverJobupOfferUrl(offer);
-
-case "indeed":
-return await discoverIndeedOfferUrl(offer);
-
-case "jobscout24":
-return await discoverJobScoutOfferUrl(offer);
-
-case "linkedin":
-return await discoverLinkedInOfferUrl(offer);
-
-default:
-return {
-success:false,
-discoveredUrl:"",
-score:0
-};
-
-}
-
-}
+let currentCV = null;
+let currentCVText = "";
+let currentCVAnalysis = null;
+
+let currentLetter = "";
+let selectedOffer = null;
+let notificationsEnabled = true;
+let deferredPrompt = null;
+
+let bestOffer = null;
+let filteredOffers = [];
+let employersList = [];
 
 /* ==========================================
-DECOUVERTE URL REELLE ANNONCE V14.5
+PROFIL IA V14.6.0
 ========================================== */
 
-app.post(
-"/api/discover-offer-url",
-async (req,res)=>{
+const userProfile = {
+targetJobs: [
+"Employé de commerce",
+"Employée de commerce",
+"Employé(e) de commerce",
+"Assistant administratif",
+"Assistante administrative",
+"Gestionnaire de dossier",
+"Gestionnaire administratif",
+"Collaborateur administratif",
+"Collaboratrice administrative",
+"Technicien informatique",
+"Support informatique",
+"Helpdesk",
+"Back-office"
+],
 
-try{
+preferredSectors: [
+"Administration",
+"Administration publique",
+"Fiduciaire",
+"Informatique",
+"Immobilier",
+"Services",
+"Santé",
+"Assurances",
+"Banque",
+"Collectivités publiques"
+],
 
-const offer =
-req.body?.offer || {};
-
-const originalUrl =
-offer.offerUrl || offer.url || "";
-
-if(!originalUrl){
-
-return res.json({
-success:false,
-message:"URL source absente",
-originalUrl:"",
-discoveredUrl:"",
-changed:false
-});
-
-}
-
-if(isRealOfferUrl(originalUrl)){
-
-return res.json({
-success:true,
-message:"URL déjà réelle",
-originalUrl,
-discoveredUrl:originalUrl,
-changed:false,
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-if(!isGenericSourceUrl(originalUrl)){
-
-return res.json({
-success:false,
-message:"URL non générique mais non reconnue comme annonce réelle",
-originalUrl,
-discoveredUrl:"",
-changed:false,
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-const discovery =
-await discoverRealOfferUrl(offer);
-
-if(discovery.success && discovery.discoveredUrl){
-
-return res.json({
-success:true,
-message:"URL réelle trouvée",
-originalUrl,
-discoveredUrl:discovery.discoveredUrl,
-changed:true,
-score:discovery.score,
-company:offer.company || "",
-title:offer.title || "",
-location:offer.location || "",
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-return res.json({
-success:false,
-message:"Aucune URL réelle trouvée",
-originalUrl,
-discoveredUrl:"",
-changed:false,
-score:discovery.score || 0,
-company:offer.company || "",
-title:offer.title || "",
-location:offer.location || "",
-source:getEmployerSource(originalUrl)
-});
-
-}catch(error){
-
-res.status(500).json({
-success:false,
-message:"Erreur discover-offer-url",
-error:error.message
-});
-
-}
-
-}
-);
-
-
-/* ==========================================
-TEST DECOUVERTE URL GET TEMPORAIRE V14.5
-========================================== */
-
-app.get(
-"/api/test-discover-offer-url",
-async (req,res)=>{
-
-try{
-
-const offer = {
-title:req.query.title || "Gestionnaire de dossiers",
-company:req.query.company || "Etat de Vaud",
-location:req.query.location || "Lausanne",
-offerUrl:req.query.url || "https://www.vd.ch"
-};
-
-const discovery =
-await discoverRealOfferUrl(offer);
-
-res.json({
-success:discovery.success,
-message:discovery.success ? "URL réelle trouvée par recherche ciblée" : "Aucune URL réelle trouvée",
-originalUrl:offer.offerUrl,
-discoveredUrl:discovery.discoveredUrl || "",
-changed:!!discovery.discoveredUrl,
-score:discovery.score || 0,
-company:offer.company,
-title:offer.title,
-location:offer.location,
-source:getEmployerSource(offer.offerUrl),
-oracleId:discovery.oracleId || "",
-detailTitle:discovery.title || "",
-detailLocation:discovery.location || "",
-detailDescription:discovery.description || ""
-});
-
-}catch(error){
-
-res.status(500).json({
-success:false,
-message:"Erreur test-discover-offer-url",
-error:error.message
-});
-
-}
-
-}
-);
-
-/* ==========================================
-API SCRAPE ON DEMAND
-========================================== */
-
-app.post(
-"/api/scrape",
-async (req,res)=>{
-
-try{
-
-await scrapeAllOffers();
-
-const offers = readJson(OFFERS_FILE);
-
-res.json({
-success:true,
-count:offers.length,
-message:`${offers.length} offres récupérées`
-});
-
-}catch(error){
-
-res.status(500).json({
-success:false,
-message:"Erreur scraping",
-error:error.message
-});
-
-}
-
-}
-);
-
-
-/* ==========================================
-PROXY RSS JOBUP
-========================================== */
-
-app.get(
-"/api/proxy-rss",
-async (req,res)=>{
-
-try{
-
-const term = req.query.term || "";
-const region = req.query.region || "vd";
-
-const url =
-`https://www.jobup.ch/fr/emplois/rss/?term=${encodeURIComponent(term)}&region=${region}`;
-
-const response =
-await axios.get(url, {
-headers:{
-"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-"Accept":"application/rss+xml, text/xml, */*",
-"Accept-Language":"fr-CH,fr;q=0.9",
-"Referer":"https://www.jobup.ch/fr/emplois/",
-"Origin":"https://www.jobup.ch"
-},
-timeout: 10000,
-responseType: "text"
-});
-
-res.set("Content-Type", "application/xml");
-res.set("Access-Control-Allow-Origin", "*");
-res.send(response.data);
-
-}catch(error){
-
-console.warn("Erreur proxy RSS Jobup :", error.message);
-
-res.status(500).json({
-success:false,
-message:"Erreur proxy RSS",
-error:error.message
-});
-
-}
-
-}
-);
-
-/* ==========================================
-SCRAPING OFFRES AU DEMARRAGE
-========================================== */
-
-const SEARCH_KEYWORDS = [
-"employé de commerce",
-"employée de commerce",
-"employé administratif",
-"employée administrative",
-"assistant administratif",
-"assistante administrative",
-"gestionnaire de dossier",
-"gestionnaire administratif",
-"gestionnaire back office",
-"collaborateur administratif",
-"collaboratrice administrative",
-"collaborateur back office",
-"coordinateur administratif",
-"coordinatrice administrative",
-"technicien informatique",
-"technicien support",
-"support informatique",
-"informaticien de gestion",
-"helpdesk",
-"back-office",
-"secrétaire",
-"secrétaire administrative",
-"secrétaire d'unité",
-"secrétaire comptable",
-"secrétaire médicale",
-"CFC employé de commerce",
-"secrétaire technique",
-"secrétaire de chantier",
-"secrétaire facturation",
-"secrétaire scolaire",
-"secrétaire communale"
-];
-
-const VAUD_REGIONS = [
+preferredRegions: [
 "Vaud",
 "Lausanne",
 "Morges",
 "Nyon",
 "Vevey",
 "Renens",
+"Prilly",
+"Crissier",
+"Ecublens",
 "Yverdon",
+"Rolle",
 "Aigle",
-"Broye-Vully",
-"Gros-de-Vaud",
-"Jura-Nord vaudois",
-"Lavaux-Oron",
-"Riviera-Pays-d'Enhaut",
-"Ouest lausannois"
-];
+"Montreux"
+],
 
-const VAUD_PLACES = [
-"lausanne","morges","nyon","vevey","renens",
-"yverdon","aigle","montreux","pully","prilly",
-"bussigny","crissier","gland","rolle","aubonne",
-"cossonay","echallens","moudon","oron","payerne",
-"ste-croix","vallorbe","orbe","grandson","avenches",
-"cudrefin","estavayer","lucens","romont","bulle",
-"villeneuve","bex","ollon","leysin","gryon",
-"vd","vaud","west lausanne","lausanne district"
-];
+preferredRates: [
+"50%",
+"60%",
+"70%",
+"50-60%",
+"60-70%",
+"50 - 60%",
+"60 - 70%",
+"50 à 70%",
+"50% - 70%",
+"50-70%"
+],
 
-async function enrichJobupOffer(jobId){
-try{
-const url = `https://www.jobup.ch/fr/emplois/detail/${jobId}/`;
-const html = await fetchExternalText(url);
-
-let address = "";
-let salary = "";
-let description = "";
-let startDate = "";
-let applyBefore = "";
-
-// Extraction depuis __REACT_QUERY_STATE__ — source primaire fiable
-try{
-  const rqMatch = html.match(/__REACT_QUERY_STATE__\s*=\s*([\s\S]*?);<\/script>/);
-  if(rqMatch){
-    const rq = JSON.parse(rqMatch[1]);
-    const queries = rq?.queries || [];
-    for(const q of queries){
-      const d = q?.state?.data;
-      if(!d) continue;
-
-      // Adresse depuis locations[0]
-      if(!address && d.locations && d.locations.length > 0){
-        const loc = d.locations[0];
-        const s = (loc.street || "").trim();
-        const z = (loc.postalCode || "").trim();
-        const c = (loc.city || "").trim();
-        const parts = [];
-        if(s) parts.push(s);
-        if(z && c) parts.push(`${z} ${c}`);
-        else if(c) parts.push(c);
-        if(parts.length) address = parts.join(", ");
-      }
-
-      // Date limite postulation
-      if(!applyBefore && d.publicationEndDate){
-        const rawEnd = String(d.publicationEndDate).split("T")[0];
-        const p = rawEnd.split("-");
-        if(p.length === 3 && p[0].length === 4 && parseInt(p[0]) >= 2020){
-          applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
-        }
-      }
-
-      // Date entrée en fonction
-      if(!startDate && d.contractStart){
-        const p = d.contractStart.split("T")[0].split("-");
-        if(p.length === 3) startDate = `${p[2]}.${p[1]}.${p[0]}`;
-      }
-
-      // Description depuis template.text
-      if(!description && d.template?.text){
-        let raw = d.template.text
-          .replace(/<br\s*\/?>/gi, "\n")
-          .replace(/<\/li>/gi, "\n")
-          .replace(/<\/p>/gi, "\n")
-          .replace(/<\/h[1-6]>/gi, "\n")
-          .replace(/<strong>([^<]*)<\/strong>/gi, "$1")
-          .replace(/<[^>]+>/g, "")
-          .replace(/&nbsp;/g, " ")
-          .replace(/&amp;/g, "&")
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .replace(/&lt;/g, "<")
-          .replace(/&gt;/g, ">")
-          .replace(/\n[ \t]+/g, "\n")
-          .replace(/\n{3,}/g, "\n\n")
-          .trim();
-        description = raw.substring(0, 5000);
-      }
-
-      if(address && description && applyBefore) break;
-    }
-  }
-}catch(e){}
-
-// Fallback JSON-LD si REACT_QUERY_STATE vide
-if(!address){
-  try{
-    const ldMatches = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || [];
-    for(const ldScript of ldMatches){
-      const ldJson = ldScript.replace(/<script[^>]*>/, "").replace(/<\/script>/, "").trim();
-      const ld = JSON.parse(ldJson);
-      if(ld["@type"] === "JobPosting"){
-        const loc = ld.jobLocation?.address || {};
-        const s = (loc.streetAddress || "").trim();
-        const z = (loc.postalCode || "").trim();
-        const c = (loc.addressRegion || "").trim();
-        const parts = [];
-        if(s) parts.push(s);
-        if(z && c) parts.push(`${z} ${c}`);
-        else if(c) parts.push(c);
-        if(parts.length) address = parts.join(", ");
-        if(!applyBefore && ld.validThrough){
-          const p = ld.validThrough.split("T")[0].split("-");
-          if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
-        }
-        break;
-      }
-    }
-  }catch(e){}
-}
-
-// Fallback salaire depuis HTML
-if(!salary){
-  const salMatch = html.match(/CHF\s*[\d\s'.]+(?:\s*[-\u2013]\s*[\d\s'.]+)?\s*\/\s*(?:an|mois)/i);
-  if(salMatch) salary = salMatch[0].replace(/\s+/g," ").trim();
-}
-
-return {
-  address: address || "",
-  salary: salary || "",
-  description: description || "",
-  startDate: startDate || "",
-  applyBefore: applyBefore || ""
-};
-}catch(e){
-return {};
-}
-}
-
-async function fetchJobupOffers(){
-
-const CONTRACT_TYPE_MAP = {
-"1": "CDI",
-"2": "CDD",
-"3": "Temporaire",
-"4": "Stage",
-"5": "CDI",
-"6": "Apprentissage"
+preferredContracts: [
+"CDI",
+"CDD",
+"Temporaire",
+"Fixe"
+]
 };
 
-const offers = [];
+const IA_WEIGHTS = {
 
-try{
+jobMatch: 25,
 
-const JOBUP_BATCH_SIZE = 5;
+sectorMatch: 15,
 
-for(let batchStart = 0; batchStart < SEARCH_KEYWORDS.length; batchStart += JOBUP_BATCH_SIZE){
+regionMatch: 15,
 
-const keywordBatch = SEARCH_KEYWORDS.slice(batchStart, batchStart + JOBUP_BATCH_SIZE);
+rateMatch: 10,
 
-await Promise.all(keywordBatch.map(async (keyword) => {
+contractBonus: 5,
 
-const encodedKeyword =
-encodeURIComponent(keyword);
+cvSkillsBonus: 20,
 
-const url =
-`https://www.jobup.ch/fr/emplois/?term=${encodedKeyword}&regionIds=52`;
+cvLanguagesBonus: 10
 
-const html =
-await fetchExternalText(url);
+};
 
-const initMatch =
-html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__)/);
+const MATCH_LEVELS = {
+excellent: 85,
+good: 70,
+average: 60
+};
 
-if(!initMatch){
-console.log(`Jobup "${keyword}": __INIT__ non trouvé`);
+/* ==========================================
+FILTRES ACTIFS
+========================================== */
+
+let activeFilters = {
+jobs: [],
+sectors: [],
+rates: [],
+contracts: [],
+regions: [],
+sources: [],
+employers: [],
+matches: [],
+sort: "match"
+};
+
+/* ==========================================
+DOM - REFERENCES PRINCIPALES
+========================================== */
+
+const offersContainer =
+document.getElementById("offersContainer");
+
+const favoritesContainer =
+document.getElementById("favoritesContainer");
+
+const applicationsBoard =
+document.getElementById("applicationsBoard");
+
+const lettersHistoryContainer =
+document.getElementById("lettersHistoryContainer");
+
+const notificationToggle =
+document.getElementById("notificationToggle");
+
+/* ==========================================
+BOUTONS PRINCIPAUX
+========================================== */
+
+const searchOffersBtn =
+document.getElementById("searchOffersBtn");
+
+const resetFiltersBtn =
+document.getElementById("resetFiltersBtn");
+
+const btnFilters =
+document.getElementById("btnFilters");
+
+const btnReset =
+document.getElementById("btnReset");
+
+const btnNotifications =
+document.getElementById("btnNotifications");
+
+const btnSettings =
+document.getElementById("btnSettings");
+
+/* ==========================================
+BOUTONS IA LETTRES
+========================================== */
+
+const generateShortLetterBtn =
+document.getElementById("generateShortLetter");
+
+const generateStandardLetterBtn =
+document.getElementById("generateStandardLetter");
+
+const generatePremiumLetterBtn =
+document.getElementById("generatePremiumLetter");
+
+/* ==========================================
+BOUTONS LETTRES ACTIONS
+========================================== */
+
+const saveLetterBtn =
+document.getElementById("saveLetterBtn");
+
+const copyLetterBtn =
+document.getElementById("copyLetterBtn");
+
+const pdfLetterBtn =
+document.getElementById("pdfLetterBtn");
+
+const wordLetterBtn =
+document.getElementById("wordLetterBtn");
+
+const emailLetterBtn =
+document.getElementById("emailLetterBtn");
+
+/* ==========================================
+CV V14.6 - EXTRACTION REELLE
+========================================== */
+
+const cvFile =
+document.getElementById("cvFile");
+
+const analyzeCVBtn =
+document.getElementById("analyzeCVBtn");
+
+const cvAnalysisResult =
+document.getElementById("cvAnalysisResult");
+
+if(cvFile){
+
+cvFile.addEventListener(
+"change",
+handleCVFileSelected
+);
+
+}
+
+if(analyzeCVBtn){
+
+analyzeCVBtn.addEventListener(
+"click",
+analyzeCV
+);
+
+}
+
+function handleCVFileSelected(){
+
+if(
+!cvFile ||
+!cvFile.files ||
+cvFile.files.length === 0
+){
 return;
 }
 
-const data = JSON.parse(initMatch[1]);
+const file =
+cvFile.files[0];
 
-const results =
-data?.vacancy?.results?.main?.results || [];
+const fileName =
+file.name.toLowerCase();
 
-console.log(`Jobup "${keyword}": ${results.length} offres`);
+const allowedExtensions =
+[
+".pdf",
+".docx",
+".txt"
+];
 
-for(const job of results){
-
-const jobId = job.id || "";
-const place = job.place || "";
-
-const isVaud =
-job.regions?.some(r =>
-String(r).includes("52") ||
-String(r).toLowerCase().includes("vaud")
-) ||
-VAUD_PLACES.some(v =>
-place.toLowerCase().includes(v)
-) ||
-job.locations?.some(l =>
-l.cantonCode === "VD"
+const isAllowed =
+allowedExtensions.some(
+extension =>
+fileName.endsWith(extension)
 );
 
-if(!isVaud) continue;
+if(!isAllowed){
 
-const titleLower = (job.title || "").toLowerCase();
-const keywordWords = keyword.toLowerCase().split(" ");
-if(!keywordWords.some(w => w.length > 4 && titleLower.includes(w))) continue;
+alert("Format non accepté. Merci d'importer un CV en PDF, DOCX ou TXT.");
 
-const apprentiKeywords = [
-"apprenti","apprentie","apprenant",
-"préapprentissage","préapprenti",
-"cfc en cours","stage","stagiaire",
-"assistante médicale","assistant médical"
+return;
+
+}
+
+currentCV = {
+name: file.name,
+type: file.type,
+size: file.size,
+extension: fileName.split(".").pop()
+};
+
+saveCurrentCV();
+
+if(cvAnalysisResult){
+
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
+
+<h3>📄 CV chargé</h3>
+
+<p class="cv-name">${currentCV.name}</p>
+
+<p class="cv-meta">📄 ${currentCV.extension.toUpperCase()} : ${Math.round(currentCV.size / 1024)} Ko • ✅ Prêt</p>
+
+<p class="cv-meta">ℹ️ Clique sur Analyser mon CV pour extraire le contenu.</p>
+
+</div>
+`;
+
+}
+
+}
+
+
+function saveCurrentCV(){
+
+localStorage.setItem(
+"jobfinder_current_cv",
+JSON.stringify({
+cv: currentCV,
+text: currentCVText,
+analysis: currentCVAnalysis
+})
+);
+
+}
+
+async function extractTXT(file){
+
+return await file.text();
+
+}
+
+async function extractPDF(file){
+
+const buffer =
+await file.arrayBuffer();
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const pdf =
+await pdfjsLib.getDocument({
+data: buffer
+}).promise;
+
+let text = "";
+
+for(
+let page = 1;
+page <= pdf.numPages;
+page++
+){
+
+const currentPage =
+await pdf.getPage(page);
+
+const content =
+await currentPage.getTextContent();
+
+const pageText =
+content.items
+.map(item => item.str)
+.join(" ");
+
+text += pageText + "\n";
+
+}
+
+return text;
+
+}
+
+async function extractDOCX(file){
+
+const buffer =
+await file.arrayBuffer();
+
+const result =
+await mammoth.extractRawText({
+arrayBuffer: buffer
+});
+
+return result.value || "";
+
+}
+
+async function extractCVContent(file){
+
+const fileName =
+file.name.toLowerCase();
+
+if(fileName.endsWith(".txt")){
+return await extractTXT(file);
+}
+
+if(fileName.endsWith(".pdf")){
+return await extractPDF(file);
+}
+
+if(fileName.endsWith(".docx")){
+return await extractDOCX(file);
+}
+
+return "";
+
+}
+
+function analyzeExtractedText(text){
+
+const normalized =
+normalizeText(text);
+
+const software = [];
+
+const languages = [];
+
+const adminSkills = [];
+
+const supportSkills = [];
+
+const softwareKeywords = [
+"excel",
+"word",
+"outlook",
+"powerpoint",
+"sap",
+"erp",
+"crm",
+"windows",
+"office"
 ];
-if(apprentiKeywords.some(a => titleLower.includes(a))) continue;
 
-// Adresse depuis locations[0] (lieu de travail réel)
-const loc = (job.locations || [])[0] || {};
-const street = (loc.street || job.street || "").trim();
-const zipCode = (loc.postalCode || loc.zipCode || job.zipCode || "").trim();
-const city = (loc.city || place || "").trim();
-const addressParts = [];
-if(street) addressParts.push(street);
-const zipIsVaud = /^1\d{3}$/.test(zipCode);
-if(zipIsVaud && city) addressParts.push(`${zipCode} ${city}`);
-else if(city) addressParts.push(city);
-const address = addressParts.join(", ");
+const languageKeywords = [
+"français",
+"anglais",
+"allemand",
+"italien"
+];
 
-const contractId = (job.employmentTypeIds || [])[0] || "";
-const contractRaw = CONTRACT_TYPE_MAP[contractId] || "";
-const contractClean = contractRaw.replace(/\s*(droit public|droit prive|de droit public|de droit prive).*/i, "").trim();
-const CONTRACT_FR = {"permanent":"CDI","unlimited":"CDI","durée indéterminée":"CDI","fixed-term":"CDD","temporary":"Temporaire","internship":"Stage","apprenticeship":"Apprentissage"};
-const contract = CONTRACT_FR[contractClean.toLowerCase()] || contractClean;
+const adminKeywords = [
+"gestion administrative",
+"gestion de dossiers",
+"facturation",
+"comptabilité",
+"classement",
+"archivage",
+"correspondance",
+"service client",
+"téléphone",
+"email",
+"planification",
+"organisation"
+];
 
-// Date publication
-const raw = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
-const dp = raw.split("-");
-const dateFormatted = dp.length === 3 ? `${dp[2]}.${dp[1]}.${dp[0]}` : raw;
+const supportKeywords = [
+"support informatique",
+"helpdesk",
+"technicien informatique",
+"installation",
+"maintenance",
+"dépannage"
+];
 
-// Date limite depuis page liste
-let applyBefore = "";
-if(job.publicationEndDate){
-  const ep = job.publicationEndDate.split("T")[0].split("-");
-  if(ep.length === 3) applyBefore = `${ep[2]}.${ep[1]}.${ep[0]}`;
+softwareKeywords.forEach(keyword => {
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
+software.push(keyword);
 }
 
-// Date entrée depuis page liste
-let startDate = "";
-if(job.contractStart){
-  const sp = job.contractStart.split("T")[0].split("-");
-  if(sp.length === 3) startDate = `${sp[2]}.${sp[1]}.${sp[0]}`;
-}
-
-// Salaire depuis page liste
-const salaryRaw = job.salary || "";
-const salaryList = salaryRaw ? `CHF ${salaryRaw}` : "";
-
-offers.push({
-id: String(jobId || generateServerId()),
-title: job.title || "",
-company: job.company?.name || "",
-location: city || place,
-address: address,
-sector: "",
-rate: job.employmentGrades
-? job.employmentGrades[0] === job.employmentGrades[1]
-? `${job.employmentGrades[0]}%`
-: `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
-: "",
-contract: contract,
-source: "Jobup",
-offerUrl: jobId
-? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
-: "",
-date: dateFormatted,
-startDate: startDate,
-applyBefore: applyBefore,
-description: job.lead || "",
-salary: salaryList,
 });
 
+languageKeywords.forEach(keyword => {
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
+languages.push(keyword);
 }
 
-}));
+});
+
+adminKeywords.forEach(keyword => {
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
+adminSkills.push(keyword);
+}
+
+});
+
+supportKeywords.forEach(keyword => {
+
+if(
+normalized.includes(
+normalizeText(keyword)
+)
+){
+supportSkills.push(keyword);
+}
+
+});
+
+const skills = [
+...software,
+...adminSkills,
+...supportSkills,
+...languages
+];
+
+return {
+
+wordCount:
+text
+.split(/\s+/)
+.filter(Boolean)
+.length,
+
+skills,
+software,
+languages,
+adminSkills,
+supportSkills
+
+};
 
 }
 
-}catch(error){
+async function analyzeCV(){
 
-console.warn("Erreur scraping Jobup :", error.message);
+if(
+!cvFile ||
+!cvFile.files ||
+cvFile.files.length === 0
+){
+
+if(currentCV){
+
+alert(
+"CV déjà chargé : " +
+(currentCV.name || "CV sauvegardé")
+);
+
+return;
 
 }
 
-return offers;
+alert("Veuillez d'abord importer votre CV.");
+
+return;
 
 }
-
-async function fetchJobScout24Offers(){
-
-const offers = [];
 
 try{
 
-for(const keyword of SEARCH_KEYWORDS){
+const file =
+cvFile.files[0];
 
-const encodedKeyword =
-encodeURIComponent(keyword);
+const fileName =
+file.name.toLowerCase();
 
-const url =
-`https://www.jobscout24.ch/fr/jobs/rss/${encodedKeyword}/vaud/`;
+const allowedExtensions =
+[
+".pdf",
+".docx",
+".txt"
+];
 
-const xml =
-await fetchExternalText(url);
+const isAllowed =
+allowedExtensions.some(
+extension =>
+fileName.endsWith(extension)
+);
 
-const items =
-xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
+if(!isAllowed){
 
-console.log(`JobScout24 RSS "${keyword}": ${items.length} offres`);
+alert("Format non accepté. Merci d'importer un CV en PDF, DOCX ou TXT.");
 
-for(const item of items){
-
-const title =
-(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] ||
-(item.match(/<title>(.*?)<\/title>/) || [])[1] || "";
-
-const company =
-(item.match(/<author>(.*?)<\/author>/) ||
-item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) || [])[1] || "";
-
-const link =
-(item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
-
-const description =
-(item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
-
-const pubDate =
-(item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
-
-const location =
-(item.match(/<city>(.*?)<\/city>/) ||
-item.match(/<region>(.*?)<\/region>/) || [])[1] || "Vaud";
-
-if(!title) continue;
-
-offers.push({
-id: generateServerId(),
-title: title.trim(),
-company: company.trim(),
-location: location.trim(),
-sector: "",
-rate: "",
-contract: "",
-source: "JobScout24",
-offerUrl: link.trim(),
-date: pubDate
-? new Date(pubDate).toISOString().split("T")[0]
-: new Date().toISOString().split("T")[0],
-description: description || "Descriptif non disponible.",
-salary: ""
-});
+return;
 
 }
 
-}
+currentCV = {
+name: file.name,
+type: file.type,
+size: file.size,
+extension: fileName.split(".").pop()
+};
 
-}catch(error){
+if(cvAnalysisResult){
 
-console.warn("Erreur scraping JobScout24 RSS :", error.message);
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
 
-}
+<h3>⏳ Analyse du CV</h3>
 
-return offers;
+<p class="cv-meta">Extraction du contenu en cours...</p>
 
-}
-
-async function fetchVdOffers(){
-
-const offers = [];
-
-try{
-
-for(const keyword of SEARCH_KEYWORDS){
-
-const encodedKeyword =
-encodeURIComponent(`"${keyword}"`);
-
-const url =
-`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations,requisitionList.secondaryLocations,flexFieldsFacet.values,requisitionList.requisitionFlexFields&finder=findReqs;siteNumber=CX_1,facetsList=LOCATIONS%3BWORK_LOCATIONS%3BWORKPLACE_TYPES%3BTITLES%3BCATEGORIES%3BORGANIZATIONS%3BPOSTING_DATES%3BFLEX_FIELDS,limit=25,keyword=${encodedKeyword},sortBy=RELEVANCY`;
-
-const html =
-await fetchExternalText(url);
-
-const data =
-JSON.parse(html);
-
-const jobs =
-data?.items?.[0]?.requisitionList || [];
-
-for(const job of jobs){
-
-offers.push({
-id: String(job.Id || generateServerId()),
-title: job.Title || "",
-company: "État de Vaud",
-location: job.PrimaryLocation || "Vaud",
-sector: "Administration publique",
-rate: "",
-contract: "",
-source: "État de Vaud",
-offerUrl: job.Id
-? `https://offres-emploi.vd.ch/#fr/sites/CX_1/jobs/preview/${job.Id}/`
-: "",
-date: job.PostedDate || new Date().toISOString().split("T")[0],
-description: job.ShortDescriptionStr || "Descriptif non disponible.",
-salary: ""
-});
+</div>
+`;
 
 }
+
+currentCVText =
+await extractCVContent(file);
+
+currentCVAnalysis =
+analyzeExtractedText(currentCVText);
+
+saveCurrentCV();
+
+const skillsText =
+currentCVAnalysis.skills.length
+? currentCVAnalysis.skills.join(", ")
+: "Aucune compétence détectée";
+
+if(cvAnalysisResult){
+
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
+
+<h3>📄 CV analysé</h3>
+
+<p class="cv-name"><strong>${currentCV.name}</strong></p>
+
+<p class="cv-meta">📄 ${currentCV.extension.toUpperCase()} : ${Math.round(currentCV.size / 1024)} Ko</p>
+
+<p class="cv-meta">📝 ${currentCVAnalysis.wordCount} mots détectés</p>
+
+<p class="cv-skills">🎯 ${skillsText}</p>
+
+</div>
+`;
 
 }
 
 }catch(error){
 
-console.warn("Erreur scraping État de Vaud :", error.message);
+console.error(
+"Erreur analyse CV :",
+error
+);
+
+alert("Impossible d'analyser le contenu du CV.");
 
 }
-
-return offers;
 
 }
 
 /* ==========================================
-SCRAPING SOURCES SUPPLEMENTAIRES V14.6
-Indeed / LinkedIn / Migros / Nestlé / Coop
+FILTRES AVANCES
+========================================== */
+const employerFilter =
+document.getElementById("employerFilter");
+
+const sortFilter =
+document.getElementById("sortFilter");
+
+/* ==========================================
+NOTIFICATIONS
+========================================== */
+/* ==========================================
+UTILITAIRES
 ========================================== */
 
-function extractAnchorsFromHtml(html, baseUrl){
-
-const anchors = [];
-
-const regex =
-/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-
-let match;
-
-while((match = regex.exec(html)) !== null){
-
+function formatDate(date){
+if(!date) return "";
 try{
-
-const href =
-new URL(match[1], baseUrl).href;
-
-const text =
-cleanHtmlText(match[2] || "");
-
-anchors.push({
-href,
-text
-});
-
-}catch(error){
-
+const s = String(date).trim();
+// Déjà jj.mm.aaaa (avec ou sans texte après)
+if(/^\d{1,2}\.\d{1,2}\.\d{4}/.test(s)) return s;
+// YYYY-MM-DD (avec ou sans texte après)
+if(/^\d{4}-\d{2}-\d{2}/.test(s)){
+  const p = s.substring(0,10).split("-");
+  const suffix = s.substring(10).trim();
+  return `${p[2]}.${p[1]}.${p[0]}` + (suffix ? " " + suffix : "");
+}
+// jj/mm/aaaa (avec ou sans texte après)
+const m2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(.*)/);
+if(m2){
+  const suffix = m2[4].trim();
+  return `${m2[1].padStart(2,"0")}.${m2[2].padStart(2,"0")}.${m2[3]}` + (suffix ? " " + suffix : "");
+}
+// Date littérale française "23 juin 2026 ou à convenir"
+const mois={"janvier":"01","février":"02","mars":"03","avril":"04","mai":"05","juin":"06","juillet":"07","août":"08","septembre":"09","octobre":"10","novembre":"11","décembre":"12"};
+const m = s.match(/^(\d{1,2})\s+([a-zéûô]+)\s+(\d{4})(.*)/i);
+if(m && mois[m[2].toLowerCase()]){
+  const suffix = m[4].trim();
+  return `${m[1].padStart(2,"0")}.${mois[m[2].toLowerCase()]}.${m[3]}` + (suffix ? " " + suffix : "");
+}
+// Fallback — retourner tel quel sans new Date()
+return s;
+}catch(e){
+return String(date);
+}
 }
 
-}
-
-return anchors;
-
-}
-
-function looksLikeWantedJob(text){
-
-const value =
-String(text || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-const keywords = [
-"employe",
-"assistant",
-"assistante",
-"administratif",
-"administrative",
-"gestionnaire",
-"dossier",
-"commerce",
-"support",
-"helpdesk",
-"technicien",
-"informatique",
-"rh",
-"clientele",
-"coordinateur"
-];
-
-return keywords.some(keyword =>
-value.includes(keyword)
-);
-
-}
-
-async function fetchGenericJobPageOffers(config){
-
-const offers = [];
-
-try{
-
-const html =
-await fetchExternalText(config.url);
-
-const anchors =
-extractAnchorsFromHtml(
-html,
-config.url
-);
-
-const seen = new Set();
-
-for(const anchor of anchors){
-
-const href =
-anchor.href || "";
-
-const title =
-(anchor.text || "").trim();
-
-if(!href || seen.has(href)){
-continue;
-}
-
-seen.add(href);
-
-const hrefLower =
-href.toLowerCase();
-
-const isJobLink =
-config.linkPatterns.some(pattern =>
-hrefLower.includes(pattern)
-);
-
-if(!isJobLink){
-continue;
-}
-
-if(
-title &&
-title.length < 120 &&
-!looksLikeWantedJob(title)
-){
-continue;
-}
-
-offers.push({
-id: generateServerId(),
-title: title || config.defaultTitle,
-company: config.company,
-location: "Vaud",
-sector: config.sector || "",
-rate: "",
-contract: "",
-source: config.source,
-offerUrl: href,
-url: href,
-date: new Date().toISOString().split("T")[0],
-description: "Descriptif non disponible.",
-salary: ""
-});
-
-}
-
-console.log(
-`${config.source}: ${offers.length} offres détectées`
-);
-
-}catch(error){
-
-console.warn(
-`Erreur scraping ${config.source} :`,
-error.message
-);
-
-}
-
-return offers;
-
-}
-
-async function fetchIndeedOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Indeed",
-company: "Indeed",
-url: "https://ch-fr.indeed.com/jobs?q=&l=vaud&from=searchOnHP",
-defaultTitle: "Offre Indeed Vaud",
-linkPatterns: [
-"/viewjob",
-"jk="
-]
-});
-
-}
-
-async function fetchLinkedInOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "LinkedIn",
-company: "LinkedIn",
-url: "https://www.linkedin.com/jobs/search/?keywords=&location=Vaud%2C%20Suisse",
-defaultTitle: "Offre LinkedIn Vaud",
-linkPatterns: [
-"/jobs/view/"
-]
-});
-
-}
-
-async function fetchMigrosOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Migros",
-company: "Migros",
-url: "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants",
-defaultTitle: "Offre Migros",
-linkPatterns: [
-"/fr/postes-vacants/",
-"/job/",
-"/jobs/"
-]
-});
-
-}
-
-async function fetchNestleOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Nestlé",
-company: "Nestlé",
-url: "https://www.nestle.ch/fr/emplois",
-defaultTitle: "Offre Nestlé",
-linkPatterns: [
-"/jobs/",
-"/job/",
-"/emplois",
-"/career",
-"/careers"
-]
-});
-
-}
-
-async function fetchCoopOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Coop",
-company: "Coop",
-url: "https://jobs.coopjobs.ch/?lang=fr",
-defaultTitle: "Offre Coop",
-linkPatterns: [
-"/job/",
-"/jobs/",
-"/stellen/",
-"jobid"
-]
-});
-
-}
-
-async function fetchLinkedInOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "LinkedIn",
-company: "LinkedIn",
-url: "https://www.linkedin.com/jobs/search/?keywords=&location=Vaud%2C%20Suisse",
-defaultTitle: "Offre LinkedIn Vaud",
-linkPatterns: [
-"/jobs/view/"
-]
-});
-
-}
-
-async function fetchMigrosOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Migros",
-company: "Migros",
-url: "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants",
-defaultTitle: "Offre Migros",
-linkPatterns: [
-"/fr/postes-vacants/",
-"/job/",
-"/jobs/"
-]
-});
-
-}
-
-async function fetchNestleOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Nestlé",
-company: "Nestlé",
-url: "https://www.nestle.ch/fr/emplois",
-defaultTitle: "Offre Nestlé",
-linkPatterns: [
-"/jobs/",
-"/job/",
-"/emplois",
-"/career",
-"/careers"
-]
-});
-
-}
-
-async function fetchCoopOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Coop",
-company: "Coop",
-url: "https://jobs.coopjobs.ch/?lang=fr",
-defaultTitle: "Offre Coop",
-linkPatterns: [
-"/job/",
-"/jobs/",
-"/stellen/",
-"jobid"
-]
-});
-
-}
-
-function generateServerId(){
+function generateId(){
 return Date.now().toString() +
 Math.random().toString(36).substring(2, 8);
 }
 
-function deduplicateOffers(offers){
-
-const seen = new Set();
-const result = [];
-
-for(const offer of offers){
-
-const key =
-`${offer.title}-${offer.company}-${offer.location}`
-.toLowerCase()
-.replace(/\s+/g, "");
-
-if(!seen.has(key)){
-seen.add(key);
-result.push(offer);
+function showSuccess(message){
+if(!notificationsEnabled){
+return;
 }
 
+alert("✅ " + message);
 }
 
-return result;
+function showInfo(message){
+if(!notificationsEnabled){
+return;
+}
+
+alert("ℹ️ " + message);
+}
+
+function showError(message){
+alert("❌ " + message);
+}
+
+
+/* ==========================================
+TAB NAVIGATION
+========================================== */
+
+function openTab(tabId){
+const tabs =
+document.querySelectorAll(".tab-content");
+
+tabs.forEach(tab => {
+tab.classList.remove("active-tab");
+});
+
+const target =
+document.getElementById(tabId);
+
+if(target){
+target.classList.add("active-tab");
+
+window.scrollTo({
+top: 0,
+behavior: "smooth"
+});
+}
+}
+
+/* ==========================================
+COMPTE A REBOURS BOUTON RECHERCHE/REFRESH
+========================================== */
+
+function startCountdown(button, seconds, label){
+
+let remaining = seconds;
+
+button.innerHTML = `${label}<br>⏳ Environ ${remaining}s restantes...`;
+
+const interval = setInterval(() => {
+
+remaining--;
+
+if(remaining > 0){
+button.innerHTML = `${label}<br>⏳ Environ ${remaining}s restantes...`;
+}else{
+button.innerHTML = `${label}<br>⏳ Presque terminé...`;
+}
+
+}, 1000);
+
+return interval;
 
 }
 
-async function scrapeAllOffers(){
+/* ==========================================
+INITIALISATION UI
+========================================== */
 
-console.log("🔄 Scraping des offres en cours...");
+function initUI(){
 
-const [
-jobupOffers,
-vdOffers
-] = await Promise.all([
-fetchJobupOffers(),
-fetchVdOffers()
-]);
+document.querySelectorAll(".main-tabs button").forEach(button => {
+button.addEventListener("click", () => {
+const tab = button.dataset.tab;
 
-const allOffers =
-deduplicateOffers([
-...jobupOffers,
-...vdOffers
-]);
+if(tab){
+openTab(tab);
+}
 
-if(allOffers.length > 0){
+});
+});
 
-writeJson(OFFERS_FILE, allOffers);
+const refreshOffersBtn =
+document.getElementById("refreshOffersBtn");
 
-console.log(
-`✅ ${allOffers.length} offres scrapées et sauvegardées`
+if(refreshOffersBtn){
+refreshOffersBtn.addEventListener("click", async () => {
+
+const isFirst = !localStorage.getItem("jobfinder_filters");
+
+if(isFirst){
+refreshOffersBtn.disabled = true;
+const countdown1 = startCountdown(refreshOffersBtn, 21, "🔄 Chargement...");
+try{
+await loadOffers(true);
+const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:checked')].map(cb => cb.value);
+console.log("Cases cochées:", selectedMetiers);
+saveFilters();
+applyFilters();
+openTab("filters");
+setTimeout(() => {
+const firstOffer = document.querySelector(".offer-card");
+if(firstOffer){
+firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+}, 300);
+}finally{
+clearInterval(countdown1);
+refreshOffersBtn.disabled = false;
+refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
+}
+return;
+}
+
+refreshOffersBtn.disabled = true;
+
+const countdown2 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres...");
+
+try{
+
+await refreshOffers();
+
+updateDashboard();
+updateBestMatch();
+updateStatistics();
+updateApplicationCounters();
+
+saveFilters();
+applyFilters();
+
+openTab("filters");
+
+setTimeout(() => {
+const firstOffer = document.querySelector(".offer-card");
+if(firstOffer){
+firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+}, 300);
+
+}catch(error){
+
+console.error("Erreur actualisation manuelle :", error);
+
+}finally{
+
+clearInterval(countdown2);
+
+refreshOffersBtn.disabled = false;
+
+refreshOffersBtn.innerHTML = `
+💡 Rechercher avec mes critères
+`;
+
+}
+
+});
+}
+
+document.querySelectorAll(".clickable-card").forEach(card => {
+card.addEventListener("click", () => {
+const target =
+card.dataset.target;
+
+if(target){
+openTab(target);
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+}
+
+});
+});
+
+document.getElementById("floatingFavorites")
+?.addEventListener("click", () => {
+openTab("favorites");
+});
+
+document.getElementById("floatingApplications")
+?.addEventListener("click", () => {
+openTab("applications");
+});
+
+document.getElementById("floatingAI")
+?.addEventListener("click", () => {
+openTab("ai");
+});
+
+document.getElementById("floatingTop")
+?.addEventListener("click", () => {
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+});
+
+const floatingActions =
+document.querySelector(".floating-actions");
+
+const floatingToggle =
+document.getElementById("floatingToggle");
+
+if(floatingActions && floatingToggle){
+
+let floatingButtonsVisible = true;
+
+floatingToggle.addEventListener("click", () => {
+
+floatingButtonsVisible = !floatingButtonsVisible;
+
+document.querySelectorAll(".floating-btn:not(.floating-toggle)")
+.forEach(btn => {
+btn.style.display =
+floatingButtonsVisible ? "flex" : "none";
+});
+
+floatingToggle.innerHTML =
+floatingButtonsVisible
+? `<i class="ti ti-eye-off" style="font-size:14px;"></i><br>Masquer`
+: `<i class="ti ti-eye" style="font-size:14px;"></i><br>Afficher`;
+
+});
+
+}
+
+const navButtons = [
+{ button:"btnDashboard", tab:"dashboard" },
+{ button:"btnFilters", tab:"filters" },
+{ button:"btnFavorites", tab:"favorites" },
+{ button:"btnApplications", tab:"applications" },
+{ button:"btnAI", tab:"ai" },
+{ button:"btnStats", tab:"stats" },
+{ button:"btnSettings", tab:"settings" },
+{ button:"btnNotifications", tab:"notifications" }
+];
+
+navButtons.forEach(item => {
+const btn = document.getElementById(item.button);
+
+if(btn){
+btn.addEventListener("click", () => {
+openTab(item.tab);
+});
+}
+
+});
+
+if(notificationToggle){
+notificationToggle.addEventListener("click", () => {
+notificationsEnabled = !notificationsEnabled;
+
+notificationToggle.textContent =
+notificationsEnabled
+? "Notifications activées"
+: "Notifications désactivées";
+});
+}
+
+if(btnNotifications){
+btnNotifications.addEventListener("click", () => {
+openTab("notifications");
+});
+}
+
+if(btnFilters){
+btnFilters.addEventListener("click", () => {
+openTab("filters");
+});
+}
+
+if(btnSettings){
+btnSettings.addEventListener("click", () => {
+openTab("settings");
+});
+}
+
+
+if(btnReset){
+btnReset.addEventListener("click", () => {
+localStorage.removeItem("jobfinder_filters");
+localStorage.removeItem("jobfinder_visited");
+location.reload();
+});
+}
+
+if(resetFiltersBtn){
+resetFiltersBtn.addEventListener("click", () => {
+localStorage.removeItem("jobfinder_filters");
+localStorage.removeItem("jobfinder_visited");
+location.reload();
+});
+}
+
+if(sortFilter){
+sortFilter.addEventListener("change", applyFilters);
+}
+
+document.querySelectorAll(
+'input[name="metiers"], input[name="secteurs"], input[name="taux"], input[name="contrats"], input[name="regions"], input[name="sources"], input[name="matches"]'
+).forEach(cb => {
+cb.addEventListener("change", applyFilters);
+});
+
+}
+
+/* ==========================================
+TOGGLE SELECT ALL
+========================================== */
+
+function toggleSelectAll(masterCheckbox, groupName){
+const checkboxes = masterCheckbox
+.closest('.filter-content')
+.querySelectorAll(`input[name="${groupName}"]`);
+
+checkboxes.forEach(cb => {
+cb.checked = masterCheckbox.checked;
+});
+
+applyFilters();
+}
+
+/* ==========================================
+APPLY FILTERS
+========================================== */
+
+function applyFilters(){
+
+    const selectedMetiers = [
+        ...document.querySelectorAll('input[name="metiers"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedSecteurs = [
+        ...document.querySelectorAll('input[name="secteurs"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedTaux = [
+        ...document.querySelectorAll('input[name="taux"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedContrats = [
+        ...document.querySelectorAll('input[name="contrats"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedRegions = [
+        ...document.querySelectorAll('input[name="regions"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedSources = [
+        ...document.querySelectorAll('input[name="sources"]:checked')
+    ].map(cb => cb.value);
+
+    const selectedMatches = [
+        ...document.querySelectorAll('input[name="matches"]:checked')
+    ].map(cb => cb.value);
+
+    const totalTaux = document.querySelectorAll('input[name="taux"]').length;
+    const totalRegions = document.querySelectorAll('input[name="regions"]').length;
+    const totalSources = document.querySelectorAll('input[name="sources"]').length;
+    const totalContrats = document.querySelectorAll('input[name="contrats"]').length;
+    const totalSecteurs = document.querySelectorAll('input[name="secteurs"]').length;
+    const totalMetiers = document.querySelectorAll('input[name="metiers"]').length;
+
+    activeFilters.sort = sortFilter ? sortFilter.value : "match";
+
+    let result = [...offers];
+
+    const SCRAPE_KEYWORDS = [
+"employe de commerce",
+"assistant administratif",
+"assistante administrative",
+"gestionnaire de dossier",
+"gestionnaire administratif",
+"gestionnaire de depot",
+"gestionnaire contentieux",
+"gestionnaire logistique",
+"gestionnaire approvisionnement",
+"technicien informatique",
+"technicien support",
+"technicien maintenance",
+"technicien systeme",
+"technicien alarme",
+"support informatique",
+"support utilisateur",
+"it support",
+"network support",
+"specialiste support",
+"helpdesk",
+"back office",
+"collaborateur administratif",
+"collaborateur service",
+"coordinateur administratif",
+"administrateur gestionnaire",
+"employe administratif",
+"assistant de direction",
+"assistant rh",
+"conseiller clientele"
+];
+
+const selectAllMetiers = document.getElementById("selectAllMetiers");
+
+if(selectedMetiers.length > 0){
+    result = result.filter(offer => {
+        const titleNorm = normalizeText(offer.title);
+        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
+            k.split(" ").filter(w => w.length > 4)
+            .some(w => titleNorm.includes(w))
+        );
+        if(selectAllMetiers?.checked) return matchesKeyword;
+        const matchesMetier = selectedMetiers.some(m =>
+            containsNormalized(offer.title, m)
+        );
+        return matchesKeyword || matchesMetier;
+    });
+}
+
+if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
+    result = result.filter(offer =>
+        !offer.sector ||
+        selectedSecteurs.some(s =>
+            containsNormalized(offer.sector, s)
+        )
+    );
+}
+
+if(selectedTaux.length > 0 && selectedTaux.length < totalTaux){
+    result = result.filter(offer => {
+        if(!offer.rate) return true;
+        const rateNorm = normalizeText(offer.rate);
+        return selectedTaux.some(t => {
+            const tNum = parseInt(t);
+            if(isNaN(tNum)) return containsNormalized(offer.rate, t);
+            const match = rateNorm.match(/(\d+)/g);
+            if(!match) return false;
+            const nums = match.map(Number);
+            return nums.some(n => Math.abs(n - tNum) <= 5);
+        });
+    });
+}
+
+if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
+    result = result.filter(offer =>
+        !offer.contract ||
+        selectedContrats.some(c =>
+            containsNormalized(offer.contract, c)
+        )
+    );
+}
+
+if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
+    result = result.filter(offer =>
+        !offer.location ||
+        selectedRegions.some(r =>
+            containsNormalized(offer.location, r)
+        )
+    );
+}
+
+if(selectedSources.length > 0 && selectedSources.length < totalSources){
+    result = result.filter(offer =>
+        !offer.source ||
+        selectedSources.some(s =>
+            containsNormalized(offer.source, s)
+        )
+    );
+}
+
+    // Match IA = tri uniquement, pas de filtre
+
+    if(activeFilters.sort === "match"){
+        result.sort((a, b) =>
+            calculateMatch(b) - calculateMatch(a)
+        );
+    }else if(activeFilters.sort === "date"){
+        result.sort((a, b) =>
+            new Date(b.date) - new Date(a.date)
+        );
+    }else if(activeFilters.sort === "company"){
+        result.sort((a, b) =>
+            (a.company || "").localeCompare(b.company || "", "fr")
+        );
+    }
+
+    filteredOffers = result;
+
+    renderOffers(filteredOffers);
+    updateDashboard();
+    updateBestMatch();
+    updateStatistics();
+    saveFilters();
+
+}
+
+/* ==========================================
+RESET FILTERS
+========================================== */
+
+function resetFilters(){
+
+    activeFilters = {
+        jobs: [],
+        sectors: [],
+        rates: [],
+        contracts: [],
+        regions: [],
+        sources: [],
+        employers: [],
+        matches: [],
+        sort: "match"
+    };
+
+    localStorage.removeItem("jobfinder_filters");
+
+    document.querySelectorAll('input[type="checkbox"]')
+        .forEach(cb => cb.checked = false);
+
+    filteredOffers = [...offers];
+    renderOffers(filteredOffers);
+    updateBestMatch();
+    updateStatistics();
+}
+
+/* ==========================================
+SAUVEGARDE FILTRES
+========================================== */
+
+function saveFilters(){
+    const groups = [
+        "metiers",
+        "secteurs",
+        "taux",
+        "contrats",
+        "regions",
+        "sources",
+        "matches"
+    ];
+
+    const saved = {};
+    groups.forEach(group => {
+        saved[group] = [...document.querySelectorAll(
+            `input[name="${group}"]:checked`
+        )].map(cb => cb.value);
+    });
+
+    if(sortFilter){
+        saved.sort = sortFilter.value;
+    }
+
+    localStorage.setItem("jobfinder_filters", JSON.stringify(saved));
+}
+
+/* ==========================================
+RESTAURATION FILTRES
+========================================== */
+
+function restoreSavedFilters(){
+
+    const saved = safeJSON(
+        localStorage.getItem("jobfinder_filters"),
+        null
+    );
+
+    if(!saved) return;
+
+    const hasAny = Object.keys(saved)
+        .filter(k => k !== "sort")
+        .some(k => (saved[k] || []).length > 0);
+
+    if(!hasAny) return;
+
+    const groups = [
+        "metiers",
+        "secteurs",
+        "taux",
+        "contrats",
+        "regions",
+        "sources",
+        "matches"
+    ];
+
+    groups.forEach(group => {
+        const values = saved[group] || [];
+        values.forEach(value => {
+            const cb = document.querySelector(
+                `input[name="${group}"][value="${value}"]`
+            );
+            if(cb) cb.checked = true;
+        });
+    });
+
+    if(saved.sort && sortFilter){
+        sortFilter.value = saved.sort;
+    }
+
+    if(
+        groups.some(g => (saved[g] || []).length > 0) ||
+        saved.sort !== "match"
+    ){
+        setTimeout(() => applyFilters(), 500);
+    }
+}
+
+
+/* ==========================================
+MATCH IA - DETAILS
+========================================== */
+
+function getOfferText(offer){
+return [
+offer.title,
+offer.company,
+offer.sector,
+offer.location,
+offer.address,
+offer.rate,
+offer.contract,
+offer.source,
+offer.description
+]
+.join(" ");
+}
+
+function matchAnyOfferField(offer, values){
+const text = getOfferText(offer);
+
+return safeArray(values).some(value =>
+containsNormalized(text, value)
+);
+}
+
+function matchExactOrContains(value, values){
+const source = normalizeText(value);
+
+return safeArray(values).some(item => {
+const target = normalizeText(item);
+
+return source === target ||
+source.includes(target) ||
+target.includes(source);
+});
+}
+
+function calculateMatchDetails(offer){
+if(!offer){
+return {
+score: 0,
+reasons: [],
+missing: []
+};
+}
+
+let score = 0;
+const reasons = [];
+const missing = [];
+
+const offerText =
+normalizeText(
+getOfferText(offer)
 );
 
-console.log(
-`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length}`
+/* METIER */
+const jobOk =
+matchAnyOfferField(
+offer,
+userProfile.targetJobs
+);
+
+if(jobOk){
+score += IA_WEIGHTS.jobMatch;
+reasons.push("Métier compatible");
+}else{
+missing.push("Métier peu ciblé");
+}
+
+/* SECTEUR */
+const sectorOk =
+matchAnyOfferField(
+offer,
+userProfile.preferredSectors
+);
+
+if(sectorOk){
+score += IA_WEIGHTS.sectorMatch;
+reasons.push("Secteur intéressant");
+}else{
+missing.push("Secteur moins prioritaire");
+}
+
+/* REGION */
+const regionOk =
+matchAnyOfferField(
+offer,
+userProfile.preferredRegions
+);
+
+if(regionOk){
+score += IA_WEIGHTS.regionMatch;
+reasons.push("Région compatible");
+}else{
+missing.push("Région à vérifier");
+}
+
+/* TAUX */
+const rateText =
+String(offer.rate || "");
+
+const rateOk =
+userProfile.preferredRates.some(rate =>
+containsNormalized(rateText, rate)
+) ||
+/50|60|70/.test(rateText);
+
+if(rateOk){
+score += IA_WEIGHTS.rateMatch;
+reasons.push("Taux compatible");
+}else{
+missing.push("Taux à vérifier");
+}
+
+/* CONTRAT */
+const contractOk =
+matchExactOrContains(
+offer.contract,
+userProfile.preferredContracts
+);
+
+if(contractOk){
+score += IA_WEIGHTS.contractBonus;
+reasons.push("Contrat compatible");
+}else{
+missing.push("Contrat à vérifier");
+}
+
+/* BONUS CV - COMPETENCES */
+if(
+currentCVAnalysis &&
+currentCVAnalysis.skills &&
+currentCVAnalysis.skills.length
+){
+
+const matchingSkills =
+currentCVAnalysis.skills.filter(skill =>
+offerText.includes(
+normalizeText(skill)
+)
+);
+
+if(matchingSkills.length > 0){
+
+const skillBonus =
+Math.min(
+IA_WEIGHTS.cvSkillsBonus,
+matchingSkills.length * 5
+);
+
+score += skillBonus;
+
+reasons.push(
+"CV compatible : " + matchingSkills.join(", ")
 );
 
 }else{
 
-console.warn(
-"⚠️ Aucune offre récupérée — offers.json conservé"
+missing.push("Compétences CV peu visibles dans l'offre");
+
+}
+
+}else{
+
+missing.push("CV non analysé");
+
+}
+
+/* BONUS CV - LANGUES */
+if(
+currentCVAnalysis &&
+currentCVAnalysis.languages &&
+currentCVAnalysis.languages.length
+){
+
+const matchingLanguages =
+currentCVAnalysis.languages.filter(language =>
+offerText.includes(
+normalizeText(language)
+)
+);
+
+if(matchingLanguages.length > 0){
+
+const languageBonus =
+Math.min(
+IA_WEIGHTS.cvLanguagesBonus,
+matchingLanguages.length * 5
+);
+
+score += languageBonus;
+
+reasons.push(
+"Langues CV utiles : " + matchingLanguages.join(", ")
 );
 
 }
 
 }
 
+/* BONUS SALAIRE */
+if(offer.salary){
+const salary =
+parseInt(
+String(offer.salary || "")
+.replace(/[^\d]/g, ""),
+10
+);
+
+if(!isNaN(salary) && salary >= 55000){
+score += 5;
+reasons.push("Salaire potentiellement intéressant");
+}
+}
+
+/* LIMITES */
+score = Math.max(0, Math.min(100, score));
+
+return {
+score: Math.round(score),
+reasons,
+missing
+};
+}
+
+function calculateMatch(offer){
+return calculateMatchDetails(offer).score;
+}
+
+function getMatchBadge(score){
+if(score >= MATCH_LEVELS.excellent){
+return "🤘🏼 Très bon match";
+}
+
+if(score >= MATCH_LEVELS.good){
+return "🤙🏼 Bon match";
+}
+
+if(score >= MATCH_LEVELS.average){
+return "🫣 Match possible";
+}
+
+return "🔎 À vérifier";
+}
+
+function getMatchClass(score){
+if(score >= 90){
+return "match-90";
+}
+
+if(score >= 80){
+return "match-80";
+}
+
+if(score >= 70){
+return "match-70";
+}
+
+return "match-60";
+}
+
+function getAverageMatch(data = offers){
+const list = safeArray(data);
+
+if(!list.length){
+return 0;
+}
+
+const total =
+list.reduce((sum, offer) =>
+sum + calculateMatch(offer), 0
+);
+
+return Math.round(total / list.length);
+}
+
 
 /* ==========================================
-DEMARRAGE SERVEUR
+STORAGE SAVE
 ========================================== */
 
-app.listen(
-PORT,
-()=>{
+function saveLetters(){
+setStorage(
+STORAGE_KEYS.letters,
+lettersHistory
+);
+}
 
-console.log(
-"=================================="
+function saveFavorites(){
+setStorage(
+STORAGE_KEYS.favorites,
+favorites
+);
+}
+
+function saveApplications(){
+setStorage(
+STORAGE_KEYS.applications,
+applications
+);
+}
+
+function saveSettings(){
+setStorage(
+STORAGE_KEYS.settings,
+settings
+);
+}
+
+/* ==========================================
+VALIDATION URL SOURCE
+========================================== */
+
+function isRealOfferUrlClient(url){
+
+if(!url){
+return false;
+}
+
+const cleanUrl =
+url.toLowerCase().trim();
+
+const genericUrls = [
+"https://www.vd.ch",
+"https://vd.ch",
+"https://www.jobup.ch",
+"https://jobup.ch",
+"https://www.indeed.com",
+"https://indeed.com",
+"https://www.jobscout24.ch",
+"https://jobscout24.ch",
+"https://www.linkedin.com",
+"https://linkedin.com"
+];
+
+if(genericUrls.includes(cleanUrl)){
+return false;
+}
+
+return (
+
+/* JOBUP */
+cleanUrl.includes("jobup.ch/fr/emplois/detail/") ||
+cleanUrl.includes("jobup.ch/de/jobs/detail/") ||
+
+/* JOBSCOUT24 */
+cleanUrl.includes("jobscout24.ch/fr/job/") ||
+cleanUrl.includes("jobscout24.ch/de/job/") ||
+
+/* INDEED */
+cleanUrl.includes("indeed.com/viewjob") ||
+cleanUrl.includes("indeed.ch/viewjob") ||
+
+/* LINKEDIN */
+cleanUrl.includes("linkedin.com/jobs/view/") ||
+
+/* ETAT DE VAUD */
+(cleanUrl.includes("vd.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* VILLE DE LAUSANNE */
+(cleanUrl.includes("lausanne.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* RETRAITES POPULAIRES */
+(cleanUrl.includes("retraitespopulaires.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* EPFL */
+(cleanUrl.includes("epfl.ch") &&
+cleanUrl.includes("job")) ||
+
+/* MIGROS */
+(cleanUrl.includes("migros.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* CHUV */
+(cleanUrl.includes("chuv.ch") &&
+cleanUrl.includes("emploi")) ||
+
+/* GENERIQUE */
+cleanUrl.includes("/jobs/view/") ||
+cleanUrl.includes("/job/") ||
+cleanUrl.includes("/emploi/") ||
+cleanUrl.includes("/offre/")
+);
+}
+
+/* ==========================================
+RAPATRIEMENT DESCRIPTIFS
+========================================== */
+
+async function enrichOffersDescriptions(list){
+
+if(!Array.isArray(list)){
+return [];
+}
+
+const results = await Promise.all(
+list.map(async (offer) => {
+
+const isEtatVaud = offer.source === "État de Vaud";
+
+const descriptionMissing =
+!offer.description ||
+offer.description === "Descriptif non disponible." ||
+isEtatVaud;
+
+const realOfferUrl =
+isRealOfferUrlClient(offer.offerUrl);
+
+if(!descriptionMissing || !realOfferUrl){
+return offer;
+}
+
+if(!offer.offerUrl){
+return offer;
+}
+
+try{
+
+const response =
+await fetch("/api/extract-description", {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+url:offer.offerUrl,
+source:offer.source || "",
+id:offer.id || ""
+})
+});
+
+if(!response.ok){
+throw new Error("HTTP " + response.status);
+}
+
+const data =
+await response.json();
+
+// Normalisation contrat
+const CONTRACT_FR_MAP = {
+"permanent":"CDI","unlimited":"CDI","durée indéterminée":"CDI","duree indeterminee":"CDI",
+"fixed-term":"CDD","temporaire":"CDD","temporary":"CDD","befristet":"CDD",
+"internship":"Stage","stage":"Stage","apprentissage":"Apprentissage","apprenticeship":"Apprentissage"
+};
+function normalizeContract(val){
+if(!val) return "";
+const low = val.toLowerCase().replace(/\s*(droit public|droit privé|de droit public|de droit privé).*/i,"").trim();
+return CONTRACT_FR_MAP[low] || val.replace(/\s*(droit public|droit privé|de droit public|de droit privé).*/i,"").trim();
+}
+
+// Formatage date avec texte libre conservé (ex: "01.08.2026 ou à convenir")
+function formatDateField(val){
+if(!val) return "";
+// Remplacer une date ISO ou jj/mm/aaaa en début de chaîne
+return val.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3.$2.$1")
+          .replace(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/, "$1.$2.$3");
+}
+
+// Validation applyBefore — rejeter si pas une date réelle
+function validApplyBefore(val){
+if(!val) return "";
+const clean = String(val).trim();
+// Doit contenir au moins DD.MM.YYYY ou YYYY-MM-DD
+if(/\d{1,2}[./]\d{1,2}[./]\d{4}/.test(clean) || /\d{4}-\d{2}-\d{2}/.test(clean)){
+  return formatDateField(clean);
+}
+return "";
+}
+
+return {
+...offer,
+description: data.description || "Descriptif non disponible.",
+rate: data.rate || offer.rate || "",
+contract: normalizeContract(data.contract) || offer.contract || "",
+address: data.address || offer.address || "",
+startDate: formatDateField(data.startDate || offer.startDate || ""),
+applyBefore: validApplyBefore(data.applyBefore || offer.applyBefore || ""),
+salaryGrade: data.salaryGrade || offer.salaryGrade || "",
+salary: data.salary || offer.salary || "",
+date: offer.date || ""
+};
+
+}catch(error){
+
+console.warn(
+"Description non récupérée :",
+offer.title,
+error
 );
 
-console.log(
-"JOB FINDER VAUD V14.6 PREMIUM IA"
+return offer;
+
+}
+
+})
 );
 
-console.log(
-`Serveur démarré : http://localhost:${PORT}`
+return results;
+
+}
+
+/* ==========================================
+DECOUVERTE URLS REELLES
+========================================== */
+
+async function discoverRealOfferUrls(list){
+
+const safeList =
+Array.isArray(list) ? list : [];
+
+const results = await Promise.all(
+safeList.map(async (offer) => {
+
+try{
+
+if(!offer || !offer.offerUrl){
+return offer;
+}
+
+if(isRealOfferUrlClient(offer.offerUrl)){
+return offer;
+}
+
+const response =
+await fetch("/api/discover-offer-url", {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({ offer })
+});
+
+if(!response.ok) return offer;
+
+const result = await response.json();
+
+if(result.success && result.discoveredUrl){
+return {
+...offer,
+offerUrl: result.discoveredUrl,
+originalOfferUrl: offer.offerUrl,
+urlDiscovered: true
+};
+}
+
+return offer;
+
+}catch(error){
+
+console.warn(
+"Découverte URL impossible :",
+offer?.title || "",
+error
 );
 
-console.log(
-"=================================="
+return offer;
+
+}
+
+})
+);
+
+return results;
+
+}
+
+
+/* ==========================================
+CHARGEMENT OFFRES
+========================================== */
+
+async function loadOffers(skipRender = false){
+
+try{
+
+const response =
+await fetch("/api/offers");
+
+if(!response.ok){
+throw new Error("HTTP " + response.status);
+}
+
+const data =
+await response.json();
+
+offers =
+Array.isArray(data)
+? data
+: [];
+
+offers =
+offers.map(offer => ({
+...offer,
+
+id:
+String(
+offer.id ||
+offer.externalId ||
+generateId()
+),
+
+offerUrl:
+offer.offerUrl ||
+offer.url ||
+offer.link ||
+"",
+
+address:
+offer.address || "",
+
+salary:
+offer.salary || "",
+
+source:
+offer.source || "Source inconnue",
+
+sector:
+offer.sector || "",
+
+location:
+offer.location ||
+offer.region ||
+"",
+
+rate:
+offer.rate ||
+offer.workRate ||
+"",
+
+contract:
+offer.contract ||
+offer.contractType ||
+"",
+
+title:
+offer.title || "",
+
+company:
+offer.company ||
+offer.employer ||
+"",
+
+date:
+offer.date ||
+offer.publishedAt ||
+"",
+
+description:
+offer.description ||
+offer.details ||
+offer.summary ||
+offer.tasks ||
+offer.text ||
+offer.content ||
+offer.body ||
+offer.profile ||
+offer.mission ||
+offer.responsibilities ||
+"Descriptif non disponible."
+}));
+
+offers =
+await discoverRealOfferUrls(offers);
+
+offers =
+await enrichOffersDescriptions(offers);
+
+filteredOffers = [...offers];
+
+const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
+const hasAny = rawFilters && Object.keys(rawFilters)
+    .filter(k => k !== "sort")
+    .some(k => (rawFilters[k] || []).length > 0);
+
+if(!skipRender){
+    applyFilters();
+}
+
+updateDashboard();
+updateBestMatch();
+updateNotifications();
+updateStatistics();
+
+}
+catch(error){
+
+console.error(
+"Erreur chargement offres :",
+error
+);
+
+offers = [];
+filteredOffers = [];
+
+if(offersContainer){
+offersContainer.innerHTML = `
+<div class="offer-card">
+<div class="offer-title">
+❌ Erreur de chargement des offres
+</div>
+<div class="offer-reasons">
+Ouvre la console du navigateur pour voir le détail technique.
+</div>
+</div>
+`;
+}
+
+}
+
+}
+
+/* ==========================================
+ACTUALISER OFFRES V14.6
+========================================== */
+
+async function refreshOffers(){
+
+try{
+
+const response = await fetch("/api/scrape", { method: "POST" });
+const data = await response.json();
+
+await loadOffers();
+applyFilters();
+showSuccess(`${filteredOffers.length} offres correspondent à vos critères !`);
+
+}catch(error){
+
+console.error("Erreur refresh:", error);
+await loadOffers();
+showInfo("Offres actualisées");
+
+}
+
+}
+
+/* ==========================================
+RENDER OFFRES
+========================================== */
+
+function renderOffers(data){
+if(!offersContainer){
+return;
+}
+
+offersContainer.innerHTML = "";
+
+updateResultsSummary(data);
+
+if(!data || data.length === 0){
+offersContainer.innerHTML = `
+<div class="offer-card">
+<div class="offer-title">
+Aucune offre trouvée
+</div>
+</div>
+`;
+
+return;
+}
+
+data.forEach(offer => {
+const card = createOfferCard(offer);
+offersContainer.appendChild(card);
+});
+}
+
+/* ==========================================
+CREATION CARTE OFFRE
+========================================== */
+
+function createOfferCard(offer){
+
+const card =
+document.createElement("div");
+
+card.className = "offer-card";
+card.setAttribute("data-offer-id", offer.id);
+card.style.cursor = "pointer";
+card.addEventListener("click", (e) => {
+    if(e.target.closest("button")) return;
+    openTab("filters");
+    setTimeout(() => {
+        const fullCard = document.querySelector(`[data-offer-id="${offer.id}"]`);
+        if(fullCard) fullCard.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+});
+
+const details =
+calculateMatchDetails(offer);
+
+const match =
+details.score;
+
+const matchClass =
+getMatchClass(match);
+
+const badge =
+getMatchBadge(match);
+
+const rawDesc =
+offer.description ||
+offer.details ||
+offer.summary ||
+offer.tasks ||
+offer.text ||
+offer.content ||
+"Descriptif non disponible.";
+
+const descHtml = offer.source === "Jobup"
+? escapeHTML(rawDesc).replace(/\n/g, "<br>")
+: escapeHTML(rawDesc);
+
+// Nettoyage + formatage adresse
+const formatAddress = (addr) => {
+if(!addr) return "";
+const clean = addr
+.replace(/À propos de cette offre[\s\S]*/i, "")
+.replace(/Autres recherches[\s\S]*/i, "")
+.replace(/Offres similaires[\s\S]*/i, "")
+.trim();
+return clean.split("\n")
+.map(l => l.trim())
+.filter(Boolean)
+.join("<br>");
+};
+
+const addressHtml = formatAddress(offer.address);
+
+// Vérifier si la ville est déjà dans l'adresse
+const locationInAddress = offer.address &&
+offer.location &&
+offer.address.toLowerCase().includes(offer.location.toLowerCase());
+
+card.innerHTML = `
+<div class="offer-title">
+💼 ${escapeHTML(offer.title)}
+</div>
+
+<div class="offer-employer-block">
+<div class="offer-company">🏢 ${escapeHTML(offer.company)}</div>
+${addressHtml ? `<div class="offer-address">${addressHtml}</div>` : ""}
+</div>
+
+${!locationInAddress ? `
+<div class="offer-location">
+📍 ${escapeHTML(offer.location)}
+</div>
+` : ""}
+
+${offer.rate ? `
+<div class="offer-meta">
+⏰ Taux : ${escapeHTML(offer.rate)}
+</div>
+` : ""}
+
+${offer.contract ? `
+<div class="offer-meta">
+📄 ${escapeHTML(offer.contract)}
+</div>
+` : ""}
+
+${offer.startDate ? `
+<div class="offer-meta">
+🗓️ Entrée : ${escapeHTML(offer.startDate)}
+</div>
+` : ""}
+
+${offer.applyBefore ? `
+<div class="offer-meta">
+⏳ Postuler avant : ${escapeHTML(formatDate(offer.applyBefore))}
+</div>
+` : ""}
+
+${offer.salaryGrade ? `
+<div class="offer-meta">
+💰 Classe salariale : ${escapeHTML(offer.salaryGrade)}
+</div>
+` : ""}
+
+${offer.salary ? `
+<div class="offer-salary">
+💰 ${escapeHTML(offer.salary)}
+</div>
+` : ""}
+
+<div class="offer-source">
+🔎 ${escapeHTML(offer.source)}
+</div>
+
+<div class="offer-date">
+📅 Publié le : ${escapeHTML(formatDate(offer.date))}
+</div>
+
+${offer.offerUrl ? `
+<div class="offer-url">
+🌐 URL disponible
+</div>
+` : ""}
+
+<div class="offer-match ${matchClass}">
+🤖 Match IA : ${match}% = ${escapeHTML(badge)}
+</div>
+
+<div class="offer-reasons">
+
+<div class="ia-reasons-grid">
+<div>✓ Métier compatible</div>
+<div>✓ Contrat compatible</div>
+<div>✓ Secteur intéressant</div>
+<div>✓ Salaire intéressant</div>
+<div>✓ Expérience cohérente</div>
+</div>
+
+<div class="ia-check-block">
+<strong>🧐 Points à vérifier :</strong>
+<ul>
+<li>Compétences spécifiques à confirmer</li>
+<li>Compétences CV peu visibles</li>
+</ul>
+</div>
+
+</div>
+
+<button class="description-toggle">
+▼ Voir le descriptif complet
+</button>
+
+<div class="offer-description hidden">
+${descHtml}
+</div>
+
+<div class="offer-actions">
+<button class="offer-btn favorite-btn">⭐ Favori</button>
+<button class="offer-btn apply-btn">🚀 Postuler</button>
+<button class="offer-btn ai-btn">🤖 Lettre IA</button>
+<button class="offer-btn letter-btn">📧 Email</button>
+<button class="offer-btn link-btn">🔗 Offre</button>
+</div>
+`;
+
+const favBtn =
+card.querySelector(".favorite-btn");
+
+const applyBtn =
+card.querySelector(".apply-btn");
+
+const aiBtn =
+card.querySelector(".ai-btn");
+
+const letterBtn =
+card.querySelector(".letter-btn");
+
+const linkBtn =
+card.querySelector(".link-btn");
+
+const descriptionToggle =
+card.querySelector(".description-toggle");
+
+const descriptionBlock =
+card.querySelector(".offer-description");
+
+favBtn?.addEventListener("click", () => addFavorite(offer));
+
+if(descriptionToggle && descriptionBlock){
+descriptionToggle.addEventListener("click", () => {
+descriptionBlock.classList.toggle("hidden");
+const isHidden = descriptionBlock.classList.contains("hidden");
+descriptionToggle.textContent = isHidden
+? "▼ Voir le descriptif complet"
+: "▲ Masquer le descriptif";
+});
+}
+
+applyBtn?.addEventListener("click", () => addApplication(offer));
+
+aiBtn?.addEventListener("click", () => {
+selectedOffer = offer;
+openTab("ai");
+showInfo("Offre sélectionnée pour lettre IA");
+});
+
+letterBtn?.addEventListener("click", () => {
+selectedOffer = offer;
+openTab("letters");
+showInfo("Offre sélectionnée pour email");
+});
+
+linkBtn?.addEventListener("click", () => openOffer(offer));
+
+return card;
+}
+
+
+/* ==========================================
+OUVRIR OFFRE V14.6
+========================================== */
+
+function openOffer(offer){
+
+if(!offer){
+showInfo("Aucune offre sélectionnée");
+return;
+}
+
+const url =
+String(
+offer.offerUrl ||
+offer.url ||
+offer.link ||
+""
+).trim();
+
+if(!url){
+showInfo("Aucun lien disponible pour cette offre");
+return;
+}
+
+window.open(
+url,
+"_blank",
+"noopener,noreferrer"
 );
 
 }
-);
+
 
 /* ==========================================
-FIN SERVER.JS
+BEST MATCH
+========================================== */
+
+function updateBestMatch(){
+
+const container =
+document.getElementById("bestMatchContainer");
+
+if(!container){
+return;
+}
+
+const list =
+Array.isArray(filteredOffers) && filteredOffers.length > 0
+? filteredOffers
+: offers;
+
+container.innerHTML = "";
+
+if(!Array.isArray(list) || list.length === 0){
+
+container.innerHTML = `
+<div class="empty-state">
+Aucune offre analysée
+</div>
+`;
+
+return;
+
+}
+
+const sorted =
+[...list]
+.filter(offer => offer && offer.id)
+.sort((a,b) =>
+calculateMatch(b) - calculateMatch(a)
+)
+.slice(0, 3);
+
+if(sorted.length === 0){
+
+container.innerHTML = `
+<div class="empty-state">
+Aucune offre analysée
+</div>
+`;
+
+return;
+
+}
+
+bestOffer =
+sorted[0];
+
+sorted.forEach((offer, index) => {
+
+const match =
+calculateMatch(offer);
+
+const badge =
+getMatchBadge(match);
+
+const matchClass =
+getMatchClass(match);
+
+const topLabel =
+index === 0
+? "🔥 Top Match"
+: `#${index + 1}`;
+
+const card =
+document.createElement("div");
+
+card.className =
+index === 0
+? "offer-card best-match"
+: "offer-card";
+
+card.setAttribute(
+"data-offer-id",
+offer.id
+);
+
+card.style.cursor =
+"pointer";
+
+card.innerHTML = `
+<div class="offer-title">
+💼 ${escapeHTML(offer.title)}
+</div>
+
+<div class="offer-company">
+🏢 ${escapeHTML(offer.company)} • ${escapeHTML(topLabel)}
+</div>
+
+<div class="offer-match ${matchClass}">
+🤖 Match IA : ${match}% — ${escapeHTML(badge)}
+</div>
+`;
+
+card.addEventListener("click", () => {
+
+openTab("filters");
+
+setTimeout(() => {
+
+const fullCard =
+document.querySelector(
+`#offersContainer [data-offer-id="${offer.id}"]`
+);
+
+if(fullCard){
+
+fullCard.scrollIntoView({
+behavior: "smooth",
+block: "center"
+});
+
+fullCard.style.outline =
+"2px solid #7c3aed";
+
+setTimeout(() => {
+fullCard.style.outline = "";
+}, 2000);
+
+}
+
+}, 400);
+
+});
+
+container.appendChild(card);
+
+});
+
+}
+
+/* ==========================================
+RESULTS SUMMARY
+========================================== */
+
+function updateResultsSummary(data){
+const list =
+safeArray(data);
+
+const total =
+list.length;
+
+const recommended =
+list.filter(o =>
+calculateMatch(o) >= MATCH_LEVELS.excellent
+).length;
+
+const recent =
+list.filter(o =>
+String(o.date || "")
+.toLowerCase()
+.includes("aujourd")
+).length;
+
+safeSetText(
+document.getElementById("resultsCounter"),
+`💼 Offres trouvées : ${total}`
+);
+
+safeSetText(
+document.getElementById("recommendedCounter"),
+`🔥 Très recommandées : ${recommended}`
+);
+
+safeSetText(
+document.getElementById("newOffersCounter"),
+`🆕 Nouvelles offres : ${recent}`
+);
+
+safeSetText(
+document.getElementById("averageMatchCounter"),
+`🤖 Match moyen IA : ${getAverageMatch(list)}%`
+);
+}
+
+/* ==========================================
+FAVORIS
+========================================== */
+
+function addFavorite(offer){
+const exists =
+favorites.find(f => f.id === offer.id);
+
+if(exists){
+showInfo("Déjà dans les favoris");
+return;
+}
+
+favorites.push({
+...offer,
+priority: getMatchBadge(calculateMatch(offer)),
+match: calculateMatch(offer),
+savedAt: new Date().toISOString()
+});
+
+saveFavorites();
+renderFavorites();
+updateDashboard();
+
+showSuccess("Ajouté aux favoris");
+}
+
+function renderFavorites(){
+if(!favoritesContainer){
+return;
+}
+
+favoritesContainer.innerHTML = "";
+
+if(favorites.length === 0){
+favoritesContainer.innerHTML = `
+<div class="offer-card">
+<div class="offer-title">Aucun favori</div>
+</div>
+`;
+
+return;
+}
+
+favorites.forEach(item => {
+const card =
+document.createElement("div");
+
+card.className = "offer-card";
+
+card.innerHTML = `
+<div class="offer-title">
+⭐ ${escapeHTML(item.title)}
+</div>
+<div class="offer-company">
+🏢 ${escapeHTML(item.company)}
+</div>
+<div class="offer-location">
+📍 ${escapeHTML(item.location)}
+</div>
+<div class="offer-meta">
+${escapeHTML(item.priority || getMatchBadge(calculateMatch(item)))}
+</div>
+<div class="offer-actions">
+<button class="offer-btn open">🔗</button>
+<button class="offer-btn delete">🗑️</button>
+</div>
+`;
+
+card.querySelector(".open")?.addEventListener("click", () => {
+openOffer(item);
+});
+
+card.querySelector(".delete")?.addEventListener("click", () => {
+favorites =
+favorites.filter(f => f.id !== item.id);
+
+saveFavorites();
+renderFavorites();
+updateDashboard();
+});
+
+favoritesContainer.appendChild(card);
+});
+}
+
+/* ==========================================
+CANDIDATURES
+========================================== */
+
+function addApplication(offer){
+const exists =
+applications.find(a => a.id === offer.id);
+
+if(exists){
+showInfo("Déjà en candidature");
+return;
+}
+
+applications.push({
+...offer,
+status: "Envoyée",
+match: calculateMatch(offer),
+createdAt: new Date().toISOString(),
+lastUpdate: new Date().toISOString()
+});
+
+saveApplications();
+renderApplications();
+updateDashboard();
+
+showSuccess("Candidature ajoutée");
+}
+
+function renderApplications(){
+const sent =
+document.getElementById("sentApplications");
+
+const response =
+document.getElementById("receivedResponses");
+
+const interview =
+document.getElementById("scheduledInterviews");
+
+const hired =
+document.getElementById("successfulApplications");
+
+if(!sent || !response || !interview || !hired){
+return;
+}
+
+sent.innerHTML = "";
+response.innerHTML = "";
+interview.innerHTML = "";
+hired.innerHTML = "";
+
+applications.forEach(app => {
+const card =
+document.createElement("div");
+
+card.className = "offer-card";
+
+card.innerHTML = `
+<div class="offer-title">
+💼 ${escapeHTML(app.title)}
+</div>
+<div class="offer-company">
+🏢 ${escapeHTML(app.company)}
+</div>
+
+<div class="offer-meta">
+📌 ${escapeHTML(app.status)}
+&nbsp;&nbsp;|&nbsp;&nbsp;
+🤖 ${calculateMatch(app)}%
+</div>
+
+<div class="offer-actions">
+<button class="offer-btn status">🔄</button>
+<button class="offer-btn open">🔗</button>
+<button class="offer-btn delete">🗑️</button>
+</div>
+`;
+
+card.querySelector(".status")?.addEventListener("click", () => {
+changeStatus(app.id);
+});
+
+card.querySelector(".open")?.addEventListener("click", () => {
+openOffer(app);
+});
+
+card.querySelector(".delete")?.addEventListener("click", () => {
+removeApplication(app.id);
+});
+
+if(app.status === "Envoyée"){
+sent.appendChild(card);
+}
+
+if(app.status === "Réponse"){
+response.appendChild(card);
+}
+
+if(app.status === "Entretien"){
+interview.appendChild(card);
+}
+
+if(app.status === "Embauche"){
+hired.appendChild(card);
+}
+});
+
+updateApplicationCounters();
+}
+
+function changeStatus(id){
+const app =
+applications.find(a => a.id === id);
+
+if(!app){
+return;
+}
+
+if(app.status === "Envoyée"){
+app.status = "Réponse";
+}else if(app.status === "Réponse"){
+app.status = "Entretien";
+}else if(app.status === "Entretien"){
+app.status = "Embauche";
+}else{
+app.status = "Envoyée";
+}
+
+app.lastUpdate =
+new Date().toISOString();
+
+saveApplications();
+renderApplications();
+updateDashboard();
+}
+
+function removeApplication(id){
+applications =
+applications.filter(a => a.id !== id);
+
+saveApplications();
+renderApplications();
+updateDashboard();
+}/* ==========================================
+COMPTEURS CANDIDATURES
+========================================== */
+
+function updateApplicationCounters(){
+const sentCount =
+applications.filter(a => a.status === "Envoyée").length;
+
+const responseCount =
+applications.filter(a => a.status === "Réponse").length;
+
+const interviewCount =
+applications.filter(a => a.status === "Entretien").length;
+
+const hiredCount =
+applications.filter(a => a.status === "Embauche").length;
+
+safeSetText(
+document.getElementById("applicationsCount"),
+sentCount
+);
+
+safeSetText(
+document.getElementById("responsesCount"),
+responseCount
+);
+
+safeSetText(
+document.getElementById("interviewsCount"),
+interviewCount
+);
+
+safeSetText(
+document.getElementById("hiredCount"),
+hiredCount
+);
+
+updateStatistics();
+}
+
+/* ==========================================
+STATISTIQUES
+========================================== */
+
+function updateStatistics(){
+const total =
+applications.length;
+
+const response =
+applications.filter(a => a.status === "Réponse").length;
+
+const interview =
+applications.filter(a => a.status === "Entretien").length;
+
+const hired =
+applications.filter(a => a.status === "Embauche").length;
+
+const responseRate =
+total ? Math.round((response / total) * 100) : 0;
+
+const interviewRate =
+total ? Math.round((interview / total) * 100) : 0;
+
+const successRate =
+total ? Math.round((hired / total) * 100) : 0;
+
+safeSetText(
+document.getElementById("responseRate"),
+responseRate + "%"
+);
+
+safeSetText(
+document.getElementById("interviewRate"),
+interviewRate + "%"
+);
+
+safeSetText(
+document.getElementById("successRate"),
+successRate + "%"
+);
+
+safeSetText(
+document.getElementById("averageMatch"),
+getAverageMatch(filteredOffers.length ? filteredOffers : offers) + "%"
+);
+}
+
+/* ==========================================
+LETTRES IA - HELPERS
+========================================== */
+
+function getApplicantBlock(){
+return [
+"François L.",
+"Adresse",
+"NPA Ville",
+"Téléphone",
+"Email"
+].join("\n");
+}
+
+function getEmployerBlock(offer){
+return [
+offer.company || "Entreprise",
+offer.address || "",
+offer.location || ""
+]
+.filter(Boolean)
+.join("\n");
+}
+
+function getLetterHeader(offer){
+const title =
+offer.title ||
+"Candidature";
+
+return `
+${getApplicantBlock()}
+
+${getEmployerBlock(offer)}
+
+Lausanne, le ${new Date().toLocaleDateString("fr-CH")}
+
+${title}
+`;
+}
+
+function generateShortLetter(offer){
+if(!offer){
+return;
+}
+
+const letter = `
+${getLetterHeader(offer)}
+
+Madame, Monsieur,
+
+Je vous adresse ma candidature pour le poste de ${offer.title} au sein de ${offer.company || "votre entreprise"}.
+
+Motivé, rigoureux et à l’aise dans les tâches administratives, je souhaite mettre mes compétences au service de votre équipe.
+
+Je reste volontiers à votre disposition pour un entretien.
+
+Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
+
+François L.
+`.trim();
+
+displayLetter(letter);
+}
+
+function generateStandardLetter(offer){
+if(!offer){
+return;
+}
+
+const letter = `
+${getLetterHeader(offer)}
+
+Madame, Monsieur,
+
+Suite à votre annonce, je souhaite vous proposer ma candidature pour le poste de ${offer.title}.
+
+Mon parcours m’a permis de développer de solides compétences en gestion administrative, suivi de dossiers, communication professionnelle et utilisation des outils numériques. Ces compétences me permettent de travailler avec méthode, précision et sens des priorités.
+
+Votre offre correspond à mon intérêt pour un poste structuré, utile et orienté service. Je serais heureux de pouvoir contribuer efficacement aux activités de ${offer.company || "votre organisation"}.
+
+Je me tiens volontiers à votre disposition pour un entretien afin de vous présenter plus en détail ma motivation.
+
+Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
+
+François L.
+`.trim();
+
+displayLetter(letter);
+}
+
+function generatePremiumLetter(offer){
+if(!offer){
+return;
+}
+
+const score =
+calculateMatch(offer);
+
+const details =
+calculateMatchDetails(offer);
+
+const strengths =
+details.reasons.length
+? details.reasons.join(", ").toLowerCase()
+: "mon profil administratif et polyvalent";
+
+const letter = `
+${getLetterHeader(offer)}
+
+Madame, Monsieur,
+
+Votre offre pour le poste de ${offer.title} a retenu toute mon attention. Elle présente une compatibilité estimée à ${score}% avec mon profil, notamment grâce aux éléments suivants : ${strengths}.
+
+Mon expérience en gestion de dossiers, organisation administrative, suivi des informations et utilisation des outils numériques me permet d’aborder ce poste avec sérieux et efficacité. Je suis particulièrement attentif à la qualité du travail fourni, à la clarté des échanges et au respect des priorités.
+
+Rejoindre ${offer.company || "votre équipe"} représenterait pour moi l’opportunité de mettre mes compétences au service d’un environnement professionnel exigeant et concret.
+
+Je serais heureux de pouvoir vous rencontrer afin d’échanger sur ma candidature et sur les besoins du poste.
+
+Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
+
+François L.
+`.trim();
+
+displayLetter(letter);
+}
+
+/* ==========================================
+AFFICHAGE LETTRE
+========================================== */
+
+function displayLetter(letter){
+currentLetter = letter;
+
+safeSetText(
+document.getElementById("letterResult"),
+letter
+);
+
+openTab("ai");
+}
+
+/* ==========================================
+SAUVEGARDE LETTRES
+========================================== */
+
+function saveCurrentLetter(){
+if(!currentLetter){
+showInfo("Aucune lettre à sauvegarder");
+return;
+}
+
+lettersHistory.unshift({
+id: generateId(),
+content: currentLetter,
+offerId: selectedOffer ? selectedOffer.id : null,
+offerTitle: selectedOffer ? selectedOffer.title : "",
+company: selectedOffer ? selectedOffer.company : "",
+createdAt: new Date().toISOString()
+});
+
+saveLetters();
+renderLettersHistory();
+
+showSuccess("Lettre sauvegardée");
+}
+
+function renderLettersHistory(){
+const container =
+lettersHistoryContainer;
+
+if(!container){
+return;
+}
+
+container.innerHTML = "";
+
+if(lettersHistory.length === 0){
+container.innerHTML = `
+<div class="offer-card">
+<div class="offer-title">Aucune lettre sauvegardée</div>
+</div>
+`;
+
+return;
+}
+
+lettersHistory.forEach(item => {
+const div =
+document.createElement("div");
+
+div.className = "letter-history-card";
+
+div.innerHTML = `
+<div class="letter-history-title">
+📄 ${escapeHTML(item.offerTitle || "Lettre")}
+</div>
+<div class="letter-history-date">
+${escapeHTML(formatDate(item.createdAt))}
+</div>
+<div class="offer-company">
+🏢 ${escapeHTML(item.company || "")}
+</div>
+<div class="offer-actions">
+<button class="offer-btn view">👁️</button>
+<button class="offer-btn delete">🗑️</button>
+</div>
+`;
+
+div.querySelector(".view")?.addEventListener("click", () => {
+displayLetter(item.content);
+});
+
+div.querySelector(".delete")?.addEventListener("click", () => {
+deleteLetter(item.id);
+});
+
+container.appendChild(div);
+});
+}
+
+function deleteLetter(id){
+lettersHistory =
+lettersHistory.filter(l => l.id !== id);
+
+saveLetters();
+renderLettersHistory();
+}
+
+function copyCurrentLetter(){
+if(!currentLetter){
+showInfo("Aucune lettre à copier");
+return;
+}
+
+navigator.clipboard
+.writeText(currentLetter)
+.then(() => {
+showSuccess("Lettre copiée");
+})
+.catch(() => {
+showError("Copie impossible");
+});
+}
+
+/* ==========================================
+EXPORT PDF / WORD / EMAIL
+========================================== */
+
+function exportPDF(){
+if(!currentLetter){
+showInfo("Aucune lettre");
+return;
+}
+
+const printable =
+window.open("", "_blank");
+
+if(!printable){
+showError("Fenêtre PDF bloquée par le navigateur");
+return;
+}
+
+printable.document.write(`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Lettre de motivation</title>
+<style>
+body{
+font-family: Arial, sans-serif;
+line-height: 1.6;
+padding: 40px;
+white-space: pre-wrap;
+}
+</style>
+</head>
+<body>${escapeHTML(currentLetter)}</body>
+</html>
+`);
+
+printable.document.close();
+printable.focus();
+printable.print();
+
+showSuccess("Fenêtre PDF prête");
+}
+
+function exportWord(){
+if(!currentLetter){
+showInfo("Aucune lettre");
+return;
+}
+
+const html =
+`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Lettre de motivation</title>
+</head>
+<body>
+<pre style="font-family: Arial; white-space: pre-wrap;">
+${escapeHTML(currentLetter)}
+</pre>
+</body>
+</html>
+`;
+
+const blob =
+new Blob(
+[html],
+{ type: "application/msword;charset=utf-8" }
+);
+
+const url =
+URL.createObjectURL(blob);
+
+const a =
+document.createElement("a");
+
+a.href = url;
+a.download = "lettre-motivation.doc";
+
+document.body.appendChild(a);
+a.click();
+a.remove();
+
+URL.revokeObjectURL(url);
+
+showSuccess("Word généré");
+}
+
+function exportEmail(){
+if(!currentLetter){
+showInfo("Aucune lettre");
+return;
+}
+
+const subject =
+encodeURIComponent(
+selectedOffer
+? `Candidature - ${selectedOffer.title}`
+: "Candidature"
+);
+
+const body =
+encodeURIComponent(currentLetter);
+
+window.location.href =
+`mailto:?subject=${subject}&body=${body}`;
+}
+
+
+/* ==========================================
+EXPORT JSON
+========================================== */
+
+function exportJSON(){
+const data = {
+version: APP_VERSION,
+favorites,
+applications,
+lettersHistory,
+settings,
+exportDate: new Date().toISOString()
+};
+
+const blob =
+new Blob(
+[JSON.stringify(data, null, 2)],
+{ type: "application/json" }
+);
+
+const url =
+URL.createObjectURL(blob);
+
+const a =
+document.createElement("a");
+
+a.href = url;
+a.download = "jobfinder_export_v14_2_0.json";
+
+document.body.appendChild(a);
+a.click();
+a.remove();
+
+URL.revokeObjectURL(url);
+
+showSuccess("Export JSON OK");
+}
+
+/* ==========================================
+EXPORT CSV
+========================================== */
+
+function csvEscape(value){
+return `"${String(value || "").replace(/"/g, '""')}"`;
+}
+
+function exportCSV(){
+let csv =
+"Type,Titre,Entreprise,Statut,Match\n";
+
+applications.forEach(app => {
+csv += [
+"CANDIDATURE",
+csvEscape(app.title),
+csvEscape(app.company),
+csvEscape(app.status),
+calculateMatch(app)
+].join(",") + "\n";
+});
+
+favorites.forEach(fav => {
+csv += [
+"FAVORI",
+csvEscape(fav.title),
+csvEscape(fav.company),
+csvEscape(fav.priority),
+calculateMatch(fav)
+].join(",") + "\n";
+});
+
+const blob =
+new Blob(
+[csv],
+{ type: "text/csv;charset=utf-8" }
+);
+
+const url =
+URL.createObjectURL(blob);
+
+const a =
+document.createElement("a");
+
+a.href = url;
+a.download = "jobfinder_export_v14_2_0.csv";
+
+document.body.appendChild(a);
+a.click();
+a.remove();
+
+URL.revokeObjectURL(url);
+
+showSuccess("CSV exporté");
+}
+
+/* ==========================================
+IMPORT DONNEES
+========================================== */
+
+function importData(file){
+const reader =
+new FileReader();
+
+reader.onload = (event) => {
+try{
+const data =
+JSON.parse(event.target.result);
+
+favorites =
+safeArray(data.favorites);
+
+applications =
+safeArray(data.applications);
+
+lettersHistory =
+safeArray(data.lettersHistory);
+
+settings =
+data.settings || {};
+
+saveFavorites();
+saveApplications();
+saveLetters();
+saveSettings();
+
+renderFavorites();
+renderApplications();
+renderLettersHistory();
+updateDashboard();
+
+showSuccess("Import OK");
+}catch(err){
+console.error(err);
+showError("Fichier invalide");
+}
+};
+
+reader.readAsText(file);
+}
+
+/* ==========================================
+BOUTONS LETTRES IA
+========================================== */
+
+generateShortLetterBtn?.addEventListener("click", () => {
+if(!selectedOffer){
+return showInfo("Sélectionnez une offre");
+}
+
+generateShortLetter(selectedOffer);
+});
+
+generateStandardLetterBtn?.addEventListener("click", () => {
+if(!selectedOffer){
+return showInfo("Sélectionnez une offre");
+}
+
+generateStandardLetter(selectedOffer);
+});
+
+generatePremiumLetterBtn?.addEventListener("click", () => {
+if(!selectedOffer){
+return showInfo("Sélectionnez une offre");
+}
+
+generatePremiumLetter(selectedOffer);
+});
+
+saveLetterBtn?.addEventListener("click", saveCurrentLetter);
+copyLetterBtn?.addEventListener("click", copyCurrentLetter);
+pdfLetterBtn?.addEventListener("click", exportPDF);
+wordLetterBtn?.addEventListener("click", exportWord);
+emailLetterBtn?.addEventListener("click", exportEmail);
+
+/* ==========================================
+BOUTONS EXPORT / IMPORT / RESET
+========================================== */
+
+document
+.getElementById("exportJsonBtn")
+?.addEventListener("click", exportJSON);
+
+document
+.getElementById("exportCsvBtn")
+?.addEventListener("click", exportCSV);
+
+document
+.getElementById("importBtn")
+?.addEventListener("click", () => {
+const file =
+document.getElementById("importFile")?.files?.[0];
+
+if(!file){
+showInfo("Choisir fichier");
+return;
+}
+
+importData(file);
+});
+
+document
+.getElementById("resetAppBtn")
+?.addEventListener("click", () => {
+if(!confirm("Reset total ?")){
+return;
+}
+
+favorites = [];
+applications = [];
+lettersHistory = [];
+
+saveFavorites();
+saveApplications();
+saveLetters();
+
+renderFavorites();
+renderApplications();
+renderLettersHistory();
+updateDashboard();
+
+showSuccess("Reset terminé");
+});
+
+
+/* ==========================================
+DASHBOARD
+========================================== */
+
+function updateDashboard(){
+
+const visibleOffers =
+Array.isArray(filteredOffers)
+? filteredOffers
+: [];
+
+const dashboardOffers =
+visibleOffers.length > 0
+? visibleOffers
+: [];
+
+safeSetText(
+document.getElementById("kpiOffers"),
+dashboardOffers.length
+);
+
+safeSetText(
+document.getElementById("kpiFavorites"),
+favorites.length
+);
+
+safeSetText(
+document.getElementById("kpiApplications"),
+applications.length
+);
+
+safeSetText(
+document.getElementById("kpiAI"),
+dashboardOffers.length > 0
+? getAverageMatch(dashboardOffers) + "%"
+: "0%"
+);
+
+}
+
+/* ==========================================
+NOTIFICATIONS
+========================================== */
+
+function updateNotifications(){
+
+const sourceCounts = {};
+
+offers.forEach(offer => {
+const source =
+offer.source || offer.company || "Autre";
+
+sourceCounts[source] =
+(sourceCounts[source] || 0) + 1;
+});
+
+const sourceLines =
+Object.entries(sourceCounts)
+.slice(0, 6)
+.map(([source,count]) => {
+return `
+<div class="alert-source-line">
+<span>• ${escapeHTML(source)}</span>
+<span>: ${count}</span>
+</div>
+`;
+})
+.join("");
+
+const newOffersBox =
+document.getElementById("newOffersNotifications");
+
+if(newOffersBox){
+newOffersBox.innerHTML =
+offers.length
+? `
+<div class="alert-line">
+• ${offers.length} nouvelles offres
+</div>
+${sourceLines}
+`
+: "Aucune nouvelle offre";
+}
+
+safeSetText(
+document.getElementById("favoritesNotifications"),
+favorites.length
+? "• " + favorites.length + " favoris mis à jour"
+: "Aucun favori suivi"
+);
+
+safeSetText(
+document.getElementById("applicationsNotifications"),
+applications.length
+? "• " + applications.length + " candidatures à suivre"
+: "Aucune relance"
+);
+
+safeSetText(
+document.getElementById("aiNotifications"),
+offers.length
+? "• " + offers.filter(offer => Number(offer.match || offer.score || 0) >= 90).length + " offres avec Match > 90%"
+: "Aucune alerte IA"
+);
+
+}
+
+/* ==========================================
+UTILS FINAL SYNC
+========================================== */
+
+function updateAll(){
+updateDashboard();
+updateApplicationCounters();
+updateBestMatch();
+updateNotifications();
+updateStatistics();
+}
+
+/* ==========================================
+INITIALISATION FINALE
+========================================== */
+
+function loadSavedCV(){
+
+const saved =
+safeJSON(
+localStorage.getItem("jobfinder_current_cv"),
+null
+);
+
+if(!saved){
+return;
+}
+
+if(saved.name){
+
+currentCV = saved;
+currentCVText = "";
+currentCVAnalysis = null;
+
+}else{
+
+currentCV =
+saved.cv || null;
+
+currentCVText =
+saved.text || "";
+
+currentCVAnalysis =
+saved.analysis || null;
+
+}
+
+if(!currentCV){
+return;
+}
+
+const cvName =
+currentCV.name || "CV sauvegardé";
+
+const cvExtension =
+currentCV.extension
+? currentCV.extension.toUpperCase()
+: "FORMAT";
+
+const cvSize =
+currentCV.size
+? Math.round(currentCV.size / 1024)
+: 0;
+
+if(
+currentCVText &&
+currentCVAnalysis
+){
+
+const skillsText =
+currentCVAnalysis.skills &&
+currentCVAnalysis.skills.length
+? currentCVAnalysis.skills.join(", ")
+: "Aucune compétence détectée";
+
+if(cvAnalysisResult){
+
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
+
+<h3>📄 CV analysé restauré</h3>
+
+<p class="cv-name"><strong>${cvName}</strong></p>
+
+<p class="cv-meta">📄 ${cvExtension} : ${cvSize} Ko</p>
+
+<p class="cv-meta">📝 ${currentCVAnalysis.wordCount || 0} mots détectés</p>
+
+<p class="cv-skills">🎯 ${skillsText}</p>
+
+</div>
+`;
+
+}
+
+return;
+
+}
+
+if(cvAnalysisResult){
+
+cvAnalysisResult.innerHTML = `
+<div class="cv-analysis-card">
+
+<h3>📄 CV chargé</h3>
+
+<p class="cv-name">${cvName}</p>
+
+<p class="cv-meta">📄 ${cvExtension} : ${cvSize} Ko • ✅ Prêt</p>
+
+<p class="cv-meta">ℹ️ Réimporte le fichier uniquement si tu veux lancer une nouvelle analyse.</p>
+
+</div>
+`;
+
+}
+
+}
+
+
+window.addEventListener("DOMContentLoaded", async () => {
+
+initUI();
+
+loadSavedCV();
+
+const rawFilters = safeJSON(localStorage.getItem("jobfinder_filters"), null);
+const hasAny = rawFilters && Object.keys(rawFilters)
+    .filter(k => k !== "sort")
+    .some(k => (rawFilters[k] || []).length > 0);
+const isFirstVisit = !hasAny;
+
+if(!isFirstVisit){
+restoreSavedFilters();
+openTab("filters");
+// Scraping auto une seule fois par session
+if(!sessionStorage.getItem("scraping_done")){
+sessionStorage.setItem("scraping_done", "1");
+const refreshOffersBtn = document.getElementById("refreshOffersBtn");
+let countdown3 = null;
+if(refreshOffersBtn){
+refreshOffersBtn.disabled = true;
+countdown3 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres...");
+}
+try{
+await refreshOffers();
+setTimeout(() => {
+const firstOffer = document.querySelector(".offer-card");
+if(firstOffer){
+firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+}, 300);
+}finally{
+if(refreshOffersBtn){
+clearInterval(countdown3);
+refreshOffersBtn.disabled = false;
+refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
+}
+}
+}
+}
+
+if(isFirstVisit){
+openTab("filters");
+setTimeout(() => {
+alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur 💡 Rechercher avec mes critères.");
+}, 800);
+}
+
+renderFavorites();
+renderApplications();
+renderLettersHistory();
+updateApplicationCounters();
+
+console.log("==================================");
+console.log("JOB FINDER VAUD");
+console.log("V14.6 PREMIUM IA");
+console.log("Extraction CV PDF / DOCX / TXT");
+console.log("Créateur F. Laratta");
+console.log("==================================");
+
+});
+
+/* ==========================================
+FIN APP.JS V14.6 PREMIUM IA
 ========================================== */
