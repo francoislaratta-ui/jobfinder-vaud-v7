@@ -3040,7 +3040,7 @@ const encodedKeyword =
 encodeURIComponent(`"${keyword}"`);
 
 const url =
-`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations&finder=findReqs;siteNumber=CX_1,limit=20,keyword=${encodedKeyword},sortBy=RELEVANCY`;
+`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations,requisitionList.secondaryLocations,flexFieldsFacet.values,requisitionList.requisitionFlexFields&finder=findReqs;siteNumber=CX_1,facetsList=LOCATIONS%3BWORK_LOCATIONS%3BWORKPLACE_TYPES%3BTITLES%3BCATEGORIES%3BORGANIZATIONS%3BPOSTING_DATES%3BFLEX_FIELDS,limit=25,keyword=${encodedKeyword},sortBy=RELEVANCY`;
 
 const html =
 await fetchExternalText(url);
@@ -3063,7 +3063,7 @@ rate: "",
 contract: "",
 source: "État de Vaud",
 offerUrl: job.Id
-? `https://offres-emploi.vd.ch/#fr/sites/CX_1/job/${job.Id}`
+? `https://offres-emploi.vd.ch/#fr/sites/CX_1/jobs/preview/${job.Id}/`
 : "",
 date: job.PostedDate || new Date().toISOString().split("T")[0],
 description: job.ShortDescriptionStr || "Descriptif non disponible.",
