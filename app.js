@@ -1678,21 +1678,6 @@ reasons.push(
 
 }
 
-/* BONUS SALAIRE */
-if(offer.salary){
-const salary =
-parseInt(
-String(offer.salary || "")
-.replace(/[^\d]/g, ""),
-10
-);
-
-if(!isNaN(salary) && salary >= 55000){
-score += 5;
-reasons.push("Salaire potentiellement intéressant");
-}
-}
-
 /* LIMITES */
 score = Math.max(0, Math.min(100, score));
 
