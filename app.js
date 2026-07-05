@@ -1259,7 +1259,17 @@ function applyFilters(){
 "employe administratif",
 "assistant de direction",
 "assistant rh",
-"conseiller clientele"
+"conseiller clientele",
+"secretaire",
+"secretaire administrative",
+"secretaire d unite",
+"secretaire comptable",
+"secretaire medicale",
+"secretaire technique",
+"secretaire de chantier",
+"secretaire facturation",
+"secretaire scolaire",
+"secretaire communale"
 ];
 
 const selectAllMetiers = document.getElementById("selectAllMetiers");
