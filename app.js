@@ -1519,12 +1519,12 @@ function calculateMatchDetails(offer){
 if(!offer){
 return {
 score: 0,
+metierCvScore: 0,
 reasons: [],
 missing: []
 };
 }
 
-let score = 0;
 const reasons = [];
 const missing = [];
 
@@ -1533,7 +1533,13 @@ normalizeText(
 getOfferText(offer)
 );
 
-/* METIER */
+/* ==========================================
+SCORE 1 - METIER & CV
+========================================== */
+
+let metierCvScore = 0;
+
+/* METIER (60%) */
 const jobOk =
 matchAnyOfferField(
 offer,
@@ -1541,72 +1547,13 @@ userProfile.targetJobs
 );
 
 if(jobOk){
-score += IA_WEIGHTS.jobMatch;
+metierCvScore += 60;
 reasons.push("Métier compatible");
 }else{
 missing.push("Métier peu ciblé");
 }
 
-/* SECTEUR */
-const sectorOk =
-matchAnyOfferField(
-offer,
-userProfile.preferredSectors
-);
-
-if(sectorOk){
-score += IA_WEIGHTS.sectorMatch;
-reasons.push("Secteur intéressant");
-}else{
-missing.push("Secteur moins prioritaire");
-}
-
-/* REGION */
-const regionOk =
-matchAnyOfferField(
-offer,
-userProfile.preferredRegions
-);
-
-if(regionOk){
-score += IA_WEIGHTS.regionMatch;
-reasons.push("Région compatible");
-}else{
-missing.push("Région à vérifier");
-}
-
-/* TAUX */
-const rateText =
-String(offer.rate || "");
-
-const rateOk =
-userProfile.preferredRates.some(rate =>
-containsNormalized(rateText, rate)
-) ||
-/50|60|70/.test(rateText);
-
-if(rateOk){
-score += IA_WEIGHTS.rateMatch;
-reasons.push("Taux compatible");
-}else{
-missing.push("Taux à vérifier");
-}
-
-/* CONTRAT */
-const contractOk =
-matchExactOrContains(
-offer.contract,
-userProfile.preferredContracts
-);
-
-if(contractOk){
-score += IA_WEIGHTS.contractBonus;
-reasons.push("Contrat compatible");
-}else{
-missing.push("Contrat à vérifier");
-}
-
-/* BONUS CV - COMPETENCES */
+/* COMPETENCES CV (35%) */
 if(
 currentCVAnalysis &&
 currentCVAnalysis.skills &&
@@ -1624,11 +1571,11 @@ if(matchingSkills.length > 0){
 
 const skillBonus =
 Math.min(
-IA_WEIGHTS.cvSkillsBonus,
+35,
 matchingSkills.length * 5
 );
 
-score += skillBonus;
+metierCvScore += skillBonus;
 
 reasons.push(
 "CV compatible : " + matchingSkills.join(", ")
@@ -1646,7 +1593,7 @@ missing.push("CV non analysé");
 
 }
 
-/* BONUS CV - LANGUES */
+/* LANGUES CV (5%) */
 if(
 currentCVAnalysis &&
 currentCVAnalysis.languages &&
@@ -1662,13 +1609,7 @@ normalizeText(language)
 
 if(matchingLanguages.length > 0){
 
-const languageBonus =
-Math.min(
-IA_WEIGHTS.cvLanguagesBonus,
-matchingLanguages.length * 5
-);
-
-score += languageBonus;
+metierCvScore += 5;
 
 reasons.push(
 "Langues CV utiles : " + matchingLanguages.join(", ")
@@ -1678,11 +1619,79 @@ reasons.push(
 
 }
 
+metierCvScore = Math.max(0, Math.min(100, metierCvScore));
+
+/* ==========================================
+SCORE 2 - MATCH GLOBAL
+========================================== */
+
+let score = metierCvScore * 0.60;
+
+/* SECTEUR (15%) */
+const sectorOk =
+matchAnyOfferField(
+offer,
+userProfile.preferredSectors
+);
+
+if(sectorOk){
+score += 15;
+reasons.push("Secteur intéressant");
+}else{
+missing.push("Secteur moins prioritaire");
+}
+
+/* REGION (15%) */
+const regionOk =
+matchAnyOfferField(
+offer,
+userProfile.preferredRegions
+);
+
+if(regionOk){
+score += 15;
+reasons.push("Région compatible");
+}else{
+missing.push("Région à vérifier");
+}
+
+/* TAUX (7%) */
+const rateText =
+String(offer.rate || "");
+
+const rateOk =
+userProfile.preferredRates.some(rate =>
+containsNormalized(rateText, rate)
+) ||
+/50|60|70/.test(rateText);
+
+if(rateOk){
+score += 7;
+reasons.push("Taux compatible");
+}else{
+missing.push("Taux à vérifier");
+}
+
+/* CONTRAT (3%) */
+const contractOk =
+matchExactOrContains(
+offer.contract,
+userProfile.preferredContracts
+);
+
+if(contractOk){
+score += 3;
+reasons.push("Contrat compatible");
+}else{
+missing.push("Contrat à vérifier");
+}
+
 /* LIMITES */
 score = Math.max(0, Math.min(100, score));
 
 return {
 score: Math.round(score),
+metierCvScore: Math.round(metierCvScore),
 reasons,
 missing
 };
@@ -2367,7 +2376,7 @@ ${offer.offerUrl ? `
 ` : ""}
 
 <div class="offer-match ${matchClass}">
-🤖 Match IA : ${match}% = ${escapeHTML(badge)}
+🤖 Match IA : ${match}% (Métier/CV : ${details.metierCvScore}%) = ${escapeHTML(badge)}
 </div>
 
 <div class="offer-reasons">
@@ -2550,8 +2559,11 @@ sorted[0];
 
 sorted.forEach((offer, index) => {
 
+const details =
+calculateMatchDetails(offer);
+
 const match =
-calculateMatch(offer);
+details.score;
 
 const badge =
 getMatchBadge(match);
@@ -2590,7 +2602,7 @@ card.innerHTML = `
 </div>
 
 <div class="offer-match ${matchClass}">
-🤖 Match IA : ${match}% — ${escapeHTML(badge)}
+🤖 Match IA : ${match}% (Métier/CV : ${details.metierCvScore}%) — ${escapeHTML(badge)}
 </div>
 `;
 
