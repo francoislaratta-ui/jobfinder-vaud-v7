@@ -962,15 +962,8 @@ salaryGrade: salaryGrade
 }
 
 // Autres sources — extraction HTML classique
-const client = url.startsWith("https") ? https : http;
+const html = await fetchExternalText(url);
 
-client.get(url,(response)=>{
-
-let html = "";
-response.on("data", chunk => { html += chunk; });
-response.on("end", ()=>{
-
-try{
 const description = extractUsefulDescription(html);
 
 // Extraction champs séparés pour Jobup
@@ -1041,17 +1034,6 @@ salary,
 date,
 applyBefore,
 startDate
-});
-}catch(error){
-console.error("Erreur analyse HTML :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur analyse HTML" });
-}
-
-});
-
-}).on("error",(error)=>{
-console.error("Erreur téléchargement :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur téléchargement page" });
 });
 
 }
