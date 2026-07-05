@@ -1413,7 +1413,9 @@ const headers = isJobup ? {
 "ora-irc-language":"fr"
 };
 
-const response = await axios.get(url, {
+const response = await axios.get(
+isJobup ? `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` : url,
+{
 headers,
 timeout: 20000,
 maxRedirects: 5,
