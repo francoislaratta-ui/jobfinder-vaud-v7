@@ -3073,10 +3073,15 @@ info.email || "Email"
 }
 
 function getEmployerBlock(offer){
+const locationInAddress =
+offer.address &&
+offer.location &&
+offer.address.toLowerCase().includes(offer.location.toLowerCase());
+
 return [
 offer.company || "Entreprise",
 offer.address || "",
-offer.location || ""
+locationInAddress ? "" : (offer.location || "")
 ]
 .filter(Boolean)
 .join("\n");
@@ -3131,10 +3136,15 @@ info.telephone || "Téléphone",
 info.email || "Email"
 ];
 
+const locationInAddress =
+offer.address &&
+offer.location &&
+offer.address.toLowerCase().includes(offer.location.toLowerCase());
+
 const employerLines = [
 offer.company || "Entreprise",
 offer.address || "",
-offer.location || ""
+locationInAddress ? "" : (offer.location || "")
 ].filter(Boolean);
 
 const dateStr =
