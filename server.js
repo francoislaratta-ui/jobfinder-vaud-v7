@@ -146,6 +146,21 @@ return html
 
 }
 
+function normalizeContractLabel(rawText){
+const t = String(rawText || "")
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "");
+
+if(/indetermine|\bcdi\b|permanent|unlimited|emploi fixe/.test(t)) return "CDI";
+if(/determine|\bcdd\b|temporaire|limited|fixed[- ]?term|temporary/.test(t)) return "CDD";
+if(/apprentissage|apprenticeship/.test(t)) return "Apprentissage";
+if(/\bstage\b|internship/.test(t)) return "Stage";
+if(/interim|interimaire/.test(t)) return "Intérim";
+
+return "";
+}
+
 function cleanHtmlTextJobup(html){
 
 if(!html){
@@ -981,8 +996,7 @@ const jobupText = cleanHtmlTextJobup(html);
 const rateMatch = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
 if(rateMatch) rate = rateMatch[1].trim();
 
-const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage|CDI|CDD|Stage|Intérim|Emploi fixe)/i);
-if(contractMatch) contract = contractMatch[1].trim();
+contract = normalizeContractLabel(jobupText);
 
 // Adresse — bloc "Adresse" OU "Lieu de travail"
 const addressBlockMatch = jobupText.match(/(?:Adresse|Lieu de travail)\s*\n([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories|D'autres utilisateurs)/i);
