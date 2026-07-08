@@ -1,3509 +1,2238 @@
-/* ==========================================
-JOB FINDER VAUD V14.6 PREMIUM IA
-Créateur : F. Laratta
-========================================== */
+<!DOCTYPE html>
+<html lang="fr">
 
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const cors = require("cors");
-const https = require("https");
-const http = require("http");
-const axios = require("axios");
+<head>
 
-const app = express();
+<meta charset="UTF-8">
 
-const PORT = process.env.PORT || 3000;
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-/* ==========================================
-MIDDLEWARES
-========================================== */
+<meta
+name="description"
+content="V14.6.0 Premium IA">
 
-app.use(cors());
-app.use(express.json());
+<meta
+name="theme-color"
+content="#c28b14">
 
-/* ==========================================
-FICHIERS
-========================================== */
+<title>
+Job Finder Vaud V14.6 PREMIUM IA
+</title>
 
-const OFFERS_FILE = path.join(
-__dirname,
-"offers.json"
-);
+<link
+rel="manifest"
+href="manifest.json">
 
-const FAVORITES_FILE = path.join(
-__dirname,
-"favorites.json"
-);
+<link
+rel="stylesheet"
+href="style.css">
 
-const APPLICATIONS_FILE = path.join(
-__dirname,
-"candidatures.json"
-);
-
-const LETTERS_FILE = path.join(
-__dirname,
-"letters.json"
-);
-
-/* ==========================================
-LECTURE JSON
-========================================== */
-
-function readJson(file){
-
-try{
-
-if(!fs.existsSync(file)){
-return [];
-}
-
-const data =
-fs.readFileSync(
-file,
-"utf8"
-);
-
-return JSON.parse(data);
-
-}
-catch(error){
-
-console.error(error);
-
-return [];
-
-}
-
-}
-
-/* ==========================================
-ECRITURE JSON
-========================================== */
-
-function writeJson(
-file,
-data
-){
-
-try{
-
-fs.writeFileSync(
-file,
-JSON.stringify(
-data,
-null,
-2
-),
-"utf8"
-);
-
-return true;
-
-}
-catch(error){
-
-console.error(error);
-
-return false;
-
-}
-
-}
-
-/* ==========================================
-NETTOYAGE HTML DESCRIPTION
-========================================== */
-
-function cleanHtmlText(html){
-
-if(!html){
-return "";
-}
-
-return html
-.replace(/<script[\s\S]*?<\/script>/gi, " ")
-.replace(/<style[\s\S]*?<\/style>/gi, " ")
-.replace(/<nav[\s\S]*?<\/nav>/gi, " ")
-.replace(/<header[\s\S]*?<\/header>/gi, " ")
-.replace(/<footer[\s\S]*?<\/footer>/gi, " ")
-.replace(/<br\s*\/?>/gi, "\n")
-.replace(/<\/p>/gi, "\n")
-.replace(/<\/li>/gi, "\n")
-.replace(/<\/div>/gi, "\n")
-.replace(/<[^>]+>/g, " ")
-.replace(/&nbsp;/g, " ")
-.replace(/&amp;/g, "&")
-.replace(/&quot;/g, "\"")
-.replace(/&#39;/g, "'")
-.replace(/&#x27;/g, "'")
-.replace(/&#x2F;/g, "/")
-.replace(/&#x3A;/g, ":")
-.replace(/[ \t]+/g, " ")
-.replace(/\n[ \t]+/g, "\n")
-.replace(/\n{3,}/g, "\n\n")
-.trim();
-
-}
-
-function normalizeContractLabel(rawText){
-const t = String(rawText || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-if(/indetermine|\bcdi\b|permanent|unlimited|emploi fixe/.test(t)) return "CDI";
-if(/determine|\bcdd\b|temporaire|limited|fixed[- ]?term|temporary/.test(t)) return "CDD";
-if(/apprentissage|apprenticeship/.test(t)) return "Apprentissage";
-if(/\bstage\b|internship/.test(t)) return "Stage";
-if(/interim|interimaire/.test(t)) return "Intérim";
-
-return "";
-}
-
-function cleanHtmlTextJobup(html){
-
-if(!html){
-return "";
-}
-
-return html
-.replace(/<script[\s\S]*?<\/script>/gi, "")
-.replace(/<style[\s\S]*?<\/style>/gi, "")
-.replace(/<br\s*\/?>/gi, "\n")
-.replace(/<\/p>/gi, "\n")
-.replace(/<\/li>/gi, "\n")
-.replace(/<\/h[1-6]>/gi, "\n")
-.replace(/<\/div>/gi, "\n")
-.replace(/<[^>]+>/g, "")
-.replace(/&nbsp;/g, " ")
-.replace(/&amp;/g, "&")
-.replace(/&quot;/g, "\"")
-.replace(/&#39;/g, "'")
-.replace(/&#x27;/g, "'")
-.replace(/[ \t]+/g, " ")
-.replace(/\n[ \t]+/g, "\n")
-.replace(/\n{3,}/g, "\n\n")
-.trim();
-
-}
-
-function extractUsefulDescription(html){
-
-const text = cleanHtmlText(html);
-
-if(!text){
-return "";
-}
-
-// Détection État de Vaud
-const isEtatVaud =
-html.includes("offres-emploi.vd.ch") ||
-html.includes("Pourquoi rejoindre l") ||
-html.includes("POSTULER MAINTENANT");
-
-if(isEtatVaud){
-
-const sections = [
-"DESCRIPTION DE L'EMPLOI",
-"Description de l'emploi",
-"RESPONSABILITÉS",
-"Responsabilités",
-"QUALIFICATIONS",
-"Qualifications",
-"QUI SOMMES-NOUS",
-"Qui sommes-nous",
-"POURQUOI REJOINDRE",
-"Pourquoi rejoindre"
-];
-
-const fields = [
-{ label: "Taux d'activité", regex: /Taux d'activité\s*([^\n]{3,30})/i },
-{ label: "Type de contrat", regex: /Type de contrat\s*([^\n]{3,30})/i },
-{ label: "Date d'entrée", regex: /Date d'entr[ée]+e? en fonction\s*([^\n]{3,30})/i },
-{ label: "Postuler avant", regex: /Postuler avant\s*([^\n]{3,30})/i },
-{ label: "Classe salariale", regex: /Classe salariale\s*([^\n]{1,10})/i },
-{ label: "Adresse", regex: /Adresse\s*([\s\S]{10,120}?)(?=Date|Taux|Type|Classe|Postuler|$)/i }
-];
-
-let result = "";
-
-const structuredFields = fields
-.map(f => {
-const m = text.match(f.regex);
-return m ? `${f.label} : ${m[1].trim()}` : null;
-})
-.filter(Boolean)
-.join("\n");
-
-if(structuredFields){
-result += structuredFields + "\n\n";
-}
-
-let startIndex = -1;
-for(const section of sections){
-const index = text.toLowerCase().indexOf(section.toLowerCase());
-if(index !== -1){
-startIndex = index;
-break;
-}
-}
-
-if(startIndex !== -1){
-let extracted = text.substring(startIndex, startIndex + 5000);
-
-const stopWords = [
-"Emplois similaires",
-"Offres similaires",
-"POSTULER MAINTENANT"
-];
-
-for(const stop of stopWords){
-const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
-if(idx > 200){
-extracted = extracted.substring(0, idx).trim();
-}
-}
-
-result += extracted;
-}
-
-return result.trim() || text.substring(0, 3500).trim();
-
-}
-
-// Détection Jobup
-const isJobup = html.includes("jobup.ch");
-
-if(isJobup){
-
-const jobupText = cleanHtmlTextJobup(html);
-
-// Supprimer le bloc navigation Jobup en début de texte
-const navStopWords = [
-"Aller directement au contenu",
-"Espace recruteurs",
-"Se connecter",
-"Choix de la langue"
-];
-
-let jobupClean = jobupText;
-for(const nav of navStopWords){
-const idx = jobupClean.indexOf(nav);
-if(idx !== -1 && idx < 500){
-const afterNav = jobupClean.indexOf("À propos de cette offre", idx);
-const afterNav2 = jobupClean.indexOf("A propos du rôle", idx);
-const afterNav3 = jobupClean.indexOf("Votre mission", idx);
-const afterNav4 = jobupClean.indexOf("Vos tâches", idx);
-const afterNav5 = jobupClean.indexOf("Tâches", idx);
-const afterNav6 = jobupClean.indexOf("Nous cherchons", idx);
-const cutStart = Math.min(
-...[afterNav, afterNav2, afterNav3, afterNav4, afterNav5, afterNav6].filter(i => i > 0)
-);
-if(cutStart > 0){
-jobupClean = jobupClean.substring(cutStart);
-}
-break;
-}
-}
-
-const jobupFields = [
-{ label: "Date de parution", regex: /(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i },
-{ label: "Taux", regex: /(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i },
-{ label: "Contrat", regex: /(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i },
-{ label: "Lieu de travail", regex: /Lieu de travail\s*[:\s]+([A-Za-zÀ-ÿ\s,.-]+?)(?=\n|$)/i },
-{ label: "Adresse", regex: /([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]+\d+[,\s]+\d{4}\s+[A-Za-zÀ-ÿ\s-]+)/i },
-{ label: "Salaire", regex: /(CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*\/(?:an|mois))/i },
-{ label: "Entrée en service", regex: /Entr[ée]e en (?:service|fonction)[^\w]*([^\n.]{3,50})/i }
-];
-
-let jobupResult = "";
-
-jobupFields.forEach(f => {
-const m = jobupClean.match(f.regex);
-if(m) jobupResult += `${f.label} : ${(m[1] || m[0]).trim()}\n`;
-});
-
-if(jobupResult) jobupResult += "\n";
-
-const keywords = [
-"Votre mission",
-"Vos missions",
-"Vos tâches",
-"Vos responsabilités",
-"Votre profil",
-"Profil recherché",
-"Description du poste",
-"A propos du rôle",
-"À propos du rôle",
-"Tâches",
-"Nous cherchons"
-];
-
-let startIndex = -1;
-for(const keyword of keywords){
-const index = jobupClean.toLowerCase().indexOf(keyword.toLowerCase());
-if(index !== -1){ startIndex = index; break; }
-}
-
-let extracted = startIndex === -1
-? jobupClean.substring(0, 3500)
-: jobupClean.substring(startIndex, startIndex + 4500);
-
-// StopWords — texte parasite uniquement
-const stopWords = [
-"Autres recherches",
-"Offres similaires",
-"Emplois similaires",
-"Estimateur de salaire",
-"D'autres utilisateurs ont",
-"D'autres utilisateurs",
-"Afficher plus d'emplois",
-"Catégories :",
-"Date de publication"
-];
-
-for(const stop of stopWords){
-const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
-if(idx > 200) extracted = extracted.substring(0, idx).trim();
-}
-
-return (jobupResult + extracted).trim();
-}
-
-// Autres sources
-const keywords = [
-"Votre mission",
-"Vos missions",
-"Vos tâches",
-"Vos responsabilités",
-"Votre profil",
-"Profil recherché",
-"Description du poste",
-"Ce que vous faites",
-"Nous offrons",
-"Votre rôle"
-];
-
-let startIndex = -1;
-
-for(const keyword of keywords){
-const index = text.toLowerCase().indexOf(keyword.toLowerCase());
-if(index !== -1){
-startIndex = index;
-break;
-}
-}
-
-let result =
-startIndex === -1
-? text.substring(0, 3500)
-: text.substring(startIndex, startIndex + 4500);
-
-const stopWords = [
-"Autres recherches",
-"Catégories :",
-"Estimateur de salaire",
-"Offres similaires",
-"Emplois similaires"
-];
-
-for(const stopWord of stopWords){
-const index = result.toLowerCase().indexOf(stopWord.toLowerCase());
-if(index > 800){
-result = result.substring(0, index).trim();
-}
-}
-
-if(result.length < 300){
-return text.substring(0, 3500).trim();
-}
-
-return result.trim();
-
-}
-
-
-/* ==========================================
-API HEALTH
-========================================== */
-
-app.get(
-"/api/health",
-(req,res)=>{
-
-res.json({
-
-status:"OK",
-
-version:"14.3.1",
-
-application:
-"Job Finder Vaud",
-
-timestamp:
-new Date().toISOString()
-
-});
-
-}
-);
-
-
-/* ==========================================
-VALIDATION URL ANNONCE
-========================================== */
-
-function isGenericSourceUrl(url){
-
-if(!url){
-return true;
-}
-
-const cleanUrl =
-String(url).toLowerCase().trim().replace(/\/$/, "");
-
-const genericUrls = [
-"https://www.vd.ch",
-"http://www.vd.ch",
-"https://vd.ch",
-"http://vd.ch",
-
-"https://www.lausanne.ch",
-"http://www.lausanne.ch",
-"https://lausanne.ch",
-"http://lausanne.ch",
-
-"https://www.retraitespopulaires.ch",
-"http://www.retraitespopulaires.ch",
-"https://retraitespopulaires.ch",
-"http://retraitespopulaires.ch",
-
-"https://www.epfl.ch/fr",
-"https://www.epfl.ch",
-"http://www.epfl.ch",
-"https://epfl.ch",
-"http://epfl.ch",
-
-"https://www.migros.ch/fr",
-"https://www.migros.ch",
-"http://www.migros.ch",
-"https://migros.ch",
-"http://migros.ch",
-
-"https://www.chuv.ch/fr",
-"https://www.chuv.ch",
-"http://www.chuv.ch",
-"https://chuv.ch",
-"http://chuv.ch",
-
-"https://www.jobup.ch",
-"http://www.jobup.ch",
-"https://jobup.ch",
-"http://jobup.ch",
-
-"https://www.indeed.com",
-"http://www.indeed.com",
-"https://indeed.com",
-"http://indeed.com",
-
-"https://www.jobscout24.ch",
-"http://www.jobscout24.ch",
-"https://jobscout24.ch",
-"http://jobscout24.ch",
-
-"https://www.linkedin.com",
-"http://www.linkedin.com",
-"https://linkedin.com",
-"http://linkedin.com"
-];
-
-return genericUrls.includes(cleanUrl);
-
-}
-
-function isRealOfferUrl(url){
-
-if(!url){
-return false;
-}
-
-const value =
-String(url).toLowerCase().trim();
-
-if(isGenericSourceUrl(value)){
-return false;
-}
-
-/* JOBUP */
-if(value.includes("jobup.ch") &&
-(value.includes("/emplois/detail/") ||
-value.includes("/jobs/detail/"))){
-return true;
-}
-
-/* INDEED */
-if(value.includes("indeed.") &&
-(value.includes("/viewjob") ||
-value.includes("jk="))){
-return true;
-}
-
-/* JOBSCOUT24 */
-if(value.includes("jobscout24.ch") &&
-(value.includes("/job/") ||
-value.includes("/jobs/") ||
-value.includes("/detail/"))){
-return true;
-}
-
-/* LINKEDIN */
-if(value.includes("linkedin.com") &&
-(value.includes("/jobs/view/") ||
-value.includes("currentjobid="))){
-return true;
-}
-
-/* VD.CH */
-if(value.includes("vd.ch") &&
-(value.includes("/offres-demploi/") ||
-value.includes("/emploi/") ||
-value.includes("/jobs/") ||
-value.includes("jobid=") ||
-value.includes("offre="))){
-return true;
-}
-
-/* LAUSANNE.CH */
-if(value.includes("lausanne.ch") &&
-(value.includes("/emploi/") ||
-value.includes("/offres-demploi/") ||
-value.includes("/postes-vacants/") ||
-value.includes("/jobs/"))){
-return true;
-}
-
-/* RETRAITES POPULAIRES */
-if(value.includes("retraitespopulaires.ch") &&
-(value.includes("/emploi/") ||
-value.includes("/carrieres/") ||
-value.includes("/offres-demploi/") ||
-value.includes("/jobs/"))){
-return true;
-}
-
-/* EPFL */
-if(value.includes("epfl.ch") &&
-(value.includes("/about/working/") ||
-value.includes("/careers/") ||
-value.includes("/jobs/") ||
-value.includes("/emploi/") ||
-value.includes("jobid="))){
-return true;
-}
-
-/* MIGROS */
-if(value.includes("migros.ch") &&
-(value.includes("/jobs/") ||
-value.includes("/career/") ||
-value.includes("/carriere/") ||
-value.includes("/emploi/") ||
-value.includes("jobid="))){
-return true;
-}
-
-/* CHUV */
-if(value.includes("chuv.ch") &&
-(value.includes("/emploi/") ||
-value.includes("/jobs/") ||
-value.includes("/carrieres/") ||
-value.includes("/offres-demploi/") ||
-value.includes("jobid="))){
-return true;
-}
-
-return false;
-}
-
-/* ==========================================
-DETECTION SOURCE EMPLOYEUR
-========================================== */
-
-function getEmployerSource(url){
-
-if(!url){
-return "";
-}
-
-const value =
-String(url).toLowerCase();
-
-if(value.includes("vd.ch")){
-return "vd";
-}
-
-if(value.includes("lausanne.ch")){
-return "lausanne";
-}
-
-if(value.includes("retraitespopulaires.ch")){
-return "retraitespopulaires";
-}
-
-if(value.includes("epfl.ch")){
-return "epfl";
-}
-
-if(value.includes("migros.ch")){
-return "migros";
-}
-
-if(value.includes("chuv.ch")){
-return "chuv";
-}
-
-if(value.includes("jobup.ch")){
-return "jobup";
-}
-
-if(value.includes("indeed")){
-return "indeed";
-}
-
-if(value.includes("jobscout24")){
-return "jobscout24";
-}
-
-if(value.includes("linkedin")){
-return "linkedin";
-}
-
-return "";
-
-}
-
-/* ==========================================
-API VALIDATION URL ANNONCE
-========================================== */
-
-app.get(
-"/api/validate-offer-url",
-(req,res)=>{
-
-try{
-
-const url =
-req.query.url || "";
-
-res.json({
-
-success:true,
-
-url,
-
-isGeneric:
-isGenericSourceUrl(url),
-
-isRealOffer:
-isRealOfferUrl(url),
-
-source:
-getEmployerSource(url)
-
-});
-
-}catch(error){
-
-res.status(500).json({
-
-success:false,
-
-message:"Erreur validate-offer-url",
-
-error:error.message
-
-});
-
-}
-
-}
-);
-
-
-
-
-/* ==========================================
-API FAVORIS
-========================================== */
-
-app.get(
-"/api/favorites",
-(req,res)=>{
-
-const favorites =
-readJson(
-FAVORITES_FILE
-);
-
-res.json(
-favorites
-);
-
-}
-);
-
-app.post(
-"/api/favorites",
-(req,res)=>{
-
-const favorites =
-readJson(
-FAVORITES_FILE
-);
-
-favorites.push(
-req.body
-);
-
-writeJson(
-FAVORITES_FILE,
-favorites
-);
-
-res.json({
-
-success:true,
-
-message:
-"Favori ajouté"
-
-});
-
-}
-);
-
-app.delete(
-"/api/favorites/:id",
-(req,res)=>{
-
-let favorites =
-readJson(
-FAVORITES_FILE
-);
-
-favorites =
-favorites.filter(
-item =>
-item.id !== req.params.id
-);
-
-writeJson(
-FAVORITES_FILE,
-favorites
-);
-
-res.json({
-
-success:true,
-
-message:
-"Favori supprimé"
-
-});
-
-}
-);
-
-/* ==========================================
-API CANDIDATURES
-========================================== */
-
-app.get(
-"/api/candidatures",
-(req,res)=>{
-
-const candidatures =
-readJson(
-APPLICATIONS_FILE
-);
-
-res.json(
-candidatures
-);
-
-}
-);
-
-app.post(
-"/api/candidatures",
-(req,res)=>{
-
-const candidatures =
-readJson(
-APPLICATIONS_FILE
-);
-
-candidatures.push(
-req.body
-);
-
-writeJson(
-APPLICATIONS_FILE,
-candidatures
-);
-
-res.json({
-
-success:true,
-
-message:
-"Candidature ajoutée"
-
-});
-
-}
-);
-
-
-
-/* ==========================================
-API EXTRACTION DESCRIPTION URL
-========================================== */
-app.post(
-"/api/extract-description",
-async (req,res)=>{
-
-try{
-
-const url = req.body?.url;
-
-if(!url){
-return res.status(400).json({
-success:false,
-description:"",
-message:"URL manquante"
-});
-}
-
-// Détection État de Vaud (Oracle HCM)
-const etatVaudMatch = url.match(/#fr\/sites\/CX_1\/job\/(\d+)/);
-const jobId = etatVaudMatch ? etatVaudMatch[1] : req.body?.id;
-
-if(jobId && (url.includes("offres-emploi.vd.ch") || req.body?.source === "État de Vaud")){
-
-const apiUrl = `https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?expand=all&onlyData=true&finder=ById;Id=%22${jobId}%22,siteNumber=CX_1`;
-
-const axios = require("axios");
-
-const response = await axios.get(apiUrl, {
-headers:{
-"Accept": "application/json",
-"Accept-Language": "fr"
-},
-timeout: 10000
-});
-
-const items = response.data?.items;
-if(!items || items.length === 0){
-return res.json({ success:false, description:"Descriptif non disponible." });
-}
-
-const job = items[0];
-
-const stripHtml = s => s ? s
-.replace(/<[^>]+>/g," ")
-.replace(/&nbsp;/g," ")
-.replace(/&amp;/g,"&")
-.replace(/&quot;/g,"\"")
-.replace(/&#39;/g,"'")
-.replace(/&eacute;/g,"é")
-.replace(/&egrave;/g,"è")
-.replace(/&agrave;/g,"à")
-.replace(/&ccedil;/g,"ç")
-.replace(/&\w+;/g," ")
-.replace(/\s+/g," ")
-.trim() : "";
-
-const description = job.ExternalDescriptionStr || "";
-const responsibilities = job.ExternalResponsibilitiesStr || "";
-const qualifications = job.ExternalQualificationsStr || "";
-const whoWeAre = job.OrganizationDescriptionStr || "";
-const whyJoin = job.CorporateDescriptionStr || "";
-
-const flexFields = job.requisitionFlexFields || [];
-const getField = label => (flexFields.find(f => f.Prompt === label)?.Value || "");
-
-const workRate = getField("Taux d'activité");
-const salaryGrade = getField("Classe salariale");
-const startDate = getField("Date d'entrée en fonction");
-const contractType = getField("Type de contrat");
-const applyBefore = job.ExternalPostedEndDate || "";
-const applyBeforeFormatted = applyBefore ? new Date(applyBefore).toLocaleDateString("fr-CH") : "";
-
-// Adresse Oracle HCM — chaque ligne séparée par \n
-const rawAddress = getField("Adresse");
-const address = rawAddress
-.split(/\n/)
-.map(l => l.trim())
-.filter(Boolean)
-.join("\n");
-
-let result = "";
-if(workRate) result += `Taux d'activité : ${workRate}\n`;
-if(contractType) result += `Type de contrat : ${contractType}\n`;
-if(salaryGrade) result += `Classe salariale : ${salaryGrade}\n`;
-if(startDate) result += `Date d'entrée : ${startDate}\n`;
-if(applyBeforeFormatted) result += `Postuler avant : ${applyBeforeFormatted}\n`;
-if(address) result += `Adresse :\n${address}\n`;
-if(result) result += "\n";
-if(description) result += `DESCRIPTION DE L'EMPLOI\n${stripHtml(description)}\n\n`;
-if(responsibilities) result += `RESPONSABILITÉS\n${stripHtml(responsibilities)}\n\n`;
-if(qualifications) result += `QUALIFICATIONS\n${stripHtml(qualifications)}\n\n`;
-if(whoWeAre) result += `QUI SOMMES-NOUS?\n${stripHtml(whoWeAre)}\n\n`;
-if(whyJoin) result += `POURQUOI REJOINDRE L'ÉTAT DE VAUD?\n${stripHtml(whyJoin)}\n\n`;
-
-return res.json({
-success: true,
-url,
-description: result.trim() || "Descriptif non disponible.",
-rate: workRate,
-contract: contractType,
-address: address,
-startDate: startDate,
-applyBefore: applyBeforeFormatted,
-salaryGrade: salaryGrade
-});
-
-}
-
-// Autres sources — extraction HTML classique
-const html = await fetchExternalText(url);
-
-const description = extractUsefulDescription(html);
-
-// Extraction champs séparés pour Jobup
-let rate = "";
-let contract = "";
-let address = "";
-let salary = "";
-let date = "";
-let applyBefore = "";
-let startDate = "";
-
-if(url.includes("jobup.ch")){
-const jobupText = cleanHtmlTextJobup(html);
-
-const rateMatch = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
-if(rateMatch) rate = rateMatch[1].trim();
-
-contract = normalizeContractLabel(jobupText);
-
-// Adresse — bloc "Adresse" OU "Lieu de travail"
-const addressBlockMatch = jobupText.match(/(?:Adresse|Lieu de travail)\s*\n([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories|D'autres utilisateurs)/i);
-if(addressBlockMatch){
-const lines = addressBlockMatch[1]
-.split("\n")
-.map(l => l.trim())
-.filter(Boolean)
-.filter(l => l.length < 80); // évite les longues phrases parasites
-// Garde uniquement les lignes qui ressemblent à une adresse
-const addressLines = lines.filter(l =>
-/\d{4}/.test(l) || // NPA
-/^[A-ZÀ-Ÿa-zà-ÿ\s,.-]{3,50}$/.test(l) // texte court = rue ou lieu
-);
-if(addressLines.length > 0){
-address = addressLines.join("\n");
-}
-}
-
-// Estimation salariale Jobup — fourchette ou montant unique, "/" ou "par"
-const salaryPattern = /CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*(?:\/|par)\s*(?:an|mois)/i;
-const salaryMatchRaw = html.match(salaryPattern);
-const salaryMatchText = jobupText.match(salaryPattern);
-const salaryFound = salaryMatchRaw || salaryMatchText;
-if(salaryFound) salary = salaryFound[0].replace(/\s+/g," ").trim();
-
-const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
-if(dateMatch) date = dateMatch[1].trim();
-
-// Conversion d'une date littérale française vers jj.mm.aaaa
-const moisFr = {
-"janvier":"01","fevrier":"02","février":"02","mars":"03","avril":"04",
-"mai":"05","juin":"06","juillet":"07","aout":"08","août":"08",
-"septembre":"09","octobre":"10","novembre":"11","decembre":"12","décembre":"12"
-};
-
-function toFormattedDate(raw){
-const numeric = raw.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
-if(numeric){
-return `${numeric[1].padStart(2,"0")}.${numeric[2].padStart(2,"0")}.${numeric[3]}`;
-}
-const literal = raw.match(/^(\d{1,2})\s+([a-zà-ÿ]+)\s+(\d{4})$/i);
-if(literal){
-const mois = moisFr[literal[2].toLowerCase()];
-if(mois){
-return `${literal[1].padStart(2,"0")}.${mois}.${literal[3]}`;
-}
-}
-return null;
-}
-
-// Date postulation — accepte format chiffré ou en toutes lettres, formaté en jj.mm.aaaa
-const applyBeforeMatch = jobupText.match(
-/(?:Postuler avant|jusqu.au|d[ée]lai(?:\s+de\s+postulation)?)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4}|\d{1,2}\s+[a-zà-ÿ]+\s+\d{4})/i
-);
-if(applyBeforeMatch){
-const formatted = toFormattedDate(applyBeforeMatch[1].trim());
-if(formatted) applyBefore = formatted;
-}
-
-const startDateMatch = jobupText.match(/(?:Entr[ée]e en (?:service|fonction)|Date d.entr[ée]e)[^\w]*([^\n]{3,60})/i);
-if(startDateMatch) startDate = startDateMatch[1].trim();
-}
-
-res.json({
-success:true,
-url,
-description: description || "Descriptif non disponible.",
-rate,
-contract,
-address,
-salary,
-date,
-applyBefore,
-startDate
-});
-
-}
-catch(error){
-console.error("Erreur extraction description :", error);
-res.status(500).json({ success:false, description:"", message:"Erreur extraction description" });
-}
-
-}
-);
-
-
-/* ==========================================
-API OFFRES
-========================================== */
-
-app.get(
-"/api/offers",
-(req,res)=>{
-
-const offers =
-readJson(
-OFFERS_FILE
-);
-
-res.json(
-offers
-);
-
-}
-);
-
-app.delete("/api/offers/cache", (req,res)=>{
-writeJson(OFFERS_FILE, []);
-res.json({ success:true, message:"Cache vidé" });
-});
-
-/* ==========================================
-API LETTRES
-========================================== */
-
-app.get(
-"/api/letters",
-(req,res)=>{
-
-const letters =
-readJson(
-LETTERS_FILE
-);
-
-res.json(
-letters
-);
-
-}
-);
-
-app.post(
-"/api/letters",
-(req,res)=>{
-
-const letters =
-readJson(
-LETTERS_FILE
-);
-
-letters.push(
-req.body
-);
-
-writeJson(
-LETTERS_FILE,
-letters
-);
-
-res.json({
-
-success:true,
-
-message:
-"Lettre sauvegardée"
-
-});
-
-}
-);
-
-app.delete(
-"/api/letters/:id",
-(req,res)=>{
-
-let letters =
-readJson(
-LETTERS_FILE
-);
-
-letters =
-letters.filter(
-item =>
-item.id !== req.params.id
-);
-
-writeJson(
-LETTERS_FILE,
-letters
-);
-
-res.json({
-
-success:true,
-
-message:
-"Lettre supprimée"
-
-});
-
-}
-);
-
-/* ==========================================
-API STATISTIQUES
-========================================== */
-
-app.get(
-"/api/stats",
-(req,res)=>{
-
-const offers =
-readJson(
-OFFERS_FILE
-);
-
-const favorites =
-readJson(
-FAVORITES_FILE
-);
-
-const candidatures =
-readJson(
-APPLICATIONS_FILE
-);
-
-const letters =
-readJson(
-LETTERS_FILE
-);
-
-const sent =
-candidatures.filter(
-item =>
-item.status === "Envoyée"
-).length;
-
-const responses =
-candidatures.filter(
-item =>
-item.status === "Réponse"
-).length;
-
-const interviews =
-candidatures.filter(
-item =>
-item.status === "Entretien"
-).length;
-
-const hired =
-candidatures.filter(
-item =>
-item.status === "Embauche"
-).length;
-
-res.json({
-
-offers:
-offers.length,
-
-favorites:
-favorites.length,
-
-applications:
-candidatures.length,
-
-letters:
-letters.length,
-
-sent,
-
-responses,
-
-interviews,
-
-hired,
-
-responseRate:
-candidatures.length
-? Math.round(
-(responses /
-candidatures.length)
-
-* 100
-  )
-  : 0,
-
-interviewRate:
-candidatures.length
-? Math.round(
-(interviews /
-candidatures.length)
-
-* 100
-  )
-  : 0,
-
-successRate:
-candidatures.length
-? Math.round(
-(hired /
-candidatures.length)
-
-* 100
-  )
-  : 0
-
-});
-
-}
-);
-
-/* ==========================================
-API RESET
-========================================== */
-
-app.post(
-"/api/reset",
-(req,res)=>{
-
-writeJson(
-FAVORITES_FILE,
-[]
-);
-
-writeJson(
-APPLICATIONS_FILE,
-[]
-);
-
-writeJson(
-LETTERS_FILE,
-[]
-);
-
-res.json({
-
-success:true,
-
-message:
-"Application réinitialisée"
-
-});
-
-}
-);
-
-/* ==========================================
-ROUTE PRINCIPALE
-========================================== */
-
-app.use(express.static(path.join(__dirname)));
-
-app.get(
-"/",
-(req,res)=>{
-
-res.sendFile(
-path.join(
-__dirname,
-"index.html"
-)
-);
-
-}
-);
-
-
-
-/* ==========================================
-OUTILS DECOUVERTE URL REELLE
-========================================== */
-
-function normalizeDiscoveryText(value){
-
-return String(value || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "")
-.replace(/[^a-z0-9]+/g, " ")
-.trim();
-
-}
-
-function scoreDiscoveryMatch(title, text){
-
-const cleanTitle =
-normalizeDiscoveryText(title);
-
-const cleanText =
-normalizeDiscoveryText(text);
-
-if(!cleanTitle || !cleanText){
-return 0;
-}
-
-const words =
-cleanTitle
-.split(" ")
-.filter(word => word.length >= 4);
-
-if(words.length === 0){
-return 0;
-}
-
-let hits = 0;
-
-for(const word of words){
-
-if(cleanText.includes(word)){
-hits++;
-}
-
-}
-
-return hits / words.length;
-
-}
-
-async function fetchExternalText(url){
-
-const isJobup = url.includes("jobup.ch");
-const isJobScout = url.includes("jobscout24.ch");
-
-const headers = isJobup ? {
-"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-"Accept-Language":"fr-CH,fr;q=0.9",
-"Referer":"https://www.jobup.ch/fr/emplois/",
-"Origin":"https://www.jobup.ch"
-} : isJobScout ? {
-"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-"Accept-Language":"fr-CH,fr;q=0.9",
-"Referer":"https://www.jobscout24.ch/fr/jobs/",
-"Origin":"https://www.jobscout24.ch"
-} : {
-"User-Agent":"Mozilla/5.0 JobFinderVaud/14.5",
-"Accept":"application/json,text/html,application/xhtml+xml,*/*",
-"Accept-Language":"fr",
-"Origin":"https://offres-emploi.vd.ch",
-"Referer":"https://offres-emploi.vd.ch/",
-"ora-irc-language":"fr"
-};
-
-const response = await axios.get(
-isJobup ? `https://jobup-proxy.vercel.app/api/fetch?url=${encodeURIComponent(url)}` : url,
-{
-headers,
-timeout: 20000,
-maxRedirects: 5,
-responseType: "text",
-decompress: true
-});
-
-return response.data;
-
-}
-
-function extractLinksFromHtml(html, baseUrl){
-
-const links = [];
-
-const regex =
-/href=["']([^"']+)["']/gi;
-
-let match;
-
-while((match = regex.exec(html)) !== null){
-
-try{
-
-const absoluteUrl =
-new URL(match[1], baseUrl).href;
-
-links.push(absoluteUrl);
-
-}catch(error){
-
-}
-
-}
-
-return [...new Set(links)];
-
-}
-
-/* ==========================================
-DECOUVERTE URL REELLE ANNONCE V14.3.2
-Recherche ciblée title + company + location
-========================================== */
-
-function isBadDiscoveryUrlV1433(url){
-
-const value =
-String(url || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-const blockedPatterns = [
-"arc-emploi",
-"arc emploi",
-"programme-demploi",
-"programme-emploi",
-"programme emploi",
-"emploi-temporaire",
-"emploi temporaire",
-"mesure",
-"insertion",
-"reinsertion",
-"apprentissage",
-"apprenti",
-"places-dapprentissage",
-"stage",
-"stagiaire",
-"formation",
-"ecole",
-"ecoles",
-"campus",
-"newsletter",
-"agenda",
-"actualite",
-"actualites",
-"communique",
-"media",
-"medias",
-"portrait",
-"temoignage",
-"benevolat"
-];
-
-return blockedPatterns.some(pattern =>
-value.includes(pattern)
-);
-
-}
-
-
-function scoreDiscoveryUrlV1433(url, offer){
-
-const value =
-String(url || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-if(isBadDiscoveryUrlV1433(url)){
-return 0;
-}
-
-let score =
-scoreDiscoveryMatch(
-`${offer.title || ""} ${offer.company || ""} ${offer.location || ""}`,
-url
-);
-
-if(value.includes("job") || value.includes("jobs")){
-score += 0.25;
-}
-
-if(value.includes("emploi") || value.includes("emplois")){
-score += 0.2;
-}
-
-if(value.includes("offre") || value.includes("offres")){
-score += 0.25;
-}
-
-if(value.includes("poste") || value.includes("postes")){
-score += 0.2;
-}
-
-if(value.includes("recrutement")){
-score += 0.2;
-}
-
-if(value.includes("career") || value.includes("carriere")){
-score += 0.15;
-}
-
-if(value.includes("postuler") || value.includes("apply")){
-score += 0.25;
-}
-
-return Math.max(0,score);
-
-}
-
-
-/* ==========================================
-DECOUVERTE URL REELLE ANNONCE V14.4
-Recherche précise + fallback carrière fiable
-========================================== */
-
-function getDiscoverySearchPages(domain){
-
-const searchPagesMap = {
-"vd.ch":[
-"https://offres-emploi.vd.ch/#fr/sites/CX_1"
-],
-"lausanne.ch":[
-"https://www.lausanne.ch/portrait/travailler-pour-la-ville/offres-emploi.html"
-],
-"chuv.ch":[
-"https://www.chuv.ch/fr/chuv-home/carrieres/emplois"
-],
-"epfl.ch":[
-"https://www.epfl.ch/about/working/fr/offres-emploi/"
-],
-"migros.ch":[
-"https://jobs.migros.ch/fr"
-],
-"retraitespopulaires.ch":[
-"https://www.retraitespopulaires.ch/emploi"
-],
-"jobup.ch":[
-"https://www.jobup.ch/fr/emploi/"
-],
-"indeed.com":[
-"https://ch.indeed.com/jobs"
-],
-"jobscout24.ch":[
-"https://www.jobscout24.ch/fr/jobs/"
-],
-"linkedin.com":[
-"https://www.linkedin.com/jobs/"
-]
-};
-
-return searchPagesMap[domain] || [];
-
-}
-
-function getDiscoveryFallbackUrl(domain){
-
-const pages =
-getDiscoverySearchPages(domain);
-
-return pages[0] || "";
-
-}
-
-function isBadDiscoveryUrl(url){
-
-const value =
-String(url || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-const blockedPatterns = [
-"arc-emploi",
-"arc emploi",
-"programme-demploi",
-"programme-emploi",
-"programme emploi",
-"emploi-temporaire",
-"emploi temporaire",
-"mesure",
-"mesures",
-"insertion",
-"reinsertion",
-"apprentissage",
-"apprenti",
-"places-dapprentissage",
-"stage",
-"stagiaire",
-"formation",
-"ecole",
-"ecoles",
-"campus",
-"newsletter",
-"agenda",
-"actualite",
-"actualites",
-"communique",
-"media",
-"medias",
-"portrait",
-"temoignage",
-"benevolat",
-"login",
-"connexion"
-];
-
-return blockedPatterns.some(pattern =>
-value.includes(pattern)
-);
-
-}
-
-function scoreDiscoveryUrlV144(url, offer){
-
-const title =
-String(offer.title || "").toLowerCase();
-
-const company =
-String(offer.company || "").toLowerCase();
-
-const location =
-String(offer.location || "").toLowerCase();
-
-const value =
-String(url || "").toLowerCase();
-
-if(isBadDiscoveryUrl(value)){
-return 0;
-}
-
-let score = 0;
-
-/* TITRE */
-
-const titleWords =
-title
-.split(/\s+/)
-.filter(word => word.length >= 4);
-
-let titleMatches = 0;
-
-titleWords.forEach(word => {
-if(value.includes(word)){
-titleMatches++;
-}
-});
-
-if(titleWords.length){
-score += Math.min(
-0.50,
-(titleMatches / titleWords.length) * 0.50
-);
-}
-
-/* ENTREPRISE */
-
-const companyWords =
-company
-.split(/\s+/)
-.filter(word => word.length >= 3);
-
-let companyMatches = 0;
-
-companyWords.forEach(word => {
-if(value.includes(word)){
-companyMatches++;
-}
-});
-
-if(companyWords.length){
-score += Math.min(
-0.20,
-(companyMatches / companyWords.length) * 0.20
-);
-}
-
-/* LOCALISATION */
-
-if(location && value.includes(location)){
-score += 0.15;
-}
-
-/* MOTS POSITIFS */
-
-if(value.includes("offre")){
-score += 0.15;
-}
-
-if(value.includes("emploi")){
-score += 0.10;
-}
-
-if(value.includes("job")){
-score += 0.10;
-}
-
-if(value.includes("poste")){
-score += 0.10;
-}
-
-if(value.includes("recrutement")){
-score += 0.10;
-}
-
-if(value.includes("postuler")){
-score += 0.10;
-}
-
-if(value.includes("apply")){
-score += 0.10;
-}
-
-/* PENALITES PAGES GENERIQUES */
-
-if(value.includes("carriere")){
-score -= 0.10;
-}
-
-if(value.includes("career")){
-score -= 0.10;
-}
-
-if(value.includes("etat-employeur")){
-score -= 0.30;
-}
-
-if(value.includes("travailler-pour")){
-score -= 0.20;
-}
-
-if(value.includes("ressources-humaines")){
-score -= 0.20;
-}
-
-if(isGenericSourceUrl(value)){
-score -= 0.30;
-}
-
-return Math.max(0, Number(score.toFixed(2)));
-
-}
-
-async function discoverGenericOfferUrl(offer, domain){
-
-const searchPages =
-getDiscoverySearchPages(domain);
-
-const fallbackUrl =
-getDiscoveryFallbackUrl(domain);
-
-const isVd =
-domain === "vd.ch";
-
-const allowedDomains =
-isVd
-? [
-"vd.ch",
-"offres-emploi.vd.ch",
-"oraclecloud.com",
-"oraclecloud.eu"
-]
-: [domain];
-
-let bestUrl = "";
-let bestScore = 0;
-
-function extractExtraUrlsFromHtml(html, baseUrl){
-
-const results = [];
-
-const raw =
-String(html || "");
-
-const absoluteMatches =
-raw.match(/https?:\/\/[^"' <>()\\]+/g) || [];
-
-for(const url of absoluteMatches){
-results.push(url);
-}
-
-const relativeMatches =
-raw.match(/["'](\/[^"']+)["']/g) || [];
-
-for(const item of relativeMatches){
-
-try{
-
-const clean =
-item.replace(/^["']|["']$/g,"");
-
-const absolute =
-new URL(clean, baseUrl).href;
-
-results.push(absolute);
-
-}catch(error){}
-
-}
-
-return [...new Set(results)];
-
-}
-
-for(const pageUrl of searchPages){
-
-try{
-
-const html =
-await fetchExternalText(pageUrl);
-
-console.log("V14.4.3 SEARCH PAGE:", pageUrl);
-console.log("V14.4.3 HTML LENGTH:", html ? html.length : 0);
-
-const directMatches =
-String(html || "")
-.match(/detail-offre-emploi\/pj[0-9]+\.html/g) || [];
-
-const directLinks =
-directMatches.map(path =>
-new URL(path, pageUrl).href
-);
-
-const links =
-[
-...extractLinksFromHtml(html, pageUrl),
-...extractExtraUrlsFromHtml(html, pageUrl),
-...directLinks
-];
-
-const uniqueLinks =
-[...new Set(links)];
-
-console.log(
-"V14.5 DIRECT LAUSANNE LINKS:",
-directLinks.length
-);
-
-console.log("V14.4.3 LINKS FOUND:", uniqueLinks.length);
-console.log("V14.4.3 FIRST LINKS:", uniqueLinks.slice(0,10));
-
-const candidateLinks =
-uniqueLinks.filter(link => {
-
-const value =
-String(link || "").toLowerCase();
-
-const blockedTechnicalLinks = [
-".css",
-".js",
-".png",
-".jpg",
-".jpeg",
-".svg",
-".ico",
-".webmanifest",
-"favicon",
-"typo3conf",
-"typo3temp",
-"assets",
-"resources/public",
-"fonts",
-"analytics",
-"matomo",
-"cookie",
-"privacy",
-"mentions-legales"
-];
-
-const isTechnicalLink =
-blockedTechnicalLinks.some(pattern =>
-value.includes(pattern)
-);
-
-const isAllowedDomain =
-allowedDomains.some(allowed =>
-value.includes(allowed)
-);
-
-const looksLikeJobUrl =
-value.includes("job") ||
-value.includes("emploi") ||
-value.includes("offer") ||
-value.includes("offre") ||
-value.includes("requisition") ||
-value.includes("requisitions") ||
-value.includes("posting") ||
-value.includes("career") ||
-value.includes("cx_1");
-
-return (
-isAllowedDomain &&
-!isTechnicalLink &&
-!isBadDiscoveryUrl(value) &&
-(
-!isVd ||
-looksLikeJobUrl
-)
-);
-
-});
-
-console.log("V14.4.3 CANDIDATE LINKS:", candidateLinks.length);
-console.log("V14.4.3 FIRST CANDIDATES:", candidateLinks.slice(0,20));
-
-for(const link of candidateLinks){
-
-const score =
-scoreDiscoveryUrlV144(link, offer);
-
-if(score > bestScore){
-
-bestScore = score;
-bestUrl = link;
-
-}
-
-}
-
-}catch(error){
-
-console.warn(
-"Découverte V14.4.3 impossible :",
-domain,
-error.message
-);
-
-}
-
-}
-
-console.log(
-"V14.4.3 BEST URL:",
-bestUrl,
-"BEST SCORE:",
-bestScore
-);
-
-if(bestUrl && bestScore >= 0.65 && !isBadDiscoveryUrl(bestUrl)){
-
-return {
-success:true,
-message:"URL réelle trouvée par recherche ciblée V14.4.3",
-discoveredUrl:bestUrl,
-score:bestScore,
-fallback:false
-};
-
-}
-
-if(fallbackUrl){
-
-return {
-success:true,
-message:"Aucune annonce précise trouvée, retour vers la page officielle des offres",
-discoveredUrl:fallbackUrl,
-score:0.25,
-fallback:true
-};
-
-}
-
-return {
-success:false,
-message:"Aucune annonce réelle trouvée",
-discoveredUrl:"",
-score:bestScore,
-fallback:false
-};
-
-}
-
-async function discoverVdOfferUrl(offer){
-
-const title =
-offer.title || offer.jobTitle || "";
-
-const location =
-offer.location || "";
-
-const keyword =
-encodeURIComponent(`"${title}"`);
-
-const oracleUrl =
-`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations,requisitionList.secondaryLocations,flexFieldsFacet.values,requisitionList.requisitionFlexFields&finder=findReqs;siteNumber=CX_1,facetsList=LOCATIONS%3BWORK_LOCATIONS%3BWORKPLACE_TYPES%3BTITLES%3BCATEGORIES%3BORGANIZATIONS%3BPOSTING_DATES%3BFLEX_FIELDS,limit=25,keyword=${keyword},sortBy=RELEVANCY`;
-
-try{
-
-const jsonText =
-await fetchExternalText(oracleUrl);
-
-const data =
-JSON.parse(jsonText);
-
-const requisitions =
-data?.items?.[0]?.requisitionList || [];
-
-console.log("V14.5 VD ORACLE JOBS FOUND:", requisitions.length);
-
-let bestJob = null;
-let bestScore = 0;
-
-for(const job of requisitions){
-
-const jobTitle =
-job.Title || "";
-
-const jobLocation =
-job.PrimaryLocation || "";
-
-const shortDescription =
-job.ShortDescriptionStr || "";
-
-let score = 0;
-
-const cleanTextLocal = value =>
-String(value || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g,"")
-.replace(/[^a-z0-9\s]/g," ")
-.replace(/\s+/g," ")
-.trim();
-
-const cleanA =
-cleanTextLocal(jobTitle + " " + jobLocation + " " + shortDescription);
-
-const cleanTitle =
-cleanTextLocal(title);
-
-const cleanLocation =
-cleanTextLocal(location);
-
-const cleanCompany =
-cleanTextLocal(offer.company || "Etat de Vaud");
-
-if(cleanTitle && cleanA.includes(cleanTitle)){
-score += 0.7;
-}
-
-if(cleanLocation && cleanA.includes(cleanLocation)){
-score += 0.2;
-}
-
-if(cleanCompany && cleanA.includes(cleanCompany)){
-score += 0.1;
-}
-
-score += Number(job.Relevancy || 0) / 100;
-
-if(score > bestScore){
-
-bestScore = score;
-bestJob = job;
-
-}
-
-}
-
-if(bestJob && bestJob.Id){
-
-const discoveredUrl =
-`https://offres-emploi.vd.ch/#fr/sites/CX_1/job/${bestJob.Id}`;
-
-return {
-success:true,
-message:"Annonce VD trouvée via Oracle Recruiting Cloud",
-discoveredUrl,
-score:bestScore,
-fallback:false,
-oracleId:bestJob.Id,
-title:bestJob.Title || "",
-location:bestJob.PrimaryLocation || "",
-description:bestJob.ShortDescriptionStr || ""
-};
-
-}
-
-}catch(error){
-
-console.warn(
-"Découverte VD Oracle impossible :",
-error.message
-);
-
-}
-
-return await discoverGenericOfferUrl(offer,"vd.ch");
-
-}
-
-async function discoverLausanneOfferUrl(offer){
-
-const searchUrl =
-"https://www.lausanne.ch/officiel/travailler-a-la-ville/nous-rejoindre/offres-emploi.html";
-
-const fallbackUrl =
-searchUrl;
-
-const title =
-offer.title || offer.jobTitle || "";
-
-const cleanTextLocal = value =>
-String(value || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g,"")
-.replace(/[^a-z0-9\s]/g," ")
-.replace(/\s+/g," ")
-.trim();
-
-try{
-
-const html =
-await fetchExternalText(searchUrl);
-
-const links =
-extractLinksFromHtml(html, searchUrl);
-
-const raw =
-String(html || "");
-
-const directMatches =
-raw.match(/detail-offre-emploi\/pj[0-9]+\.html/g) || [];
-
-const directLinks =
-directMatches.map(path =>
-new URL(path, searchUrl).href
-);
-
-const candidates =
-[...new Set([
-...links,
-...directLinks
-])]
-.filter(link =>
-String(link || "").includes("detail-offre-emploi/pj") &&
-String(link || "").includes(".html")
-);
-
-console.log("V14.5 LAUSANNE CANDIDATES:", candidates.length);
-console.log("V14.5 LAUSANNE FIRST CANDIDATES:", candidates.slice(0,10));
-
-let bestUrl = "";
-let bestScore = 0;
-
-for(const link of candidates){
-
-try{
-
-const detailHtml =
-await fetchExternalText(link);
-
-const cleanPage =
-cleanTextLocal(detailHtml);
-
-const cleanTitle =
-cleanTextLocal(title);
-
-let score = 0;
-
-if(cleanTitle && cleanPage.includes(cleanTitle)){
-score += 0.8;
-}
-
-if(cleanPage.includes("lausanne")){
-score += 0.1;
-}
-
-if(cleanPage.includes("ville de lausanne")){
-score += 0.1;
-}
-
-if(score > bestScore){
-bestScore = score;
-bestUrl = link;
-}
-
-}catch(error){
-
-console.warn(
-"Lecture annonce Lausanne impossible :",
-link,
-error.message
-);
-
-}
-
-}
-
-if(bestUrl && bestScore >= 0.7){
-
-return {
-success:true,
-message:"Annonce Lausanne trouvée via page officielle",
-discoveredUrl:bestUrl,
-score:bestScore,
-fallback:false
-};
-
-}
-
-}catch(error){
-
-console.warn(
-"Découverte Lausanne impossible :",
-error.message
-);
-
-}
-
-return {
-success:true,
-message:"Aucune annonce Lausanne précise trouvée, retour vers la page officielle des offres",
-discoveredUrl:fallbackUrl,
-score:0.25,
-fallback:true
-};
-
-}
-
-async function discoverChuvOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"chuv.ch");
-}
-
-async function discoverEpflOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"epfl.ch");
-}
-
-async function discoverMigrosOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"migros.ch");
-}
-
-async function discoverRetraitesOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"retraitespopulaires.ch");
-}
-
-async function discoverJobupOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"jobup.ch");
-}
-
-async function discoverIndeedOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"indeed.com");
-}
-
-async function discoverJobScoutOfferUrl(offer){
-return await discoverGenericOfferUrl(offer,"jobscout24.ch");
-}
-
-async function discoverLinkedInOfferUrl(offer){
-
-const discovery =
-await discoverGenericOfferUrl(offer,"linkedin.com");
-
-const url =
-String(discovery?.discoveredUrl || "");
-
-const match =
-url.match(/[?&]currentJobId=([0-9]+)/i);
-
-if(match && match[1]){
-
-return {
-...discovery,
-success:true,
-discoveredUrl:`https://www.linkedin.com/jobs/view/${match[1]}`,
-changed:true,
-score:Math.max(Number(discovery?.score || 0),0.85)
-};
-
-}
-
-return discovery;
-
-}
-
-async function discoverRealOfferUrl(offer){
-
-const originalUrl =
-offer.offerUrl || offer.url || "";
-
-const source =
-getEmployerSource(originalUrl);
-
-switch(source){
-
-case "vd":
-return await discoverVdOfferUrl(offer);
-
-case "lausanne":
-return await discoverLausanneOfferUrl(offer);
-
-case "chuv":
-return await discoverChuvOfferUrl(offer);
-
-case "epfl":
-return await discoverEpflOfferUrl(offer);
-
-case "migros":
-return await discoverMigrosOfferUrl(offer);
-
-case "retraites":
-return await discoverRetraitesOfferUrl(offer);
-
-case "jobup":
-return await discoverJobupOfferUrl(offer);
-
-case "indeed":
-return await discoverIndeedOfferUrl(offer);
-
-case "jobscout24":
-return await discoverJobScoutOfferUrl(offer);
-
-case "linkedin":
-return await discoverLinkedInOfferUrl(offer);
-
-default:
-return {
-success:false,
-discoveredUrl:"",
-score:0
-};
-
-}
-
-}
-
-/* ==========================================
-DECOUVERTE URL REELLE ANNONCE V14.5
-========================================== */
-
-app.post(
-"/api/discover-offer-url",
-async (req,res)=>{
-
-try{
-
-const offer =
-req.body?.offer || {};
-
-const originalUrl =
-offer.offerUrl || offer.url || "";
-
-if(!originalUrl){
-
-return res.json({
-success:false,
-message:"URL source absente",
-originalUrl:"",
-discoveredUrl:"",
-changed:false
-});
-
-}
-
-if(isRealOfferUrl(originalUrl)){
-
-return res.json({
-success:true,
-message:"URL déjà réelle",
-originalUrl,
-discoveredUrl:originalUrl,
-changed:false,
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-if(!isGenericSourceUrl(originalUrl)){
-
-return res.json({
-success:false,
-message:"URL non générique mais non reconnue comme annonce réelle",
-originalUrl,
-discoveredUrl:"",
-changed:false,
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-const discovery =
-await discoverRealOfferUrl(offer);
-
-if(discovery.success && discovery.discoveredUrl){
-
-return res.json({
-success:true,
-message:"URL réelle trouvée",
-originalUrl,
-discoveredUrl:discovery.discoveredUrl,
-changed:true,
-score:discovery.score,
-company:offer.company || "",
-title:offer.title || "",
-location:offer.location || "",
-source:getEmployerSource(originalUrl)
-});
-
-}
-
-return res.json({
-success:false,
-message:"Aucune URL réelle trouvée",
-originalUrl,
-discoveredUrl:"",
-changed:false,
-score:discovery.score || 0,
-company:offer.company || "",
-title:offer.title || "",
-location:offer.location || "",
-source:getEmployerSource(originalUrl)
-});
-
-}catch(error){
-
-res.status(500).json({
-success:false,
-message:"Erreur discover-offer-url",
-error:error.message
-});
-
-}
-
-}
-);
-
-
-/* ==========================================
-TEST DECOUVERTE URL GET TEMPORAIRE V14.5
-========================================== */
-
-app.get(
-"/api/test-discover-offer-url",
-async (req,res)=>{
-
-try{
-
-const offer = {
-title:req.query.title || "Gestionnaire de dossiers",
-company:req.query.company || "Etat de Vaud",
-location:req.query.location || "Lausanne",
-offerUrl:req.query.url || "https://www.vd.ch"
-};
-
-const discovery =
-await discoverRealOfferUrl(offer);
-
-res.json({
-success:discovery.success,
-message:discovery.success ? "URL réelle trouvée par recherche ciblée" : "Aucune URL réelle trouvée",
-originalUrl:offer.offerUrl,
-discoveredUrl:discovery.discoveredUrl || "",
-changed:!!discovery.discoveredUrl,
-score:discovery.score || 0,
-company:offer.company,
-title:offer.title,
-location:offer.location,
-source:getEmployerSource(offer.offerUrl),
-oracleId:discovery.oracleId || "",
-detailTitle:discovery.title || "",
-detailLocation:discovery.location || "",
-detailDescription:discovery.description || ""
-});
-
-}catch(error){
-
-res.status(500).json({
-success:false,
-message:"Erreur test-discover-offer-url",
-error:error.message
-});
-
-}
-
-}
-);
-
-/* ==========================================
-API SCRAPE ON DEMAND
-========================================== */
-
-app.post(
-"/api/scrape",
-async (req,res)=>{
-
-try{
-
-await scrapeAllOffers();
-
-const offers = readJson(OFFERS_FILE);
-
-res.json({
-success:true,
-count:offers.length,
-message:`${offers.length} offres récupérées`
-});
-
-}catch(error){
-
-res.status(500).json({
-success:false,
-message:"Erreur scraping",
-error:error.message
-});
-
-}
-
-}
-);
-
-
-/* ==========================================
-PROXY RSS JOBUP
-========================================== */
-
-app.get(
-"/api/proxy-rss",
-async (req,res)=>{
-
-try{
-
-const term = req.query.term || "";
-const region = req.query.region || "vd";
-
-const url =
-`https://www.jobup.ch/fr/emplois/rss/?term=${encodeURIComponent(term)}&region=${region}`;
-
-const response =
-await axios.get(url, {
-headers:{
-"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-"Accept":"application/rss+xml, text/xml, */*",
-"Accept-Language":"fr-CH,fr;q=0.9",
-"Referer":"https://www.jobup.ch/fr/emplois/",
-"Origin":"https://www.jobup.ch"
-},
-timeout: 10000,
-responseType: "text"
-});
-
-res.set("Content-Type", "application/xml");
-res.set("Access-Control-Allow-Origin", "*");
-res.send(response.data);
-
-}catch(error){
-
-console.warn("Erreur proxy RSS Jobup :", error.message);
-
-res.status(500).json({
-success:false,
-message:"Erreur proxy RSS",
-error:error.message
-});
-
-}
-
-}
-);
-
-/* ==========================================
-SCRAPING OFFRES AU DEMARRAGE
-========================================== */
-
-const SEARCH_KEYWORDS = [
-"employé de commerce",
-"employée de commerce",
-"employé administratif",
-"employée administrative",
-"assistant administratif",
-"assistante administrative",
-"gestionnaire de dossier",
-"gestionnaire administratif",
-"gestionnaire back office",
-"collaborateur administratif",
-"collaboratrice administrative",
-"collaborateur back office",
-"coordinateur administratif",
-"coordinatrice administrative",
-"technicien informatique",
-"technicien support",
-"support informatique",
-"informaticien de gestion",
-"helpdesk",
-"back-office",
-"secrétaire",
-"secrétaire administrative",
-"secrétaire d'unité",
-"secrétaire comptable",
-"secrétaire médicale",
-"CFC employé de commerce",
-"secrétaire technique",
-"secrétaire de chantier",
-"secrétaire facturation",
-"secrétaire scolaire",
-"secrétaire communale"
-];
-
-const VAUD_REGIONS = [
-"Vaud",
-"Lausanne",
-"Morges",
-"Nyon",
-"Vevey",
-"Renens",
-"Yverdon",
-"Aigle",
-"Broye-Vully",
-"Gros-de-Vaud",
-"Jura-Nord vaudois",
-"Lavaux-Oron",
-"Riviera-Pays-d'Enhaut",
-"Ouest lausannois"
-];
-
-const VAUD_PLACES = [
-"lausanne","morges","nyon","vevey","renens",
-"yverdon","aigle","montreux","pully","prilly",
-"bussigny","crissier","gland","rolle","aubonne",
-"cossonay","echallens","moudon","oron","payerne",
-"ste-croix","vallorbe","orbe","grandson","avenches",
-"cudrefin","estavayer","lucens","romont","bulle",
-"villeneuve","bex","ollon","leysin","gryon",
-"vd","vaud","west lausanne","lausanne district"
-];
-
-async function enrichJobupOffer(jobId){
-try{
-const url = `https://www.jobup.ch/fr/emplois/detail/${jobId}/`;
-const html = await fetchExternalText(url);
-
-let address = "";
-let salary = "";
-let description = "";
-let startDate = "";
-let applyBefore = "";
-
-// Extraction depuis __REACT_QUERY_STATE__ — source primaire fiable
-try{
-  const rqMatch = html.match(/__REACT_QUERY_STATE__\s*=\s*([\s\S]*?);<\/script>/);
-  if(rqMatch){
-    const rq = JSON.parse(rqMatch[1]);
-    const queries = rq?.queries || [];
-    for(const q of queries){
-      const d = q?.state?.data;
-      if(!d) continue;
-
-      // Adresse depuis locations[0]
-      if(!address && d.locations && d.locations.length > 0){
-        const loc = d.locations[0];
-        const s = (loc.street || "").trim();
-        const z = (loc.postalCode || "").trim();
-        const c = (loc.city || "").trim();
-        const parts = [];
-        if(s) parts.push(s);
-        if(z && c) parts.push(`${z} ${c}`);
-        else if(c) parts.push(c);
-        if(parts.length) address = parts.join(", ");
-      }
-
-      // Date limite postulation
-      if(!applyBefore && d.publicationEndDate){
-        const rawEnd = String(d.publicationEndDate).split("T")[0];
-        const p = rawEnd.split("-");
-        if(p.length === 3 && p[0].length === 4 && parseInt(p[0]) >= 2020){
-          applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
-        }
-      }
-
-      // Date entrée en fonction
-      if(!startDate && d.contractStart){
-        const p = d.contractStart.split("T")[0].split("-");
-        if(p.length === 3) startDate = `${p[2]}.${p[1]}.${p[0]}`;
-      }
-
-      // Description depuis template.text
-      if(!description && d.template?.text){
-        let raw = d.template.text
-          .replace(/<br\s*\/?>/gi, "\n")
-          .replace(/<\/li>/gi, "\n")
-          .replace(/<\/p>/gi, "\n")
-          .replace(/<\/h[1-6]>/gi, "\n")
-          .replace(/<strong>([^<]*)<\/strong>/gi, "$1")
-          .replace(/<[^>]+>/g, "")
-          .replace(/&nbsp;/g, " ")
-          .replace(/&amp;/g, "&")
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .replace(/&lt;/g, "<")
-          .replace(/&gt;/g, ">")
-          .replace(/\n[ \t]+/g, "\n")
-          .replace(/\n{3,}/g, "\n\n")
-          .trim();
-        description = raw.substring(0, 5000);
-      }
-
-      if(address && description && applyBefore) break;
-    }
-  }
-}catch(e){}
-
-// Fallback JSON-LD si REACT_QUERY_STATE vide
-if(!address){
-  try{
-    const ldMatches = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || [];
-    for(const ldScript of ldMatches){
-      const ldJson = ldScript.replace(/<script[^>]*>/, "").replace(/<\/script>/, "").trim();
-      const ld = JSON.parse(ldJson);
-      if(ld["@type"] === "JobPosting"){
-        const loc = ld.jobLocation?.address || {};
-        const s = (loc.streetAddress || "").trim();
-        const z = (loc.postalCode || "").trim();
-        const c = (loc.addressRegion || "").trim();
-        const parts = [];
-        if(s) parts.push(s);
-        if(z && c) parts.push(`${z} ${c}`);
-        else if(c) parts.push(c);
-        if(parts.length) address = parts.join(", ");
-        if(!applyBefore && ld.validThrough){
-          const p = ld.validThrough.split("T")[0].split("-");
-          if(p.length === 3) applyBefore = `${p[2]}.${p[1]}.${p[0]}`;
-        }
-        break;
-      }
-    }
-  }catch(e){}
-}
-
-// Fallback salaire depuis HTML
-if(!salary){
-  const salMatch = html.match(/CHF\s*[\d\s'.]+(?:\s*[-\u2013]\s*[\d\s'.]+)?\s*\/\s*(?:an|mois)/i);
-  if(salMatch) salary = salMatch[0].replace(/\s+/g," ").trim();
-}
-
-return {
-  address: address || "",
-  salary: salary || "",
-  description: description || "",
-  startDate: startDate || "",
-  applyBefore: applyBefore || ""
-};
-}catch(e){
-return {};
-}
-}
-
-async function fetchJobupOffers(){
-
-const CONTRACT_TYPE_MAP = {
-"1": "CDI",
-"2": "CDD",
-"3": "Temporaire",
-"4": "Stage",
-"5": "CDI",
-"6": "Apprentissage"
-};
-
-const offers = [];
-
-try{
-
-const JOBUP_BATCH_SIZE = 5;
-
-for(let batchStart = 0; batchStart < SEARCH_KEYWORDS.length; batchStart += JOBUP_BATCH_SIZE){
-
-const keywordBatch = SEARCH_KEYWORDS.slice(batchStart, batchStart + JOBUP_BATCH_SIZE);
-
-await Promise.all(keywordBatch.map(async (keyword) => {
-
-const encodedKeyword =
-encodeURIComponent(keyword);
-
-const url =
-`https://www.jobup.ch/fr/emplois/?term=${encodedKeyword}&regionIds=52`;
-
-const html =
-await fetchExternalText(url);
-
-const initMatch =
-html.match(/__INIT__\s*=\s*(\{[\s\S]*?\});\s*(?:__LOAD_LAZY__|__LOCALE__)/);
-
-if(!initMatch){
-console.log(`Jobup "${keyword}": __INIT__ non trouvé`);
-return;
-}
-
-const data = JSON.parse(initMatch[1]);
-
-const results =
-data?.vacancy?.results?.main?.results || [];
-
-console.log(`Jobup "${keyword}": ${results.length} offres`);
-
-for(const job of results){
-
-const jobId = job.id || "";
-const place = job.place || "";
-
-const isVaud =
-job.regions?.some(r =>
-String(r).includes("52") ||
-String(r).toLowerCase().includes("vaud")
-) ||
-VAUD_PLACES.some(v =>
-place.toLowerCase().includes(v)
-) ||
-job.locations?.some(l =>
-l.cantonCode === "VD"
-);
-
-if(!isVaud) continue;
-
-const titleLower = (job.title || "").toLowerCase();
-const keywordWords = keyword.toLowerCase().split(" ");
-if(!keywordWords.some(w => w.length > 4 && titleLower.includes(w))) continue;
-
-const apprentiKeywords = [
-"apprenti","apprentie","apprenant",
-"préapprentissage","préapprenti",
-"cfc en cours","stage","stagiaire",
-"assistante médicale","assistant médical"
-];
-if(apprentiKeywords.some(a => titleLower.includes(a))) continue;
-
-// Adresse depuis locations[0] (lieu de travail réel)
-const loc = (job.locations || [])[0] || {};
-const street = (loc.street || job.street || "").trim();
-const zipCode = (loc.postalCode || loc.zipCode || job.zipCode || "").trim();
-const city = (loc.city || place || "").trim();
-const addressParts = [];
-if(street) addressParts.push(street);
-const zipIsVaud = /^1\d{3}$/.test(zipCode);
-if(zipIsVaud && city) addressParts.push(`${zipCode} ${city}`);
-else if(city) addressParts.push(city);
-const address = addressParts.join(", ");
-
-const contractId = (job.employmentTypeIds || [])[0] || "";
-const contractRaw = CONTRACT_TYPE_MAP[contractId] || "";
-const contractClean = contractRaw.replace(/\s*(droit public|droit prive|de droit public|de droit prive).*/i, "").trim();
-const CONTRACT_FR = {"permanent":"CDI","unlimited":"CDI","durée indéterminée":"CDI","fixed-term":"CDD","temporary":"Temporaire","internship":"Stage","apprenticeship":"Apprentissage"};
-const contract = CONTRACT_FR[contractClean.toLowerCase()] || contractClean;
-
-// Date publication
-const raw = job.publicationDate ? job.publicationDate.split("T")[0] : new Date().toISOString().split("T")[0];
-const dp = raw.split("-");
-const dateFormatted = dp.length === 3 ? `${dp[2]}.${dp[1]}.${dp[0]}` : raw;
-
-// Date limite depuis page liste
-let applyBefore = "";
-if(job.publicationEndDate){
-  const ep = job.publicationEndDate.split("T")[0].split("-");
-  if(ep.length === 3) applyBefore = `${ep[2]}.${ep[1]}.${ep[0]}`;
-}
-
-// Date entrée depuis page liste
-let startDate = "";
-if(job.contractStart){
-  const sp = job.contractStart.split("T")[0].split("-");
-  if(sp.length === 3) startDate = `${sp[2]}.${sp[1]}.${sp[0]}`;
-}
-
-// Salaire depuis page liste
-const salaryRaw = job.salary || "";
-const salaryList = salaryRaw ? `CHF ${salaryRaw}` : "";
-
-offers.push({
-id: String(jobId || generateServerId()),
-title: job.title || "",
-company: job.company?.name || "",
-location: city || place,
-address: address,
-sector: "",
-rate: job.employmentGrades
-? job.employmentGrades[0] === job.employmentGrades[1]
-? `${job.employmentGrades[0]}%`
-: `${job.employmentGrades[0]}-${job.employmentGrades[1]}%`
-: "",
-contract: contract,
-source: "Jobup",
-offerUrl: jobId
-? `https://www.jobup.ch/fr/emplois/detail/${jobId}/`
-: "",
-date: dateFormatted,
-startDate: startDate,
-applyBefore: applyBefore,
-description: job.lead || "",
-salary: salaryList,
-});
-
-}
-
-}));
-
-}
-
-}catch(error){
-
-console.warn("Erreur scraping Jobup :", error.message);
-
-}
-
-return offers;
-
-}
-
-async function fetchJobScout24Offers(){
-
-const offers = [];
-
-try{
-
-for(const keyword of SEARCH_KEYWORDS){
-
-const encodedKeyword =
-encodeURIComponent(keyword);
-
-const url =
-`https://www.jobscout24.ch/fr/jobs/rss/${encodedKeyword}/vaud/`;
-
-const xml =
-await fetchExternalText(url);
-
-const items =
-xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
-
-console.log(`JobScout24 RSS "${keyword}": ${items.length} offres`);
-
-for(const item of items){
-
-const title =
-(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] ||
-(item.match(/<title>(.*?)<\/title>/) || [])[1] || "";
-
-const company =
-(item.match(/<author>(.*?)<\/author>/) ||
-item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>/) || [])[1] || "";
-
-const link =
-(item.match(/<link>(.*?)<\/link>/) || [])[1] || "";
-
-const description =
-(item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
-
-const pubDate =
-(item.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
-
-const location =
-(item.match(/<city>(.*?)<\/city>/) ||
-item.match(/<region>(.*?)<\/region>/) || [])[1] || "Vaud";
-
-if(!title) continue;
-
-offers.push({
-id: generateServerId(),
-title: title.trim(),
-company: company.trim(),
-location: location.trim(),
-sector: "",
-rate: "",
-contract: "",
-source: "JobScout24",
-offerUrl: link.trim(),
-date: pubDate
-? new Date(pubDate).toISOString().split("T")[0]
-: new Date().toISOString().split("T")[0],
-description: description || "Descriptif non disponible.",
-salary: ""
-});
-
-}
-
-}
-
-}catch(error){
-
-console.warn("Erreur scraping JobScout24 RSS :", error.message);
-
-}
-
-return offers;
-
-}
-
-async function fetchVdOffers(){
-
-const offers = [];
-
-try{
-
-for(const keyword of SEARCH_KEYWORDS){
-
-const encodedKeyword =
-encodeURIComponent(`"${keyword}"`);
-
-const url =
-`https://fa-ewrg-saasfaeuraprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations,requisitionList.secondaryLocations,flexFieldsFacet.values,requisitionList.requisitionFlexFields&finder=findReqs;siteNumber=CX_1,facetsList=LOCATIONS%3BWORK_LOCATIONS%3BWORKPLACE_TYPES%3BTITLES%3BCATEGORIES%3BORGANIZATIONS%3BPOSTING_DATES%3BFLEX_FIELDS,limit=25,keyword=${encodedKeyword},sortBy=RELEVANCY`;
-
-const html =
-await fetchExternalText(url);
-
-const data =
-JSON.parse(html);
-
-const jobs =
-data?.items?.[0]?.requisitionList || [];
-
-for(const job of jobs){
-
-offers.push({
-id: String(job.Id || generateServerId()),
-title: job.Title || "",
-company: "État de Vaud",
-location: job.PrimaryLocation || "Vaud",
-sector: "Administration publique",
-rate: "",
-contract: "",
-source: "État de Vaud",
-offerUrl: job.Id
-? `https://offres-emploi.vd.ch/#fr/sites/CX_1/jobs/preview/${job.Id}/`
-: "",
-date: job.PostedDate || new Date().toISOString().split("T")[0],
-description: job.ShortDescriptionStr || "Descriptif non disponible.",
-salary: ""
-});
-
-}
-
-}
-
-}catch(error){
-
-console.warn("Erreur scraping État de Vaud :", error.message);
-
-}
-
-return offers;
-
-}
-
-/* ==========================================
-SCRAPING SOURCES SUPPLEMENTAIRES V14.6
-Indeed / LinkedIn / Migros / Nestlé / Coop
-========================================== */
-
-function extractAnchorsFromHtml(html, baseUrl){
-
-const anchors = [];
-
-const regex =
-/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-
-let match;
-
-while((match = regex.exec(html)) !== null){
-
-try{
-
-const href =
-new URL(match[1], baseUrl).href;
-
-const text =
-cleanHtmlText(match[2] || "");
-
-anchors.push({
-href,
-text
-});
-
-}catch(error){
-
-}
-
-}
-
-return anchors;
-
-}
-
-function looksLikeWantedJob(text){
-
-const value =
-String(text || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-
-const keywords = [
-"employe",
-"assistant",
-"assistante",
-"administratif",
-"administrative",
-"gestionnaire",
-"dossier",
-"commerce",
-"support",
-"helpdesk",
-"technicien",
-"informatique",
-"rh",
-"clientele",
-"coordinateur"
-];
-
-return keywords.some(keyword =>
-value.includes(keyword)
-);
-
-}
-
-async function fetchGenericJobPageOffers(config){
-
-const offers = [];
-
-try{
-
-const html =
-await fetchExternalText(config.url);
-
-const anchors =
-extractAnchorsFromHtml(
-html,
-config.url
-);
-
-const seen = new Set();
-
-for(const anchor of anchors){
-
-const href =
-anchor.href || "";
-
-const title =
-(anchor.text || "").trim();
-
-if(!href || seen.has(href)){
-continue;
-}
-
-seen.add(href);
-
-const hrefLower =
-href.toLowerCase();
-
-const isJobLink =
-config.linkPatterns.some(pattern =>
-hrefLower.includes(pattern)
-);
-
-if(!isJobLink){
-continue;
-}
-
-if(
-title &&
-title.length < 120 &&
-!looksLikeWantedJob(title)
-){
-continue;
-}
-
-offers.push({
-id: generateServerId(),
-title: title || config.defaultTitle,
-company: config.company,
-location: "Vaud",
-sector: config.sector || "",
-rate: "",
-contract: "",
-source: config.source,
-offerUrl: href,
-url: href,
-date: new Date().toISOString().split("T")[0],
-description: "Descriptif non disponible.",
-salary: ""
-});
-
-}
-
-console.log(
-`${config.source}: ${offers.length} offres détectées`
-);
-
-}catch(error){
-
-console.warn(
-`Erreur scraping ${config.source} :`,
-error.message
-);
-
-}
-
-return offers;
-
-}
-
-async function fetchIndeedOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Indeed",
-company: "Indeed",
-url: "https://ch-fr.indeed.com/jobs?q=&l=vaud&from=searchOnHP",
-defaultTitle: "Offre Indeed Vaud",
-linkPatterns: [
-"/viewjob",
-"jk="
-]
-});
-
-}
-
-async function fetchLinkedInOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "LinkedIn",
-company: "LinkedIn",
-url: "https://www.linkedin.com/jobs/search/?keywords=&location=Vaud%2C%20Suisse",
-defaultTitle: "Offre LinkedIn Vaud",
-linkPatterns: [
-"/jobs/view/"
-]
-});
-
-}
-
-async function fetchMigrosOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Migros",
-company: "Migros",
-url: "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants",
-defaultTitle: "Offre Migros",
-linkPatterns: [
-"/fr/postes-vacants/",
-"/job/",
-"/jobs/"
-]
-});
-
-}
-
-async function fetchNestleOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Nestlé",
-company: "Nestlé",
-url: "https://www.nestle.ch/fr/emplois",
-defaultTitle: "Offre Nestlé",
-linkPatterns: [
-"/jobs/",
-"/job/",
-"/emplois",
-"/career",
-"/careers"
-]
-});
-
-}
-
-async function fetchCoopOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Coop",
-company: "Coop",
-url: "https://jobs.coopjobs.ch/?lang=fr",
-defaultTitle: "Offre Coop",
-linkPatterns: [
-"/job/",
-"/jobs/",
-"/stellen/",
-"jobid"
-]
-});
-
-}
-
-async function fetchLinkedInOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "LinkedIn",
-company: "LinkedIn",
-url: "https://www.linkedin.com/jobs/search/?keywords=&location=Vaud%2C%20Suisse",
-defaultTitle: "Offre LinkedIn Vaud",
-linkPatterns: [
-"/jobs/view/"
-]
-});
-
-}
-
-async function fetchMigrosOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Migros",
-company: "Migros",
-url: "https://jobs.migros.ch/fr/nos-entreprises/groupe-migros/postes-vacants",
-defaultTitle: "Offre Migros",
-linkPatterns: [
-"/fr/postes-vacants/",
-"/job/",
-"/jobs/"
-]
-});
-
-}
-
-async function fetchNestleOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Nestlé",
-company: "Nestlé",
-url: "https://www.nestle.ch/fr/emplois",
-defaultTitle: "Offre Nestlé",
-linkPatterns: [
-"/jobs/",
-"/job/",
-"/emplois",
-"/career",
-"/careers"
-]
-});
-
-}
-
-async function fetchCoopOffers(){
-
-return await fetchGenericJobPageOffers({
-source: "Coop",
-company: "Coop",
-url: "https://jobs.coopjobs.ch/?lang=fr",
-defaultTitle: "Offre Coop",
-linkPatterns: [
-"/job/",
-"/jobs/",
-"/stellen/",
-"jobid"
-]
-});
-
-}
-
-function generateServerId(){
-return Date.now().toString() +
-Math.random().toString(36).substring(2, 8);
-}
-
-function deduplicateOffers(offers){
-
-const seen = new Set();
-const result = [];
-
-for(const offer of offers){
-
-const key =
-`${offer.title}-${offer.company}-${offer.location}`
-.toLowerCase()
-.replace(/\s+/g, "");
-
-if(!seen.has(key)){
-seen.add(key);
-result.push(offer);
-}
-
-}
-
-return result;
-
-}
-
-async function scrapeAllOffers(){
-
-console.log("🔄 Scraping des offres en cours...");
-
-const [
-jobupOffers,
-vdOffers
-] = await Promise.all([
-fetchJobupOffers(),
-fetchVdOffers()
-]);
-
-const allOffers =
-deduplicateOffers([
-...jobupOffers,
-...vdOffers
-]);
-
-if(allOffers.length > 0){
-
-writeJson(OFFERS_FILE, allOffers);
-
-console.log(
-`✅ ${allOffers.length} offres scrapées et sauvegardées`
-);
-
-console.log(
-`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length}`
-);
-
-}else{
-
-console.warn(
-"⚠️ Aucune offre récupérée — offers.json conservé"
-);
-
-}
-
-}
-
-
-/* ==========================================
-DEMARRAGE SERVEUR
-========================================== */
-
-app.listen(
-PORT,
-()=>{
-
-console.log(
-"=================================="
-);
-
-console.log(
-"JOB FINDER VAUD V14.6 PREMIUM IA"
-);
-
-console.log(
-`Serveur démarré : http://localhost:${PORT}`
-);
-
-console.log(
-"=================================="
-);
-
-}
-);
-
-/* ==========================================
-FIN SERVER.JS
-========================================== */
+<link
+rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+<script
+src="https://cdn.jsdelivr.net/npm/chart.js">
+</script>
+
+
+<!-- ==========================================
+LIBRAIRIES EXTRACTION CV V14.6
+PDF + DOCX
+========================================== -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+
+</head>
+
+<body>
+
+
+
+<!-- ==========================================
+HEADER
+========================================== -->
+
+<header class="app-header">
+
+<div class="logo-area">
+
+<h1 class="app-title">
+
+<i class="ti ti-topology-star-3" style="font-size:26px; color:#a855f7 !important;"></i> <span class="title-main">Job Finder</span>
+<span class="title-vaud">Vaud</span>
+
+</h1>
+
+<div class="app-version" style="color:#AFA9EC;">
+V14.6 PREMIUM IA
+</div>
+
+<div class="app-author">
+IADev : F. Laratta
+</div>
+
+</div>
+
+</header>
+
+<!-- ==========================================
+NAVIGATION
+========================================== -->
+
+<nav class="main-tabs">
+
+<button
+data-tab="dashboard">
+
+🏠 Dashboard
+
+</button>
+
+<button
+data-tab="filters">
+
+🔎 Recherche / Offres
+
+</button>
+
+<button
+data-tab="favorites">
+
+⭐ Favoris
+
+</button>
+
+<button
+data-tab="applications">
+
+📨 Candidatures
+
+</button>
+
+<button
+data-tab="ai">
+
+🤖 IA Premium
+
+</button>
+
+<button
+data-tab="stats">
+
+📊 Stats
+
+</button>
+
+<button
+data-tab="settings">
+
+🔧 Config
+
+</button>
+
+<button
+data-tab="notifications">
+
+🧭 Suivi
+
+</button>
+
+<button
+id="refreshOffersBtn"
+type="button"
+class="refresh-nav-btn">
+
+💡 Rechercher avec mes critères
+
+</button>
+
+</nav>
+
+<main>
+
+<!-- ==========================================
+DASHBOARD
+========================================== -->
+
+<section
+id="dashboard"
+class="tab-content">
+
+<h2 class="section-title">
+
+📊 Dashboard
+
+</h2>
+
+<div class="kpi-grid">
+
+<div
+class="kpi-card clickable-card"
+data-target="filters">
+
+<div class="kpi-icon kpi-blue">
+
+💼
+
+</div>
+
+<div class="kpi-content">
+
+<div
+id="kpiOffers"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Offres trouvées
+
+</div>
+
+</div>
+
+</div>
+
+<div
+class="kpi-card clickable-card"
+data-target="favorites">
+
+<div class="kpi-icon kpi-green">
+
+⭐
+
+</div>
+
+<div class="kpi-content">
+
+<div
+id="kpiFavorites"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Favoris
+
+</div>
+
+</div>
+
+</div>
+
+<div
+class="kpi-card clickable-card"
+data-target="applications">
+
+<div class="kpi-icon kpi-purple">
+
+📨
+
+</div>
+
+<div class="kpi-content">
+
+<div
+id="kpiApplications"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Candidatures
+
+</div>
+
+</div>
+
+</div>
+
+<div
+class="kpi-card clickable-card"
+data-target="ai">
+
+<div class="kpi-icon kpi-gold">
+
+🤖
+
+</div>
+
+<div class="kpi-content">
+
+<div
+id="kpiAI"
+class="kpi-value">
+
+0%
+
+</div>
+
+<div class="kpi-label">
+
+Match IA
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+OBJECTIF HEBDOMADAIRE
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🎯 Objectif hebdomadaire
+
+</h3>
+
+<p>
+
+3 candidatures par semaine
+
+</p>
+
+<div class="progress-bar">
+
+<div
+id="weeklyProgress"
+class="progress-fill">
+
+</div>
+
+</div>
+
+<div
+id="weeklyAchievement"
+class="achievement-badge">
+
+🤘🏼 Objectif hebdomadaire atteint
+
+</div>
+
+</div>
+
+
+<!-- ==========================================
+OBJECTIF MENSUEL
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🏆 Objectif mensuel
+
+</h3>
+
+<p>
+
+12 candidatures par mois
+
+</p>
+
+<div class="progress-bar">
+
+<div
+id="monthlyProgress"
+class="progress-fill">
+
+</div>
+
+</div>
+
+<div
+id="monthlyAchievement"
+class="achievement-badge">
+
+🤘🏼🎸 Objectif mensuel atteint
+
+</div>
+
+</div>
+
+<!-- ==========================================
+MEILLEUR MATCH DU JOUR
+========================================== -->
+
+<div class="objectives-card">
+
+<<div
+id="aiBestMatchContainer">
+
+Aucun résultat disponible
+
+</div>
+
+</div>
+
+<!-- ==========================================
+ACTIVITE RECENTE
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🆕 Activité récente
+
+</h3>
+
+<div
+id="activityFeed">
+
+Aucune activité enregistrée
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ==========================================
+FILTRES
+========================================== -->
+
+<section
+id="filters"
+class="tab-content active-tab">
+
+<h2 class="section-title">
+
+🎯 Filtres
+
+</h2>
+
+<!-- ==========================================
+METIERS
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+👔 Métier
+
+</div>
+
+<div class="filter-content active-filter">
+
+<label class="select-all-label">
+<input type="checkbox" id="selectAllMetiers" onchange="toggleSelectAll(this, 'metiers')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
+<label>
+<input type="checkbox" name="metiers" value="Employé de commerce">
+Employé de commerce
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Employé administratif">
+Employé administratif
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Assistant administratif">
+Assistant administratif
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Assistant de direction">
+Assistant de direction
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Gestionnaire de dossier">
+Gestionnaire de dossier
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Gestionnaire administratif">
+Gestionnaire administratif
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Collaborateur administratif">
+Collaborateur administratif
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Coordinateur administratif">
+Coordinateur administratif
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Assistant RH">
+Assistant RH
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Conseiller clientèle">
+Conseiller clientèle
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Support utilisateur">
+Support utilisateur
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Technicien informatique">
+Technicien informatique
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Helpdesk">
+Helpdesk
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Back-office">
+Back-office
+</label>
+
+</div>
+
+</div>
+
+
+<!-- ==========================================
+SECTEURS
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+🏢 Secteur
+
+</div>
+
+<div class="filter-content active-filter">
+
+<label class="select-all-label">
+<input type="checkbox" id="selectAllSecteurs" onchange="toggleSelectAll(this, 'secteurs')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
+<label>
+<input type="checkbox" name="secteurs" value="Administration">
+Administration
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Administration publique">
+Administration publique
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Fondation">
+Fondation
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Informatique">
+Informatique
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Immobilier">
+Immobilier
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Assurance">
+Assurance
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Ressource humaine">
+Ressource humaine
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Service client">
+Service client
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Support utilisateur">
+Support utilisateur
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Secrétariat">
+Secrétariat
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Secrétariat médical">
+Secrétariat médical
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Santé">
+Santé
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Fiduciaire">
+Fiduciaire
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Banque">
+Banque
+</label>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+TAUX
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+⏱️ Taux
+
+</div>
+
+<div class="filter-content active-filter">
+
+<label class="select-all-label">
+<input type="checkbox" id="selectAllTaux" onchange="toggleSelectAll(this, 'taux')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
+<div class="rate-grid">
+
+<label>
+<input type="checkbox" name="taux" value="20">
+20%
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="30">
+30%
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="40">
+40%
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="50">
+50%
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="60">
+60%
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="70">
+70%
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="80">
+80%
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="90">
+90%
+</label>
+
+<label>
+<input type="checkbox" id="taux100" name="taux" value="100" onchange="syncTempsPlein(this)">
+100%
+</label>
+
+</div>
+
+<hr class="filter-separator">
+
+<label>
+<input type="checkbox" name="taux" value="Temps plein" id="tempsPlein" onchange="handleTempsPlein(this)">
+Temps plein
+</label>
+
+</div>
+
+</div>
+
+
+<!-- ==========================================
+CONTRATS
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+📄 Contrat
+
+</div>
+
+<div class="filter-content active-filter">
+
+<label class="select-all-label">
+<input type="checkbox" id="selectAllContrats" onchange="toggleSelectAll(this, 'contrats')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
+<label>
+<input type="checkbox" name="contrats" value="CDI">
+CDI
+</label>
+
+<label>
+<input type="checkbox" name="contrats" value="CDD">
+CDD
+</label>
+
+<label>
+<input type="checkbox" name="contrats" value="Temporaire">
+Temporaire
+</label>
+
+<label>
+<input type="checkbox" name="contrats" value="Stage">
+Stage
+</label>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+REGIONS
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+📍 Région
+
+</div>
+
+<div class="filter-content active-filter">
+
+<label class="select-all-label">
+<input type="checkbox" id="selectAllRegions" onchange="toggleSelectAll(this, 'regions')">
+<strong>✅ Tout sélectionner (Vaud)</strong>
+</label>
+
+<hr class="filter-separator">
+
+<label>
+<input type="checkbox" name="regions" value="Lausanne">
+Lausanne
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Ouest lausannois">
+Ouest lausannois
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Morges">
+Morges
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Nyon">
+Nyon
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Yverdon">
+Yverdon
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Riviera">
+Riviera
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Vevey">
+Vevey
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Montreux">
+Montreux
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Aigle">
+Aigle
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Broye-Vully">
+Broye-Vully
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Payerne">
+Payerne
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Jura-Nord vaudois">
+Jura-Nord vaudois
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Gros-de-Vaud">
+Gros-de-Vaud
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Lavaux-Oron">
+Lavaux-Oron
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Rolle">
+Rolle
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Gland">
+Gland
+</label>
+
+</div>
+
+</div>
+
+
+<!-- ==========================================
+SOURCE V14.6
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+🔎 Source
+
+</div>
+
+<div class="filter-content">
+
+<label class="select-all-label">
+<input type="checkbox" id="selectAllSources" onchange="toggleSelectAll(this, 'sources')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
+<div class="checkbox-grid">
+
+<label>
+<input type="checkbox" name="sources" value="Jobup" checked>
+Jobup
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="État de Vaud" checked>
+État de Vaud
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="LinkedIn" checked>
+LinkedIn
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="Indeed" checked>
+Indeed
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="Migros" checked>
+Migros
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="Nestlé" checked>
+Nestlé
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="Coop" checked>
+Coop
+</label>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==========================================
+TRI V14.6
+========================================== -->
+
+<div class="filter-box">
+
+<div class="filter-header">
+
+↕️ Tri des résultats
+
+</div>
+
+<div class="filter-content">
+
+<select id="sortFilter">
+
+<option value="match">
+Match IA
+</option>
+
+<option value="salary">
+Salaire
+</option>
+
+<option value="company">
+Entreprise
+</option>
+
+<option value="region">
+Région
+</option>
+
+<option value="job">
+Métier
+</option>
+
+<option value="date">
+Date
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+<!-- ==========================================
+BOUTONS FILTRES
+========================================== -->
+
+<div class="filters-actions">
+
+<button
+id="searchOffersBtn"
+class="action-btn">
+
+🚀 Rechercher
+
+</button>
+
+<button
+id="resetFiltersBtn"
+class="action-btn secondary-btn">
+
+🔄 Réinitialiser
+
+</button>
+
+</div>
+
+<!-- ==========================================
+RESULTATS
+========================================== -->
+
+<div class="results-summary">
+
+<div
+id="resultsCounter">
+
+💼 Offres trouvées : 0
+
+</div>
+
+<div
+id="recommendedCounter">
+
+🔥 Très recommandées : 0
+
+</div>
+
+<div
+id="newOffersCounter">
+
+🆕 Nouvelles offres : 0
+
+</div>
+
+<div
+id="averageMatchCounter">
+
+🤖 Match moyen IA : 0%
+
+</div>
+
+</div>
+
+<div
+id="offersContainer">
+
+</div>
+
+</section>
+<!-- ==========================================
+FAVORIS
+========================================== -->
+
+<section
+id="favorites"
+class="tab-content">
+
+<h2 class="section-title">
+
+⭐ Favoris
+
+</h2>
+
+<div class="objectives-card">
+
+<h3>
+
+⭐ Priorités
+
+</h3>
+
+<p>⭐⭐⭐ Priorité faible</p>
+
+<p>⭐⭐⭐⭐ Priorité moyenne</p>
+
+<p>⭐⭐⭐⭐⭐ Priorité élevée</p>
+
+</div>
+
+<div
+id="favoritesContainer">
+
+</div>
+
+</section>
+
+<!-- ==========================================
+CANDIDATURES
+========================================== -->
+
+<section
+id="applications"
+class="tab-content">
+
+<h2 class="section-title">
+
+📨 Candidatures
+
+</h2>
+
+<div class="kpi-grid">
+
+<div class="kpi-card">
+
+<div
+id="applicationsCount"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+📨 Envoyées
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="responsesCount"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+📩 Réponses
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="interviewsCount"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+🗣️ Entretiens
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="hiredCount"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+🏆 Succès
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==========================================
+OBJECTIFS CANDIDATURES
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🎯 Objectifs
+
+</h3>
+
+<p>
+
+3 candidatures par semaine
+
+</p>
+
+<p>
+
+12 candidatures par mois
+
+</p>
+
+</div>
+
+<!-- ==========================================
+TABLEAU DES CANDIDATURES
+========================================== -->
+
+<div
+id="applicationsBoard">
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+📨 Candidatures envoyées
+
+</div>
+
+<div
+id="sentApplications">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+📞 Réponses reçues
+
+</div>
+
+<div
+id="receivedResponses">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+🎤 Entretiens
+
+</div>
+
+<div
+id="scheduledInterviews">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+🎉 Embauches
+
+</div>
+
+<div
+id="successfulApplications">
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+<!-- ==========================================
+IA PREMIUM
+========================================== -->
+
+<section
+id="ai"
+class="tab-content">
+
+<h2 class="section-title">
+
+🤖 IA Premium
+
+</h2>
+
+<!-- ==========================================
+IMPORT CV
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+📄 Import CV
+
+</h3>
+
+<input
+type="file"
+id="cvFile"
+accept=".pdf,.doc,.docx">
+
+<br><br>
+
+<button
+id="analyzeCVBtn"
+class="action-btn">
+
+🤖 Analyser mon CV
+
+</button>
+<div id="cvAnalysisResult"></div>
+</div>
+
+<!-- ==========================================
+COORDONNEES CANDIDAT
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+📇 Coordonnées candidat(e)s
+
+</h3>
+
+<div style="display:flex; flex-direction:column; gap:10px; text-align:left;">
+
+<input
+type="text"
+id="candidateNom"
+placeholder="Nom"
+style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
+
+<input
+type="text"
+id="candidatePrenom"
+placeholder="Prénom"
+style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
+
+<input
+type="text"
+id="candidateAdresse"
+placeholder="Adresse (rue, n°)"
+style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
+
+<input
+type="text"
+id="candidateNpaVille"
+placeholder="NPA Ville"
+style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
+
+</div>
+
+</div>
+
+<!-- ==========================================
+SCORE IA
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🎯 Compatibilité IA
+
+</h3>
+
+<div
+id="profileCompatibility"
+class="big-score">
+
+0%
+
+</div>
+
+<p>
+
+Compatibilité moyenne avec les offres
+
+</p>
+
+</div>
+
+<!-- ==========================================
+MEILLEUR MATCH
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🔥 Meilleur Match du Jour
+
+</h3>
+
+<div
+id="bestMatchContainer">
+
+Aucun résultat disponible
+
+</div>
+
+</div>
+
+<!-- ==========================================
+PREPARATION ENTRETIEN
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🎤 Préparation entretien
+
+</h3>
+
+<textarea
+id="interviewInput"
+placeholder="Collez ici une offre d'emploi">
+
+</textarea>
+
+<br><br>
+
+<button
+id="prepareInterviewBtn"
+class="action-btn">
+
+🎤 Préparer entretien
+
+</button>
+
+<div
+id="interviewResult">
+
+</div>
+
+</div>
+
+<!-- ==========================================
+LETTRES IA
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+✉️ Génération de lettres IA
+
+</h3>
+
+<textarea
+id="letterInput"
+placeholder="Collez ici une offre d'emploi">
+
+</textarea>
+
+<br><br>
+
+<button
+id="generateShortLetter"
+class="action-btn">
+
+✉️ Lettre courte
+
+</button>
+
+<button
+id="generateStandardLetter"
+class="action-btn">
+
+✉️ Lettre standard
+
+</button>
+
+<button
+id="generatePremiumLetter"
+class="action-btn">
+
+✉️ Lettre premium
+
+</button>
+
+<div
+id="letterResult">
+
+</div>
+
+<br>
+
+<button
+id="saveLetterBtn"
+class="action-btn">
+
+💾 Sauvegarder
+
+</button>
+
+<button
+id="copyLetterBtn"
+class="action-btn">
+
+📋 Copier
+
+</button>
+
+<button
+id="pdfLetterBtn"
+class="action-btn">
+
+📄 PDF
+
+</button>
+
+<button
+id="wordLetterBtn"
+class="action-btn">
+
+📝 Word
+
+</button>
+
+<button
+id="emailLetterBtn"
+class="action-btn">
+
+📧 Email
+
+</button>
+
+</div>
+
+<!-- ==========================================
+APERCU LETTRE
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+📋 Structure de lettre V14.6
+
+</h3>
+
+<div
+id="letterPreview">
+
+Nom Prénom<br>
+Adresse<br>
+NPA Ville<br><br>
+
+Entreprise<br>
+Adresse<br>
+NPA Ville<br><br>
+
+Lausanne, date<br><br>
+
+Objet : Candidature<br><br>
+
+Madame, Monsieur,
+
+</div>
+
+</div>
+
+<!-- ==========================================
+HISTORIQUE LETTRES
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+📚 Historique des lettres
+
+</h3>
+
+<div
+id="lettersHistoryContainer">
+
+Aucune lettre sauvegardée
+
+</div>
+
+</div>
+
+<!-- ==========================================
+KPI IA
+========================================== -->
+
+<div class="kpi-grid">
+
+<div class="kpi-card">
+
+<div
+id="cvScore"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Score CV
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="offerMatch"
+class="kpi-value">
+
+0%
+
+</div>
+
+<div class="kpi-label">
+
+Compatibilité
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="missingSkills"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Compétences manquantes
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="aiSuggestions"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+Suggestions IA
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ==========================================
+STATISTIQUES
+========================================== -->
+
+<section
+id="stats"
+class="tab-content">
+
+<h2 class="section-title">
+
+📊 Stats
+
+</h2>
+
+<div class="kpi-grid">
+
+<div class="kpi-card">
+
+<div
+id="responseRate"
+class="kpi-value">
+
+0%
+
+</div>
+
+<div class="kpi-label">
+
+Taux réponse
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="interviewRate"
+class="kpi-value">
+
+0%
+
+</div>
+
+<div class="kpi-label">
+
+Taux entretien
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="successRate"
+class="kpi-value">
+
+0%
+
+</div>
+
+<div class="kpi-label">
+
+Taux succès
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="averageMatch"
+class="kpi-value">
+
+0%
+
+</div>
+
+<div class="kpi-label">
+
+Match IA moyen
+
+</div>
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+📨 Évolution candidatures
+
+</h3>
+
+<canvas
+id="applicationsChart">
+
+</canvas>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🎯 Performance
+
+</h3>
+
+<canvas
+id="resultsChart">
+
+</canvas>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🏢 Secteurs
+
+</h3>
+
+<canvas
+id="sectorsChart">
+
+</canvas>
+
+</div>
+
+</section>
+
+
+<!-- ==========================================
+PARAMETRES
+========================================== -->
+
+<section
+id="settings"
+class="tab-content">
+
+<h2 class="section-title">
+
+⚙️ Paramètres
+
+</h2>
+
+<div class="objectives-card">
+
+<h3>
+
+🔔 Notifications
+
+</h3>
+
+<p>
+
+Activer ou désactiver les notifications.
+
+</p>
+
+<br>
+
+<button
+id="notificationToggle"
+class="action-btn">
+
+Notifications activées
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+📤 Export des données
+
+</h3>
+
+<p>
+
+Exporter vos favoris, candidatures et lettres.
+
+</p>
+
+<br>
+
+<button
+id="exportJsonBtn"
+class="action-btn">
+
+📄 Export JSON
+
+</button>
+
+<button
+id="exportCsvBtn"
+class="action-btn">
+
+📊 Export CSV
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+📥 Import des données
+
+</h3>
+
+<input
+type="file"
+id="importFile">
+
+<br><br>
+
+<button
+id="importBtn"
+class="action-btn">
+
+📥 Importer
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+📱 Installation PWA
+
+</h3>
+
+<p>
+
+Installer Job Finder Vaud sur Windows, Android ou iPhone.
+
+</p>
+
+<br>
+
+<button
+id="installPwaBtn"
+class="action-btn">
+
+📱 Installer l'application
+
+</button>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+
+🧹 Réinitialisation
+
+</h3>
+
+<p>
+
+Supprimer toutes les données locales.
+
+</p>
+
+<br>
+
+<button
+id="resetAppBtn"
+class="action-btn danger-btn">
+
+🗑️ Réinitialiser l'application
+
+</button>
+
+</div>
+
+</section>
+
+<!-- ==========================================
+SUIVI
+========================================== -->
+
+<section
+id="notifications"
+class="tab-content">
+
+<h2 class="section-title">
+
+🧭 Suivi des recherches
+
+</h2>
+
+<div class="alerts-summary-card">
+
+<div class="alerts-summary-icon">
+🧭
+</div>
+
+<div>
+
+<h3>
+Tableau de suivi
+</h3>
+
+<p>
+Suivez vos offres, favoris, candidatures et recommandations IA en temps réel.
+</p>
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+🆕 Nouvelles offres
+</h3>
+
+<div
+id="newOffersNotifications">
+
+Aucune nouvelle offre
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+⭐ Favoris suivis
+</h3>
+
+<div
+id="favoritesNotifications">
+
+Aucun favori suivi
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+📨 Relances candidatures
+</h3>
+
+<div
+id="applicationsNotifications">
+
+Aucune relance
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+🤖 Alertes IA
+</h3>
+
+<div
+id="aiNotifications">
+
+Aucune alerte IA
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ==========================================
+BOUTONS FLOTTANTS
+========================================== -->
+
+<div
+class="floating-actions">
+
+<button
+id="floatingToggle"
+class="floating-btn floating-toggle"
+title="Afficher / Masquer"
+style="font-size: 8px; font-weight: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+
+<i class="ti ti-eye-off" style="font-size: 14px;"></i>
+Masquer
+
+</button>
+
+<button
+id="floatingFavorites"
+class="floating-btn"
+title="Favoris">
+
+⭐
+
+</button>
+
+<button
+id="floatingApplications"
+class="floating-btn"
+title="Mes candidatures">
+
+🚀
+
+</button>
+
+<button
+id="floatingAI"
+class="floating-btn"
+title="IA Premium">
+
+🤖
+
+</button>
+
+<button
+id="floatingTop"
+class="floating-btn"
+title="Retour en haut">
+
+⬆️
+
+</button>
+
+</div>
+
+
+<!-- ==========================================
+TEMPLATE OFFRE V14.6
+========================================== -->
+
+<template
+id="offerTemplate">
+
+<div class="offer-card">
+
+<div class="offer-match">
+
+🤘🏼 Match IA : 95%
+
+</div>
+
+<div class="offer-title">
+
+💼 Gestionnaire de dossier
+
+</div>
+
+<div class="offer-company">
+
+🏢 Entreprise SA
+
+</div>
+
+<div class="offer-address">
+
+📮 Rue Exemple 1
+
+</div>
+
+<div class="offer-location">
+
+📍 Lausanne
+
+</div>
+
+<div class="offer-meta">
+
+📈 80%
+
+</div>
+
+<div class="offer-meta">
+
+📄 CDI
+
+</div>
+
+<div class="offer-sector">
+
+🏭 Administration publique
+
+</div>
+
+<div class="offer-salary">
+
+💰 CHF 6'500
+
+</div>
+
+<div class="offer-source">
+
+🔎 Jobup
+
+</div>
+
+<div class="offer-date">
+
+📅 Aujourd'hui
+
+</div>
+
+<div class="offer-reasons">
+
+✓ Métier compatible<br>
+✓ Secteur compatible<br>
+✓ Région compatible<br>
+✓ Taux compatible<br>
+✓ Contrat compatible
+
+</div>
+
+<div class="offer-actions">
+
+<button
+class="offer-btn favorite-btn"
+title="Ajouter aux favoris">
+
+⭐
+
+</button>
+
+<button
+class="offer-btn apply-btn"
+title="Ajouter candidature">
+
+🚀
+
+</button>
+
+<button
+class="offer-btn ai-btn"
+title="Analyse IA">
+
+🤖
+
+</button>
+
+<button
+class="offer-btn letter-btn"
+title="Lettre IA">
+
+✉️
+
+</button>
+
+<button
+class="offer-btn link-btn"
+title="Offre originale">
+
+🔗
+
+</button>
+
+</div>
+
+</div>
+
+</template>
+
+</main>
+
+<!-- ==========================================
+APP.JS
+========================================== -->
+
+<script
+src="app.js">
+</script>
+
+
+</body>
+
+</html>

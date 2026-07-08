@@ -1171,6 +1171,15 @@ document.querySelectorAll(
 cb.addEventListener("change", applyFilters);
 });
 
+loadCandidateInfo();
+
+["candidateNom", "candidatePrenom", "candidateAdresse", "candidateNpaVille"].forEach(id => {
+const el = document.getElementById(id);
+if(el){
+el.addEventListener("input", saveCandidateInfo);
+}
+});
+
 }
 
 /* ==========================================
@@ -3007,11 +3016,46 @@ getAverageMatch(filteredOffers.length ? filteredOffers : offers) + "%"
 LETTRES IA - HELPERS
 ========================================== */
 
+function getCandidateInfo(){
+try{
+return JSON.parse(localStorage.getItem("jobfinder_candidate") || "{}");
+}catch(e){
+return {};
+}
+}
+
+function saveCandidateInfo(){
+const info = {
+nom: document.getElementById("candidateNom")?.value.trim() || "",
+prenom: document.getElementById("candidatePrenom")?.value.trim() || "",
+adresse: document.getElementById("candidateAdresse")?.value.trim() || "",
+npaVille: document.getElementById("candidateNpaVille")?.value.trim() || ""
+};
+localStorage.setItem("jobfinder_candidate", JSON.stringify(info));
+}
+
+function loadCandidateInfo(){
+const info = getCandidateInfo();
+const nomEl = document.getElementById("candidateNom");
+const prenomEl = document.getElementById("candidatePrenom");
+const adresseEl = document.getElementById("candidateAdresse");
+const npaVilleEl = document.getElementById("candidateNpaVille");
+
+if(nomEl) nomEl.value = info.nom || "";
+if(prenomEl) prenomEl.value = info.prenom || "";
+if(adresseEl) adresseEl.value = info.adresse || "";
+if(npaVilleEl) npaVilleEl.value = info.npaVille || "";
+}
+
 function getApplicantBlock(){
+const info = getCandidateInfo();
+const nomPrenom =
+[info.prenom, info.nom].filter(Boolean).join(" ") || "François L.";
+
 return [
-"François L.",
-"Adresse",
-"NPA Ville",
+nomPrenom,
+info.adresse || "Adresse",
+info.npaVille || "NPA Ville",
 "Téléphone",
 "Email"
 ].join("\n");
@@ -3064,10 +3108,14 @@ const title =
 offer.title ||
 "Candidature";
 
+const info = getCandidateInfo();
+const nomPrenom =
+[info.prenom, info.nom].filter(Boolean).join(" ") || "François L.";
+
 const applicantLines = [
-"François L.",
-"Adresse",
-"NPA Ville",
+nomPrenom,
+info.adresse || "Adresse",
+info.npaVille || "NPA Ville",
 "Téléphone",
 "Email"
 ];
