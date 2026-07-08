@@ -1018,8 +1018,10 @@ address = addressLines.join("\n");
 
 // Si l'adresse n'a pas de vraie rue (juste NPA+ville), on va chercher la page "profil entreprise"
 const hasStreetAddress = /[A-Za-zÀ-ÿ].*\d+.*,/.test(address);
+console.log("DEBUG adresse initiale :", JSON.stringify(address), "| a une rue :", hasStreetAddress);
 if(!hasStreetAddress){
 const profileLinkMatch = html.match(/href="(https:\/\/www\.jobup\.ch\/fr\/societes\/[^"]+|\/fr\/societes\/[^"]+)"/i);
+console.log("DEBUG lien profil trouvé :", profileLinkMatch ? profileLinkMatch[1] : "AUCUN");
 if(profileLinkMatch){
 let profileUrl = profileLinkMatch[1];
 if(profileUrl.startsWith("/")){
@@ -1027,8 +1029,10 @@ profileUrl = "https://www.jobup.ch" + profileUrl;
 }
 try{
 const profileHtml = await fetchExternalText(profileUrl);
+console.log("DEBUG page profil récupérée, longueur :", profileHtml ? profileHtml.length : 0);
 const profileText = cleanHtmlTextJobup(profileHtml);
 const streetMatch = profileText.match(/([A-ZÀ-Ÿ][\wÀ-ÿ'.\- ]+\d+[a-zA-Z]?,\s*\d{4}\s+[A-ZÀ-Ÿ][\wÀ-ÿ\- ]+)/);
+console.log("DEBUG adresse trouvée dans profil :", streetMatch ? streetMatch[1] : "AUCUNE");
 if(streetMatch){
 address = streetMatch[1].trim();
 }
