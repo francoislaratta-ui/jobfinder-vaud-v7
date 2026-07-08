@@ -3024,6 +3024,11 @@ return {};
 }
 }
 
+function getSignatureName(){
+const info = getCandidateInfo();
+return [info.prenom, info.nom].filter(Boolean).join(" ") || "François Laratta";
+}
+
 function saveCandidateInfo(){
 const info = {
 nom: document.getElementById("candidateNom")?.value.trim() || "",
@@ -3056,7 +3061,7 @@ if(emailEl) emailEl.value = info.email || "";
 function getApplicantBlock(){
 const info = getCandidateInfo();
 const nomPrenom =
-[info.prenom, info.nom].filter(Boolean).join(" ") || "François L.";
+[info.prenom, info.nom].filter(Boolean).join(" ") || "François Laratta";
 
 return [
 nomPrenom,
@@ -3116,7 +3121,7 @@ offer.title ||
 
 const info = getCandidateInfo();
 const nomPrenom =
-[info.prenom, info.nom].filter(Boolean).join(" ") || "François L.";
+[info.prenom, info.nom].filter(Boolean).join(" ") || "François Laratta";
 
 const applicantLines = [
 nomPrenom,
@@ -3178,7 +3183,7 @@ Je reste volontiers à votre disposition pour un entretien.
 
 Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
 
-François L.
+${getSignatureName()}
 `.trim();
 
 const bodyHtml = wrapParagraphsHTML(`
@@ -3193,7 +3198,7 @@ const letterHtml = `
 ${getLetterHeaderHTML(offer)}
 ${bodyHtml}
 <p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
-<p style="margin:24px 0 0 0;">François L.</p>
+<p style="margin:24px 0 0 0;">${getSignatureName()}</p>
 `;
 
 displayLetter(letter, letterHtml);
@@ -3219,7 +3224,7 @@ Je me tiens volontiers à votre disposition pour un entretien afin de vous prés
 
 Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
 
-François L.
+${getSignatureName()}
 `.trim();
 
 const bodyHtml = wrapParagraphsHTML(`
@@ -3236,7 +3241,7 @@ const letterHtml = `
 ${getLetterHeaderHTML(offer)}
 ${bodyHtml}
 <p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
-<p style="margin:24px 0 0 0;">François L.</p>
+<p style="margin:24px 0 0 0;">${getSignatureName()}</p>
 `;
 
 displayLetter(letter, letterHtml);
@@ -3273,7 +3278,7 @@ Je serais heureux de pouvoir vous rencontrer afin d’échanger sur ma candidatu
 
 Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
 
-François L.
+${getSignatureName()}
 `.trim();
 
 const bodyHtml = wrapParagraphsHTML(`
@@ -3290,7 +3295,7 @@ const letterHtml = `
 ${getLetterHeaderHTML(offer)}
 ${bodyHtml}
 <p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
-<p style="margin:24px 0 0 0;">François L.</p>
+<p style="margin:24px 0 0 0;">${getSignatureName()}</p>
 `;
 
 displayLetter(letter, letterHtml);
