@@ -1016,6 +1016,28 @@ address = addressLines.join("\n");
 }
 }
 
+// Si l'adresse n'a pas de vraie rue (juste NPA+ville), on va chercher la page "profil entreprise"
+const hasStreetAddress = /[A-Za-zÀ-ÿ].*\d+.*,/.test(address);
+if(!hasStreetAddress){
+const profileLinkMatch = html.match(/href="(https:\/\/www\.jobup\.ch\/fr\/entreprises\/[^"]+|\/fr\/entreprises\/[^"]+)"/i);
+if(profileLinkMatch){
+let profileUrl = profileLinkMatch[1];
+if(profileUrl.startsWith("/")){
+profileUrl = "https://www.jobup.ch" + profileUrl;
+}
+try{
+const profileHtml = await fetchExternalText(profileUrl);
+const profileText = cleanHtmlTextJobup(profileHtml);
+const streetMatch = profileText.match(/([A-ZÀ-Ÿ][\wÀ-ÿ'.\- ]+\d+[a-zA-Z]?,\s*\d{4}\s+[A-ZÀ-Ÿ][\wÀ-ÿ\- ]+)/);
+if(streetMatch){
+address = streetMatch[1].trim();
+}
+}catch(profileError){
+console.warn("Erreur récupération profil entreprise Jobup :", profileError.message);
+}
+}
+}
+
 // Estimation salariale Jobup — fourchette ou montant unique, "/" ou "par"
 const salaryPattern = /CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*(?:\/|par)\s*(?:an|mois)/i;
 const salaryMatchRaw = html.match(salaryPattern);
