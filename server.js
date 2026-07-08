@@ -981,11 +981,11 @@ const jobupText = cleanHtmlTextJobup(html);
 const rateMatch = jobupText.match(/(\d{2,3}\s*[-–]\s*\d{2,3}\s*%|\d{2,3}\s*%)/i);
 if(rateMatch) rate = rateMatch[1].trim();
 
-const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage)/i);
+const contractMatch = jobupText.match(/(Durée indéterminée|Durée déterminée|Temporaire|Apprentissage|CDI|CDD|Stage|Intérim|Emploi fixe)/i);
 if(contractMatch) contract = contractMatch[1].trim();
 
-// Adresse — uniquement si bloc "Adresse" propre trouvé avec NPA
-const addressBlockMatch = jobupText.match(/Adresse\s*\n([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories|D'autres utilisateurs)/i);
+// Adresse — bloc "Adresse" OU "Lieu de travail"
+const addressBlockMatch = jobupText.match(/(?:Adresse|Lieu de travail)\s*\n([\s\S]+?)(?:\n\s*\n|Autres recherches|Catégories|D'autres utilisateurs)/i);
 if(addressBlockMatch){
 const lines = addressBlockMatch[1]
 .split("\n")
@@ -1002,24 +1002,48 @@ address = addressLines.join("\n");
 }
 }
 
-// Estimation salariale Jobup
-const salaryMatchRaw = html.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
-const salaryMatchText = jobupText.match(/CHF\s*[\d\s'.]+\s*[-–]\s*[\d\s'.]+\s*\/\s*(?:an|mois)/i);
+// Estimation salariale Jobup — fourchette ou montant unique, "/" ou "par"
+const salaryPattern = /CHF\s*[\d\s'.]+(?:\s*[-–]\s*[\d\s'.]+)?\s*(?:\/|par)\s*(?:an|mois)/i;
+const salaryMatchRaw = html.match(salaryPattern);
+const salaryMatchText = jobupText.match(salaryPattern);
 const salaryFound = salaryMatchRaw || salaryMatchText;
 if(salaryFound) salary = salaryFound[0].replace(/\s+/g," ").trim();
 
 const dateMatch = jobupText.match(/(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
 if(dateMatch) date = dateMatch[1].trim();
 
-// Date postulation — exige format complet DD.MM.YYYY ou DD/MM/YYYY
-const applyBeforeMatch = jobupText.match(
-/(?:Postuler avant|jusqu.au|délai)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4})/i
-);
-if(applyBeforeMatch && /^\d{1,2}[./]\d{1,2}[./]\d{4}$/.test(applyBeforeMatch[1].trim())){
-  applyBefore = applyBeforeMatch[1].trim();
+// Conversion d'une date littérale française vers jj.mm.aaaa
+const moisFr = {
+"janvier":"01","fevrier":"02","février":"02","mars":"03","avril":"04",
+"mai":"05","juin":"06","juillet":"07","aout":"08","août":"08",
+"septembre":"09","octobre":"10","novembre":"11","decembre":"12","décembre":"12"
+};
+
+function toFormattedDate(raw){
+const numeric = raw.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+if(numeric){
+return `${numeric[1].padStart(2,"0")}.${numeric[2].padStart(2,"0")}.${numeric[3]}`;
+}
+const literal = raw.match(/^(\d{1,2})\s+([a-zà-ÿ]+)\s+(\d{4})$/i);
+if(literal){
+const mois = moisFr[literal[2].toLowerCase()];
+if(mois){
+return `${literal[1].padStart(2,"0")}.${mois}.${literal[3]}`;
+}
+}
+return null;
 }
 
-const startDateMatch = jobupText.match(/Entr[ée]e en (?:service|fonction)[^\w]*([^\n]{3,60})/i);
+// Date postulation — accepte format chiffré ou en toutes lettres, formaté en jj.mm.aaaa
+const applyBeforeMatch = jobupText.match(
+/(?:Postuler avant|jusqu.au|d[ée]lai(?:\s+de\s+postulation)?)[^\d]*(\d{1,2}[./]\d{1,2}[./]\d{4}|\d{1,2}\s+[a-zà-ÿ]+\s+\d{4})/i
+);
+if(applyBeforeMatch){
+const formatted = toFormattedDate(applyBeforeMatch[1].trim());
+if(formatted) applyBefore = formatted;
+}
+
+const startDateMatch = jobupText.match(/(?:Entr[ée]e en (?:service|fonction)|Date d.entr[ée]e)[^\w]*([^\n]{3,60})/i);
 if(startDateMatch) startDate = startDateMatch[1].trim();
 }
 
