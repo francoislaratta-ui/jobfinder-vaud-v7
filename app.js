@@ -3181,29 +3181,25 @@ ${getLetterHeader(offer)}
 
 Madame, Monsieur,
 
-Je vous adresse ma candidature pour le poste de ${offer.title} au sein de ${offer.company || "votre entreprise"}.
+Fort d’une expérience significative dans la gestion administrative, je souhaite mettre mes compétences au service de ${offer.company || "votre entreprise"} en tant que ${lowerFirstLetter(offer.title || "collaborateur administratif")}. Gestionnaire de dossiers à la Fondation de Vernand pendant plusieurs années, j’ai développé une solide maîtrise des processus administratifs et un sens aigu de l’organisation, complétés par une expérience technique acquise en tant que technicien de maintenance informatique à l’École-club Migros.
 
-Motivé, rigoureux et à l’aise dans les tâches administratives, je souhaite mettre mes compétences au service de votre équipe.
+Je serais heureux de pouvoir échanger avec vous lors d’un entretien.
 
-Je reste volontiers à votre disposition pour un entretien.
-
-Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
+D’avance, je me réjouis de vous rencontrer et vous prie d’agréer, Madame, Monsieur, mes salutations les meilleures.
 
 ${getSignatureName()}
 `.trim();
 
 const bodyHtml = wrapParagraphsHTML(`
-Je vous adresse ma candidature pour le poste de ${offer.title} au sein de ${offer.company || "votre entreprise"}.
+Fort d’une expérience significative dans la gestion administrative, je souhaite mettre mes compétences au service de ${offer.company || "votre entreprise"} en tant que ${lowerFirstLetter(offer.title || "collaborateur administratif")}. Gestionnaire de dossiers à la Fondation de Vernand pendant plusieurs années, j’ai développé une solide maîtrise des processus administratifs et un sens aigu de l’organisation, complétés par une expérience technique acquise en tant que technicien de maintenance informatique à l’École-club Migros.
 
-Motivé, rigoureux et à l’aise dans les tâches administratives, je souhaite mettre mes compétences au service de votre équipe.
-
-Je reste volontiers à votre disposition pour un entretien.
+Je serais heureux de pouvoir échanger avec vous lors d’un entretien.
 `);
 
 const letterHtml = `
 ${getLetterHeaderHTML(offer)}
 ${bodyHtml}
-<p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
+<p style="margin:24px 0 0 0;">D’avance, je me réjouis de vous rencontrer et vous prie d’agréer, Madame, Monsieur, mes salutations les meilleures.</p>
 <p style="margin:24px 0 0 0;">${getSignatureName()}</p>
 `;
 
@@ -3220,33 +3216,33 @@ ${getLetterHeader(offer)}
 
 Madame, Monsieur,
 
-Suite à votre annonce, je souhaite vous proposer ma candidature pour le poste de ${offer.title}.
+Fort d’une expérience significative dans la gestion administrative et technique, je souhaite mettre mes compétences et mon expertise au service de ${offer.company || "votre entreprise"} en tant que ${lowerFirstLetter(offer.title || "collaborateur administratif")}. Votre entreprise m’offre l’opportunité idéale de contribuer à ses objectifs tout en poursuivant mon propre développement professionnel.
 
-Mon parcours m’a permis de développer de solides compétences en gestion administrative, suivi de dossiers, communication professionnelle et utilisation des outils numériques. Ces compétences me permettent de travailler avec méthode, précision et sens des priorités.
+En tant que gestionnaire de dossiers à la Fondation de Vernand de 2018 à 2025, j’ai acquis une solide maîtrise de l’administration des processus internes, de la gestion de documents sensibles et de la coordination entre différents services. Mon sens du détail, allié à ma capacité d’organisation, m’a également permis de réaliser des audits qualité et d’optimiser les flux d’information. Auparavant, en tant que technicien de maintenance informatique à l’École-club Migros, j’ai développé des compétences techniques qui se révèlent aujourd’hui un atout précieux pour la maîtrise des outils numériques indispensables au quotidien.
 
-Votre offre correspond à mon intérêt pour un poste structuré, utile et orienté service. Je serais heureux de pouvoir contribuer efficacement aux activités de ${offer.company || "votre organisation"}.
+Certifié Testeur Autorisé ECDL, je maîtrise les logiciels de bureautique et les outils informatiques nécessaires à la gestion efficace des processus. Je suis convaincu que mon approche rigoureuse et proactive saura répondre avec efficacité aux exigences du poste, tout en contribuant à un fonctionnement optimal de vos activités.
 
-Je me tiens volontiers à votre disposition pour un entretien afin de vous présenter plus en détail ma motivation.
+Je serais honoré de participer au développement de ${offer.company || "votre entreprise"}, en apportant mon expertise et ma polyvalence à vos équipes. Je me tiens à votre disposition pour un entretien à votre convenance, afin de discuter de la manière dont mes compétences peuvent être un atout pour votre entreprise.
 
-Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
+D’avance, je me réjouis de vous rencontrer et vous prie d’agréer, Madame, Monsieur, mes salutations les meilleures.
 
 ${getSignatureName()}
 `.trim();
 
 const bodyHtml = wrapParagraphsHTML(`
-Suite à votre annonce, je souhaite vous proposer ma candidature pour le poste de ${offer.title}.
+Fort d’une expérience significative dans la gestion administrative et technique, je souhaite mettre mes compétences et mon expertise au service de ${offer.company || "votre entreprise"} en tant que ${lowerFirstLetter(offer.title || "collaborateur administratif")}. Votre entreprise m’offre l’opportunité idéale de contribuer à ses objectifs tout en poursuivant mon propre développement professionnel.
 
-Mon parcours m’a permis de développer de solides compétences en gestion administrative, suivi de dossiers, communication professionnelle et utilisation des outils numériques. Ces compétences me permettent de travailler avec méthode, précision et sens des priorités.
+En tant que gestionnaire de dossiers à la Fondation de Vernand de 2018 à 2025, j’ai acquis une solide maîtrise de l’administration des processus internes, de la gestion de documents sensibles et de la coordination entre différents services. Mon sens du détail, allié à ma capacité d’organisation, m’a également permis de réaliser des audits qualité et d’optimiser les flux d’information. Auparavant, en tant que technicien de maintenance informatique à l’École-club Migros, j’ai développé des compétences techniques qui se révèlent aujourd’hui un atout précieux pour la maîtrise des outils numériques indispensables au quotidien.
 
-Votre offre correspond à mon intérêt pour un poste structuré, utile et orienté service. Je serais heureux de pouvoir contribuer efficacement aux activités de ${offer.company || "votre organisation"}.
+Certifié Testeur Autorisé ECDL, je maîtrise les logiciels de bureautique et les outils informatiques nécessaires à la gestion efficace des processus. Je suis convaincu que mon approche rigoureuse et proactive saura répondre avec efficacité aux exigences du poste, tout en contribuant à un fonctionnement optimal de vos activités.
 
-Je me tiens volontiers à votre disposition pour un entretien afin de vous présenter plus en détail ma motivation.
+Je serais honoré de participer au développement de ${offer.company || "votre entreprise"}, en apportant mon expertise et ma polyvalence à vos équipes. Je me tiens à votre disposition pour un entretien à votre convenance, afin de discuter de la manière dont mes compétences peuvent être un atout pour votre entreprise.
 `);
 
 const letterHtml = `
 ${getLetterHeaderHTML(offer)}
 ${bodyHtml}
-<p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
+<p style="margin:24px 0 0 0;">D’avance, je me réjouis de vous rencontrer et vous prie d’agréer, Madame, Monsieur, mes salutations les meilleures.</p>
 <p style="margin:24px 0 0 0;">${getSignatureName()}</p>
 `;
 
@@ -3258,49 +3254,59 @@ if(!offer){
 return;
 }
 
-const score =
-calculateMatch(offer);
-
 const details =
 calculateMatchDetails(offer);
 
-const strengths =
-details.reasons.length
-? details.reasons.join(", ").toLowerCase()
-: "mon profil administratif et polyvalent";
+const skillsReason =
+details.reasons.find(r => r.startsWith("CV compatible"));
+
+const matchingSkillsText =
+skillsReason
+? skillsReason.replace("CV compatible : ", "")
+: "";
+
+const skillsParagraph =
+matchingSkillsText
+? `Je note par ailleurs que votre annonce met l’accent sur ${matchingSkillsText} — des domaines dans lesquels j’interviens régulièrement et où je peux rapidement être opérationnel au sein de votre équipe.\n\n`
+: "";
+
+const skillsParagraphHtml =
+matchingSkillsText
+? `<p style="margin:0 0 16px 0;">Je note par ailleurs que votre annonce met l’accent sur ${escapeHTML(matchingSkillsText)} — des domaines dans lesquels j’interviens régulièrement et où je peux rapidement être opérationnel au sein de votre équipe.</p>`
+: "";
 
 const letter = `
 ${getLetterHeader(offer)}
 
 Madame, Monsieur,
 
-Votre offre pour le poste de ${offer.title} a retenu toute mon attention. Elle présente une compatibilité estimée à ${score}% avec mon profil, notamment grâce aux éléments suivants : ${strengths}.
+Fort d’une expérience significative dans la gestion administrative et technique, je souhaite mettre mes compétences et mon expertise au service de ${offer.company || "votre entreprise"} en tant que ${lowerFirstLetter(offer.title || "collaborateur administratif")}. Votre entreprise m’offre l’opportunité idéale de contribuer à ses objectifs tout en poursuivant mon propre développement professionnel.
 
-Mon expérience en gestion de dossiers, organisation administrative, suivi des informations et utilisation des outils numériques me permet d’aborder ce poste avec sérieux et efficacité. Je suis particulièrement attentif à la qualité du travail fourni, à la clarté des échanges et au respect des priorités.
+En tant que gestionnaire de dossiers à la Fondation de Vernand de 2018 à 2025, j’ai acquis une solide maîtrise de l’administration des processus internes, de la gestion de documents sensibles et de la coordination entre différents services. Mon sens du détail, allié à ma capacité d’organisation, m’a également permis de réaliser des audits qualité et d’optimiser les flux d’information. Auparavant, en tant que technicien de maintenance informatique à l’École-club Migros, j’ai développé des compétences techniques qui se révèlent aujourd’hui un atout précieux pour la maîtrise des outils numériques indispensables au quotidien.
 
-Rejoindre ${offer.company || "votre équipe"} représenterait pour moi l’opportunité de mettre mes compétences au service d’un environnement professionnel exigeant et concret.
+Certifié Testeur Autorisé ECDL, je maîtrise les logiciels de bureautique et les outils informatiques nécessaires à la gestion efficace des processus. Je suis convaincu que mon approche rigoureuse et proactive saura répondre avec efficacité aux exigences du poste, tout en contribuant à un fonctionnement optimal de vos activités.
 
-Je serais heureux de pouvoir vous rencontrer afin d’échanger sur ma candidature et sur les besoins du poste.
+${skillsParagraph}Je serais honoré de participer au développement de ${offer.company || "votre entreprise"}, en apportant mon expertise et ma polyvalence à vos équipes. Je me tiens à votre disposition pour un entretien à votre convenance, afin de discuter de la manière dont mes compétences peuvent être un atout pour votre entreprise.
 
-Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
+D’avance, je me réjouis de vous rencontrer et vous prie d’agréer, Madame, Monsieur, mes salutations les meilleures.
 
 ${getSignatureName()}
 `.trim();
 
 const bodyHtml = wrapParagraphsHTML(`
-Votre offre pour le poste de ${offer.title} a retenu toute mon attention. Elle présente une compatibilité estimée à ${score}% avec mon profil, notamment grâce aux éléments suivants : ${strengths}.
+Fort d’une expérience significative dans la gestion administrative et technique, je souhaite mettre mes compétences et mon expertise au service de ${offer.company || "votre entreprise"} en tant que ${lowerFirstLetter(offer.title || "collaborateur administratif")}. Votre entreprise m’offre l’opportunité idéale de contribuer à ses objectifs tout en poursuivant mon propre développement professionnel.
 
-Mon expérience en gestion de dossiers, organisation administrative, suivi des informations et utilisation des outils numériques me permet d’aborder ce poste avec sérieux et efficacité. Je suis particulièrement attentif à la qualité du travail fourni, à la clarté des échanges et au respect des priorités.
+En tant que gestionnaire de dossiers à la Fondation de Vernand de 2018 à 2025, j’ai acquis une solide maîtrise de l’administration des processus internes, de la gestion de documents sensibles et de la coordination entre différents services. Mon sens du détail, allié à ma capacité d’organisation, m’a également permis de réaliser des audits qualité et d’optimiser les flux d’information. Auparavant, en tant que technicien de maintenance informatique à l’École-club Migros, j’ai développé des compétences techniques qui se révèlent aujourd’hui un atout précieux pour la maîtrise des outils numériques indispensables au quotidien.
 
-Rejoindre ${offer.company || "votre équipe"} représenterait pour moi l’opportunité de mettre mes compétences au service d’un environnement professionnel exigeant et concret.
-
-Je serais heureux de pouvoir vous rencontrer afin d’échanger sur ma candidature et sur les besoins du poste.
+Certifié Testeur Autorisé ECDL, je maîtrise les logiciels de bureautique et les outils informatiques nécessaires à la gestion efficace des processus. Je suis convaincu que mon approche rigoureuse et proactive saura répondre avec efficacité aux exigences du poste, tout en contribuant à un fonctionnement optimal de vos activités.
+`) + skillsParagraphHtml + wrapParagraphsHTML(`
+Je serais honoré de participer au développement de ${offer.company || "votre entreprise"}, en apportant mon expertise et ma polyvalence à vos équipes. Je me tiens à votre disposition pour un entretien à votre convenance, afin de discuter de la manière dont mes compétences peuvent être un atout pour votre entreprise.
 `);
 
 const letterHtml = `
 ${getLetterHeaderHTML(offer)}
 ${bodyHtml}
-<p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
+<p style="margin:24px 0 0 0;">D’avance, je me réjouis de vous rencontrer et vous prie d’agréer, Madame, Monsieur, mes salutations les meilleures.</p>
 <p style="margin:24px 0 0 0;">${getSignatureName()}</p>
 `;
 
