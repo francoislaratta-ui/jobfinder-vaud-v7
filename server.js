@@ -1020,7 +1020,13 @@ address = addressLines.join("\n");
 const hasStreetAddress = /[A-Za-zÀ-ÿ].*\d+.*,/.test(address);
 console.log("DEBUG adresse initiale :", JSON.stringify(address), "| a une rue :", hasStreetAddress);
 if(!hasStreetAddress){
-const profileLinkMatch = html.match(/href="(https:\/\/www\.jobup\.ch\/fr\/societes\/[^"]+|\/fr\/societes\/[^"]+)"/i);
+const allProfileLinks = [...html.matchAll(/href="(https:\/\/www\.jobup\.ch\/fr\/societes\/[^"]+|\/fr\/societes\/[^"]+)"/gi)]
+.map(m => m[1]);
+const profileLinkMatchValue = allProfileLinks.find(href =>
+!/\/fr\/societes\/start\/?(?:["?]|$)/i.test(href) && /\d/.test(href)
+);
+const profileLinkMatch = profileLinkMatchValue ? [null, profileLinkMatchValue] : null;
+console.log("DEBUG tous les liens profil trouvés :", allProfileLinks);
 console.log("DEBUG lien profil trouvé :", profileLinkMatch ? profileLinkMatch[1] : "AUCUN");
 if(profileLinkMatch){
 let profileUrl = profileLinkMatch[1];
