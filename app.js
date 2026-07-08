@@ -124,6 +124,9 @@ if(!s || !q) return false;
 if(s.includes(q)) return true;
 
 const words = q.split(" ").filter(w => w.length > 3);
+
+if(words.length === 0) return false;
+
 return words.every(w => s.includes(w));
 }
 
@@ -168,6 +171,7 @@ let currentCVText = "";
 let currentCVAnalysis = null;
 
 let currentLetter = "";
+let currentLetterHtml = "";
 let selectedOffer = null;
 let notificationsEnabled = true;
 let deferredPrompt = null;
@@ -3039,6 +3043,69 @@ ${title}
 `;
 }
 
+function lowerFirstLetter(str){
+if(!str){
+return "";
+}
+return str.charAt(0).toLowerCase() + str.slice(1);
+}
+
+function wrapParagraphsHTML(text){
+return text
+.trim()
+.split(/\n\s*\n/)
+.filter(Boolean)
+.map(p => `<p style="margin:0 0 16px 0;">${escapeHTML(p.trim())}</p>`)
+.join("");
+}
+
+function getLetterHeaderHTML(offer){
+const title =
+offer.title ||
+"Candidature";
+
+const applicantLines = [
+"François L.",
+"Adresse",
+"NPA Ville",
+"Téléphone",
+"Email"
+];
+
+const employerLines = [
+offer.company || "Entreprise",
+offer.address || "",
+offer.location || ""
+].filter(Boolean);
+
+const dateStr =
+new Date().toLocaleDateString("fr-CH");
+
+return `
+<div style="margin-bottom:32px;">
+${applicantLines.map(l => escapeHTML(l)).join("<br>")}
+</div>
+
+<div style="text-align:right; margin-bottom:32px;">
+<div style="display:inline-block; text-align:left;">
+${employerLines.map(l => escapeHTML(l)).join("<br>")}
+</div>
+</div>
+
+<div style="text-align:right; margin-bottom:32px;">
+Lausanne, le ${escapeHTML(dateStr)}
+</div>
+
+<div style="margin-bottom:32px;">
+Votre offre d'emploi pour un poste de ${escapeHTML(lowerFirstLetter(title))}
+</div>
+
+<div style="margin-bottom:24px;">
+Madame, Monsieur,
+</div>
+`;
+}
+
 function generateShortLetter(offer){
 if(!offer){
 return;
@@ -3060,7 +3127,22 @@ Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
 François L.
 `.trim();
 
-displayLetter(letter);
+const bodyHtml = wrapParagraphsHTML(`
+Je vous adresse ma candidature pour le poste de ${offer.title} au sein de ${offer.company || "votre entreprise"}.
+
+Motivé, rigoureux et à l’aise dans les tâches administratives, je souhaite mettre mes compétences au service de votre équipe.
+
+Je reste volontiers à votre disposition pour un entretien.
+`);
+
+const letterHtml = `
+${getLetterHeaderHTML(offer)}
+${bodyHtml}
+<p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
+<p style="margin:24px 0 0 0;">François L.</p>
+`;
+
+displayLetter(letter, letterHtml);
 }
 
 function generateStandardLetter(offer){
@@ -3086,7 +3168,24 @@ Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
 François L.
 `.trim();
 
-displayLetter(letter);
+const bodyHtml = wrapParagraphsHTML(`
+Suite à votre annonce, je souhaite vous proposer ma candidature pour le poste de ${offer.title}.
+
+Mon parcours m’a permis de développer de solides compétences en gestion administrative, suivi de dossiers, communication professionnelle et utilisation des outils numériques. Ces compétences me permettent de travailler avec méthode, précision et sens des priorités.
+
+Votre offre correspond à mon intérêt pour un poste structuré, utile et orienté service. Je serais heureux de pouvoir contribuer efficacement aux activités de ${offer.company || "votre organisation"}.
+
+Je me tiens volontiers à votre disposition pour un entretien afin de vous présenter plus en détail ma motivation.
+`);
+
+const letterHtml = `
+${getLetterHeaderHTML(offer)}
+${bodyHtml}
+<p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
+<p style="margin:24px 0 0 0;">François L.</p>
+`;
+
+displayLetter(letter, letterHtml);
 }
 
 function generatePremiumLetter(offer){
@@ -3123,19 +3222,37 @@ Veuillez agréer, Madame, Monsieur, mes salutations distinguées.
 François L.
 `.trim();
 
-displayLetter(letter);
+const bodyHtml = wrapParagraphsHTML(`
+Votre offre pour le poste de ${offer.title} a retenu toute mon attention. Elle présente une compatibilité estimée à ${score}% avec mon profil, notamment grâce aux éléments suivants : ${strengths}.
+
+Mon expérience en gestion de dossiers, organisation administrative, suivi des informations et utilisation des outils numériques me permet d’aborder ce poste avec sérieux et efficacité. Je suis particulièrement attentif à la qualité du travail fourni, à la clarté des échanges et au respect des priorités.
+
+Rejoindre ${offer.company || "votre équipe"} représenterait pour moi l’opportunité de mettre mes compétences au service d’un environnement professionnel exigeant et concret.
+
+Je serais heureux de pouvoir vous rencontrer afin d’échanger sur ma candidature et sur les besoins du poste.
+`);
+
+const letterHtml = `
+${getLetterHeaderHTML(offer)}
+${bodyHtml}
+<p style="margin:24px 0 0 0;">Veuillez agréer, Madame, Monsieur, mes salutations distinguées.</p>
+<p style="margin:24px 0 0 0;">François L.</p>
+`;
+
+displayLetter(letter, letterHtml);
 }
 
 /* ==========================================
 AFFICHAGE LETTRE
 ========================================== */
 
-function displayLetter(letter){
+function displayLetter(letter, letterHtml){
 currentLetter = letter;
+currentLetterHtml = letterHtml || escapeHTML(letter);
 
-safeSetText(
+safeSetHTML(
 document.getElementById("letterResult"),
-letter
+currentLetterHtml
 );
 
 openTab("ai");
@@ -3273,11 +3390,10 @@ body{
 font-family: Arial, sans-serif;
 line-height: 1.6;
 padding: 40px;
-white-space: pre-wrap;
 }
 </style>
 </head>
-<body>${escapeHTML(currentLetter)}</body>
+<body>${currentLetterHtml}</body>
 </html>
 `);
 
@@ -3301,11 +3417,12 @@ const html =
 <head>
 <meta charset="UTF-8">
 <title>Lettre de motivation</title>
+<style>
+body{ font-family: Arial, sans-serif; line-height: 1.6; }
+</style>
 </head>
 <body>
-<pre style="font-family: Arial; white-space: pre-wrap;">
-${escapeHTML(currentLetter)}
-</pre>
+${currentLetterHtml}
 </body>
 </html>
 `;
