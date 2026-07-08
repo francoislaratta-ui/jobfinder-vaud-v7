@@ -1173,7 +1173,7 @@ cb.addEventListener("change", applyFilters);
 
 loadCandidateInfo();
 
-["candidateNom", "candidatePrenom", "candidateAdresse", "candidateNpaVille"].forEach(id => {
+["candidateNom", "candidatePrenom", "candidateAdresse", "candidateNpaVille", "candidateTelephone", "candidateEmail"].forEach(id => {
 const el = document.getElementById(id);
 if(el){
 el.addEventListener("input", saveCandidateInfo);
@@ -3029,7 +3029,9 @@ const info = {
 nom: document.getElementById("candidateNom")?.value.trim() || "",
 prenom: document.getElementById("candidatePrenom")?.value.trim() || "",
 adresse: document.getElementById("candidateAdresse")?.value.trim() || "",
-npaVille: document.getElementById("candidateNpaVille")?.value.trim() || ""
+npaVille: document.getElementById("candidateNpaVille")?.value.trim() || "",
+telephone: document.getElementById("candidateTelephone")?.value.trim() || "",
+email: document.getElementById("candidateEmail")?.value.trim() || ""
 };
 localStorage.setItem("jobfinder_candidate", JSON.stringify(info));
 }
@@ -3040,11 +3042,15 @@ const nomEl = document.getElementById("candidateNom");
 const prenomEl = document.getElementById("candidatePrenom");
 const adresseEl = document.getElementById("candidateAdresse");
 const npaVilleEl = document.getElementById("candidateNpaVille");
+const telephoneEl = document.getElementById("candidateTelephone");
+const emailEl = document.getElementById("candidateEmail");
 
 if(nomEl) nomEl.value = info.nom || "";
 if(prenomEl) prenomEl.value = info.prenom || "";
 if(adresseEl) adresseEl.value = info.adresse || "";
 if(npaVilleEl) npaVilleEl.value = info.npaVille || "";
+if(telephoneEl) telephoneEl.value = info.telephone || "";
+if(emailEl) emailEl.value = info.email || "";
 }
 
 function getApplicantBlock(){
@@ -3056,8 +3062,8 @@ return [
 nomPrenom,
 info.adresse || "Adresse",
 info.npaVille || "NPA Ville",
-"Téléphone",
-"Email"
+info.telephone || "Téléphone",
+info.email || "Email"
 ].join("\n");
 }
 
@@ -3116,8 +3122,8 @@ const applicantLines = [
 nomPrenom,
 info.adresse || "Adresse",
 info.npaVille || "NPA Ville",
-"Téléphone",
-"Email"
+info.telephone || "Téléphone",
+info.email || "Email"
 ];
 
 const employerLines = [
