@@ -3155,13 +3155,9 @@ return `
 ${applicantLines.map(l => escapeHTML(l)).join("<br>")}
 </div>
 
-<div style="text-align:right; margin-bottom:32px;">
-<div style="display:inline-block; text-align:left;">
+<div style="margin-left:auto; width:280px; text-align:left; margin-bottom:32px;">
 ${employerLines.map(l => escapeHTML(l)).join("<br>")}
-</div>
-</div>
-
-<div style="text-align:right; margin-bottom:32px;">
+<br><br>
 Lausanne, le ${escapeHTML(dateStr)}
 </div>
 

@@ -1019,7 +1019,7 @@ address = addressLines.join("\n");
 // Si l'adresse n'a pas de vraie rue (juste NPA+ville), on va chercher la page "profil entreprise"
 const hasStreetAddress = /[A-Za-zÀ-ÿ].*\d+.*,/.test(address);
 if(!hasStreetAddress){
-const profileLinkMatch = html.match(/href="(https:\/\/www\.jobup\.ch\/fr\/entreprises\/[^"]+|\/fr\/entreprises\/[^"]+)"/i);
+const profileLinkMatch = html.match(/href="(https:\/\/www\.jobup\.ch\/fr\/societes\/[^"]+|\/fr\/societes\/[^"]+)"/i);
 if(profileLinkMatch){
 let profileUrl = profileLinkMatch[1];
 if(profileUrl.startsWith("/")){
