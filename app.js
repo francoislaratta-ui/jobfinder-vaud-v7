@@ -932,6 +932,27 @@ return interval;
 }
 
 /* ==========================================
+SCROLL VERS UNE CARTE (tient compte du header/nav sticky)
+========================================== */
+
+function scrollToOfferTop(el){
+if(!el) return;
+
+const header = document.querySelector(".app-header");
+const nav = document.querySelector(".main-tabs");
+
+const offset =
+(header?.offsetHeight || 0) +
+(nav?.offsetHeight || 0) +
+10;
+
+const top =
+el.getBoundingClientRect().top + window.scrollY - offset;
+
+window.scrollTo({ top, behavior: "smooth" });
+}
+
+/* ==========================================
 INITIALISATION UI
 ========================================== */
 
@@ -968,9 +989,7 @@ applyFilters();
 openTab("filters");
 setTimeout(() => {
 const firstOffer = document.querySelector(".offer-card");
-if(firstOffer){
-firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
-}
+scrollToOfferTop(firstOffer);
 }, 300);
 }finally{
 clearInterval(countdown1);
@@ -1000,9 +1019,7 @@ openTab("filters");
 
 setTimeout(() => {
 const firstOffer = document.querySelector(".offer-card");
-if(firstOffer){
-firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
-}
+scrollToOfferTop(firstOffer);
 }, 300);
 
 }catch(error){
@@ -2266,6 +2283,15 @@ document.createElement("div");
 
 card.className = "offer-card";
 card.setAttribute("data-offer-id", offer.id);
+card.style.cursor = "pointer";
+card.addEventListener("click", (e) => {
+    if(e.target.closest("button")) return;
+    openTab("filters");
+    setTimeout(() => {
+        const fullCard = document.querySelector(`[data-offer-id="${offer.id}"]`);
+        if(fullCard) fullCard.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+});
 
 const details =
 calculateMatchDetails(offer);
@@ -4012,9 +4038,7 @@ try{
 await refreshOffers();
 setTimeout(() => {
 const firstOffer = document.querySelector(".offer-card");
-if(firstOffer){
-firstOffer.scrollIntoView({ behavior: "smooth", block: "start" });
-}
+scrollToOfferTop(firstOffer);
 }, 300);
 }finally{
 if(refreshOffersBtn){
