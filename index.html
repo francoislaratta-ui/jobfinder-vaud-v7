@@ -370,42 +370,6 @@ class="achievement-badge">
 
 </div>
 
-<!-- ==========================================
-MEILLEUR MATCH DU JOUR
-========================================== -->
-
-<div class="objectives-card">
-
-<<div
-id="aiBestMatchContainer">
-
-Aucun résultat disponible
-
-</div>
-
-</div>
-
-<!-- ==========================================
-ACTIVITE RECENTE
-========================================== -->
-
-<div class="objectives-card">
-
-<h3>
-
-🆕 Activité récente
-
-</h3>
-
-<div
-id="activityFeed">
-
-Aucune activité enregistrée
-
-</div>
-
-</div>
-
 </section>
 
 <!-- ==========================================
@@ -677,7 +641,7 @@ TAUX
 </label>
 
 <label>
-<input type="checkbox" id="taux100" name="taux" value="100" onchange="syncTempsPlein(this)">
+<input type="checkbox" id="taux100" name="taux" value="100">
 100%
 </label>
 
@@ -686,8 +650,13 @@ TAUX
 <hr class="filter-separator">
 
 <label>
-<input type="checkbox" name="taux" value="Temps plein" id="tempsPlein" onchange="handleTempsPlein(this)">
+<input type="checkbox" name="taux" value="Temps plein" id="tempsPlein" onchange="if(this.checked) document.getElementById('taux100').checked = true;">
 Temps plein
+</label>
+
+<label>
+<input type="checkbox" name="taux" value="Temps partiel">
+Temps partiel
 </label>
 
 </div>
@@ -1289,60 +1258,6 @@ class="action-btn">
 
 </button>
 <div id="cvAnalysisResult"></div>
-</div>
-
-<!-- ==========================================
-COORDONNEES CANDIDAT
-========================================== -->
-
-<div class="objectives-card">
-
-<h3>
-
-📇 Coordonnées candidat(e)s
-
-</h3>
-
-<div style="display:flex; flex-direction:column; gap:10px; text-align:left;">
-
-<input
-type="text"
-id="candidateNom"
-placeholder="Nom"
-style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
-
-<input
-type="text"
-id="candidatePrenom"
-placeholder="Prénom"
-style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
-
-<input
-type="text"
-id="candidateAdresse"
-placeholder="Adresse (rue, n°)"
-style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
-
-<input
-type="text"
-id="candidateNpaVille"
-placeholder="NPA Ville"
-style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
-
-<input
-type="tel"
-id="candidateTelephone"
-placeholder="Téléphone"
-style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
-
-<input
-type="email"
-id="candidateEmail"
-placeholder="Email"
-style="background:#1a1a2e; color:#fff; border:1px solid #444; border-radius:8px; padding:10px 12px; font-size:15px;">
-
-</div>
-
 </div>
 
 <!-- ==========================================
