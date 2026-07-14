@@ -1216,6 +1216,48 @@ applyFilters();
 }
 
 /* ==========================================
+AUTOMATISATION TAUX / TEMPS PLEIN-PARTIEL
+========================================== */
+
+function handleTauxChange(el){
+if(!el.checked) return;
+
+const value = el.value;
+const partialRates = ["20","30","40","50","60","70","80","90"];
+
+const taux100 = document.getElementById("taux100");
+const tempsPlein = document.getElementById("tempsPlein");
+const tempsPartiel = document.getElementById("tempsPartiel");
+
+if(partialRates.includes(value)){
+if(tempsPartiel) tempsPartiel.checked = true;
+if(tempsPlein) tempsPlein.checked = false;
+if(taux100) taux100.checked = false;
+return;
+}
+
+if(value === "100"){
+if(tempsPlein) tempsPlein.checked = true;
+if(tempsPartiel) tempsPartiel.checked = false;
+partialRates.forEach(rate => {
+const cb = document.querySelector(`input[name="taux"][value="${rate}"]`);
+if(cb) cb.checked = false;
+});
+return;
+}
+
+if(value === "Temps plein" || value === "Temps partiel"){
+if(value === "Temps plein" && tempsPartiel) tempsPartiel.checked = false;
+if(value === "Temps partiel" && tempsPlein) tempsPlein.checked = false;
+if(value === "Temps partiel" && taux100) taux100.checked = false;
+partialRates.forEach(rate => {
+const cb = document.querySelector(`input[name="taux"][value="${rate}"]`);
+if(cb) cb.checked = false;
+});
+}
+}
+
+/* ==========================================
 COMMUNES PAR GRANDE REGION (canton de Vaud)
 ========================================== */
 
