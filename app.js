@@ -1216,6 +1216,53 @@ applyFilters();
 }
 
 /* ==========================================
+COMMUNES PAR GRANDE REGION (canton de Vaud)
+========================================== */
+
+const LA_COTE = [
+"Arnex-sur-Nyon","Arzier-Le Muids","Bassins","Begnins","Bogis-Bossey","Borex","Bursinel","Bursins","Burtigny","Chavannes-de-Bogis","Chavannes-des-Bois","Chéserex","Coinsins","Commugny","Coppet","Crans-près-Céligny","Crassier","Duillier","Dully","Essertines-sur-Rolle","Eysins","Founex","Genolier","Gilly","Gingins","Givrins","Gland","Grens","La Rippe","Le Vaud","Longirod","Luins","Marchissy","Mies","Mont-sur-Rolle","Nyon","Perroy","Prangins","Rolle","Saint-Cergue","Saint-George","Signy-Avenex","Tannay","Tartegnin","Trélex","Vich","Vinzel",
+"Aclens","Allaman","Aubonne","Ballens","Berolle","Bière","Bougy-Villars","Bremblens","Buchillon","Chavannes-le-Veyron","Chevilly","Chigny","Clarmont","Cossonay","Cuarnens","Denens","Denges","Dizy","Echandens","Echichens","Eclépens","Etoy","Féchy","Ferreyres","Gimel","Gollion","Grancy","Hautemorges","La Chaux","La Sarraz","Lavigny","L'Isle","Lonay","Lully","Lussy-sur-Morges","Mauraz","Moiry","Mollens","Mont-la-Ville","Montricher","Morges","Orny","Pompaples","Préverenges","Romanel-sur-Morges","Saint-Livres","Saint-Oyens","Saint-Prex","Saubraz","Senarclens","Tolochenaz","Vaux-sur-Morges","Villars-sous-Yens","Vufflens-le-Château","Vullierens","Yens"
+];
+
+const NORD_VAUDOIS = [
+"Agiez","Arnex-sur-Orbe","Ballaigues","Baulmes","Bavois","Belmont-sur-Yverdon","Bioley-Magnoux","Bofflens","Bonvillars","Bretonnières","Bullet","Chamblon","Champagne","Champvent","Chavannes-le-Chêne","Chavornay","Chêne-Pâquier","Cheseaux-Noréaz","Concise","Corcelles-près-Concise","Cronay","Croy","Cuarny","Démoret","Donneloye","Ependes","Fiez","Fontaines-sur-Grandson","Giez","Grandevent","Grandson","Juriens","La Praz","L'Abbaye","L'Abergement","Le Chenit","Le Lieu","Les Clées","Lignerolle","Mathod","Mauborget","Molondin","Montagny-près-Yverdon","Montcherand","Mutrux","Novalles","Onnens","Orbe","Orges","Orzens","Pomy","Premier","Provence","Rances","Romainmôtier","Rovray","Sainte-Croix","Sergey","Suchy","Suscévaz","Tévenon","Treycovagnes","Ursins","Valeyres-sous-Montagny","Valeyres-sous-Rances","Valeyres-sous-Ursins","Vallorbe","Vaulion","Villars-Epeney","Vugelles-La Mothe","Vuiteboeuf","Yverdon-les-Bains","Yvonand",
+"Avenches","Bussy-sur-Moudon","Champtauroz","Chevroux","Corcelles-le-Jorat","Corcelles-près-Payerne","Cudrefin","Curtilles","Dompierre","Faoug","Grandcour","Henniez","Hermenches","Lovatens","Lucens","Missy","Moudon","Payerne","Prévonloup","Ropraz","Rossenges","Syens","Trey","Treytorrens","Valbroye","Villars-le-Comte","Villarzel","Vucherens","Vulliens","Vully-les-Lacs",
+"Assens","Bercher","Bettens","Bottens","Boulens","Bournens","Boussens","Bretigny-sur-Morrens","Cugy","Daillens","Echallens","Essertines-sur-Yverdon","Etagnières","Fey","Froideville","Goumoëns","Jorat-Menthue","Lussery-Villars","Mex","Montanaire","Montilliez","Morrens","Ogens","Oppens","Oulens-sous-Echallens","Pailly","Penthalaz","Penthaz","Penthéréaz","Poliez-Pittet","Rueyres","Saint-Barthélemy","Sullens","Villars-le-Terroir","Vuarrens","Vufflens-la-Ville"
+];
+
+const REGION_LAUSANNOISE = [
+"Cheseaux-sur-Lausanne","Epalinges","Jouxtens-Mézery","Lausanne","Le Mont-sur-Lausanne","Romanel-sur-Lausanne",
+"Bussigny","Chavannes-près-Renens","Crissier","Ecublens","Prilly","Renens","Saint-Sulpice","Villars-Sainte-Croix",
+"Belmont-sur-Lausanne","Bourg-en-Lavaux","Chexbres","Forel","Jorat-Mézières","Lutry","Maracon","Montpreveyres","Oron","Paudex","Puidoux","Pully","Rivaz","Saint-Saphorin","Savigny","Servion"
+];
+
+const RIVIERA_CHABLAIS = [
+"Blonay","Saint-Légier","Chardonne","Château-d'Oex","Corseaux","Corsier-sur-Vevey","Jongny","La Tour-de-Peilz","Montreux","Rossinière","Rougemont","Vevey","Veytaux",
+"Aigle","Bex","Chessel","Corbeyrier","Gryon","Lavey-Morcles","Leysin","Noville","Ollon","Ormont-Dessous","Ormont-Dessus","Rennaz","Roche","Villeneuve","Yvorne"
+];
+
+const REGION_GROUPS = {
+"La Côte": LA_COTE,
+"Nord vaudois": NORD_VAUDOIS,
+"Région lausannoise": REGION_LAUSANNOISE,
+"Riviera-Chablais": RIVIERA_CHABLAIS,
+"Lausanne": ["Lausanne"]
+};
+
+function offerMatchesRegions(offer, regionKeys){
+const text = normalizeText(
+(offer.location || "") + " " + (offer.address || "")
+);
+
+return regionKeys.some(key => {
+const communes = REGION_GROUPS[key] || [];
+return communes.some(commune =>
+text.includes(normalizeText(commune))
+);
+});
+}
+
+/* ==========================================
 APPLY FILTERS
 ========================================== */
 
@@ -1354,10 +1401,7 @@ if(selectedContrats.length > 0 && selectedContrats.length < totalContrats){
 
 if(selectedRegions.length > 0 && selectedRegions.length < totalRegions){
     result = result.filter(offer =>
-        !offer.location ||
-        selectedRegions.some(r =>
-            containsNormalized(offer.location, r)
-        )
+        offerMatchesRegions(offer, selectedRegions)
     );
 }
 
