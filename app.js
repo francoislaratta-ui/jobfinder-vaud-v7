@@ -1307,36 +1307,22 @@ function applyFilters(){
 
     let result = [...offers];
 
-    const SCRAPE_KEYWORDS = [
+    const ROLE_KEYWORDS = {
+"Employé de commerce": [
 "employe de commerce",
-"assistant administratif",
-"assistante administrative",
+"aide comptable"
+],
+"Gestionnaire de dossier": [
 "gestionnaire de dossier",
 "gestionnaire administratif",
 "gestionnaire de depot",
 "gestionnaire contentieux",
 "gestionnaire logistique",
 "gestionnaire approvisionnement",
-"technicien informatique",
-"technicien support",
-"technicien maintenance",
-"technicien systeme",
-"technicien alarme",
-"support informatique",
-"support utilisateur",
-"it support",
-"network support",
-"specialiste support",
-"helpdesk",
-"back office",
-"collaborateur administratif",
-"collaborateur service",
-"coordinateur administratif",
 "administrateur gestionnaire",
-"employe administratif",
-"assistant de direction",
-"assistant rh",
-"conseiller clientele",
+"gestionnaire de dossiers specialises"
+],
+"Secrétaire": [
 "secretaire",
 "secretaire administrative",
 "secretaire d unite",
@@ -1347,22 +1333,40 @@ function applyFilters(){
 "secretaire facturation",
 "secretaire scolaire",
 "secretaire communale"
-];
-
-const selectAllMetiers = document.getElementById("selectAllMetiers");
+],
+"Assistant et collaborateur": [
+"assistant administratif",
+"assistante administrative",
+"assistant de direction",
+"collaborateur administratif",
+"collaborateur service",
+"coordinateur administratif",
+"employe administratif"
+],
+"IT / Technique": [
+"technicien informatique",
+"technicien support",
+"technicien maintenance",
+"technicien systeme",
+"support informatique",
+"support utilisateur",
+"it support",
+"network support",
+"helpdesk",
+"back office"
+]
+};
 
 if(selectedMetiers.length > 0){
     result = result.filter(offer => {
         const titleNorm = normalizeText(offer.title);
-        const matchesKeyword = SCRAPE_KEYWORDS.some(k =>
-            k.split(" ").filter(w => w.length > 4)
-            .some(w => titleNorm.includes(w))
-        );
-        if(selectAllMetiers?.checked) return matchesKeyword;
-        const matchesMetier = selectedMetiers.some(m =>
-            containsNormalized(offer.title, m)
-        );
-        return matchesKeyword || matchesMetier;
+        return selectedMetiers.some(role => {
+            const keywords = ROLE_KEYWORDS[role] || [];
+            return keywords.some(k =>
+                k.split(" ").filter(w => w.length > 4)
+                .some(w => titleNorm.includes(w))
+            );
+        });
     });
 }
 
