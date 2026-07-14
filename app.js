@@ -1247,13 +1247,17 @@ return;
 }
 
 if(value === "Temps plein" || value === "Temps partiel"){
-if(value === "Temps plein" && tempsPartiel) tempsPartiel.checked = false;
-if(value === "Temps partiel" && tempsPlein) tempsPlein.checked = false;
-if(value === "Temps partiel" && taux100) taux100.checked = false;
+if(value === "Temps plein"){
+if(tempsPartiel) tempsPartiel.checked = false;
 partialRates.forEach(rate => {
 const cb = document.querySelector(`input[name="taux"][value="${rate}"]`);
 if(cb) cb.checked = false;
 });
+}
+if(value === "Temps partiel"){
+if(tempsPlein) tempsPlein.checked = false;
+if(taux100) taux100.checked = false;
+}
 }
 }
 
