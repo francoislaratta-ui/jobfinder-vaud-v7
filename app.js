@@ -1370,12 +1370,81 @@ if(selectedMetiers.length > 0){
     });
 }
 
-if(selectedSecteurs.length > 0 && selectedSecteurs.length < totalSecteurs){
+const SECTOR_KEYWORDS = {
+"Administration": [
+"administration",
+"administratif",
+"administration publique",
+"secteur public",
+"collectivites publiques",
+"commune",
+"communal",
+"fondation",
+"service client",
+"service a la clientele",
+"secretariat",
+"fiduciaire",
+"comptabilite",
+"comptable",
+"audit",
+"banque",
+"bancaire",
+"finance",
+"financier",
+"immobilier",
+"immobiliere",
+"gerance",
+"regie",
+"assurance",
+"assurances",
+"assureur",
+"support utilisateur"
+],
+"Secrétariat médical": [
+"secretariat medical",
+"secretaire medicale",
+"secretariat hospitalier"
+],
+"Informatique": [
+"informatique",
+"it",
+"technologies de l'information",
+"digital",
+"numerique"
+],
+"Santé": [
+"sante",
+"medical",
+"hopital",
+"hospitalier",
+"clinique",
+"soins"
+],
+"Industrie": [
+"industrie",
+"industriel",
+"production",
+"manufacture",
+"logistique industrielle"
+]
+};
+
+function offerMatchesSectors(offer, sectorKeys){
+if(!offer.sector) return true;
+
+const sectorText = normalizeText(offer.sector);
+const isMedical = sectorText.includes("medical");
+
+return sectorKeys.some(key => {
+if(key === "Administration" && isMedical) return false;
+const keywords = SECTOR_KEYWORDS[key] || [];
+return keywords.some(k => sectorText.includes(normalizeText(k)));
+});
+}
+
+if(selectedSecteurs.length > 0){
     result = result.filter(offer =>
-        !offer.sector ||
-        selectedSecteurs.some(s =>
-            containsNormalized(offer.sector, s)
-        )
+        offerMatchesSectors(offer, selectedSecteurs)
     );
 }
 
