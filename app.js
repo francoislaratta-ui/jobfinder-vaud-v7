@@ -892,6 +892,10 @@ tabs.forEach(tab => {
 tab.classList.remove("active-tab");
 });
 
+document.querySelectorAll(".main-tabs button[data-tab]").forEach(button => {
+button.classList.toggle("active", button.dataset.tab === tabId);
+});
+
 const target =
 document.getElementById(tabId);
 
