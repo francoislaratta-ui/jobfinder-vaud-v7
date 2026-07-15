@@ -3377,18 +3377,15 @@ const dateStr =
 new Date().toLocaleDateString("fr-CH");
 
 return `
-<table style="width:100%; border-collapse:collapse; margin-bottom:36px;">
-<tr>
-<td style="vertical-align:top; text-align:left; width:50%;">
+<div style="margin-bottom:32px;">
 ${applicantLines.map(l => escapeHTML(l)).join("<br>")}
-</td>
-<td style="vertical-align:top; text-align:right; width:50%;">
+</div>
+
+<div style="margin-left:auto; width:280px; text-align:left; margin-bottom:32px;">
 ${employerLines.map(l => escapeHTML(l)).join("<br>")}
 <br><br>
 Lausanne, le ${escapeHTML(dateStr)}
-</td>
-</tr>
-</table>
+</div>
 
 <div style="margin-bottom:32px;">
 Votre offre d'emploi pour un poste ${articleDe(lowerFirstLetter(title))}${escapeHTML(lowerFirstLetter(title))}
@@ -3728,18 +3725,10 @@ printable.document.write(`
 <meta charset="UTF-8">
 <title>Lettre de motivation</title>
 <style>
-@page{
-size: A4;
-margin: 2.5cm 2cm;
-}
 body{
-font-family: Calibri, Arial, sans-serif;
-font-size: 11.5pt;
+font-family: Arial, sans-serif;
 line-height: 1.6;
-color: #1a1a1a;
-}
-p{
-text-align: justify;
+padding: 40px;
 }
 </style>
 </head>
@@ -3768,19 +3757,7 @@ const html =
 <meta charset="UTF-8">
 <title>Lettre de motivation</title>
 <style>
-@page{
-size: 21cm 29.7cm;
-margin: 2.5cm 2cm;
-}
-body{
-font-family: Calibri, Arial, sans-serif;
-font-size: 11.5pt;
-line-height: 1.6;
-color: #1a1a1a;
-}
-p{
-text-align: justify;
-}
+body{ font-family: Arial, sans-serif; line-height: 1.6; }
 </style>
 </head>
 <body>
