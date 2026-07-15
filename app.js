@@ -3280,9 +3280,15 @@ offer.address &&
 offer.location &&
 offer.address.toLowerCase().includes(offer.location.toLowerCase());
 
+const addressLines =
+(offer.address || "")
+.split(/,(.+)/)
+.map(p => p.trim())
+.filter(Boolean);
+
 return [
 offer.company || "Entreprise",
-offer.address || "",
+...addressLines,
 locationInAddress ? "" : (offer.location || "")
 ]
 .filter(Boolean)
@@ -3355,9 +3361,15 @@ offer.address &&
 offer.location &&
 offer.address.toLowerCase().includes(offer.location.toLowerCase());
 
+const addressLines =
+(offer.address || "")
+.split(/,(.+)/)
+.map(p => p.trim())
+.filter(Boolean);
+
 const employerLines = [
 offer.company || "Entreprise",
-offer.address || "",
+...addressLines,
 locationInAddress ? "" : (offer.location || "")
 ].filter(Boolean);
 
