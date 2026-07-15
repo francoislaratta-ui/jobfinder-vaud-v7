@@ -337,7 +337,7 @@ extracted = extracted.substring(0, idx).trim();
 result += extracted;
 }
 
-return result.trim() || text.substring(0, 3500).trim();
+return decodeHtmlEntitiesChuv(result.trim() || text.substring(0, 3500).trim());
 
 }
 
