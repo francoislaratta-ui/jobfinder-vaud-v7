@@ -3587,21 +3587,18 @@ console.log("🔄 Scraping des offres en cours...");
 const [
 jobupOffers,
 vdOffers,
-chuvOffers,
-indeedOffers
+chuvOffers
 ] = await Promise.all([
 fetchJobupOffers(),
 fetchVdOffers(),
-fetchChuvOffers(),
-fetchIndeedOffers()
+fetchChuvOffers()
 ]);
 
 const allOffers =
 deduplicateOffers([
 ...jobupOffers,
 ...vdOffers,
-...chuvOffers,
-...indeedOffers
+...chuvOffers
 ]);
 
 if(allOffers.length > 0){
@@ -3613,7 +3610,7 @@ console.log(
 );
 
 console.log(
-`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | CHUV: ${chuvOffers.length} | Indeed: ${indeedOffers.length}`
+`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | CHUV: ${chuvOffers.length}`
 );
 
 }else{
