@@ -687,6 +687,7 @@ if(value.includes("chuv.ch") &&
 value.includes("/jobs/") ||
 value.includes("/carrieres/") ||
 value.includes("/offres-demploi/") ||
+value.includes("/vacancy/") ||
 value.includes("jobid="))){
 return true;
 }

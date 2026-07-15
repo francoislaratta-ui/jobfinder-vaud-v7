@@ -2043,7 +2043,7 @@ cleanUrl.includes("emploi")) ||
 
 /* CHUV */
 (cleanUrl.includes("chuv.ch") &&
-cleanUrl.includes("emploi")) ||
+cleanUrl.includes("vacancy")) ||
 
 /* GENERIQUE */
 cleanUrl.includes("/jobs/view/") ||
