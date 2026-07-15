@@ -272,6 +272,75 @@ return result.trim() || text.substring(0, 3500).trim();
 
 }
 
+// Détection CHUV
+const isChuv =
+html.includes("recrutement.chuv.ch");
+
+if(isChuv){
+
+const sections = [
+"Contexte",
+"Mission",
+"Profil",
+"Nous offrons"
+];
+
+const fields = [
+{ label: "Type de contrat", regex: /Type de contrat\s*([^\n]{2,30})/i },
+{ label: "Catégorie professionnelle", regex: /Cat[ée]gorie professionnelle\s*([^\n]{2,40})/i },
+{ label: "Lieu", regex: /Lieu\s*([^\n]{2,60})/i },
+{ label: "Taux d'activité", regex: /Taux d'activit[ée]\s*([^\n]{2,20})/i },
+{ label: "Date d'entrée souhaitée", regex: /Date d'entr[ée]e souhait[ée]e\s*([^\n]{2,20})/i },
+{ label: "Date de fin de postulation", regex: /Date de fin de postulation\s*([^\n]{2,20})/i },
+{ label: "Référence", regex: /R[ée]f[ée]rence\s*([^\n]{2,30})/i }
+];
+
+let result = "";
+
+const structuredFields = fields
+.map(f => {
+const m = text.match(f.regex);
+return m ? `${f.label} : ${m[1].trim()}` : null;
+})
+.filter(Boolean)
+.join("\n");
+
+if(structuredFields){
+result += structuredFields + "\n\n";
+}
+
+let startIndex = -1;
+for(const section of sections){
+const index = text.toLowerCase().indexOf(section.toLowerCase());
+if(index !== -1){
+startIndex = index;
+break;
+}
+}
+
+if(startIndex !== -1){
+let extracted = text.substring(startIndex, startIndex + 6000);
+
+const stopWords = [
+"Contact et envoi de candidature",
+"Avez-vous déjà un compte",
+"Partager"
+];
+
+for(const stop of stopWords){
+const idx = extracted.toLowerCase().indexOf(stop.toLowerCase());
+if(idx > 200){
+extracted = extracted.substring(0, idx).trim();
+}
+}
+
+result += extracted;
+}
+
+return result.trim() || text.substring(0, 3500).trim();
+
+}
+
 // Détection Jobup
 const isJobup = html.includes("jobup.ch");
 
