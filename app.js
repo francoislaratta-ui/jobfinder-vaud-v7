@@ -907,6 +907,14 @@ top: 0,
 behavior: "smooth"
 });
 }
+
+const floatingActions =
+document.querySelector(".floating-actions");
+
+if(floatingActions){
+floatingActions.style.display =
+tabId === "filters" ? "flex" : "none";
+}
 }
 
 /* ==========================================
