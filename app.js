@@ -1216,6 +1216,16 @@ el.addEventListener("input", saveCandidateInfo);
 }
 });
 
+const letterResultEl =
+document.getElementById("letterResult");
+
+if(letterResultEl){
+letterResultEl.addEventListener("input", () => {
+currentLetterHtml = letterResultEl.innerHTML;
+currentLetter = letterResultEl.innerText;
+});
+}
+
 }
 
 /* ==========================================
@@ -3302,6 +3312,18 @@ return "";
 return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
+function articleDe(word){
+if(!word){
+return "de ";
+}
+const firstChar = word
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "")
+.charAt(0)
+.toLowerCase();
+return /[aeiouyh]/.test(firstChar) ? "d'" : "de ";
+}
+
 function wrapParagraphsHTML(text){
 return text
 .trim()
@@ -3354,7 +3376,7 @@ Lausanne, le ${escapeHTML(dateStr)}
 </div>
 
 <div style="margin-bottom:32px;">
-Votre offre d'emploi pour un poste de ${escapeHTML(lowerFirstLetter(title))}
+Votre offre d'emploi pour un poste ${articleDe(lowerFirstLetter(title))}${escapeHTML(lowerFirstLetter(title))}
 </div>
 
 <div style="margin-bottom:24px;">
