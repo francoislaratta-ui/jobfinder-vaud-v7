@@ -3314,9 +3314,10 @@ const keywords = [
 "coordinateur"
 ];
 
-return keywords.some(keyword =>
-value.includes(keyword)
-);
+return keywords.some(keyword => {
+const pattern = new RegExp(`\\b${keyword}\\b`, "i");
+return pattern.test(value);
+});
 
 }
 
