@@ -3229,7 +3229,7 @@ const entities = {
 "rsquo":"’","lsquo":"‘",
 "rdquo":"”","ldquo":"“",
 "nbsp":" ","amp":"&","quot":"\"","apos":"'",
-"hellip":"…","ndash":"–","mdash":"—"
+"hellip":"…","ndash":"–","mdash":"—","middot":"·"
 };
 
 return text
