@@ -1049,10 +1049,17 @@ card.dataset.target;
 if(target){
 openTab(target);
 
+if(target === "filters"){
+setTimeout(() => {
+const firstOffer = document.querySelector(".offer-card");
+scrollToOfferTop(firstOffer);
+}, 300);
+}else{
 window.scrollTo({
 top:0,
 behavior:"smooth"
 });
+}
 }
 
 });
