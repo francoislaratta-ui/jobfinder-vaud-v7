@@ -1782,12 +1782,29 @@ currentCVAnalysis.skills &&
 currentCVAnalysis.skills.length
 ){
 
+const rawMatchingSkills =
+currentCVAnalysis.skills.filter(skill => {
+const normSkill = normalizeText(skill);
+if(!normSkill){
+return false;
+}
+const escaped =
+normSkill.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const pattern =
+new RegExp(`\\b${escaped}\\b`);
+return pattern.test(offerText);
+});
+
+const seenSkills = new Set();
 const matchingSkills =
-currentCVAnalysis.skills.filter(skill =>
-offerText.includes(
-normalizeText(skill)
-)
-);
+rawMatchingSkills.filter(skill => {
+const norm = normalizeText(skill);
+if(seenSkills.has(norm)){
+return false;
+}
+seenSkills.add(norm);
+return true;
+});
 
 if(matchingSkills.length > 0){
 
@@ -3962,11 +3979,17 @@ if(!pastedText){
 return selectedOffer;
 }
 
-const firstLine =
+const rawFirstLine =
 pastedText
 .split("\n")
 .map(l => l.trim())
 .filter(Boolean)[0] || "";
+
+const firstLine =
+rawFirstLine
+.split(/\s*(?:à\s+)?\d{1,3}\s*%/)[0]
+.trim()
+.replace(/[\s,;:.\-–—]+$/, "");
 
 return {
 ...(selectedOffer || {}),
