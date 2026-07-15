@@ -3402,6 +3402,27 @@ if(!offer){
 return;
 }
 
+const details =
+calculateMatchDetails(offer);
+
+const skillsReason =
+details.reasons.find(r => r.startsWith("CV compatible"));
+
+const matchingSkillsText =
+skillsReason
+? skillsReason.replace("CV compatible : ", "")
+: "";
+
+const skillsParagraph =
+matchingSkillsText
+? `Je note par ailleurs que votre annonce met l’accent sur ${matchingSkillsText} — des domaines dans lesquels j’interviens régulièrement.\n\n`
+: "";
+
+const skillsParagraphHtml =
+matchingSkillsText
+? `<p style="margin:0 0 16px 0;">Je note par ailleurs que votre annonce met l’accent sur ${escapeHTML(matchingSkillsText)} — des domaines dans lesquels j’interviens régulièrement.</p>`
+: "";
+
 const letter = `
 ${getLetterHeader(offer)}
 
@@ -3409,7 +3430,7 @@ Madame, Monsieur,
 
 Fort d’une expérience significative dans la gestion administrative, je souhaite mettre mes compétences au service de ${offer.company || "votre entreprise"} en tant que ${lowerFirstLetter(offer.title || "collaborateur administratif")}. Gestionnaire de dossiers à la Fondation de Vernand pendant plusieurs années, j’ai développé une solide maîtrise des processus administratifs et un sens aigu de l’organisation, complétés par une expérience technique acquise en tant que technicien de maintenance informatique à l’École-club Migros.
 
-Je serais heureux de pouvoir échanger avec vous lors d’un entretien.
+${skillsParagraph}Je serais heureux de pouvoir échanger avec vous lors d’un entretien.
 
 D’avance, je me réjouis de vous rencontrer et vous prie d’agréer, Madame, Monsieur, mes salutations les meilleures.
 
@@ -3418,7 +3439,7 @@ ${getSignatureName()}
 
 const bodyHtml = wrapParagraphsHTML(`
 Fort d’une expérience significative dans la gestion administrative, je souhaite mettre mes compétences au service de ${offer.company || "votre entreprise"} en tant que ${lowerFirstLetter(offer.title || "collaborateur administratif")}. Gestionnaire de dossiers à la Fondation de Vernand pendant plusieurs années, j’ai développé une solide maîtrise des processus administratifs et un sens aigu de l’organisation, complétés par une expérience technique acquise en tant que technicien de maintenance informatique à l’École-club Migros.
-
+`) + skillsParagraphHtml + wrapParagraphsHTML(`
 Je serais heureux de pouvoir échanger avec vous lors d’un entretien.
 `);
 
@@ -3437,6 +3458,27 @@ if(!offer){
 return;
 }
 
+const details =
+calculateMatchDetails(offer);
+
+const skillsReason =
+details.reasons.find(r => r.startsWith("CV compatible"));
+
+const matchingSkillsText =
+skillsReason
+? skillsReason.replace("CV compatible : ", "")
+: "";
+
+const skillsParagraph =
+matchingSkillsText
+? `Je note par ailleurs que votre annonce met l’accent sur ${matchingSkillsText} — des domaines dans lesquels j’interviens régulièrement.\n\n`
+: "";
+
+const skillsParagraphHtml =
+matchingSkillsText
+? `<p style="margin:0 0 16px 0;">Je note par ailleurs que votre annonce met l’accent sur ${escapeHTML(matchingSkillsText)} — des domaines dans lesquels j’interviens régulièrement.</p>`
+: "";
+
 const letter = `
 ${getLetterHeader(offer)}
 
@@ -3448,7 +3490,7 @@ En tant que gestionnaire de dossiers à la Fondation de Vernand de 2018 à 2025,
 
 Certifié Testeur Autorisé ECDL, je maîtrise les logiciels de bureautique et les outils informatiques nécessaires à la gestion efficace des processus. Je suis convaincu que mon approche rigoureuse et proactive saura répondre avec efficacité aux exigences du poste, tout en contribuant à un fonctionnement optimal de vos activités.
 
-Je serais honoré de participer au développement de ${offer.company || "votre entreprise"}, en apportant mon expertise et ma polyvalence à vos équipes. Je me tiens à votre disposition pour un entretien à votre convenance, afin de discuter de la manière dont mes compétences peuvent être un atout pour votre entreprise.
+${skillsParagraph}Je serais honoré de participer au développement de ${offer.company || "votre entreprise"}, en apportant mon expertise et ma polyvalence à vos équipes. Je me tiens à votre disposition pour un entretien à votre convenance, afin de discuter de la manière dont mes compétences peuvent être un atout pour votre entreprise.
 
 D’avance, je me réjouis de vous rencontrer et vous prie d’agréer, Madame, Monsieur, mes salutations les meilleures.
 
@@ -3461,7 +3503,7 @@ Fort d’une expérience significative dans la gestion administrative et techniq
 En tant que gestionnaire de dossiers à la Fondation de Vernand de 2018 à 2025, j’ai acquis une solide maîtrise de l’administration des processus internes, de la gestion de documents sensibles et de la coordination entre différents services. Mon sens du détail, allié à ma capacité d’organisation, m’a également permis de réaliser des audits qualité et d’optimiser les flux d’information. Auparavant, en tant que technicien de maintenance informatique à l’École-club Migros, j’ai développé des compétences techniques qui se révèlent aujourd’hui un atout précieux pour la maîtrise des outils numériques indispensables au quotidien.
 
 Certifié Testeur Autorisé ECDL, je maîtrise les logiciels de bureautique et les outils informatiques nécessaires à la gestion efficace des processus. Je suis convaincu que mon approche rigoureuse et proactive saura répondre avec efficacité aux exigences du poste, tout en contribuant à un fonctionnement optimal de vos activités.
-
+`) + skillsParagraphHtml + wrapParagraphsHTML(`
 Je serais honoré de participer au développement de ${offer.company || "votre entreprise"}, en apportant mon expertise et ma polyvalence à vos équipes. Je me tiens à votre disposition pour un entretien à votre convenance, afin de discuter de la manière dont mes compétences peuvent être un atout pour votre entreprise.
 `);
 
@@ -3928,7 +3970,8 @@ pastedText
 
 return {
 ...(selectedOffer || {}),
-title: firstLine || (selectedOffer?.title || "")
+title: firstLine || (selectedOffer?.title || ""),
+description: pastedText
 };
 }
 
