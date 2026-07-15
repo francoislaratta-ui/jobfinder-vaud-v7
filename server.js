@@ -3139,6 +3139,117 @@ return offers;
 }
 
 /* ==========================================
+SCRAPING CHUV
+========================================== */
+
+function decodeHtmlEntitiesChuv(text){
+
+if(!text){
+return "";
+}
+
+const entities = {
+"eacute":"é","egrave":"è","ecirc":"ê","euml":"ë",
+"agrave":"à","acirc":"â","auml":"ä",
+"ocirc":"ô","ouml":"ö",
+"ucirc":"û","ugrave":"ù","uuml":"ü",
+"iuml":"ï","icirc":"î",
+"ccedil":"ç",
+"oelig":"œ","aelig":"æ",
+"rsquo":"’","lsquo":"‘",
+"rdquo":"”","ldquo":"“",
+"nbsp":" ","amp":"&","quot":"\"","apos":"'",
+"hellip":"…","ndash":"–","mdash":"—"
+};
+
+return text
+.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, code) => {
+if(code[0] === "#"){
+const codePoint = code[1] === "x" || code[1] === "X"
+? parseInt(code.slice(2), 16)
+: parseInt(code.slice(1), 10);
+return Number.isNaN(codePoint) ? match : String.fromCodePoint(codePoint);
+}
+return entities[code] !== undefined ? entities[code] : match;
+})
+.replace(/<[^>]+>/g, " ")
+.replace(/[ \t]+/g, " ")
+.trim();
+
+}
+
+async function fetchChuvOffers(){
+
+const offers = [];
+
+try{
+
+const url =
+"https://recrutement.chuv.ch/utf8/ic_job_feeds.feed_engine?p_web_site_id=5352&p_published_to=WWW&p_language=DEFAULT&p_direct=Y&p_format=MOBILE&p_search=&p_summary=Y&p_order=DATE_ON";
+
+const response = await axios.get(url, {
+headers: {
+"User-Agent":"Mozilla/5.0 JobFinderVaud/14.5",
+"Accept":"application/json"
+},
+timeout: 20000
+});
+
+const jobs = response.data?.jobs || [];
+
+for(const job of jobs){
+
+if(job.status !== "open"){
+continue;
+}
+
+const classifications = job.classifications || {};
+
+const location =
+classifications.class_14094?.values?.[0]?.class_val || "Vaud";
+
+const sector =
+classifications.class_14093?.values?.[0]?.class_val || "";
+
+const rate =
+classifications.class_14052?.values?.[0]?.class_val || "";
+
+const contractRaw =
+classifications.class_14054?.values?.[0]?.class_val || "";
+
+const publishDate =
+job.publication?.internet?.publish_date ||
+job.timestamp ||
+"";
+
+offers.push({
+id: String(job.id || generateServerId()),
+title: decodeHtmlEntitiesChuv(job.title || ""),
+company: "CHUV",
+location: decodeHtmlEntitiesChuv(location).trim(),
+sector: decodeHtmlEntitiesChuv(sector).trim(),
+rate: rate.trim(),
+contract: normalizeContractLabel(contractRaw) || contractRaw,
+source: "CHUV",
+offerUrl: job.weblink || "",
+date: publishDate.split(" ")[0] || new Date().toISOString().split("T")[0],
+description: decodeHtmlEntitiesChuv(job.summary || "") || "Descriptif non disponible.",
+salary: ""
+});
+
+}
+
+}catch(error){
+
+console.warn("Erreur scraping CHUV :", error.message);
+
+}
+
+return offers;
+
+}
+
+/* ==========================================
 SCRAPING SOURCES SUPPLEMENTAIRES V14.6
 Indeed / LinkedIn / Migros / Nestlé / Coop
 ========================================== */
@@ -3474,16 +3585,19 @@ console.log("🔄 Scraping des offres en cours...");
 
 const [
 jobupOffers,
-vdOffers
+vdOffers,
+chuvOffers
 ] = await Promise.all([
 fetchJobupOffers(),
-fetchVdOffers()
+fetchVdOffers(),
+fetchChuvOffers()
 ]);
 
 const allOffers =
 deduplicateOffers([
 ...jobupOffers,
-...vdOffers
+...vdOffers,
+...chuvOffers
 ]);
 
 if(allOffers.length > 0){
@@ -3495,7 +3609,7 @@ console.log(
 );
 
 console.log(
-`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length}`
+`📊 Jobup: ${jobupOffers.length} | État de Vaud: ${vdOffers.length} | CHUV: ${chuvOffers.length}`
 );
 
 }else{
