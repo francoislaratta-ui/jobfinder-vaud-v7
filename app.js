@@ -3912,28 +3912,51 @@ reader.readAsText(file);
 BOUTONS LETTRES IA
 ========================================== */
 
-generateShortLetterBtn?.addEventListener("click", () => {
-if(!selectedOffer){
-return showInfo("Sélectionnez une offre");
+function getLetterOffer(){
+const pastedText =
+document.getElementById("letterInput")?.value.trim() || "";
+
+if(!pastedText){
+return selectedOffer;
 }
 
-generateShortLetter(selectedOffer);
+const firstLine =
+pastedText
+.split("\n")
+.map(l => l.trim())
+.filter(Boolean)[0] || "";
+
+return {
+...(selectedOffer || {}),
+title: firstLine || (selectedOffer?.title || "")
+};
+}
+
+generateShortLetterBtn?.addEventListener("click", () => {
+const offer = getLetterOffer();
+if(!offer || !offer.title){
+return showInfo("Collez une offre ou sélectionnez-en une");
+}
+
+generateShortLetter(offer);
 });
 
 generateStandardLetterBtn?.addEventListener("click", () => {
-if(!selectedOffer){
-return showInfo("Sélectionnez une offre");
+const offer = getLetterOffer();
+if(!offer || !offer.title){
+return showInfo("Collez une offre ou sélectionnez-en une");
 }
 
-generateStandardLetter(selectedOffer);
+generateStandardLetter(offer);
 });
 
 generatePremiumLetterBtn?.addEventListener("click", () => {
-if(!selectedOffer){
-return showInfo("Sélectionnez une offre");
+const offer = getLetterOffer();
+if(!offer || !offer.title){
+return showInfo("Collez une offre ou sélectionnez-en une");
 }
 
-generatePremiumLetter(selectedOffer);
+generatePremiumLetter(offer);
 });
 
 saveLetterBtn?.addEventListener("click", saveCurrentLetter);
