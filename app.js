@@ -2067,11 +2067,13 @@ const results = await Promise.all(
 list.map(async (offer) => {
 
 const isEtatVaud = offer.source === "État de Vaud";
+const isChuv = offer.source === "CHUV";
 
 const descriptionMissing =
 !offer.description ||
 offer.description === "Descriptif non disponible." ||
-isEtatVaud;
+isEtatVaud ||
+isChuv;
 
 const realOfferUrl =
 isRealOfferUrlClient(offer.offerUrl);
