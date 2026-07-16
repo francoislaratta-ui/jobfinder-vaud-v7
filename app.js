@@ -4216,6 +4216,9 @@ return;
 favorites = [];
 applications = [];
 lettersHistory = [];
+currentCV = null;
+currentCVText = "";
+currentCVAnalysis = null;
 
 saveFavorites();
 saveApplications();
@@ -4224,11 +4227,19 @@ saveLetters();
 localStorage.removeItem("jobfinder_candidate");
 localStorage.removeItem("jobfinder_filters");
 localStorage.removeItem("jobfinder_visited");
+localStorage.removeItem("jobfinder_current_cv");
 
 renderFavorites();
 renderApplications();
 renderLettersHistory();
 updateDashboard();
+
+const cvAnalysisResultEl =
+document.getElementById("cvAnalysisResult");
+
+if(cvAnalysisResultEl){
+cvAnalysisResultEl.innerHTML = "";
+}
 
 showSuccess("Reset terminé");
 
