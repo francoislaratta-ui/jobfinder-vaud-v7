@@ -2701,6 +2701,7 @@ applyBtn?.addEventListener("click", () => addApplication(offer));
 
 aiBtn?.addEventListener("click", () => {
 selectedOffer = offer;
+renderSelectedOfferPreview();
 openTab("ai");
 showInfo("Offre sélectionnée pour lettre IA");
 });
@@ -2714,6 +2715,24 @@ showInfo("Offre sélectionnée pour email");
 linkBtn?.addEventListener("click", () => openOffer(offer));
 
 return card;
+}
+
+function renderSelectedOfferPreview(){
+const container =
+document.getElementById("selectedOfferPreview");
+
+if(!container){
+return;
+}
+
+container.innerHTML = "";
+
+if(!selectedOffer){
+container.innerHTML = "Aucune offre sélectionnée";
+return;
+}
+
+container.appendChild(createOfferCard(selectedOffer));
 }
 
 
