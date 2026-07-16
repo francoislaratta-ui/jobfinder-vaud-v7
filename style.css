@@ -2771,6 +2771,22 @@ box-shadow:0 0 0 2px rgba(249,115,22,0.2);
 
 }
 
+.candidate-row{
+
+display:flex;
+
+gap:10px;
+
+}
+
+.candidate-field{
+
+flex:1;
+
+min-width:0;
+
+}
+
 /* ==========================================
 FIN DU FICHIER
 STYLE.CSS V14.2.0
