@@ -4347,7 +4347,7 @@ return `
 
 <div class="offer-title">${escapeHTML(letter.offerTitle || "Offre")}</div>
 
-<div class="offer-company">🏢 ${escapeHTML(letter.company || "")}</div>
+${letter.company ? `<div class="offer-company">🏢 ${escapeHTML(letter.company)}</div>` : ""}
 
 ${letter.address ? `<div class="offer-address">📍 ${escapeHTML(letter.address)}</div>` : ""}
 
