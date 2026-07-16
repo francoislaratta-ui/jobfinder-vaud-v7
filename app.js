@@ -4331,7 +4331,8 @@ ${app.offerUrl ? `<div><a href="${escapeHTML(app.offerUrl)}" target="_blank">�
 <div style="margin-top:8px;"><strong>Statut :</strong> ${escapeHTML(app.status || "")}</div>
 
 ${letter
-? `<div style="margin-top:12px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.content)}</div>`
+? `<div style="margin-top:12px; color:#22c55e; cursor:pointer;" onclick="document.getElementById('letterContent-${letter.id}').classList.toggle('hidden')">✅ Lettre disponible</div>
+<div id="letterContent-${letter.id}" class="hidden" style="margin-top:8px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.content)}</div>`
 : `<div style="margin-top:12px; opacity:0.7;">Aucune lettre associée</div>`
 }
 
@@ -4363,7 +4364,8 @@ ${letter.offerUrl ? `<div><a href="${escapeHTML(letter.offerUrl)}" target="_blan
 
 <div style="margin-top:8px;"><strong>Statut :</strong> Lettre sauvegardée, pas encore postulé</div>
 
-<div style="margin-top:12px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.content)}</div>
+<div style="margin-top:12px; color:#22c55e; cursor:pointer;" onclick="document.getElementById('letterContent-${letter.id}').classList.toggle('hidden')">✅ Lettre disponible</div>
+<div id="letterContent-${letter.id}" class="hidden" style="margin-top:8px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.content)}</div>
 
 </div>
 `;
