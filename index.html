@@ -94,20 +94,6 @@ data-tab="filters">
 </button>
 
 <button
-data-tab="ai">
-
-🤖 IA Premium
-
-</button>
-
-<button
-data-tab="dashboard">
-
-🏠 Dashboard
-
-</button>
-
-<button
 data-tab="favorites">
 
 ⭐ Favoris
@@ -115,9 +101,23 @@ data-tab="favorites">
 </button>
 
 <button
-data-tab="notifications">
+data-tab="ai">
+
+🤖 IA Premium
+
+</button>
+
+<button
+data-tab="applications">
 
 📨 Candidatures
+
+</button>
+
+<button
+data-tab="dashboard">
+
+🏠 Dashboard
 
 </button>
 
@@ -132,6 +132,13 @@ data-tab="stats">
 data-tab="settings">
 
 🔧 Config
+
+</button>
+
+<button
+data-tab="notifications">
+
+🧭 Suivi
 
 </button>
 
@@ -226,7 +233,7 @@ Favoris
 
 <div
 class="kpi-card clickable-card"
-data-target="notifications">
+data-target="applications">
 
 <div class="kpi-icon kpi-purple">
 
@@ -363,6 +370,42 @@ class="achievement-badge">
 
 </div>
 
+<!-- ==========================================
+MEILLEUR MATCH DU JOUR
+========================================== -->
+
+<div class="objectives-card">
+
+<<div
+id="aiBestMatchContainer">
+
+Aucun résultat disponible
+
+</div>
+
+</div>
+
+<!-- ==========================================
+ACTIVITE RECENTE
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🆕 Activité récente
+
+</h3>
+
+<div
+id="activityFeed">
+
+Aucune activité enregistrée
+
+</div>
+
+</div>
+
 </section>
 
 <!-- ==========================================
@@ -387,15 +430,37 @@ METIERS
 
 <div class="filter-header">
 
-👔 Rôle(s)
+👔 Métier
 
 </div>
 
 <div class="filter-content active-filter">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllMetiers" onchange="toggleSelectAll(this, 'metiers')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <label>
 <input type="checkbox" name="metiers" value="Employé de commerce">
 Employé de commerce
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Employé administratif">
+Employé administratif
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Assistant administratif">
+Assistant administratif
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Assistant de direction">
+Assistant de direction
 </label>
 
 <label>
@@ -404,18 +469,48 @@ Gestionnaire de dossier
 </label>
 
 <label>
-<input type="checkbox" name="metiers" value="Secrétaire">
-Secrétaire
+<input type="checkbox" name="metiers" value="Gestionnaire administratif">
+Gestionnaire administratif
 </label>
 
 <label>
-<input type="checkbox" name="metiers" value="Assistant et collaborateur">
-Assistant et collaborateur
+<input type="checkbox" name="metiers" value="Collaborateur administratif">
+Collaborateur administratif
 </label>
 
 <label>
-<input type="checkbox" name="metiers" value="IT / Technique">
-IT / Technique
+<input type="checkbox" name="metiers" value="Coordinateur administratif">
+Coordinateur administratif
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Assistant RH">
+Assistant RH
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Conseiller clientèle">
+Conseiller clientèle
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Support utilisateur">
+Support utilisateur
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Technicien informatique">
+Technicien informatique
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Helpdesk">
+Helpdesk
+</label>
+
+<label>
+<input type="checkbox" name="metiers" value="Back-office">
+Back-office
 </label>
 
 </div>
@@ -437,14 +532,26 @@ SECTEURS
 
 <div class="filter-content active-filter">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllSecteurs" onchange="toggleSelectAll(this, 'secteurs')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <label>
 <input type="checkbox" name="secteurs" value="Administration">
-Administration(s)
+Administration
 </label>
 
 <label>
-<input type="checkbox" name="secteurs" value="Secrétariat médical">
-Secrétariat médical
+<input type="checkbox" name="secteurs" value="Administration publique">
+Administration publique
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Fondation">
+Fondation
 </label>
 
 <label>
@@ -453,13 +560,53 @@ Informatique
 </label>
 
 <label>
+<input type="checkbox" name="secteurs" value="Immobilier">
+Immobilier
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Assurance">
+Assurance
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Ressource humaine">
+Ressource humaine
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Service client">
+Service client
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Support utilisateur">
+Support utilisateur
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Secrétariat">
+Secrétariat
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Secrétariat médical">
+Secrétariat médical
+</label>
+
+<label>
 <input type="checkbox" name="secteurs" value="Santé">
 Santé
 </label>
 
 <label>
-<input type="checkbox" name="secteurs" value="Industrie">
-Industrie
+<input type="checkbox" name="secteurs" value="Fiduciaire">
+Fiduciaire
+</label>
+
+<label>
+<input type="checkbox" name="secteurs" value="Banque">
+Banque
 </label>
 
 </div>
@@ -480,50 +627,57 @@ TAUX
 
 <div class="filter-content active-filter">
 
+<label class="select-all-label">
+<input type="checkbox" id="selectAllTaux" onchange="toggleSelectAll(this, 'taux')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
 <div class="rate-grid">
 
 <label>
-<input type="checkbox" name="taux" value="20" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="20">
 20%
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="30" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="30">
 30%
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="40" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="40">
 40%
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="50" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="50">
 50%
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="60" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="60">
 60%
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="70" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="70">
 70%
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="80" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="80">
 80%
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="90" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="90">
 90%
 </label>
 
 <label>
-<input type="checkbox" id="taux100" name="taux" value="100" onchange="handleTauxChange(this)">
+<input type="checkbox" id="taux100" name="taux" value="100">
 100%
 </label>
 
@@ -532,12 +686,12 @@ TAUX
 <hr class="filter-separator">
 
 <label>
-<input type="checkbox" name="taux" value="Temps plein" id="tempsPlein" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="Temps plein" id="tempsPlein" onchange="if(this.checked) document.getElementById('taux100').checked = true;">
 Temps plein
 </label>
 
 <label>
-<input type="checkbox" name="taux" value="Temps partiel" id="tempsPartiel" onchange="handleTauxChange(this)">
+<input type="checkbox" name="taux" value="Temps partiel">
 Temps partiel
 </label>
 
@@ -607,25 +761,10 @@ REGIONS
 
 <label class="select-all-label">
 <input type="checkbox" id="selectAllRegions" onchange="toggleSelectAll(this, 'regions')">
-<strong>✅ Canton de Vaud</strong>
+<strong>✅ Tout sélectionner (Vaud)</strong>
 </label>
 
 <hr class="filter-separator">
-
-<label>
-<input type="checkbox" name="regions" value="La Côte">
-La Côte
-</label>
-
-<label>
-<input type="checkbox" name="regions" value="Nord vaudois">
-Nord vaudois
-</label>
-
-<label>
-<input type="checkbox" name="regions" value="Région lausannoise">
-Région lausannoise
-</label>
 
 <label>
 <input type="checkbox" name="regions" value="Lausanne">
@@ -633,8 +772,78 @@ Lausanne
 </label>
 
 <label>
-<input type="checkbox" name="regions" value="Riviera-Chablais">
-Riviera - Chablais
+<input type="checkbox" name="regions" value="Ouest lausannois">
+Ouest lausannois
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Morges">
+Morges
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Nyon">
+Nyon
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Yverdon">
+Yverdon
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Riviera">
+Riviera
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Vevey">
+Vevey
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Montreux">
+Montreux
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Aigle">
+Aigle
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Broye-Vully">
+Broye-Vully
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Payerne">
+Payerne
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Jura-Nord vaudois">
+Jura-Nord vaudois
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Gros-de-Vaud">
+Gros-de-Vaud
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Lavaux-Oron">
+Lavaux-Oron
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Rolle">
+Rolle
+</label>
+
+<label>
+<input type="checkbox" name="regions" value="Gland">
+Gland
 </label>
 
 </div>
@@ -656,7 +865,51 @@ SOURCE V14.6
 
 <div class="filter-content">
 
-<strong>🌐 Internet</strong>
+<label class="select-all-label">
+<input type="checkbox" id="selectAllSources" onchange="toggleSelectAll(this, 'sources')">
+<strong>✅ Tout sélectionner</strong>
+</label>
+
+<hr class="filter-separator">
+
+<div class="checkbox-grid">
+
+<label>
+<input type="checkbox" name="sources" value="Jobup" checked>
+Jobup
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="État de Vaud" checked>
+État de Vaud
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="LinkedIn" checked>
+LinkedIn
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="Indeed" checked>
+Indeed
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="Migros" checked>
+Migros
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="Nestlé" checked>
+Nestlé
+</label>
+
+<label>
+<input type="checkbox" name="sources" value="Coop" checked>
+Coop
+</label>
+
+</div>
 
 </div>
 
@@ -715,6 +968,14 @@ BOUTONS FILTRES
 ========================================== -->
 
 <div class="filters-actions">
+
+<button
+id="searchOffersBtn"
+class="action-btn">
+
+🚀 Rechercher
+
+</button>
 
 <button
 id="resetFiltersBtn"
@@ -782,6 +1043,22 @@ class="tab-content">
 
 </h2>
 
+<div class="objectives-card">
+
+<h3>
+
+⭐ Priorités
+
+</h3>
+
+<p>⭐⭐⭐ Priorité faible</p>
+
+<p>⭐⭐⭐⭐ Priorité moyenne</p>
+
+<p>⭐⭐⭐⭐⭐ Priorité élevée</p>
+
+</div>
+
 <div
 id="favoritesContainer">
 
@@ -789,6 +1066,193 @@ id="favoritesContainer">
 
 </section>
 
+<!-- ==========================================
+CANDIDATURES
+========================================== -->
+
+<section
+id="applications"
+class="tab-content">
+
+<h2 class="section-title">
+
+📨 Candidatures
+
+</h2>
+
+<div class="kpi-grid">
+
+<div class="kpi-card">
+
+<div
+id="applicationsCount"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+📨 Envoyées
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="responsesCount"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+📩 Réponses
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="interviewsCount"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+🗣️ Entretiens
+
+</div>
+
+</div>
+
+<div class="kpi-card">
+
+<div
+id="hiredCount"
+class="kpi-value">
+
+0
+
+</div>
+
+<div class="kpi-label">
+
+🏆 Succès
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==========================================
+OBJECTIFS CANDIDATURES
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🎯 Objectifs
+
+</h3>
+
+<p>
+
+3 candidatures par semaine
+
+</p>
+
+<p>
+
+12 candidatures par mois
+
+</p>
+
+</div>
+
+<!-- ==========================================
+TABLEAU DES CANDIDATURES
+========================================== -->
+
+<div
+id="applicationsBoard">
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+📨 Candidatures envoyées
+
+</div>
+
+<div
+id="sentApplications">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+📞 Réponses reçues
+
+</div>
+
+<div
+id="receivedResponses">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+🎤 Entretiens
+
+</div>
+
+<div
+id="scheduledInterviews">
+
+</div>
+
+</div>
+
+<div class="offer-card">
+
+<div class="offer-title">
+
+🎉 Embauches
+
+</div>
+
+<div
+id="successfulApplications">
+
+</div>
+
+</div>
+
+</div>
+
+</section>
 <!-- ==========================================
 IA PREMIUM
 ========================================== -->
@@ -802,38 +1266,6 @@ class="tab-content">
 🤖 IA Premium
 
 </h2>
-
-<!-- ==========================================
-COORDONNEES CANDIDAT(E)
-========================================== -->
-
-<div class="objectives-card">
-
-<h3>
-
-🪪 Coordonnées candidat(e)
-
-</h3>
-
-<label class="candidate-label">Nom</label>
-<input type="text" id="candidateNom" placeholder="Nom" class="candidate-input">
-
-<label class="candidate-label">Prénom</label>
-<input type="text" id="candidatePrenom" placeholder="Prénom" class="candidate-input">
-
-<label class="candidate-label">Adresse</label>
-<input type="text" id="candidateAdresse" placeholder="Adresse" class="candidate-input">
-
-<label class="candidate-label">NPA Ville</label>
-<input type="text" id="candidateNpaVille" placeholder="NPA Ville" class="candidate-input">
-
-<label class="candidate-label">Téléphone</label>
-<input type="tel" id="candidateTelephone" placeholder="Téléphone" class="candidate-input">
-
-<label class="candidate-label">Email</label>
-<input type="email" id="candidateEmail" placeholder="Email" class="candidate-input">
-
-</div>
 
 <!-- ==========================================
 IMPORT CV
@@ -865,20 +1297,84 @@ class="action-btn">
 </div>
 
 <!-- ==========================================
-OFFRE SELECTIONNEE
+SCORE IA
 ========================================== -->
 
 <div class="objectives-card">
 
 <h3>
 
-💼 Offre sélectionnée
+🎯 Compatibilité IA
 
 </h3>
 
-<div id="selectedOfferPreview">
+<div
+id="profileCompatibility"
+class="big-score">
 
-Aucune offre sélectionnée
+0%
+
+</div>
+
+<p>
+
+Compatibilité moyenne avec les offres
+
+</p>
+
+</div>
+
+<!-- ==========================================
+MEILLEUR MATCH
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🔥 Meilleur Match du Jour
+
+</h3>
+
+<div
+id="bestMatchContainer">
+
+Aucun résultat disponible
+
+</div>
+
+</div>
+
+<!-- ==========================================
+PREPARATION ENTRETIEN
+========================================== -->
+
+<div class="objectives-card">
+
+<h3>
+
+🎤 Préparation entretien
+
+</h3>
+
+<textarea
+id="interviewInput"
+placeholder="Collez ici une offre d'emploi">
+
+</textarea>
+
+<br><br>
+
+<button
+id="prepareInterviewBtn"
+class="action-btn">
+
+🎤 Préparer entretien
+
+</button>
+
+<div
+id="interviewResult">
 
 </div>
 
@@ -895,9 +1391,6 @@ LETTRES IA
 ✉️ Génération de lettres IA
 
 </h3>
-
-<label>Coller texte original de l'offre</label>
-<br>
 
 <textarea
 id="letterInput"
@@ -932,9 +1425,7 @@ class="action-btn">
 </button>
 
 <div
-id="letterResult"
-contenteditable="true"
-style="outline:none; cursor:text; min-height:40px;">
+id="letterResult">
 
 </div>
 
@@ -982,37 +1473,34 @@ class="action-btn">
 
 </div>
 
-
 <!-- ==========================================
-PREPARATION ENTRETIEN
+APERCU LETTRE
 ========================================== -->
 
 <div class="objectives-card">
 
 <h3>
 
-🎤 Préparation entretien
+📋 Structure de lettre V14.6
 
 </h3>
 
-<textarea
-id="interviewInput"
-placeholder="Collez ici une offre d'emploi">
-
-</textarea>
-
-<br><br>
-
-<button
-id="prepareInterviewBtn"
-class="action-btn">
-
-🎤 Préparer entretien
-
-</button>
-
 <div
-id="interviewResult">
+id="letterPreview">
+
+Nom Prénom<br>
+Adresse<br>
+NPA Ville<br><br>
+
+Entreprise<br>
+Adresse<br>
+NPA Ville<br><br>
+
+Lausanne, date<br><br>
+
+Objet : Candidature<br><br>
+
+Madame, Monsieur,
 
 </div>
 
@@ -1421,112 +1909,9 @@ class="tab-content">
 
 <h2 class="section-title">
 
-🗂️ Suivi des candidatures
+🧭 Suivi des recherches
 
 </h2>
-
-<div class="kpi-grid">
-
-<div class="kpi-card">
-
-<div
-id="applicationsCount"
-class="kpi-value">
-
-0
-
-</div>
-
-<div class="kpi-label">
-
-📨 Envoyées
-
-</div>
-
-</div>
-
-<div class="kpi-card">
-
-<div
-id="responsesCount"
-class="kpi-value">
-
-0
-
-</div>
-
-<div class="kpi-label">
-
-📩 Réponses
-
-</div>
-
-</div>
-
-<div class="kpi-card">
-
-<div
-id="interviewsCount"
-class="kpi-value">
-
-0
-
-</div>
-
-<div class="kpi-label">
-
-🗣️ Entretiens
-
-</div>
-
-</div>
-
-<div class="kpi-card">
-
-<div
-id="hiredCount"
-class="kpi-value">
-
-0
-
-</div>
-
-<div class="kpi-label">
-
-🏆 Succès
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- ==========================================
-OBJECTIFS CANDIDATURES
-========================================== -->
-
-<div class="objectives-card">
-
-<h3>
-
-🎯 Objectifs
-
-</h3>
-
-<p id="weeklyGoalText">
-
-0 / 3 candidatures cette semaine
-
-</p>
-
-<p id="monthlyGoalText">
-
-0 / 12 candidatures ce mois
-
-</p>
-
-</div>
 
 <div class="alerts-summary-card">
 
@@ -1551,13 +1936,28 @@ Suivez vos offres, favoris, candidatures et recommandations IA en temps réel.
 <div class="objectives-card">
 
 <h3>
-📋 Candidatures & lettres
+🆕 Nouvelles offres
 </h3>
 
 <div
-id="applicationsWithLettersContainer">
+id="newOffersNotifications">
 
-Aucune candidature
+Aucune nouvelle offre
+
+</div>
+
+</div>
+
+<div class="objectives-card">
+
+<h3>
+⭐ Favoris suivis
+</h3>
+
+<div
+id="favoritesNotifications">
+
+Aucun favori suivi
 
 </div>
 
