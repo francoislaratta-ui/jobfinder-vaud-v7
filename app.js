@@ -856,6 +856,32 @@ return String(date);
 }
 }
 
+function isOfferExpired(offer){
+
+if(normalizeText(offer.description || "").includes("expiree")){
+return true;
+}
+
+if(!offer.applyBefore){
+return false;
+}
+
+const formatted = formatDate(offer.applyBefore);
+const match = formatted.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+
+if(!match){
+return false;
+}
+
+const deadline =
+new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+return deadline < today;
+}
+
 function generateId(){
 return Date.now().toString() +
 Math.random().toString(36).substring(2, 8);
@@ -1382,7 +1408,7 @@ function applyFilters(){
 
     activeFilters.sort = sortFilter ? sortFilter.value : "match";
 
-    let result = [...offers];
+    let result = [...offers].filter(offer => !isOfferExpired(offer));
 
     const ROLE_KEYWORDS = {
 "Employé de commerce": [
