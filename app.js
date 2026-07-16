@@ -3735,6 +3735,7 @@ contract: offer ? offer.contract : "",
 source: offer ? offer.source : "",
 offerUrl: offer ? offer.offerUrl : "",
 date: offer ? offer.date : "",
+description: offer ? offer.description : "",
 createdAt: new Date().toISOString()
 });
 
@@ -4341,7 +4342,8 @@ rate: letter.rate,
 contract: letter.contract,
 source: letter.source,
 offerUrl: letter.offerUrl,
-date: letter.date
+date: letter.date,
+description: letter.description
 });
 }
 
@@ -4433,6 +4435,8 @@ return `
 
 <div id="offerDetails-${app.id}" class="hidden">
 
+${!app.address && !app.rate && !app.contract && !app.source && !app.date && !app.offerUrl && !app.description ? `<div style="opacity:0.7;">Aucune information supplémentaire</div>` : ""}
+
 ${app.address ? `<div class="offer-address">📍 ${escapeHTML(app.address)}</div>` : ""}
 
 ${app.rate ? `<div>🎯 Taux : ${escapeHTML(app.rate)}</div>` : ""}
@@ -4444,6 +4448,8 @@ ${app.source ? `<div>🔎 ${escapeHTML(app.source)}</div>` : ""}
 ${app.date ? `<div>📅 Publié le : ${escapeHTML(app.date)}</div>` : ""}
 
 ${app.offerUrl ? `<div><a href="${escapeHTML(app.offerUrl)}" target="_blank">🔗 URL disponible</a></div>` : ""}
+
+${app.description ? `<div style="margin-top:8px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(app.description)}</div>` : ""}
 
 </div>
 
@@ -4514,6 +4520,8 @@ ${letter.company ? `<div class="offer-company">🏢 ${escapeHTML(letter.company)
 
 <div id="offerDetails-${letter.id}" class="hidden">
 
+${!letter.address && !letter.rate && !letter.contract && !letter.source && !letter.date && !letter.offerUrl && !letter.description ? `<div style="opacity:0.7;">Aucune information supplémentaire</div>` : ""}
+
 ${letter.address ? `<div class="offer-address">📍 ${escapeHTML(letter.address)}</div>` : ""}
 
 ${letter.rate ? `<div>🎯 Taux : ${escapeHTML(letter.rate)}</div>` : ""}
@@ -4525,6 +4533,8 @@ ${letter.source ? `<div>🔎 ${escapeHTML(letter.source)}</div>` : ""}
 ${letter.date ? `<div>📅 Publié le : ${escapeHTML(letter.date)}</div>` : ""}
 
 ${letter.offerUrl ? `<div><a href="${escapeHTML(letter.offerUrl)}" target="_blank">🔗 URL disponible</a></div>` : ""}
+
+${letter.description ? `<div style="margin-top:8px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.description)}</div>` : ""}
 
 </div>
 
