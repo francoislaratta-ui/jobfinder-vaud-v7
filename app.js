@@ -4737,10 +4737,17 @@ const isFirstVisit = !hasAny;
 if(!isFirstVisit){
 restoreSavedFilters();
 
+const isFreshSessionOpen =
+!sessionStorage.getItem("scraping_done");
+
+if(isFreshSessionOpen){
+openTab("filters");
+}else{
 const lastTab =
 localStorage.getItem("jobfinder_last_tab") || "filters";
-
 openTab(lastTab);
+}
+
 // Scraping auto une seule fois par session
 if(!sessionStorage.getItem("scraping_done")){
 sessionStorage.setItem("scraping_done", "1");
