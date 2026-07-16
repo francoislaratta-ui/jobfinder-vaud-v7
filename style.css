@@ -2059,8 +2059,6 @@ EXPORTS LETTRES
 
 margin-top:10px;
 
-margin-right:6px;
-
 }
 
 /* ==========================================
@@ -2303,6 +2301,19 @@ width:50%;
 margin:0 auto 8px auto;
 
 display:block;
+
+}
+
+#generateStandardLetter,
+#generatePremiumLetter{
+
+width:70%;
+
+}
+
+#resetFiltersBtn{
+
+width:100%;
 
 }
 
