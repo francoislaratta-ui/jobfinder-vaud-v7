@@ -930,6 +930,8 @@ document.getElementById(tabId);
 if(target){
 target.classList.add("active-tab");
 
+localStorage.setItem("jobfinder_last_tab", tabId);
+
 window.scrollTo({
 top: 0,
 behavior: "smooth"
@@ -4734,7 +4736,11 @@ const isFirstVisit = !hasAny;
 
 if(!isFirstVisit){
 restoreSavedFilters();
-openTab("filters");
+
+const lastTab =
+localStorage.getItem("jobfinder_last_tab") || "filters";
+
+openTab(lastTab);
 // Scraping auto une seule fois par session
 if(!sessionStorage.getItem("scraping_done")){
 sessionStorage.setItem("scraping_done", "1");
