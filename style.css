@@ -57,6 +57,8 @@ scroll-behavior:smooth;
 
 overflow-x:hidden;
 
+overflow-y:visible;
+
 }
 
 body{
@@ -78,6 +80,8 @@ color:white;
 min-height:100vh;
 
 overflow-x:hidden;
+
+overflow-y:visible;
 
 }
 
