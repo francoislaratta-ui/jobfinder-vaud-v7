@@ -4321,6 +4321,47 @@ renderApplicationsWithLetters();
 
 }
 
+function handleSentToggle(checkbox, offerId){
+
+if(checkbox.checked){
+
+if(!applications.find(a => a.id === offerId)){
+
+const letter =
+lettersHistory.find(l => l.offerId === offerId);
+
+if(letter){
+addApplication({
+id: offerId,
+title: letter.offerTitle,
+company: letter.company,
+location: letter.location,
+address: letter.address,
+rate: letter.rate,
+contract: letter.contract,
+source: letter.source,
+offerUrl: letter.offerUrl,
+date: letter.date
+});
+}
+
+}
+
+}else{
+
+applications =
+applications.filter(a => a.id !== offerId);
+
+saveApplications();
+updateApplicationCounters();
+updateDashboard();
+
+}
+
+renderApplicationsWithLetters();
+
+}
+
 function renderApplicationsWithLetters(){
 const container =
 document.getElementById("applicationsWithLettersContainer");
@@ -4386,6 +4427,11 @@ ${letter
 : `<div style="margin-top:12px; opacity:0.7;">Aucune lettre associée</div>`
 }
 
+<label style="display:flex; align-items:center; gap:6px; margin-top:10px; color:#22c55e;">
+<input type="checkbox" checked onchange="handleSentToggle(this, '${app.id}')">
+Postulation envoyée
+</label>
+
 </div>
 `;
 
@@ -4416,6 +4462,13 @@ ${letter.offerUrl ? `<div><a href="${escapeHTML(letter.offerUrl)}" target="_blan
 
 <div style="margin-top:12px; color:#22c55e; cursor:pointer;" onclick="document.getElementById('letterContent-${letter.id}').classList.toggle('hidden')">✅ Lettre disponible</div>
 <div id="letterContent-${letter.id}" class="hidden" style="margin-top:8px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.content)}</div>
+
+${letter.offerId ? `
+<label style="display:flex; align-items:center; gap:6px; margin-top:10px; color:#f97316;">
+<input type="checkbox" onchange="handleSentToggle(this, '${letter.offerId}')">
+Postulation envoyée
+</label>
+` : ""}
 
 </div>
 `;
