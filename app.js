@@ -4446,11 +4446,17 @@ ${app.offerUrl ? `<div><a href="${escapeHTML(app.offerUrl)}" target="_blank">�
 <div style="margin-top:8px;"><strong>Statut :</strong> ${escapeHTML(app.status || "")}</div>
 
 ${letter
-? `<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-top:12px;">
+? `<div style="display:flex; align-items:flex-start; gap:6px; margin-top:12px;">
+<div style="display:flex; flex-direction:column; gap:10px;">
 <div style="color:#22c55e; cursor:pointer;" onclick="document.getElementById('letterContent-${letter.id}').classList.toggle('hidden')">✅ Lettre disponible</div>
-<div style="display:flex; align-items:center; gap:10px;">
+<label style="display:flex; align-items:center; gap:6px; color:#22c55e;">
+<input type="checkbox" checked onchange="handleSentToggle(this, '${app.id}')">
+Postulation envoyée
+</label>
+</div>
+<div style="display:flex; align-items:flex-start; gap:8px;">
 <span>Réponse reçue :</span>
-<div style="display:flex; flex-direction:column; gap:4px;">
+<div style="display:flex; flex-direction:column; gap:6px;">
 <label style="display:flex; align-items:center; gap:6px; color:#22c55e;">
 <input type="checkbox" ${app.responseType === "positive" ? "checked" : ""} onchange="handleResponseToggle(this, '${app.id}', 'positive')">
 Pos.
@@ -4463,10 +4469,17 @@ Nég.
 </div>
 </div>
 <div id="letterContent-${letter.id}" class="hidden" style="margin-top:8px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.content)}</div>`
-: `<div style="margin-top:12px; opacity:0.7;">Aucune lettre associée</div>
-<div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+: `<div style="display:flex; align-items:flex-start; gap:6px; margin-top:12px;">
+<div style="display:flex; flex-direction:column; gap:10px;">
+<div style="opacity:0.7;">Aucune lettre associée</div>
+<label style="display:flex; align-items:center; gap:6px; color:#22c55e;">
+<input type="checkbox" checked onchange="handleSentToggle(this, '${app.id}')">
+Postulation envoyée
+</label>
+</div>
+<div style="display:flex; align-items:flex-start; gap:8px;">
 <span>Réponse reçue :</span>
-<div style="display:flex; flex-direction:column; gap:4px;">
+<div style="display:flex; flex-direction:column; gap:6px;">
 <label style="display:flex; align-items:center; gap:6px; color:#22c55e;">
 <input type="checkbox" ${app.responseType === "positive" ? "checked" : ""} onchange="handleResponseToggle(this, '${app.id}', 'positive')">
 Pos.
@@ -4476,13 +4489,9 @@ Pos.
 Nég.
 </label>
 </div>
+</div>
 </div>`
 }
-
-<label style="display:flex; align-items:center; gap:6px; margin-top:10px; color:#22c55e;">
-<input type="checkbox" checked onchange="handleSentToggle(this, '${app.id}')">
-Postulation envoyée
-</label>
 
 
 </div>
