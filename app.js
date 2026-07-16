@@ -3876,13 +3876,21 @@ return `"${String(value || "").replace(/"/g, '""')}"`;
 
 function exportCSV(){
 let csv =
-"Type,Titre,Entreprise,Statut,Match\n";
+"Type,Titre,Entreprise,Lieu,Adresse,Secteur,Taux,Contrat,Source,Lien offre,Date offre,Statut,Match\n";
 
 applications.forEach(app => {
 csv += [
 "CANDIDATURE",
 csvEscape(app.title),
 csvEscape(app.company),
+csvEscape(app.location),
+csvEscape(app.address),
+csvEscape(app.sector),
+csvEscape(app.rate),
+csvEscape(app.contract),
+csvEscape(app.source),
+csvEscape(app.offerUrl),
+csvEscape(app.date),
 csvEscape(app.status),
 calculateMatch(app)
 ].join(",") + "\n";
@@ -3893,6 +3901,14 @@ csv += [
 "FAVORI",
 csvEscape(fav.title),
 csvEscape(fav.company),
+csvEscape(fav.location),
+csvEscape(fav.address),
+csvEscape(fav.sector),
+csvEscape(fav.rate),
+csvEscape(fav.contract),
+csvEscape(fav.source),
+csvEscape(fav.offerUrl),
+csvEscape(fav.date),
 csvEscape(fav.priority),
 calculateMatch(fav)
 ].join(",") + "\n";
