@@ -600,17 +600,17 @@ border-color:rgba(245,158,11,0.48);
 
 transform:translateY(-2px);
 
-border-color:rgba(251,146,60,0.9);
+border-color:rgba(251,146,60,0.35);
 
-box-shadow:0 0 18px rgba(251,146,60,0.4);
+box-shadow:0 0 10px rgba(251,146,60,0.25);
 
 }
 
 .kpi-card:active{
 
-border-color:rgba(251,146,60,1);
+border-color:rgba(251,146,60,0.3);
 
-box-shadow:0 0 24px rgba(251,146,60,0.6);
+box-shadow:0 0 8px rgba(251,146,60,0.2);
 
 }
 
@@ -767,17 +767,17 @@ cursor:pointer;
 
 transform:translateY(-2px);
 
-border-color:rgba(251,146,60,0.9);
+border-color:rgba(251,146,60,0.35);
 
-box-shadow:0 0 18px rgba(251,146,60,0.4);
+box-shadow:0 0 10px rgba(251,146,60,0.25);
 
 }
 
 .clickable-card:active{
 
-border-color:rgba(251,146,60,1);
+border-color:rgba(251,146,60,0.3);
 
-box-shadow:0 0 24px rgba(251,146,60,0.6);
+box-shadow:0 0 8px rgba(251,146,60,0.2);
 
 }
 
@@ -1038,9 +1038,9 @@ transition:0.25s ease;
 
 .results-summary:hover{
 
-border-color:rgba(251,146,60,0.9);
+border-color:rgba(251,146,60,0.35);
 
-box-shadow:0 0 18px rgba(251,146,60,0.4);
+box-shadow:0 0 10px rgba(251,146,60,0.25);
 
 }
 
@@ -1205,7 +1205,11 @@ margin-bottom:20px;
 
 .action-btn{
 
-background:#c2410c;
+background:linear-gradient(
+90deg,
+rgba(194,65,12,0.55),
+rgba(249,115,22,0.55)
+);
 
 color:#fff;
 
@@ -1219,7 +1223,7 @@ font-weight:700;
 
 transition:0.2s;
 
-box-shadow:0 0 16px rgba(251,146,60,0.5);
+box-shadow:0 0 12px rgba(249,115,22,0.4);
 
 }
 
