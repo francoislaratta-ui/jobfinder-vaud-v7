@@ -255,10 +255,7 @@ padding:6px 8px;
 background:#0b0f16;
 
 border-bottom:
-1px solid rgba(
-139,
-92,
-246,
+1px solid rgba(251,146,60,
 0.18
 );
 
@@ -314,10 +311,7 @@ box-shadow:
 .main-tabs button:hover{
 
 border-color:
-rgba(
-168,
-85,
-247,
+rgba(249,115,22,
 0.55
 );
 
@@ -328,17 +322,14 @@ color:#f97316;
 .main-tabs button.active{
 
 border-color:
-rgba(
-168,
-85,
-247,
+rgba(249,115,22,
 0.85
 );
 
 background:
 linear-gradient(
 90deg,
-rgba(88,28,135,0.45),
+rgba(124,45,18,0.45),
 rgba(15,23,42,0.96)
 );
 
@@ -533,10 +524,7 @@ gap:12px;
 text-align:left;
 
 border:
-1px solid rgba(
-139,
-92,
-246,
+1px solid rgba(251,146,60,
 0.30
 );
 
@@ -817,10 +805,10 @@ margin-bottom:14px;
 
 border:
 1px solid rgba(
-59,
-130,
-246,
-0.42
+251,
+146,
+60,
+0.4
 );
 
 box-shadow:
@@ -832,22 +820,6 @@ box-shadow:
 );
 
 transition:0.25s ease;
-
-}
-
-.objectives-card:hover{
-
-border-color:rgba(251,146,60,0.9);
-
-box-shadow:0 0 18px rgba(251,146,60,0.4);
-
-}
-
-.objectives-card:active{
-
-border-color:rgba(251,146,60,1);
-
-box-shadow:0 0 24px rgba(251,146,60,0.6);
 
 }
 
@@ -1233,7 +1205,7 @@ margin-bottom:20px;
 
 .action-btn{
 
-background:#534AB7;
+background:#c2410c;
 
 color:#fff;
 
@@ -1255,11 +1227,11 @@ box-shadow:0 0 16px rgba(251,146,60,0.5);
 
 transform:translateY(-2px);
 
-background:#fb923c;
+background:#e0630f;
 
 color:white;
 
-box-shadow:0 0 22px rgba(251,146,60,0.7);
+box-shadow:0 0 10px rgba(251,146,60,0.3);
 
 }
 
@@ -2550,18 +2522,12 @@ EFFETS DE SURVOL
 .offer-card:hover{
 
 border-color:
-rgba(
-139,
-92,
-246,
+rgba(251,146,60,
 0.35
 );
 
 box-shadow:
-0 8px 22px rgba(
-124,
-58,
-237,
+0 8px 22px rgba(194,65,12,
 0.14
 );
 
@@ -2570,18 +2536,12 @@ box-shadow:
 .objectives-card:hover{
 
 border-color:
-rgba(
-139,
-92,
-246,
+rgba(251,146,60,
 0.28
 );
 
 box-shadow:
-0 8px 20px rgba(
-124,
-58,
-237,
+0 8px 20px rgba(194,65,12,
 0.10
 );
 
@@ -2590,18 +2550,12 @@ box-shadow:
 .filter-box:hover{
 
 border-color:
-rgba(
-139,
-92,
-246,
+rgba(251,146,60,
 0.28
 );
 
 box-shadow:
-0 8px 20px rgba(
-124,
-58,
-237,
+0 8px 20px rgba(194,65,12,
 0.10
 );
 
