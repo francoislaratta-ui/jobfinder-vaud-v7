@@ -4072,12 +4072,18 @@ saveFavorites();
 saveApplications();
 saveLetters();
 
+localStorage.removeItem("jobfinder_candidate");
+localStorage.removeItem("jobfinder_filters");
+localStorage.removeItem("jobfinder_visited");
+
 renderFavorites();
 renderApplications();
 renderLettersHistory();
 updateDashboard();
 
 showSuccess("Reset terminé");
+
+location.reload();
 });
 
 
