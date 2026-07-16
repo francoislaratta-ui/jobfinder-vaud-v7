@@ -173,6 +173,7 @@ let currentCVAnalysis = null;
 let currentLetter = "";
 let currentLetterHtml = "";
 let selectedOffer = null;
+let newOfferIds = new Set();
 let notificationsEnabled = true;
 let deferredPrompt = null;
 
@@ -2377,6 +2378,24 @@ offer.responsibilities ||
 "Descriptif non disponible."
 }));
 
+const previouslySeenIds =
+safeArray(safeJSON(localStorage.getItem("jobfinder_visited"), []));
+
+const previouslySeenSet =
+new Set(previouslySeenIds);
+
+newOfferIds =
+new Set(
+offers
+.map(o => o.id)
+.filter(id => !previouslySeenSet.has(id))
+);
+
+localStorage.setItem(
+"jobfinder_visited",
+JSON.stringify(offers.map(o => o.id))
+);
+
 offers =
 await discoverRealOfferUrls(offers);
 
@@ -4149,9 +4168,12 @@ NOTIFICATIONS
 
 function updateNotifications(){
 
+const newOffers =
+offers.filter(offer => newOfferIds.has(offer.id));
+
 const sourceCounts = {};
 
-offers.forEach(offer => {
+newOffers.forEach(offer => {
 const source =
 offer.source || offer.company || "Autre";
 
@@ -4177,10 +4199,10 @@ document.getElementById("newOffersNotifications");
 
 if(newOffersBox){
 newOffersBox.innerHTML =
-offers.length
+newOffers.length
 ? `
 <div class="alert-line">
-• ${offers.length} nouvelles offres
+• ${newOffers.length} nouvelles offres
 </div>
 ${sourceLines}
 `
