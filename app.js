@@ -4362,6 +4362,30 @@ renderApplicationsWithLetters();
 
 }
 
+function handleResponseToggle(checkbox, appId, type){
+
+const app =
+applications.find(a => a.id === appId);
+
+if(!app){
+return;
+}
+
+if(checkbox.checked){
+app.responseType = type;
+app.status = type === "positive" ? "Réponse" : "Refusée";
+}else{
+app.responseType = null;
+app.status = "Envoyée";
+}
+
+saveApplications();
+updateApplicationCounters();
+updateDashboard();
+renderApplicationsWithLetters();
+
+}
+
 function renderApplicationsWithLetters(){
 const container =
 document.getElementById("applicationsWithLettersContainer");
@@ -4431,6 +4455,20 @@ ${letter
 <input type="checkbox" checked onchange="handleSentToggle(this, '${app.id}')">
 Postulation envoyée
 </label>
+
+<div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+<span>Réponse reçue :</span>
+<div style="display:flex; flex-direction:column; gap:4px;">
+<label style="display:flex; align-items:center; gap:6px; color:#22c55e;">
+<input type="checkbox" ${app.responseType === "positive" ? "checked" : ""} onchange="handleResponseToggle(this, '${app.id}', 'positive')">
+Pos.
+</label>
+<label style="display:flex; align-items:center; gap:6px; color:#ef4444;">
+<input type="checkbox" ${app.responseType === "negative" ? "checked" : ""} onchange="handleResponseToggle(this, '${app.id}', 'negative')">
+Nég.
+</label>
+</div>
+</div>
 
 </div>
 `;
