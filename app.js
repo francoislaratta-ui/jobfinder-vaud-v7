@@ -3019,10 +3019,30 @@ card.innerHTML = `
 ${escapeHTML(item.priority || getMatchBadge(calculateMatch(item)))}
 </div>
 <div class="offer-actions">
-<button class="offer-btn open">🔗</button>
+<button class="offer-btn apply">🚀 Postuler</button>
+<button class="offer-btn ai">🤖 Lettre IA</button>
+<button class="offer-btn letter">📧 Email</button>
+<button class="offer-btn open">🔗 Offre</button>
 <button class="offer-btn delete">🗑️</button>
 </div>
 `;
+
+card.querySelector(".apply")?.addEventListener("click", () => {
+addApplication(item);
+});
+
+card.querySelector(".ai")?.addEventListener("click", () => {
+selectedOffer = item;
+renderSelectedOfferPreview();
+openTab("ai");
+showInfo("Offre sélectionnée pour lettre IA");
+});
+
+card.querySelector(".letter")?.addEventListener("click", () => {
+selectedOffer = item;
+openTab("letters");
+showInfo("Offre sélectionnée pour email");
+});
 
 card.querySelector(".open")?.addEventListener("click", () => {
 openOffer(item);
