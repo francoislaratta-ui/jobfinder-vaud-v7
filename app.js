@@ -174,6 +174,7 @@ let currentLetter = "";
 let currentLetterHtml = "";
 let selectedOffer = null;
 let newOfferIds = new Set();
+let currentLetterOffer = null;
 let notificationsEnabled = true;
 let deferredPrompt = null;
 
@@ -3457,6 +3458,8 @@ if(!offer){
 return;
 }
 
+currentLetterOffer = offer;
+
 const details =
 calculateMatchDetails(offer);
 
@@ -3512,6 +3515,8 @@ function generateStandardLetter(offer){
 if(!offer){
 return;
 }
+
+currentLetterOffer = offer;
 
 const details =
 calculateMatchDetails(offer);
@@ -3576,6 +3581,8 @@ function generatePremiumLetter(offer){
 if(!offer){
 return;
 }
+
+currentLetterOffer = offer;
 
 const details =
 calculateMatchDetails(offer);
@@ -3662,17 +3669,28 @@ showInfo("Aucune lettre à sauvegarder");
 return;
 }
 
+const offer =
+currentLetterOffer || selectedOffer;
+
 lettersHistory.unshift({
 id: generateId(),
 content: currentLetter,
-offerId: selectedOffer ? selectedOffer.id : null,
-offerTitle: selectedOffer ? selectedOffer.title : "",
-company: selectedOffer ? selectedOffer.company : "",
+offerId: offer ? offer.id : null,
+offerTitle: offer ? offer.title : "",
+company: offer ? offer.company : "",
+location: offer ? offer.location : "",
+address: offer ? offer.address : "",
+rate: offer ? offer.rate : "",
+contract: offer ? offer.contract : "",
+source: offer ? offer.source : "",
+offerUrl: offer ? offer.offerUrl : "",
+date: offer ? offer.date : "",
 createdAt: new Date().toISOString()
 });
 
 saveLetters();
 renderLettersHistory();
+renderApplicationsWithLetters();
 
 showSuccess("Lettre sauvegardée");
 }
@@ -4261,12 +4279,20 @@ if(!container){
 return;
 }
 
-if(!applications.length){
+const appliedOfferIds =
+new Set(applications.map(a => a.id));
+
+const standaloneLetters =
+lettersHistory.filter(l =>
+!l.offerId || !appliedOfferIds.has(l.offerId)
+);
+
+if(!applications.length && !standaloneLetters.length){
 container.innerHTML = "Aucune candidature";
 return;
 }
 
-container.innerHTML = applications.map(app => {
+const applicationCards = applications.map(app => {
 
 const letter =
 lettersHistory.find(l => l.offerId === app.id);
@@ -4300,7 +4326,40 @@ ${letter
 </div>
 `;
 
-}).join("");
+});
+
+const letterOnlyCards = standaloneLetters.map(letter => {
+
+return `
+<div class="offer-card">
+
+<div class="offer-title">${escapeHTML(letter.offerTitle || "Offre")}</div>
+
+<div class="offer-company">🏢 ${escapeHTML(letter.company || "")}</div>
+
+${letter.address ? `<div class="offer-address">📍 ${escapeHTML(letter.address)}</div>` : ""}
+
+${letter.rate ? `<div>🎯 Taux : ${escapeHTML(letter.rate)}</div>` : ""}
+
+${letter.contract ? `<div>📄 ${escapeHTML(letter.contract)}</div>` : ""}
+
+${letter.source ? `<div>🔎 ${escapeHTML(letter.source)}</div>` : ""}
+
+${letter.date ? `<div>📅 Publié le : ${escapeHTML(letter.date)}</div>` : ""}
+
+${letter.offerUrl ? `<div><a href="${escapeHTML(letter.offerUrl)}" target="_blank">🔗 URL disponible</a></div>` : ""}
+
+<div style="margin-top:8px;"><strong>Statut :</strong> Lettre sauvegardée, pas encore postulé</div>
+
+<div style="margin-top:12px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.content)}</div>
+
+</div>
+`;
+
+});
+
+container.innerHTML =
+applicationCards.join("") + letterOnlyCards.join("");
 
 }
 
