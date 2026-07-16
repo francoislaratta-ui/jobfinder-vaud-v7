@@ -4720,6 +4720,7 @@ alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis c
 renderFavorites();
 renderApplications();
 renderLettersHistory();
+renderApplicationsWithLetters();
 updateApplicationCounters();
 
 console.log("==================================");
