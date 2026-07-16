@@ -4764,7 +4764,7 @@ if(searchStatusBar) searchStatusBar.innerHTML = "";
 if(isFirstVisit){
 openTab("filters");
 setTimeout(() => {
-alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur 💡 Rechercher avec mes critères.");
+alert("👋 Bienvenue ! Veuillez sélectionner vos critères de recherche puis cliquer sur 💡 Rechercher.");
 }, 800);
 }
 
