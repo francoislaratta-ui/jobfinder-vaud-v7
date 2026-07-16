@@ -1086,7 +1086,7 @@ openTab("favorites");
 
 document.getElementById("floatingApplications")
 ?.addEventListener("click", () => {
-openTab("applications");
+openTab("notifications");
 });
 
 document.getElementById("floatingAI")
