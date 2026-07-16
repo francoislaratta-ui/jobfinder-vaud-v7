@@ -2298,9 +2298,11 @@ flex-direction:column;
 
 .action-btn{
 
-width:100%;
+width:50%;
 
-margin-bottom:8px;
+margin:0 auto 8px auto;
+
+display:block;
 
 }
 
