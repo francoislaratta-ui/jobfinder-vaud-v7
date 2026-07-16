@@ -3220,6 +3220,36 @@ document.getElementById("hiredCount"),
 hiredCount
 );
 
+const now = new Date();
+
+const startOfWeek = new Date(now);
+const dayOfWeek = (now.getDay() + 6) % 7;
+startOfWeek.setDate(now.getDate() - dayOfWeek);
+startOfWeek.setHours(0, 0, 0, 0);
+
+const startOfMonth =
+new Date(now.getFullYear(), now.getMonth(), 1);
+
+const weeklyCount =
+applications.filter(a =>
+a.createdAt && new Date(a.createdAt) >= startOfWeek
+).length;
+
+const monthlyCount =
+applications.filter(a =>
+a.createdAt && new Date(a.createdAt) >= startOfMonth
+).length;
+
+safeSetText(
+document.getElementById("weeklyGoalText"),
+`${weeklyCount} / 3 candidatures cette semaine`
+);
+
+safeSetText(
+document.getElementById("monthlyGoalText"),
+`${monthlyCount} / 12 candidatures ce mois`
+);
+
 updateStatistics();
 }
 
