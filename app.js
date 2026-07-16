@@ -4208,6 +4208,59 @@ offers.length
 : "Aucune alerte IA"
 );
 
+renderApplicationsWithLetters();
+
+}
+
+function renderApplicationsWithLetters(){
+const container =
+document.getElementById("applicationsWithLettersContainer");
+
+if(!container){
+return;
+}
+
+if(!applications.length){
+container.innerHTML = "Aucune candidature";
+return;
+}
+
+container.innerHTML = applications.map(app => {
+
+const letter =
+lettersHistory.find(l => l.offerId === app.id);
+
+return `
+<div class="offer-card">
+
+<div class="offer-title">${escapeHTML(app.title || "")}</div>
+
+<div class="offer-company">🏢 ${escapeHTML(app.company || "")}</div>
+
+${app.address ? `<div class="offer-address">📍 ${escapeHTML(app.address)}</div>` : ""}
+
+${app.rate ? `<div>🎯 Taux : ${escapeHTML(app.rate)}</div>` : ""}
+
+${app.contract ? `<div>📄 ${escapeHTML(app.contract)}</div>` : ""}
+
+${app.source ? `<div>🔎 ${escapeHTML(app.source)}</div>` : ""}
+
+${app.date ? `<div>📅 Publié le : ${escapeHTML(app.date)}</div>` : ""}
+
+${app.offerUrl ? `<div><a href="${escapeHTML(app.offerUrl)}" target="_blank">🔗 URL disponible</a></div>` : ""}
+
+<div style="margin-top:8px;"><strong>Statut :</strong> ${escapeHTML(app.status || "")}</div>
+
+${letter
+? `<div style="margin-top:12px; padding:10px; background:#222; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHTML(letter.content)}</div>`
+: `<div style="margin-top:12px; opacity:0.7;">Aucune lettre associée</div>`
+}
+
+</div>
+`;
+
+}).join("");
+
 }
 
 /* ==========================================
