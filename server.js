@@ -16,6 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 /* ==========================================
+CACHE ADRESSES PROFILS ENTREPRISES (JOBUP)
+========================================== */
+
+const profileAddressCache = new Map();
+
+/* ==========================================
 MIDDLEWARES
 ========================================== */
 
@@ -1103,6 +1109,14 @@ let profileUrl = profileLinkMatch[1];
 if(profileUrl.startsWith("/")){
 profileUrl = "https://www.jobup.ch" + profileUrl;
 }
+
+if(profileAddressCache.has(profileUrl)){
+const cachedAddress = profileAddressCache.get(profileUrl);
+console.log("DEBUG adresse profil depuis cache :", cachedAddress || "AUCUNE");
+if(cachedAddress){
+address = cachedAddress;
+}
+}else{
 try{
 const profileHtml = await fetchExternalText(profileUrl);
 console.log("DEBUG page profil récupérée, longueur :", profileHtml ? profileHtml.length : 0);
@@ -1112,8 +1126,10 @@ console.log("DEBUG adresse trouvée dans profil :", streetMatch ? streetMatch[1]
 if(streetMatch){
 address = streetMatch[1].trim();
 }
+profileAddressCache.set(profileUrl, address || null);
 }catch(profileError){
 console.warn("Erreur récupération profil entreprise Jobup :", profileError.message);
+}
 }
 }
 }
