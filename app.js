@@ -4282,10 +4282,22 @@ return;
 const appliedOfferIds =
 new Set(applications.map(a => a.id));
 
+const seenLetterOfferIds = new Set();
+
 const standaloneLetters =
-lettersHistory.filter(l =>
-!l.offerId || !appliedOfferIds.has(l.offerId)
-);
+lettersHistory.filter(l => {
+if(!l.offerId){
+return true;
+}
+if(appliedOfferIds.has(l.offerId)){
+return false;
+}
+if(seenLetterOfferIds.has(l.offerId)){
+return false;
+}
+seenLetterOfferIds.add(l.offerId);
+return true;
+});
 
 if(!applications.length && !standaloneLetters.length){
 container.innerHTML = "Aucune candidature";
