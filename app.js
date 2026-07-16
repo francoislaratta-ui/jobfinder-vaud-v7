@@ -4427,9 +4427,11 @@ lettersHistory.find(l => l.offerId === app.id);
 return `
 <div class="offer-card">
 
-<div class="offer-title">${escapeHTML(app.title || "")}</div>
+<div class="offer-title" style="cursor:pointer;" onclick="document.getElementById('offerDetails-${app.id}').classList.toggle('hidden')">${escapeHTML(app.title || "")}</div>
 
 <div class="offer-company">🏢 ${escapeHTML(app.company || "")}</div>
+
+<div id="offerDetails-${app.id}" class="hidden">
 
 ${app.address ? `<div class="offer-address">📍 ${escapeHTML(app.address)}</div>` : ""}
 
@@ -4442,6 +4444,8 @@ ${app.source ? `<div>🔎 ${escapeHTML(app.source)}</div>` : ""}
 ${app.date ? `<div>📅 Publié le : ${escapeHTML(app.date)}</div>` : ""}
 
 ${app.offerUrl ? `<div><a href="${escapeHTML(app.offerUrl)}" target="_blank">🔗 URL disponible</a></div>` : ""}
+
+</div>
 
 <div style="margin-top:8px;"><strong>Statut :</strong> ${escapeHTML(app.status || "")}</div>
 
@@ -4504,9 +4508,11 @@ const letterOnlyCards = standaloneLetters.map(letter => {
 return `
 <div class="offer-card">
 
-<div class="offer-title">${escapeHTML(letter.offerTitle || "Offre")}</div>
+<div class="offer-title" style="cursor:pointer;" onclick="document.getElementById('offerDetails-${letter.id}').classList.toggle('hidden')">${escapeHTML(letter.offerTitle || "Offre")}</div>
 
 ${letter.company ? `<div class="offer-company">🏢 ${escapeHTML(letter.company)}</div>` : ""}
+
+<div id="offerDetails-${letter.id}" class="hidden">
 
 ${letter.address ? `<div class="offer-address">📍 ${escapeHTML(letter.address)}</div>` : ""}
 
@@ -4519,6 +4525,8 @@ ${letter.source ? `<div>🔎 ${escapeHTML(letter.source)}</div>` : ""}
 ${letter.date ? `<div>📅 Publié le : ${escapeHTML(letter.date)}</div>` : ""}
 
 ${letter.offerUrl ? `<div><a href="${escapeHTML(letter.offerUrl)}" target="_blank">🔗 URL disponible</a></div>` : ""}
+
+</div>
 
 <div style="margin-top:8px;"><strong>Statut :</strong> Lettre sauvegardée, pas encore postulé</div>
 
