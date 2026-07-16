@@ -949,20 +949,22 @@ tabId === "filters" ? "flex" : "none";
 COMPTE A REBOURS BOUTON RECHERCHE/REFRESH
 ========================================== */
 
-function startCountdown(button, seconds, label){
+function startCountdown(button, seconds, label, statusElement){
 
 let remaining = seconds;
 
-button.innerHTML = `${label}<br>⏳ Environ ${remaining}s restantes...`;
+const target = statusElement || button;
+
+target.innerHTML = `${label}<br>⏳ Environ ${remaining}s restantes...`;
 
 const interval = setInterval(() => {
 
 remaining--;
 
 if(remaining > 0){
-button.innerHTML = `${label}<br>⏳ Environ ${remaining}s restantes...`;
+target.innerHTML = `${label}<br>⏳ Environ ${remaining}s restantes...`;
 }else{
-button.innerHTML = `${label}<br>⏳ Presque terminé...`;
+target.innerHTML = `${label}<br>⏳ Presque terminé...`;
 }
 
 }, 1000);
@@ -1012,6 +1014,9 @@ openTab(tab);
 const refreshOffersBtn =
 document.getElementById("refreshOffersBtn");
 
+const searchStatusBar =
+document.getElementById("searchStatusBar");
+
 if(refreshOffersBtn){
 refreshOffersBtn.addEventListener("click", async () => {
 
@@ -1019,7 +1024,7 @@ const isFirst = !localStorage.getItem("jobfinder_filters");
 
 if(isFirst){
 refreshOffersBtn.disabled = true;
-const countdown1 = startCountdown(refreshOffersBtn, 21, "🔄 Chargement...");
+const countdown1 = startCountdown(refreshOffersBtn, 21, "🔄 Chargement...", searchStatusBar);
 try{
 await loadOffers(true);
 const selectedMetiers = [...document.querySelectorAll('input[name="metiers"]:checked')].map(cb => cb.value);
@@ -1034,14 +1039,14 @@ scrollToOfferTop(firstOffer);
 }finally{
 clearInterval(countdown1);
 refreshOffersBtn.disabled = false;
-refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
+if(searchStatusBar) searchStatusBar.innerHTML = "";
 }
 return;
 }
 
 refreshOffersBtn.disabled = true;
 
-const countdown2 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres...");
+const countdown2 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres...", searchStatusBar);
 
 try{
 
@@ -1072,9 +1077,7 @@ clearInterval(countdown2);
 
 refreshOffersBtn.disabled = false;
 
-refreshOffersBtn.innerHTML = `
-💡 Rechercher avec mes critères
-`;
+if(searchStatusBar) searchStatusBar.innerHTML = "";
 
 }
 
@@ -4736,10 +4739,11 @@ openTab("filters");
 if(!sessionStorage.getItem("scraping_done")){
 sessionStorage.setItem("scraping_done", "1");
 const refreshOffersBtn = document.getElementById("refreshOffersBtn");
+const searchStatusBar = document.getElementById("searchStatusBar");
 let countdown3 = null;
 if(refreshOffersBtn){
 refreshOffersBtn.disabled = true;
-countdown3 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres...");
+countdown3 = startCountdown(refreshOffersBtn, 21, "🔄 Actualisation des offres...", searchStatusBar);
 }
 try{
 await refreshOffers();
@@ -4751,7 +4755,7 @@ scrollToOfferTop(firstOffer);
 if(refreshOffersBtn){
 clearInterval(countdown3);
 refreshOffersBtn.disabled = false;
-refreshOffersBtn.innerHTML = `💡 Rechercher avec mes critères`;
+if(searchStatusBar) searchStatusBar.innerHTML = "";
 }
 }
 }

@@ -376,6 +376,28 @@ box-shadow: 0 0 20px rgba(168,85,247,0.7);
 
 }
 
+.search-status-bar{
+
+grid-column:1 / -1;
+
+text-align:center;
+
+color:#c4b5fd;
+
+font-size:13px;
+
+font-weight:600;
+
+line-height:1.5;
+
+}
+
+.search-status-bar:empty{
+
+display:none;
+
+}
+
 .refresh-nav-btn:hover{
 
 background: linear-gradient(
